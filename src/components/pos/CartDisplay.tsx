@@ -33,80 +33,78 @@ export function CartDisplay({ items, onRemoveItem, onUpdateQuantity, onApplyDisc
   const totals = calculateTotals();
 
   return (
-    <Card className="flex flex-col h-full bg-card shadow-2xl border-2 border-primary/20 animate-fade-in">
-      <div className="p-4 border-b bg-gradient-to-r from-primary to-secondary">
-        <h2 className="text-xl font-bold text-white">🛒 Panier</h2>
+    <Card className="flex flex-col h-full bg-card shadow-xl border-2 border-primary/30">
+      <div className="p-3 border-b bg-gradient-to-r from-primary to-secondary">
+        <h2 className="text-lg font-bold text-white">🛒 Panier</h2>
       </div>
 
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-3">
         {items.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
-            Aucun article dans le panier
+          <div className="text-center text-muted-foreground py-6 text-sm">
+            Aucun article
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {items.map((item, index) => (
-              <Card key={index} className="p-3 bg-muted/30">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <div className="font-medium text-foreground">{item.product.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {item.product.price.toFixed(2)}€
-                      {item.product.type === 'weight' && '/kg'} × {item.quantity.toFixed(3)}
-                      {item.product.type === 'weight' && 'kg'}
+              <Card key={index} className="p-2 bg-muted/30 hover:bg-muted/40 transition-colors">
+                <div className="flex justify-between items-center mb-1">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm text-foreground truncate">{item.product.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {item.product.price.toFixed(2)}€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onRemoveItem(index)}
-                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="flex items-center gap-2 mb-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onUpdateQuantity(index, Math.max(0.001, item.quantity - (item.product.type === 'weight' ? 0.1 : 1)))}
-                    className="h-7 w-7"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                  <span className="text-sm font-medium min-w-12 text-center text-foreground">
-                    {item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0)}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onUpdateQuantity(index, item.quantity + (item.product.type === 'weight' ? 0.1 : 1))}
-                    className="h-7 w-7"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onApplyDiscount(index)}
-                    className="ml-auto h-7"
-                  >
-                    <Percent className="h-3 w-3 mr-1" />
-                    Remise
-                  </Button>
-                </div>
-
-                {item.discount && (
-                  <div className="text-xs bg-pos-warning/10 text-pos-warning px-2 py-1 rounded mb-2">
-                    Remise: {item.discount.value}
-                    {item.discount.type === 'percentage' ? '%' : '€'}
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onApplyDiscount(index)}
+                      className="h-7 w-7 hover:bg-pos-warning/20"
+                    >
+                      <Percent className="h-3 w-3 text-pos-warning" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onRemoveItem(index)}
+                      className="h-7 w-7 hover:bg-destructive/20"
+                    >
+                      <Trash2 className="h-3 w-3 text-destructive" />
+                    </Button>
                   </div>
-                )}
+                </div>
 
-                <div className="flex justify-between text-sm border-t pt-2">
-                  <span className="text-muted-foreground">TVA {item.product.vat}%</span>
-                  <span className="font-bold text-primary">{item.total.toFixed(2)}€</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onUpdateQuantity(index, Math.max(0.001, item.quantity - (item.product.type === 'weight' ? 0.1 : 1)))}
+                      className="h-6 w-6 border-primary/30"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                    <span className="text-xs font-medium min-w-8 text-center text-foreground px-1">
+                      {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onUpdateQuantity(index, item.quantity + (item.product.type === 'weight' ? 0.1 : 1))}
+                      className="h-6 w-6 border-primary/30"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  
+                  <div className="text-right">
+                    {item.discount && (
+                      <div className="text-xs text-pos-warning line-through">
+                        {item.subtotal.toFixed(2)}€
+                      </div>
+                    )}
+                    <div className="font-bold text-base text-primary">{item.total.toFixed(2)}€</div>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -114,24 +112,24 @@ export function CartDisplay({ items, onRemoveItem, onUpdateQuantity, onApplyDisc
         )}
       </ScrollArea>
 
-      <div className="p-6 border-t space-y-3 bg-gradient-to-br from-pos-display to-secondary shadow-inner">
-        <div className="flex justify-between text-sm text-white/90">
+      <div className="p-4 border-t space-y-2 bg-gradient-to-br from-pos-display to-secondary shadow-inner">
+        <div className="flex justify-between text-xs text-white/80">
           <span>Sous-total HT:</span>
-          <span className="font-semibold">{totals.subtotal.toFixed(2)}€</span>
+          <span className="font-medium">{totals.subtotal.toFixed(2)}€</span>
         </div>
-        <div className="flex justify-between text-sm text-white/90">
+        <div className="flex justify-between text-xs text-white/80">
           <span>TVA:</span>
-          <span className="font-semibold">{totals.totalVat.toFixed(2)}€</span>
+          <span className="font-medium">{totals.totalVat.toFixed(2)}€</span>
         </div>
         {totals.totalDiscount > 0 && (
-          <div className="flex justify-between text-sm bg-pos-warning/20 px-3 py-2 rounded-lg animate-pulse-soft">
-            <span className="text-white font-semibold">🎉 Remise:</span>
+          <div className="flex justify-between text-xs bg-pos-warning/20 px-2 py-1 rounded">
+            <span className="text-white font-medium">🎉 Remise:</span>
             <span className="text-white font-bold">-{totals.totalDiscount.toFixed(2)}€</span>
           </div>
         )}
-        <div className="flex justify-between text-2xl font-bold text-white pt-3 border-t-2 border-white/30">
-          <span>TOTAL TTC:</span>
-          <span className="text-pos-success">{totals.total.toFixed(2)}€</span>
+        <div className="flex justify-between text-xl font-bold text-white pt-2 border-t border-white/30">
+          <span>TOTAL:</span>
+          <span className="text-2xl text-pos-success">{totals.total.toFixed(2)}€</span>
         </div>
       </div>
     </Card>

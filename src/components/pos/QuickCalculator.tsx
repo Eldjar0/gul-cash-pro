@@ -33,31 +33,31 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
   };
 
   return (
-    <Card className="p-6 shadow-xl border-2 border-primary/20">
-      <div className="flex gap-2 mb-4">
+    <Card className="p-4 shadow-xl border-2 border-primary/30">
+      <div className="flex gap-2 mb-3">
         <Button
           variant={mode === 'search' ? 'default' : 'outline'}
           onClick={() => setMode('search')}
-          className="flex-1 h-12"
+          className="flex-1 h-10 text-sm"
         >
-          <Search className="h-5 w-5 mr-2" />
-          Code produit
+          <Search className="h-4 w-4 mr-1" />
+          Code
         </Button>
         <Button
           variant={mode === 'calc' ? 'default' : 'outline'}
           onClick={() => setMode('calc')}
-          className="flex-1 h-12"
+          className="flex-1 h-10 text-sm"
         >
-          <Calculator className="h-5 w-5 mr-2" />
-          Calculatrice
+          <Calculator className="h-4 w-4 mr-1" />
+          Calc
         </Button>
       </div>
 
-      <div className="bg-gradient-to-br from-pos-display to-secondary p-6 rounded-2xl mb-4 shadow-inner">
-        <div className="text-sm text-white/80 mb-2 font-semibold">
-          {mode === 'search' ? '🔍 Code-barres / Référence' : '🧮 Calculatrice'}
+      <div className="bg-gradient-to-br from-pos-display to-secondary p-4 rounded-xl mb-3 shadow-inner">
+        <div className="text-xs text-white/70 mb-1 font-medium">
+          {mode === 'search' ? '🔍 Code produit' : '🧮 Calculatrice'}
         </div>
-        <div className="text-5xl font-black text-white tracking-tight min-h-16 flex items-center">
+        <div className="text-4xl font-black text-white tracking-tight min-h-12 flex items-center">
           {display || '0'}
         </div>
       </div>
@@ -68,21 +68,21 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
         onBackspace={handleBackspace}
       />
 
-      <div className="grid grid-cols-2 gap-3 mt-4">
+      <div className="grid grid-cols-2 gap-2 mt-3">
         <Button
           onClick={handleSearch}
           disabled={!display}
-          className="h-14 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:scale-105 transition-all"
+          className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:scale-105 transition-all text-sm"
         >
-          <Search className="h-5 w-5 mr-2" />
-          Rechercher
+          <Search className="h-4 w-4 mr-1" />
+          Chercher
         </Button>
         <Button
           onClick={onCreateProduct}
-          className="h-14 bg-gradient-to-br from-category-orange to-category-red text-white font-bold shadow-lg hover:scale-105 transition-all"
+          className="h-12 bg-gradient-to-br from-category-orange to-category-red text-white font-bold shadow-lg hover:scale-105 transition-all text-sm"
         >
-          <Plus className="h-5 w-5 mr-2" />
-          Nouveau produit
+          <Plus className="h-4 w-4 mr-1" />
+          Nouveau
         </Button>
       </div>
     </Card>

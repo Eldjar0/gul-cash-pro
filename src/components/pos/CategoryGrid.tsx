@@ -22,34 +22,29 @@ categories.forEach((cat) => {
 
 export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">Catégories de produits</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div className="space-y-3">
+      <h2 className="text-base font-semibold text-foreground">📦 Catégories</h2>
+      <div className="grid grid-cols-3 gap-2">
         {categories.map((category) => (
           <Card
             key={category.name}
-            className={`${category.color} p-4 hover:scale-105 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl border-0`}
+            className={`${category.color} p-3 hover:scale-105 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl border-0`}
           >
-            <h3 className="text-white font-bold text-center text-sm mb-3">
+            <h3 className="text-white font-bold text-center text-xs mb-2">
               {category.name}
             </h3>
-            <div className="space-y-2">
-              {category.products.slice(0, 3).map((product) => (
+            <div className="space-y-1">
+              {category.products.slice(0, 2).map((product) => (
                 <Button
                   key={product.id}
                   variant="secondary"
                   size="sm"
                   onClick={() => onProductSelect(product, product.type === 'unit' ? 1 : undefined)}
-                  className="w-full text-xs h-8 bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm"
+                  className="w-full text-xs h-7 bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm py-1"
                 >
-                  {product.name}
+                  {product.name.length > 15 ? product.name.slice(0, 15) + '...' : product.name}
                 </Button>
               ))}
-              {category.products.length > 3 && (
-                <div className="text-xs text-white/80 text-center">
-                  +{category.products.length - 3} autres
-                </div>
-              )}
             </div>
           </Card>
         ))}
