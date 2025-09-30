@@ -14,8 +14,11 @@ import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { CartDisplay } from '@/components/pos/CartDisplay';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
 import { Receipt } from '@/components/pos/Receipt';
+import { QuickCalculator } from '@/components/pos/QuickCalculator';
+import { CashDrawerActions } from '@/components/pos/CashDrawerActions';
 import { NumericKeypad } from '@/components/pos/NumericKeypad';
 import { CartItem, Product, PaymentMethod, Sale, DiscountType } from '@/types/pos';
+import { MOCK_PRODUCTS } from '@/data/mockProducts';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -192,6 +195,45 @@ const Index = () => {
     }
   };
 
+  const handleProductCode = (code: string) => {
+    const product = MOCK_PRODUCTS.find(
+      (p) => p.barcode === code || p.id === code
+    );
+    if (product) {
+      handleProductSelect(product, product.type === 'unit' ? 1 : undefined);
+    } else {
+      toast.error(`Produit non trouvé: ${code}`);
+    }
+  };
+
+  const handleCreateProduct = () => {
+    toast.info('Création de produit - À venir');
+  };
+
+  const handleOpenDrawer = () => {
+    toast.success('💰 Caisse ouverte');
+  };
+
+  const handleViewStats = () => {
+    toast.info('📊 Statistiques - À venir');
+  };
+
+  const handleViewHistory = () => {
+    toast.info('📋 Historique - À venir');
+  };
+
+  const handleManageCustomers = () => {
+    toast.info('👥 Gestion clients - À venir');
+  };
+
+  const handleManageProducts = () => {
+    toast.info('📦 Gestion produits - À venir');
+  };
+
+  const handleSettings = () => {
+    toast.info('⚙️ Paramètres - À venir');
+  };
+
   const totals = getTotals();
 
   return (
@@ -229,62 +271,71 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="container mx-auto p-6">
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left Column - Product Search & Actions */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid lg:grid-cols-12 gap-6">
+          {/* Left Column - Panier (plus large) */}
+          <div className="lg:col-span-5 space-y-6">
+            <CartDisplay
+              items={cart}
+              onRemoveItem={handleRemoveItem}
+              onUpdateQuantity={handleUpdateQuantity}
+              onApplyDiscount={handleApplyDiscount}
+            />
+            
+            {/* Boutons d'action principaux sous le panier */}
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={handleClearCart}
+                disabled={cart.length === 0}
+                className="h-20 flex flex-col gap-2 hover:scale-105 transition-all shadow-lg hover:shadow-xl border-2 hover:border-destructive"
+              >
+                <XCircle className="h-6 w-6 text-destructive" />
+                <span className="font-bold">Vider</span>
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => setPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-20 flex flex-col gap-1 bg-gradient-to-br from-pos-success to-category-green text-white hover:scale-105 transition-all shadow-xl hover:shadow-2xl border-0"
+              >
+                <ShoppingCart className="h-6 w-6" />
+                <span className="font-bold">PAYER</span>
+                <span className="text-xl font-black">{totals.total.toFixed(2)}€</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Right Column - Recherche, Calculatrice & Actions */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Calculatrice / Code produit */}
+            <QuickCalculator
+              onProductCode={handleProductCode}
+              onCreateProduct={handleCreateProduct}
+            />
+
+            {/* Actions de caisse */}
+            <CashDrawerActions
+              onOpenDrawer={handleOpenDrawer}
+              onViewStats={handleViewStats}
+              onViewHistory={handleViewHistory}
+              onManageCustomers={handleManageCustomers}
+              onManageProducts={handleManageProducts}
+              onSettings={handleSettings}
+            />
+
             {/* Catégories de produits */}
             <Card className="p-6 shadow-xl border-2 border-primary/20 animate-fade-in">
               <CategoryGrid onProductSelect={handleProductSelect} />
             </Card>
 
-            {/* Recherche */}
+            {/* Recherche rapide */}
             <Card className="p-6 shadow-xl border-2 border-secondary/20 animate-fade-in">
               <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-                🔍 Recherche rapide
+                🔍 Recherche textuelle
               </h2>
               <ProductSearch onProductSelect={handleProductSelect} />
             </Card>
-
-            {/* Actions rapides */}
-            <Card className="p-6 shadow-xl border-2 border-accent/20 animate-fade-in">
-              <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-                ⚡ Actions rapides
-              </h2>
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={handleClearCart}
-                  disabled={cart.length === 0}
-                  className="h-24 flex flex-col gap-3 hover:scale-105 transition-all shadow-lg hover:shadow-xl border-2 hover:border-destructive"
-                >
-                  <XCircle className="h-8 w-8 text-destructive" />
-                  <span className="font-bold">Vider le panier</span>
-                </Button>
-                <Button
-                  size="lg"
-                  onClick={() => setPaymentDialogOpen(true)}
-                  disabled={cart.length === 0}
-                  className="h-24 flex flex-col gap-3 bg-gradient-to-br from-pos-success to-category-green text-white hover:scale-105 transition-all shadow-xl hover:shadow-2xl border-0"
-                >
-                  <ShoppingCart className="h-8 w-8" />
-                  <span className="font-bold text-lg">💳 Payer</span>
-                  <span className="text-2xl font-black">{totals.total.toFixed(2)}€</span>
-                </Button>
-              </div>
-            </Card>
-          </div>
-
-          {/* Right Column - Cart */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-4">
-              <CartDisplay
-                items={cart}
-                onRemoveItem={handleRemoveItem}
-                onUpdateQuantity={handleUpdateQuantity}
-                onApplyDiscount={handleApplyDiscount}
-              />
-            </div>
           </div>
         </div>
       </div>
