@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -8,6 +9,7 @@ import {
   Package,
   Printer,
   XCircle,
+  LogOut,
 } from 'lucide-react';
 import { ProductSearch } from '@/components/pos/ProductSearch';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -17,8 +19,9 @@ import { Receipt } from '@/components/pos/Receipt';
 import { QuickCalculator } from '@/components/pos/QuickCalculator';
 import { CashDrawerActions } from '@/components/pos/CashDrawerActions';
 import { NumericKeypad } from '@/components/pos/NumericKeypad';
-import { CartItem, Product, PaymentMethod, Sale, DiscountType } from '@/types/pos';
-import { MOCK_PRODUCTS } from '@/data/mockProducts';
+import { Product, useProducts, useSearchProducts } from '@/hooks/useProducts';
+import { useAuth } from '@/hooks/useAuth';
+import { useCreateSale } from '@/hooks/useSales';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -29,12 +32,31 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+type DiscountType = 'percentage' | 'amount';
+
+interface CartItem {
+  product: Product;
+  quantity: number;
+  discount?: {
+    type: DiscountType;
+    value: number;
+  };
+  subtotal: number;
+  vatAmount: number;
+  total: number;
+}
+
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { data: products } = useProducts();
+  const createSale = useCreateSale();
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
-  const [currentSale, setCurrentSale] = useState<Sale | null>(null);
+  const [currentSale, setCurrentSale] = useState<any>(null);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [discountValue, setDiscountValue] = useState('');
   const [discountType, setDiscountType] = useState<DiscountType>('percentage');
@@ -42,9 +64,24 @@ const Index = () => {
   const [weightDialogOpen, setWeightDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  if (authLoading || !user) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-4 text-muted-foreground">Chargement...</p>
+      </div>
+    </div>;
+  }
+
   const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount']) => {
     const subtotal = product.price * quantity;
-    const vatAmount = (subtotal * product.vat) / 100;
+    const vatAmount = (subtotal * product.vat_rate) / 100;
     
     let discountAmount = 0;
     if (discount) {
@@ -163,25 +200,44 @@ const Index = () => {
     return { subtotal, totalVat, totalDiscount, total };
   };
 
-  const handleConfirmPayment = (method: PaymentMethod, amountPaid?: number) => {
+  const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile', amountPaid?: number) => {
     const totals = getTotals();
     
-    const sale: Sale = {
-      id: Date.now().toString(),
-      saleNumber: `T${Date.now().toString().slice(-8)}`,
-      date: new Date(),
-      items: cart,
-      ...totals,
-      paymentMethod: method,
-      amountPaid,
-      change: amountPaid ? amountPaid - totals.total : undefined,
+    const saleData = {
+      subtotal: totals.subtotal,
+      total_vat: totals.totalVat,
+      total_discount: totals.totalDiscount,
+      total: totals.total,
+      payment_method: method,
+      amount_paid: amountPaid,
+      change_amount: amountPaid ? amountPaid - totals.total : 0,
+      is_invoice: false,
+      is_cancelled: false,
+      cashier_id: user.id,
+      items: cart.map(item => ({
+        product_id: item.product.id,
+        product_name: item.product.name,
+        product_barcode: item.product.barcode,
+        quantity: item.quantity,
+        unit_price: item.product.price,
+        vat_rate: item.product.vat_rate,
+        discount_type: item.discount?.type,
+        discount_value: item.discount?.value || 0,
+        subtotal: item.subtotal,
+        vat_amount: item.vatAmount,
+        total: item.total,
+      })),
     };
 
-    setCurrentSale(sale);
-    setCart([]);
-    setPaymentDialogOpen(false);
-    setReceiptDialogOpen(true);
-    toast.success('Vente enregistrée!');
+    try {
+      const sale = await createSale.mutateAsync(saleData);
+      setCurrentSale(sale);
+      setCart([]);
+      setPaymentDialogOpen(false);
+      setReceiptDialogOpen(true);
+    } catch (error) {
+      console.error('Error creating sale:', error);
+    }
   };
 
   const handlePrint = () => {
@@ -196,7 +252,7 @@ const Index = () => {
   };
 
   const handleProductCode = (code: string) => {
-    const product = MOCK_PRODUCTS.find(
+    const product = products?.find(
       (p) => p.barcode === code || p.id === code
     );
     if (product) {
@@ -241,21 +297,32 @@ const Index = () => {
       {/* Header */}
       <header className="bg-gradient-to-r from-primary via-secondary to-primary text-white shadow-xl">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                <ShoppingCart className="h-6 w-6" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                  <ShoppingCart className="h-6 w-6" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight">Caisse GUL REYHAN</h1>
+                  <p className="text-xs opacity-80">Point de vente</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight">Caisse GUL REYHAN</h1>
-                <p className="text-xs opacity-80">Point de vente</p>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <div className="text-sm font-medium">Caisse #1</div>
+                  <div className="text-xs opacity-80">{new Date().toLocaleDateString('fr-BE')}</div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={signOut}
+                  className="text-white hover:bg-white/20"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Déconnexion
+                </Button>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-sm font-medium">Caisse #1</div>
-              <div className="text-xs opacity-80">{new Date().toLocaleDateString('fr-BE')}</div>
-            </div>
-          </div>
         </div>
       </header>
 
@@ -345,7 +412,21 @@ const Index = () => {
           <DialogHeader>
             <DialogTitle>Ticket de caisse</DialogTitle>
           </DialogHeader>
-          {currentSale && <Receipt sale={currentSale} />}
+          {currentSale && (
+            <Receipt 
+              sale={{
+                ...currentSale,
+                items: cart.map(item => ({
+                  product: item.product,
+                  quantity: item.quantity,
+                  discount: item.discount,
+                  subtotal: item.subtotal,
+                  vatAmount: item.vatAmount,
+                  total: item.total,
+                })),
+              }} 
+            />
+          )}
           <div className="flex gap-2">
             <Button onClick={handlePrint} className="flex-1">
               <Printer className="h-4 w-4 mr-2" />
