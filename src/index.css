@@ -54,6 +54,14 @@ All colors MUST be HSL.
     --gradient-primary: linear-gradient(135deg, hsl(158 64% 42%), hsl(158 64% 52%));
     --gradient-secondary: linear-gradient(135deg, hsl(210 50% 40%), hsl(210 50% 50%));
     --gradient-display: linear-gradient(180deg, hsl(210 15% 18%), hsl(210 15% 22%));
+    
+    --category-blue: 200 80% 45%;
+    --category-green: 142 76% 36%;
+    --category-orange: 25 95% 53%;
+    --category-purple: 280 60% 50%;
+    --category-red: 0 84% 60%;
+    --category-teal: 180 60% 40%;
+    --category-pink: 330 80% 60%;
 
     --sidebar-background: 0 0% 98%;
 

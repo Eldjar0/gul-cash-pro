@@ -33,9 +33,9 @@ export function CartDisplay({ items, onRemoveItem, onUpdateQuantity, onApplyDisc
   const totals = calculateTotals();
 
   return (
-    <Card className="flex flex-col h-full bg-card">
-      <div className="p-4 border-b bg-pos-display">
-        <h2 className="text-lg font-bold text-pos-display-foreground">Panier</h2>
+    <Card className="flex flex-col h-full bg-card shadow-2xl border-2 border-primary/20 animate-fade-in">
+      <div className="p-4 border-b bg-gradient-to-r from-primary to-secondary">
+        <h2 className="text-xl font-bold text-white">🛒 Panier</h2>
       </div>
 
       <ScrollArea className="flex-1 p-4">
@@ -114,24 +114,24 @@ export function CartDisplay({ items, onRemoveItem, onUpdateQuantity, onApplyDisc
         )}
       </ScrollArea>
 
-      <div className="p-4 border-t space-y-2 bg-pos-display">
-        <div className="flex justify-between text-sm text-pos-display-foreground">
+      <div className="p-6 border-t space-y-3 bg-gradient-to-br from-pos-display to-secondary shadow-inner">
+        <div className="flex justify-between text-sm text-white/90">
           <span>Sous-total HT:</span>
-          <span>{totals.subtotal.toFixed(2)}€</span>
+          <span className="font-semibold">{totals.subtotal.toFixed(2)}€</span>
         </div>
-        <div className="flex justify-between text-sm text-pos-display-foreground">
+        <div className="flex justify-between text-sm text-white/90">
           <span>TVA:</span>
-          <span>{totals.totalVat.toFixed(2)}€</span>
+          <span className="font-semibold">{totals.totalVat.toFixed(2)}€</span>
         </div>
         {totals.totalDiscount > 0 && (
-          <div className="flex justify-between text-sm text-pos-warning">
-            <span>Remise:</span>
-            <span>-{totals.totalDiscount.toFixed(2)}€</span>
+          <div className="flex justify-between text-sm bg-pos-warning/20 px-3 py-2 rounded-lg animate-pulse-soft">
+            <span className="text-white font-semibold">🎉 Remise:</span>
+            <span className="text-white font-bold">-{totals.totalDiscount.toFixed(2)}€</span>
           </div>
         )}
-        <div className="flex justify-between text-xl font-bold text-pos-display-foreground pt-2 border-t border-pos-display-foreground/20">
+        <div className="flex justify-between text-2xl font-bold text-white pt-3 border-t-2 border-white/30">
           <span>TOTAL TTC:</span>
-          <span>{totals.total.toFixed(2)}€</span>
+          <span className="text-pos-success">{totals.total.toFixed(2)}€</span>
         </div>
       </div>
     </Card>

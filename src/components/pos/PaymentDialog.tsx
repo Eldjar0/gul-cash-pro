@@ -67,53 +67,53 @@ export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment }: P
         </DialogHeader>
 
         {!method ? (
-          <div className="grid grid-cols-3 gap-4 py-6">
+          <div className="grid grid-cols-3 gap-6 py-8">
             <Button
               size="lg"
               onClick={() => setMethod('cash')}
-              className="h-32 flex flex-col gap-3 bg-primary text-primary-foreground hover:bg-primary/90"
+              className="h-40 flex flex-col gap-4 bg-gradient-to-br from-category-green to-primary text-white hover:scale-105 transition-all shadow-2xl hover:shadow-3xl border-0"
             >
-              <Banknote className="h-12 w-12" />
-              <span className="text-lg font-semibold">Espèces</span>
+              <Banknote className="h-16 w-16" />
+              <span className="text-xl font-bold">💵 Espèces</span>
             </Button>
             <Button
               size="lg"
               onClick={() => setMethod('card')}
-              className="h-32 flex flex-col gap-3 bg-secondary text-secondary-foreground hover:bg-secondary/90"
+              className="h-40 flex flex-col gap-4 bg-gradient-to-br from-category-blue to-secondary text-white hover:scale-105 transition-all shadow-2xl hover:shadow-3xl border-0"
             >
-              <CreditCard className="h-12 w-12" />
-              <span className="text-lg font-semibold">Carte</span>
+              <CreditCard className="h-16 w-16" />
+              <span className="text-xl font-bold">💳 Carte</span>
             </Button>
             <Button
               size="lg"
               onClick={() => setMethod('mobile')}
-              className="h-32 flex flex-col gap-3 bg-accent text-accent-foreground hover:bg-accent/90"
+              className="h-40 flex flex-col gap-4 bg-gradient-to-br from-category-purple to-accent text-white hover:scale-105 transition-all shadow-2xl hover:shadow-3xl border-0"
             >
-              <Smartphone className="h-12 w-12" />
-              <span className="text-lg font-semibold">Mobile</span>
+              <Smartphone className="h-16 w-16" />
+              <span className="text-xl font-bold">📱 Mobile</span>
             </Button>
           </div>
         ) : method === 'cash' ? (
-          <div className="space-y-4">
-            <div className="bg-pos-display p-6 rounded-lg">
-              <div className="text-sm text-pos-display-foreground mb-2">Montant reçu</div>
-              <div className="text-4xl font-bold text-pos-display-foreground mb-4">
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-pos-display to-secondary p-8 rounded-2xl shadow-2xl border-2 border-primary/30">
+              <div className="text-sm text-white/80 mb-2 font-semibold">💰 Montant reçu</div>
+              <div className="text-5xl font-black text-white mb-6 tracking-tight">
                 {amountPaid || '0.00'}€
               </div>
               {amountPaid && parseFloat(amountPaid) >= total && (
-                <div className="text-2xl font-bold text-pos-success">
-                  À rendre: {getChange().toFixed(2)}€
+                <div className="text-3xl font-bold text-pos-success bg-white/20 px-4 py-3 rounded-xl backdrop-blur-sm animate-pulse-soft">
+                  ✅ À rendre: {getChange().toFixed(2)}€
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-5 gap-3">
               {suggestedAmounts.map((amount) => (
                 <Button
                   key={amount}
                   variant="outline"
                   onClick={() => setAmountPaid(amount.toFixed(2))}
-                  className="h-12 bg-pos-info text-primary-foreground hover:bg-pos-info/90"
+                  className="h-14 bg-gradient-to-br from-category-teal to-pos-info text-white hover:scale-105 transition-all font-bold shadow-lg border-0"
                 >
                   {amount.toFixed(2)}€
                 </Button>

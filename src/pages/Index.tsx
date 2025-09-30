@@ -10,6 +10,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { ProductSearch } from '@/components/pos/ProductSearch';
+import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { CartDisplay } from '@/components/pos/CartDisplay';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
 import { Receipt } from '@/components/pos/Receipt';
@@ -194,27 +195,32 @@ const Index = () => {
   const totals = getTotals();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       {/* Header */}
-      <header className="bg-primary text-primary-foreground shadow-lg">
-        <div className="container mx-auto px-4 py-4">
+      <header className="bg-gradient-to-r from-primary via-secondary to-primary text-white shadow-2xl">
+        <div className="container mx-auto px-4 py-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <ShoppingCart className="h-8 w-8" />
+            <div className="flex items-center gap-4 animate-fade-in">
+              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                <ShoppingCart className="h-8 w-8" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold">Caisse Enregistreuse</h1>
-                <p className="text-sm opacity-90">GUL REYHAN</p>
+                <h1 className="text-3xl font-bold tracking-tight">Caisse Enregistreuse</h1>
+                <p className="text-sm opacity-90 font-medium">GUL REYHAN - Système Pro</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="secondary" size="icon">
-                <Package className="h-5 w-5" />
+            <div className="flex gap-3">
+              <Button variant="secondary" size="lg" className="hover:scale-110 transition-transform shadow-lg">
+                <Package className="h-5 w-5 mr-2" />
+                Produits
               </Button>
-              <Button variant="secondary" size="icon">
-                <BarChart3 className="h-5 w-5" />
+              <Button variant="secondary" size="lg" className="hover:scale-110 transition-transform shadow-lg">
+                <BarChart3 className="h-5 w-5 mr-2" />
+                Stats
               </Button>
-              <Button variant="secondary" size="icon">
-                <Settings className="h-5 w-5" />
+              <Button variant="secondary" size="lg" className="hover:scale-110 transition-transform shadow-lg">
+                <Settings className="h-5 w-5 mr-2" />
+                Config
               </Button>
             </div>
           </div>
@@ -222,36 +228,48 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-6">
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Column - Product Search & Actions */}
           <div className="lg:col-span-2 space-y-6">
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4 text-foreground">Recherche de produits</h2>
+            {/* Catégories de produits */}
+            <Card className="p-6 shadow-xl border-2 border-primary/20 animate-fade-in">
+              <CategoryGrid onProductSelect={handleProductSelect} />
+            </Card>
+
+            {/* Recherche */}
+            <Card className="p-6 shadow-xl border-2 border-secondary/20 animate-fade-in">
+              <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                🔍 Recherche rapide
+              </h2>
               <ProductSearch onProductSelect={handleProductSelect} />
             </Card>
 
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4 text-foreground">Actions rapides</h2>
+            {/* Actions rapides */}
+            <Card className="p-6 shadow-xl border-2 border-accent/20 animate-fade-in">
+              <h2 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                ⚡ Actions rapides
+              </h2>
               <div className="grid grid-cols-2 gap-4">
                 <Button
                   size="lg"
                   variant="outline"
                   onClick={handleClearCart}
                   disabled={cart.length === 0}
-                  className="h-20 flex flex-col gap-2"
+                  className="h-24 flex flex-col gap-3 hover:scale-105 transition-all shadow-lg hover:shadow-xl border-2 hover:border-destructive"
                 >
-                  <XCircle className="h-6 w-6" />
-                  <span>Vider le panier</span>
+                  <XCircle className="h-8 w-8 text-destructive" />
+                  <span className="font-bold">Vider le panier</span>
                 </Button>
                 <Button
                   size="lg"
                   onClick={() => setPaymentDialogOpen(true)}
                   disabled={cart.length === 0}
-                  className="h-20 flex flex-col gap-2 bg-pos-success text-primary-foreground hover:bg-pos-success/90"
+                  className="h-24 flex flex-col gap-3 bg-gradient-to-br from-pos-success to-category-green text-white hover:scale-105 transition-all shadow-xl hover:shadow-2xl border-0"
                 >
-                  <ShoppingCart className="h-6 w-6" />
-                  <span>Payer ({totals.total.toFixed(2)}€)</span>
+                  <ShoppingCart className="h-8 w-8" />
+                  <span className="font-bold text-lg">💳 Payer</span>
+                  <span className="text-2xl font-black">{totals.total.toFixed(2)}€</span>
                 </Button>
               </div>
             </Card>
