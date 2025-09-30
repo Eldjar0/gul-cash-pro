@@ -1,8 +1,22 @@
-import { CartItem } from '@/types/pos';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Trash2, Percent, Minus, Plus } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Product } from '@/hooks/useProducts';
+
+type DiscountType = 'percentage' | 'amount';
+
+interface CartItem {
+  product: Product;
+  quantity: number;
+  discount?: {
+    type: DiscountType;
+    value: number;
+  };
+  subtotal: number;
+  vatAmount: number;
+  total: number;
+}
 
 interface CartDisplayProps {
   items: CartItem[];

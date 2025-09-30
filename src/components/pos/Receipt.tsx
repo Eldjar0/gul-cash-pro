@@ -1,5 +1,39 @@
-import { Sale } from '@/types/pos';
 import { COMPANY_INFO } from '@/data/company';
+import { Product } from '@/hooks/useProducts';
+
+type DiscountType = 'percentage' | 'amount';
+
+interface CartItem {
+  product: Product;
+  quantity: number;
+  discount?: {
+    type: DiscountType;
+    value: number;
+  };
+  subtotal: number;
+  vatAmount: number;
+  total: number;
+}
+
+interface Sale {
+  id?: string;
+  sale_number?: string;
+  saleNumber?: string;
+  date?: Date;
+  items: CartItem[];
+  subtotal: number;
+  total_vat?: number;
+  totalVat?: number;
+  total_discount?: number;
+  totalDiscount?: number;
+  total: number;
+  payment_method?: 'cash' | 'card' | 'mobile';
+  paymentMethod?: 'cash' | 'card' | 'mobile';
+  amount_paid?: number;
+  amountPaid?: number;
+  change_amount?: number;
+  change?: number;
+}
 
 interface ReceiptProps {
   sale: Sale;
@@ -20,11 +54,11 @@ export function Receipt({ sale }: ReceiptProps) {
       <div className="mb-4">
         <div className="flex justify-between text-muted-foreground">
           <span>N° Ticket:</span>
-          <span className="font-bold text-foreground">{sale.saleNumber}</span>
+          <span className="font-bold text-foreground">{sale.saleNumber || sale.sale_number}</span>
         </div>
         <div className="flex justify-between text-muted-foreground">
           <span>Date:</span>
-          <span className="text-foreground">{new Date(sale.date).toLocaleString('fr-BE')}</span>
+          <span className="text-foreground">{new Date(sale.date || new Date()).toLocaleString('fr-BE')}</span>
         </div>
       </div>
 
@@ -46,7 +80,7 @@ export function Receipt({ sale }: ReceiptProps) {
               </div>
             )}
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>TVA {item.product.vat}%</span>
+              <span>TVA {item.product.vat_rate}%</span>
               <span className="text-foreground">{item.vatAmount.toFixed(2)}€</span>
             </div>
           </div>
@@ -60,12 +94,12 @@ export function Receipt({ sale }: ReceiptProps) {
         </div>
         <div className="flex justify-between text-muted-foreground">
           <span>TVA:</span>
-          <span className="text-foreground">{sale.totalVat.toFixed(2)}€</span>
+          <span className="text-foreground">{(sale.totalVat || sale.total_vat || 0).toFixed(2)}€</span>
         </div>
-        {sale.totalDiscount > 0 && (
+        {(sale.totalDiscount || sale.total_discount || 0) > 0 && (
           <div className="flex justify-between text-pos-warning">
             <span>Remise totale:</span>
-            <span>-{sale.totalDiscount.toFixed(2)}€</span>
+            <span>-{(sale.totalDiscount || sale.total_discount || 0).toFixed(2)}€</span>
           </div>
         )}
         <div className="flex justify-between text-lg font-bold border-t pt-2 text-foreground">
@@ -78,18 +112,18 @@ export function Receipt({ sale }: ReceiptProps) {
         <div className="flex justify-between">
           <span>Mode de paiement:</span>
           <span className="text-foreground">
-            {sale.paymentMethod === 'cash' ? 'Espèces' : sale.paymentMethod === 'card' ? 'Carte' : 'Mobile'}
+            {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'Espèces' : (sale.paymentMethod || sale.payment_method) === 'card' ? 'Carte' : 'Mobile'}
           </span>
         </div>
-        {sale.paymentMethod === 'cash' && sale.amountPaid && (
+        {(sale.paymentMethod || sale.payment_method) === 'cash' && (sale.amountPaid || sale.amount_paid) && (
           <>
             <div className="flex justify-between">
               <span>Reçu:</span>
-              <span className="text-foreground">{sale.amountPaid.toFixed(2)}€</span>
+              <span className="text-foreground">{(sale.amountPaid || sale.amount_paid || 0).toFixed(2)}€</span>
             </div>
             <div className="flex justify-between">
               <span>Rendu:</span>
-              <span className="text-foreground">{(sale.change || 0).toFixed(2)}€</span>
+              <span className="text-foreground">{(sale.change || sale.change_amount || 0).toFixed(2)}€</span>
             </div>
           </>
         )}

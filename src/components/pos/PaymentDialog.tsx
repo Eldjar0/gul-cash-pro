@@ -7,8 +7,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CreditCard, Smartphone, Banknote, Calculator } from 'lucide-react';
-import { PaymentMethod } from '@/types/pos';
 import { NumericKeypad } from './NumericKeypad';
+
+type PaymentMethod = 'cash' | 'card' | 'mobile';
 
 interface PaymentDialogProps {
   open: boolean;
