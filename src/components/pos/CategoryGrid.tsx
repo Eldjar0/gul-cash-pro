@@ -87,18 +87,18 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 animate-fade-in">
+    <div className="space-y-3 animate-fade-in">
       {categories.map((category) => (
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="aspect-square flex flex-col justify-center items-center gap-2 text-white font-mono transition-all duration-200 rounded-xl active:scale-95 hover:opacity-90"
+          className="w-full aspect-square flex flex-col justify-center items-center gap-3 text-white font-mono transition-all duration-200 rounded-xl active:scale-95 hover:opacity-90"
           style={{ backgroundColor: category.color }}
         >
           {category.icon && (
-            <DynamicIcon name={category.icon} size={32} />
+            <DynamicIcon name={category.icon} size={48} />
           )}
-          <span className="text-xs font-bold tracking-wide text-center px-2">
+          <span className="text-base font-bold tracking-wide text-center px-4">
             {category.name}
           </span>
         </Button>
