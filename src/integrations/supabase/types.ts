@@ -489,7 +489,7 @@ export type Database = {
     }
     Functions: {
       generate_sale_number: {
-        Args: Record<PropertyKey, never>
+        Args: { is_invoice_param?: boolean }
         Returns: string
       }
     }

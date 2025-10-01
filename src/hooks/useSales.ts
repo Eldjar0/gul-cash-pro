@@ -41,9 +41,9 @@ export const useCreateSale = () => {
 
   return useMutation({
     mutationFn: async (sale: Sale) => {
-      // Get sale number
+      // Get sale number with correct format (ticket or invoice)
       const { data: saleNumber, error: numberError } = await supabase
-        .rpc('generate_sale_number');
+        .rpc('generate_sale_number', { is_invoice_param: sale.is_invoice || false });
 
       if (numberError) throw numberError;
 
