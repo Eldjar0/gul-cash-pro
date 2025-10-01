@@ -18,6 +18,7 @@ import { Receipt } from '@/components/pos/Receipt';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateSale } from '@/hooks/useSales';
+import { useCategories } from '@/hooks/useCategories';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -46,6 +47,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { data: products } = useProducts();
+  const { data: categories } = useCategories();
   const createSale = useCreateSale();
   const scanInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,12 +61,6 @@ const Index = () => {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -75,7 +71,21 @@ const Index = () => {
     }
   }, [cart]);
 
-  if (authLoading || !user) {
+  // Live search with debounce
+  useEffect(() => {
+    if (!scanInput.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      handleSearch();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [scanInput]);
+
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-pos-display">
         <div className="text-center">
@@ -127,7 +137,9 @@ const Index = () => {
     }
 
     const searchTerm = scanInput.toLowerCase();
-    const results = products.filter((p) => {
+    
+    // Search in products by name, barcode, id, description
+    let results = products.filter((p) => {
       return (
         p.barcode?.toLowerCase().includes(searchTerm) ||
         p.name.toLowerCase().includes(searchTerm) ||
@@ -136,17 +148,32 @@ const Index = () => {
       );
     });
 
+    // Also search by category name
+    if (categories && categories.length > 0) {
+      const matchingCategories = categories.filter((cat) =>
+        cat.name.toLowerCase().includes(searchTerm)
+      );
+      
+      if (matchingCategories.length > 0) {
+        const categoryIds = matchingCategories.map((cat) => cat.id);
+        const productsByCategory = products.filter((p) =>
+          p.category_id && categoryIds.includes(p.category_id)
+        );
+        // Merge results and remove duplicates
+        results = [...results, ...productsByCategory].filter(
+          (product, index, self) => self.findIndex((p) => p.id === product.id) === index
+        );
+      }
+    }
+
     if (results.length === 1) {
       // Si un seul résultat, l'ajouter directement
       handleProductSelect(results[0]);
       setScanInput('');
       setSearchResults([]);
-    } else if (results.length > 1) {
-      // Plusieurs résultats, les afficher
-      setSearchResults(results);
     } else {
-      toast.error(`Aucun produit trouvé`);
-      setSearchResults([]);
+      // Plusieurs résultats ou aucun, les afficher
+      setSearchResults(results);
     }
   };
 
@@ -201,6 +228,18 @@ const Index = () => {
   };
 
   const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile', amountPaid?: number) => {
+    if (!user) {
+      toast.error('Connectez-vous pour encaisser', {
+        description: 'Vous devez être connecté pour enregistrer une vente',
+        action: {
+          label: 'Se connecter',
+          onClick: () => navigate('/auth'),
+        },
+      });
+      setPaymentDialogOpen(false);
+      return;
+    }
+
     const totals = getTotals();
     
     const saleData = {
@@ -280,15 +319,27 @@ const Index = () => {
               <span className="text-sm font-medium">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={signOut}
-            className="text-white hover:bg-white/20 text-xs md:text-sm"
-          >
-            <LogOut className="h-4 w-4 md:mr-2" />
-            <span className="hidden md:inline">Déconnexion</span>
-          </Button>
+          {user ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={signOut}
+              className="text-white hover:bg-white/20 text-xs md:text-sm"
+            >
+              <LogOut className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Déconnexion</span>
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/auth')}
+              className="text-white hover:bg-white/20 text-xs md:text-sm"
+            >
+              <LogOut className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Se connecter</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -490,7 +541,15 @@ const Index = () => {
         {/* RIGHT PANEL - Articles/Catégories/Résultats */}
         <div className="hidden lg:block lg:col-span-3 bg-white border-l border-border overflow-y-auto">
           <div className="p-4">
-            {searchResults.length > 0 ? (
+            {scanInput.trim() && searchResults.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="p-6 bg-muted/50 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                  <Scan className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground font-medium">Aucun résultat</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Essayez un autre terme de recherche</p>
+              </div>
+            ) : searchResults.length > 0 ? (
               <>
                 <div className="flex items-center justify-between mb-4 px-2">
                   <h2 className="text-foreground font-bold text-sm flex items-center gap-2">
