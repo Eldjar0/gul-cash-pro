@@ -2,127 +2,152 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Modern POS Design System - All colors MUST be HSL */
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 210 15% 15%;
+    /* Base colors - Clean and modern */
+    --background: 220 20% 97%;
+    --foreground: 220 15% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 15% 15%;
+    --card-foreground: 220 15% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 15% 15%;
+    --popover-foreground: 220 15% 10%;
 
-    --primary: 158 64% 42%;
+    /* Primary - Vibrant Blue */
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 91% 70%;
 
-    --secondary: 210 50% 40%;
+    /* Secondary - Deep Purple */
+    --secondary: 262 83% 58%;
     --secondary-foreground: 0 0% 100%;
+    --secondary-glow: 262 83% 68%;
 
-    --muted: 210 20% 92%;
-    --muted-foreground: 210 10% 45%;
-
-    --accent: 158 64% 42%;
+    /* Accent - Cyan */
+    --accent: 189 94% 43%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
+    --muted: 220 15% 93%;
+    --muted-foreground: 220 10% 40%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 20% 88%;
-    --input: 210 20% 95%;
-    --ring: 158 64% 42%;
+    --border: 220 13% 88%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
     
-    --pos-display: 210 15% 20%;
-    --pos-display-foreground: 158 70% 65%;
+    /* POS specific colors */
+    --pos-display: 220 25% 15%;
+    --pos-display-foreground: 189 94% 70%;
     --pos-key: 0 0% 100%;
-    --pos-key-foreground: 210 15% 20%;
-    --pos-key-hover: 210 20% 96%;
-    --pos-key-active: 158 64% 42%;
-    --pos-success: 142 76% 36%;
+    --pos-key-foreground: 220 15% 10%;
+    --pos-key-hover: 217 91% 96%;
+    --pos-key-active: 217 91% 60%;
+    --pos-success: 142 71% 45%;
     --pos-warning: 38 92% 50%;
-    --pos-info: 210 50% 40%;
+    --pos-error: 0 84% 60%;
+    --pos-info: 217 91% 60%;
     
-    --shadow-pos: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Gradients - Modern and vibrant */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(262 83% 58%));
+    --gradient-secondary: linear-gradient(135deg, hsl(262 83% 58%), hsl(280 70% 60%));
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%), hsl(158 64% 52%));
+    --gradient-display: linear-gradient(180deg, hsl(220 25% 12%), hsl(220 25% 18%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(220 20% 99%));
+    --gradient-glow: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(262 83% 58% / 0.1));
     
-    --gradient-primary: linear-gradient(135deg, hsl(158 64% 42%), hsl(158 64% 52%));
-    --gradient-secondary: linear-gradient(135deg, hsl(210 50% 40%), hsl(210 50% 50%));
-    --gradient-display: linear-gradient(180deg, hsl(210 15% 18%), hsl(210 15% 22%));
+    /* Shadows - Elegant depth */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-glow: 0 0 20px hsl(217 91% 60% / 0.3);
+    --shadow-glow-strong: 0 0 40px hsl(217 91% 60% / 0.5);
     
-    --category-blue: 200 80% 45%;
-    --category-green: 142 76% 36%;
+    /* Transitions - Smooth and natural */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Category colors - Vibrant palette */
+    --category-blue: 217 91% 60%;
+    --category-green: 142 71% 45%;
     --category-orange: 25 95% 53%;
-    --category-purple: 280 60% 50%;
+    --category-purple: 262 83% 58%;
     --category-red: 0 84% 60%;
-    --category-teal: 180 60% 40%;
-    --category-pink: 330 80% 60%;
+    --category-teal: 189 94% 43%;
+    --category-pink: 330 81% 60%;
+    --category-yellow: 45 93% 58%;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
+    /* Sidebar */
+    --sidebar-background: 220 20% 98%;
+    --sidebar-foreground: 220 15% 10%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 95%;
+    --sidebar-accent-foreground: 220 15% 10%;
     --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 217 91% 60%;
   }
 
   .dark {
-    --background: 210 20% 12%;
-    --foreground: 210 20% 95%;
+    /* Dark mode - Rich and modern */
+    --background: 220 25% 8%;
+    --foreground: 220 15% 95%;
 
-    --card: 210 15% 16%;
-    --card-foreground: 210 20% 95%;
+    --card: 220 20% 12%;
+    --card-foreground: 220 15% 95%;
 
-    --popover: 210 15% 16%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 220 20% 12%;
+    --popover-foreground: 220 15% 95%;
 
-    --primary: 158 64% 42%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 91% 70%;
 
-    --secondary: 210 50% 40%;
+    --secondary: 262 83% 58%;
     --secondary-foreground: 0 0% 100%;
+    --secondary-glow: 262 83% 68%;
 
-    --muted: 210 15% 20%;
-    --muted-foreground: 210 15% 65%;
-
-    --accent: 158 64% 42%;
+    --accent: 189 94% 43%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 50%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 220 15% 60%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 15% 22%;
-    --input: 210 15% 20%;
-    --ring: 158 64% 42%;
+    --border: 220 20% 22%;
+    --input: 220 20% 18%;
+    --ring: 217 91% 60%;
     
-    --pos-display: 210 15% 10%;
-    --pos-display-foreground: 158 70% 65%;
-    --pos-key: 210 15% 18%;
-    --pos-key-foreground: 210 20% 95%;
-    --pos-key-hover: 210 15% 22%;
-    --pos-key-active: 158 64% 42%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --pos-display: 220 25% 6%;
+    --pos-display-foreground: 189 94% 70%;
+    --pos-key: 220 20% 15%;
+    --pos-key-foreground: 220 15% 95%;
+    --pos-key-hover: 220 20% 22%;
+    --pos-key-active: 217 91% 60%;
+    
+    --gradient-display: linear-gradient(180deg, hsl(220 25% 4%), hsl(220 25% 10%));
+    --gradient-card: linear-gradient(135deg, hsl(220 20% 12%), hsl(220 20% 14%));
+    --shadow-glow: 0 0 20px hsl(217 91% 60% / 0.5);
+    --shadow-glow-strong: 0 0 40px hsl(217 91% 60% / 0.7);
+    
+    --sidebar-background: 220 25% 8%;
+    --sidebar-foreground: 220 15% 95%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 20% 15%;
+    --sidebar-accent-foreground: 220 15% 95%;
+    --sidebar-border: 220 20% 20%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
@@ -133,5 +158,56 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer utilities {
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  
+  .dark .glass {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Hover glow effect */
+  .hover-glow {
+    transition: var(--transition-smooth);
+  }
+  
+  .hover-glow:hover {
+    box-shadow: var(--shadow-glow);
   }
 }
