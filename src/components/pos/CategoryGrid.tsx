@@ -49,10 +49,9 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
       <div className="space-y-3">
         <Button 
           onClick={handleBack}
-          className="w-full text-white border-0 font-bold shadow-xl hover:shadow-2xl hover:shadow-primary/50 hover:scale-[1.03] transition-all duration-300 rounded-xl group"
-          style={{ background: 'linear-gradient(135deg, hsl(217, 91%, 60%), hsl(262, 83%, 58%))' }}
+          className="w-full h-14 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white font-mono font-bold border-2 border-pos-success transition-all duration-200 rounded-xl active:scale-95"
         >
-          <ChevronLeft className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+          <ChevronLeft className="h-5 w-5 mr-2" />
           RETOUR
         </Button>
 
@@ -61,15 +60,15 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
             <Button
               key={product.id}
               onClick={() => onProductSelect(product)}
-              className="h-28 flex flex-col justify-center items-center p-3 text-gray-900 border-2 hover:scale-105 hover:-translate-y-1 transition-all duration-300 font-semibold rounded-2xl shadow-lg hover:shadow-2xl group bg-gradient-to-br from-white to-blue-50 hover:from-blue-100 hover:to-blue-200"
+              className="h-24 flex flex-col justify-center items-center p-3 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 hover:scale-[1.02] transition-all duration-200 font-mono rounded-xl active:scale-95"
               style={{ 
                 borderColor: currentCategory?.color || 'hsl(217, 91%, 60%)',
               }}
             >
-              <span className="font-bold text-sm text-center line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+              <span className="font-bold text-xs text-center line-clamp-2 mb-1.5 uppercase tracking-wide">
                 {product.name}
               </span>
-              <span className="text-primary text-lg font-black drop-shadow-md group-hover:scale-110 transition-transform">
+              <span className="text-pos-success text-base font-black">
                 {product.price.toFixed(2)}€
               </span>
             </Button>
@@ -87,15 +86,16 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
   }
 
   return (
-    <div className="flex flex-col bg-gray-100 animate-fade-in">
+    <div className="space-y-2 animate-fade-in">
       {categories.map((category) => (
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="h-20 flex flex-col justify-center items-center gap-1 bg-white hover:bg-gray-50 text-gray-800 font-normal transition-colors duration-150 border-b border-gray-200 rounded-none shadow-none"
+          className="w-full h-16 flex items-center gap-3 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white font-mono transition-all duration-200 border-2 rounded-xl active:scale-95"
+          style={{ borderColor: category.color }}
         >
-          <span className="text-2xl">{category.icon || '📦'}</span>
-          <span className="text-xs leading-tight text-center">
+          <span className="text-2xl ml-2">{category.icon || '📦'}</span>
+          <span className="text-sm font-bold tracking-wide uppercase">
             {category.name}
           </span>
         </Button>
