@@ -79,7 +79,7 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
         </Button>
         <Button
           onClick={onCreateProduct}
-          className="h-12 bg-gradient-to-br from-category-orange to-category-red text-white font-bold shadow-lg hover:scale-105 transition-all text-sm"
+          className="h-12 bg-gradient-to-br from-primary to-primary-glow text-white font-bold shadow-lg hover:scale-105 transition-all text-sm"
         >
           <Plus className="h-4 w-4 mr-1" />
           Nouveau

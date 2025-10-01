@@ -68,7 +68,7 @@ export function CashDrawerActions({
         
         <Button
           onClick={onManageProducts}
-          className="h-16 flex flex-col gap-1 bg-gradient-to-br from-category-orange to-category-red text-white hover:scale-105 transition-all shadow-lg text-xs"
+          className="h-16 flex flex-col gap-1 bg-gradient-to-br from-primary to-primary-glow text-white hover:scale-105 transition-all shadow-lg text-xs"
         >
           <Package className="h-5 w-5" />
           <span className="font-bold">Produits</span>
