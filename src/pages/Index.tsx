@@ -11,9 +11,12 @@ import {
   LogOut,
   Clock,
   ShoppingBag,
+  Percent,
+  Edit,
 } from 'lucide-react';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
+import { DiscountDialog } from '@/components/pos/DiscountDialog';
 import { Receipt } from '@/components/pos/Receipt';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
@@ -60,6 +63,9 @@ const Index = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [quantityInput, setQuantityInput] = useState('1');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [globalDiscount, setGlobalDiscount] = useState<{ type: DiscountType; value: number } | null>(null);
+  const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
+  const [discountTarget, setDiscountTarget] = useState<{ type: 'item' | 'global'; index?: number } | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -250,7 +256,7 @@ const Index = () => {
   const getTotals = () => {
     const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
     const totalVat = cart.reduce((sum, item) => sum + item.vatAmount, 0);
-    const totalDiscount = cart.reduce((sum, item) => {
+    const itemDiscounts = cart.reduce((sum, item) => {
       if (item.discount) {
         const discountAmount =
           item.discount.type === 'percentage'
@@ -260,7 +266,19 @@ const Index = () => {
       }
       return sum;
     }, 0);
-    const total = cart.reduce((sum, item) => sum + item.total, 0);
+    
+    let total = cart.reduce((sum, item) => sum + item.total, 0);
+    let globalDiscountAmount = 0;
+    
+    if (globalDiscount) {
+      globalDiscountAmount = globalDiscount.type === 'percentage'
+        ? (total * globalDiscount.value) / 100
+        : globalDiscount.value;
+      total -= globalDiscountAmount;
+    }
+    
+    const totalDiscount = itemDiscounts + globalDiscountAmount;
+    
     return { subtotal, totalVat, totalDiscount, total };
   };
 
@@ -321,8 +339,66 @@ const Index = () => {
   const handleClearCart = () => {
     if (cart.length > 0) {
       setCart([]);
+      setGlobalDiscount(null);
       toast.info('Panier vidé');
     }
+  };
+
+  const handleApplyDiscount = (type: DiscountType, value: number) => {
+    if (!discountTarget) return;
+    
+    if (discountTarget.type === 'item' && discountTarget.index !== undefined) {
+      // Remise sur un article
+      const newCart = [...cart];
+      const item = newCart[discountTarget.index];
+      const discount = { type, value };
+      const { subtotal, vatAmount, total } = calculateItemTotal(
+        item.product,
+        item.quantity,
+        discount,
+        item.custom_price
+      );
+      
+      newCart[discountTarget.index] = {
+        ...item,
+        discount,
+        subtotal,
+        vatAmount,
+        total,
+      };
+      
+      setCart(newCart);
+      toast.success('Remise appliquée');
+    } else {
+      // Remise globale
+      setGlobalDiscount({ type, value });
+      toast.success('Remise globale appliquée');
+    }
+    
+    setDiscountDialogOpen(false);
+    setDiscountTarget(null);
+  };
+
+  const handleRemoveDiscount = (index: number) => {
+    const newCart = [...cart];
+    const item = newCart[index];
+    const { subtotal, vatAmount, total } = calculateItemTotal(
+      item.product,
+      item.quantity,
+      undefined,
+      item.custom_price
+    );
+    
+    newCart[index] = {
+      ...item,
+      discount: undefined,
+      subtotal,
+      vatAmount,
+      total,
+    };
+    
+    setCart(newCart);
+    toast.info('Remise retirée');
   };
 
   const handleNumberClick = (num: string) => {
@@ -433,15 +509,43 @@ const Index = () => {
                           />
                           <span className="text-muted-foreground text-xs">€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}</span>
                         </div>
+                        {item.discount && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded">
+                              -{item.discount.type === 'percentage' ? `${item.discount.value}%` : `${item.discount.value}€`}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveDiscount(index)}
+                              className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveItem(index)}
-                        className="h-8 w-8 hover:bg-destructive/20 text-destructive flex-shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex flex-col gap-1 items-end ml-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveItem(index)}
+                          className="h-8 w-8 hover:bg-destructive/20 text-destructive flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setDiscountTarget({ type: 'item', index });
+                            setDiscountDialogOpen(true);
+                          }}
+                          className="h-8 w-8 hover:bg-accent/20 text-accent flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Percent className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="flex gap-1.5 bg-muted/50 p-1 rounded-lg">
@@ -483,6 +587,40 @@ const Index = () => {
               <span>TVA</span>
               <span className="font-medium">{totals.totalVat.toFixed(2)}€</span>
             </div>
+            {totals.totalDiscount > 0 && (
+              <div className="flex justify-between text-accent text-sm">
+                <span>Remise totale</span>
+                <span className="font-medium">-{totals.totalDiscount.toFixed(2)}€</span>
+              </div>
+            )}
+            {globalDiscount && (
+              <div className="flex items-center justify-between text-xs bg-accent/10 px-2 py-1 rounded">
+                <span className="text-accent">
+                  Remise globale: {globalDiscount.type === 'percentage' ? `${globalDiscount.value}%` : `${globalDiscount.value}€`}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setGlobalDiscount(null)}
+                  className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
+                >
+                  ×
+                </Button>
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setDiscountTarget({ type: 'global' });
+                setDiscountDialogOpen(true);
+              }}
+              disabled={cart.length === 0}
+              className="w-full h-8 text-xs border-accent text-accent hover:bg-accent/10"
+            >
+              <Percent className="mr-1 h-3 w-3" />
+              Remise globale
+            </Button>
             <div className="flex justify-between items-center text-primary text-3xl font-bold pt-3 border-t-2 border-border">
               <span>TOTAL</span>
               <span>{totals.total.toFixed(2)}€</span>
@@ -663,6 +801,13 @@ const Index = () => {
       </div>
 
       {/* Dialogs */}
+      <DiscountDialog
+        open={discountDialogOpen}
+        onOpenChange={setDiscountDialogOpen}
+        onApply={handleApplyDiscount}
+        title={discountTarget?.type === 'global' ? 'Remise globale' : 'Remise sur article'}
+      />
+
       <PaymentDialog
         open={paymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
