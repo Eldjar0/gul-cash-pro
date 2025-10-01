@@ -34,6 +34,7 @@ type DiscountType = 'percentage' | 'amount';
 interface CartItem {
   product: Product;
   quantity: number;
+  custom_price?: number; // Prix personnalisé pour cette vente
   discount?: {
     type: DiscountType;
     value: number;
@@ -96,8 +97,9 @@ const Index = () => {
     );
   }
 
-  const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount']) => {
-    const subtotal = product.price * quantity;
+  const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount'], customPrice?: number) => {
+    const unitPrice = customPrice ?? product.price;
+    const subtotal = unitPrice * quantity;
     const vatAmount = (subtotal * product.vat_rate) / 100;
     
     let discountAmount = 0;
@@ -123,7 +125,7 @@ const Index = () => {
       const newCart = [...cart];
       const existingItem = newCart[existingItemIndex];
       const newQuantity = existingItem.quantity + qty;
-      const { subtotal, vatAmount, total } = calculateItemTotal(product, newQuantity, existingItem.discount);
+      const { subtotal, vatAmount, total } = calculateItemTotal(product, newQuantity, existingItem.discount, existingItem.custom_price);
       
       newCart[existingItemIndex] = {
         ...existingItem,
@@ -215,7 +217,7 @@ const Index = () => {
   const handleUpdateQuantity = (index: number, quantity: number) => {
     const newCart = [...cart];
     const item = newCart[index];
-    const { subtotal, vatAmount, total } = calculateItemTotal(item.product, quantity, item.discount);
+    const { subtotal, vatAmount, total } = calculateItemTotal(item.product, quantity, item.discount, item.custom_price);
     
     newCart[index] = {
       ...item,
@@ -226,6 +228,23 @@ const Index = () => {
     };
     
     setCart(newCart);
+  };
+
+  const handleUpdatePrice = (index: number, newPrice: number) => {
+    const newCart = [...cart];
+    const item = newCart[index];
+    const { subtotal, vatAmount, total } = calculateItemTotal(item.product, item.quantity, item.discount, newPrice);
+    
+    newCart[index] = {
+      ...item,
+      custom_price: newPrice,
+      subtotal,
+      vatAmount,
+      total,
+    };
+    
+    setCart(newCart);
+    toast.success('Prix modifié');
   };
 
   const getTotals = () => {
@@ -276,7 +295,7 @@ const Index = () => {
         product_name: item.product.name,
         product_barcode: item.product.barcode,
         quantity: item.quantity,
-        unit_price: item.product.price,
+        unit_price: item.custom_price ?? item.product.price,
         vat_rate: item.product.vat_rate,
         discount_type: item.discount?.type,
         discount_value: item.discount?.value || 0,
@@ -398,8 +417,21 @@ const Index = () => {
                     <div className="flex justify-between items-start mb-2.5">
                       <div className="flex-1 min-w-0">
                         <div className="text-foreground font-bold text-sm truncate">{item.product.name}</div>
-                        <div className="text-muted-foreground text-xs mt-0.5">
-                          {item.product.price.toFixed(2)}€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}
+                        <div className="flex items-center gap-2 mt-1">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={item.custom_price ?? item.product.price}
+                            onChange={(e) => {
+                              const newPrice = parseFloat(e.target.value);
+                              if (!isNaN(newPrice) && newPrice >= 0) {
+                                handleUpdatePrice(index, newPrice);
+                              }
+                            }}
+                            className="h-6 w-16 text-xs px-1 text-center bg-background"
+                          />
+                          <span className="text-muted-foreground text-xs">€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}</span>
                         </div>
                       </div>
                       <Button
