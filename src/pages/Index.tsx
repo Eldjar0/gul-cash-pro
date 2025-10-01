@@ -236,10 +236,10 @@ const Index = () => {
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="h-screen flex flex-col bg-black overflow-hidden">
-      {/* Barre d'état supérieure - Style terminal */}
-      <div className="bg-black border-b border-gray-900 px-3 md:px-6 py-2 flex-shrink-0">
-        <div className="flex items-center justify-between text-pos-success font-mono">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Barre d'état supérieure */}
+      <div className="bg-white border-b border-border px-3 md:px-6 py-2 flex-shrink-0 shadow-sm">
+        <div className="flex items-center justify-between text-foreground font-mono">
           <div className="flex items-center gap-2 md:gap-6">
             <div className="flex items-center gap-2">
               <User className="h-3 w-3 md:h-4 md:w-4" />
@@ -255,7 +255,7 @@ const Index = () => {
             variant="ghost"
             size="sm"
             onClick={signOut}
-            className="text-pos-success hover:bg-pos-success/10 font-mono text-xs md:text-sm"
+            className="text-primary hover:bg-primary/10 font-mono text-xs md:text-sm"
           >
             <LogOut className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
             <span className="hidden md:inline">QUITTER</span>
@@ -266,28 +266,28 @@ const Index = () => {
       {/* Contenu principal - Responsive layout */}
       <div className="flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-0 overflow-hidden">
         {/* COLONNE GAUCHE - Catégories (cachée sur mobile, visible sur desktop) */}
-        <div className="hidden lg:block lg:col-span-3 bg-black border-r border-gray-900 overflow-y-auto">
+        <div className="hidden lg:block lg:col-span-3 bg-white border-r border-border overflow-y-auto">
           <div className="p-3 xl:p-4">
-            <h2 className="text-white font-light text-base xl:text-lg mb-3">CATÉGORIES</h2>
+            <h2 className="text-foreground font-semibold text-base xl:text-lg mb-3">Catégories</h2>
             <CategoryGrid onProductSelect={handleProductSelect} />
           </div>
         </div>
 
         {/* COLONNE CENTRE - Scan & Clavier */}
-        <div className="lg:col-span-5 bg-black p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto lg:overflow-hidden">
+        <div className="lg:col-span-5 bg-background p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto lg:overflow-hidden">
           {/* Zone de scan */}
-          <Card className="bg-black border border-gray-900 p-3 md:p-6 flex-shrink-0">
+          <Card className="bg-white border border-border p-3 md:p-6 flex-shrink-0 shadow-sm">
             <form onSubmit={handleScanSubmit}>
               <div className="flex items-center gap-2 md:gap-3">
-                <Scan className="h-6 w-6 md:h-8 md:w-8 text-pos-success animate-pulse flex-shrink-0" />
+                <Scan className="h-6 w-6 md:h-8 md:w-8 text-primary animate-pulse flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-pos-success text-xs md:text-sm font-mono mb-1 md:mb-2 block">SCANNER / CODE BARRE</label>
+                  <label className="text-muted-foreground text-xs md:text-sm font-mono mb-1 md:mb-2 block">Scanner / Code barre</label>
                   <Input
                     ref={scanInputRef}
                     value={scanInput}
                     onChange={(e) => setScanInput(e.target.value)}
                     placeholder="Scanner..."
-                    className="h-10 md:h-12 bg-[#1a1a1a] border-pos-success/50 text-white text-base md:text-xl font-mono focus:border-pos-success"
+                    className="h-10 md:h-12 bg-background border-input text-foreground text-base md:text-xl font-mono focus:border-primary"
                   />
                 </div>
               </div>
@@ -295,16 +295,16 @@ const Index = () => {
           </Card>
 
           {/* Catégories sur mobile */}
-          <Card className="lg:hidden bg-black border border-gray-900 p-3 flex-1 overflow-y-auto">
-            <h2 className="text-white font-bold text-sm mb-2 font-mono">CATÉGORIES</h2>
+          <Card className="lg:hidden bg-white border border-border p-3 flex-1 overflow-y-auto shadow-sm">
+            <h2 className="text-foreground font-semibold text-sm mb-2 font-mono">Catégories</h2>
             <CategoryGrid onProductSelect={handleProductSelect} />
           </Card>
 
           {/* Clavier numérique */}
-          <Card className="hidden lg:block bg-black border border-gray-900 p-3 xl:p-4 flex-shrink-0">
-            <div className="text-pos-success text-xs md:text-sm font-mono mb-2 md:mb-3">QUANTITÉ</div>
-            <div className="bg-[#1a1a1a] p-2 md:p-4 rounded mb-2 md:mb-4 border border-pos-success/30">
-              <div className="text-pos-success text-2xl md:text-4xl font-mono text-center font-bold">
+          <Card className="hidden lg:block bg-white border border-border p-3 xl:p-4 flex-shrink-0 shadow-sm">
+            <div className="text-muted-foreground text-xs md:text-sm font-mono mb-2 md:mb-3">Quantité</div>
+            <div className="bg-muted p-2 md:p-4 rounded mb-2 md:mb-4 border border-border">
+              <div className="text-primary text-2xl md:text-4xl font-mono text-center font-bold">
                 {quantityInput}
               </div>
             </div>
@@ -313,7 +313,7 @@ const Index = () => {
                 <Button
                   key={key}
                   onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)}
-                  className="h-12 xl:h-16 text-lg xl:text-2xl font-bold bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono transition-all active:scale-95"
+                  className="h-12 xl:h-16 text-lg xl:text-2xl font-bold bg-card hover:bg-muted text-foreground border-2 border-border font-mono transition-all active:scale-95 shadow-sm hover:shadow-md"
                 >
                   {key}
                 </Button>
@@ -323,12 +323,12 @@ const Index = () => {
         </div>
 
         {/* COLONNE DROITE - Ticket & Paiement */}
-        <div className="lg:col-span-4 bg-black border-t lg:border-t-0 lg:border-l border-gray-900 flex flex-col overflow-hidden">
+        <div className="lg:col-span-4 bg-white border-t lg:border-t-0 lg:border-l border-border flex flex-col overflow-hidden">
           {/* En-tête du ticket */}
-          <div className="bg-[#1a1a1a] border-b-2 border-pos-success/30 p-3 md:p-4 flex-shrink-0">
+          <div className="bg-muted/50 border-b-2 border-border p-3 md:p-4 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <h2 className="text-pos-success font-bold text-base md:text-xl font-mono">TICKET</h2>
-              <div className="text-pos-success font-mono">
+              <h2 className="text-foreground font-bold text-base md:text-xl font-mono">Ticket</h2>
+              <div className="text-foreground font-mono">
                 <span className="text-xs md:text-sm">ART: </span>
                 <span className="text-lg md:text-xl font-bold">{totalItems}</span>
               </div>
@@ -339,20 +339,20 @@ const Index = () => {
           <ScrollArea className="flex-1 p-2 md:p-4">
             {cart.length === 0 ? (
               <div className="text-center py-8 md:py-12">
-                <Scan className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4 text-gray-600" />
-                <p className="text-gray-500 font-mono text-sm">Aucun article</p>
+                <Scan className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground font-mono text-sm">Aucun article</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {cart.map((item, index) => (
                   <div
                     key={index}
-                    className="bg-[#1a1a1a] border border-[#333] p-2 md:p-3 rounded font-mono hover:border-pos-success/30 transition-colors"
+                    className="bg-card border border-border p-2 md:p-3 rounded font-mono hover:border-primary/50 transition-colors shadow-sm"
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex-1 min-w-0">
-                        <div className="text-white font-bold text-xs md:text-sm truncate">{item.product.name}</div>
-                        <div className="text-gray-400 text-xs mt-1">
+                        <div className="text-foreground font-bold text-xs md:text-sm truncate">{item.product.name}</div>
+                        <div className="text-muted-foreground text-xs mt-1">
                           {item.product.price.toFixed(2)}€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}
                         </div>
                       </div>
@@ -370,19 +370,19 @@ const Index = () => {
                         <Button
                           size="sm"
                           onClick={() => handleUpdateQuantity(index, Math.max(0.1, item.quantity - 1))}
-                          className="h-6 w-6 md:h-7 md:w-7 p-0 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border border-[#444]"
+                          className="h-6 w-6 md:h-7 md:w-7 p-0 bg-muted hover:bg-muted/80 text-foreground border border-border"
                         >
                           -
                         </Button>
                         <Button
                           size="sm"
                           onClick={() => handleUpdateQuantity(index, item.quantity + 1)}
-                          className="h-6 w-6 md:h-7 md:w-7 p-0 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border border-[#444]"
+                          className="h-6 w-6 md:h-7 md:w-7 p-0 bg-muted hover:bg-muted/80 text-foreground border border-border"
                         >
                           +
                         </Button>
                       </div>
-                      <div className="text-pos-success text-base md:text-lg font-bold">
+                      <div className="text-primary text-base md:text-lg font-bold">
                         {item.total.toFixed(2)}€
                       </div>
                     </div>
@@ -393,23 +393,23 @@ const Index = () => {
           </ScrollArea>
 
           {/* Totaux */}
-          <div className="bg-[#1a1a1a] border-t-2 border-pos-success/30 p-3 md:p-4 space-y-1 md:space-y-2 flex-shrink-0">
-            <div className="flex justify-between text-gray-400 font-mono text-xs md:text-sm">
+          <div className="bg-muted/30 border-t-2 border-border p-3 md:p-4 space-y-1 md:space-y-2 flex-shrink-0">
+            <div className="flex justify-between text-muted-foreground font-mono text-xs md:text-sm">
               <span>Sous-total HT:</span>
               <span>{totals.subtotal.toFixed(2)}€</span>
             </div>
-            <div className="flex justify-between text-gray-400 font-mono text-xs md:text-sm">
+            <div className="flex justify-between text-muted-foreground font-mono text-xs md:text-sm">
               <span>TVA:</span>
               <span>{totals.totalVat.toFixed(2)}€</span>
             </div>
-            <div className="flex justify-between text-pos-success text-xl md:text-3xl font-bold font-mono pt-2 md:pt-3 border-t-2 border-[#333]">
+            <div className="flex justify-between text-primary text-xl md:text-3xl font-bold font-mono pt-2 md:pt-3 border-t-2 border-border">
               <span>TOTAL:</span>
               <span>{totals.total.toFixed(2)}€</span>
             </div>
           </div>
 
           {/* Boutons de paiement */}
-          <div className="bg-[#0a0a0a] p-2 md:p-4 space-y-2 md:space-y-3 border-t-2 border-[#333] flex-shrink-0">
+          <div className="bg-background p-2 md:p-4 space-y-2 md:space-y-3 border-t-2 border-border flex-shrink-0">
             <div className="grid grid-cols-2 gap-2 md:gap-3">
               <Button
                 onClick={handleClearCart}
@@ -422,7 +422,7 @@ const Index = () => {
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-12 md:h-16 bg-pos-success hover:bg-pos-success/90 text-black font-bold text-sm md:text-lg font-mono"
+                className="h-12 md:h-16 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm md:text-lg font-mono shadow-lg"
               >
                 <DollarSign className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
                 PAYER
@@ -432,7 +432,7 @@ const Index = () => {
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-10 md:h-12 text-xs md:text-sm bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-blue font-mono"
+                className="h-10 md:h-12 text-xs md:text-sm bg-card hover:bg-muted text-foreground border-2 border-primary font-mono shadow-sm"
               >
                 <CreditCard className="mr-1 h-3 w-3 md:h-4 md:w-4" />
                 CB
@@ -440,7 +440,7 @@ const Index = () => {
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-10 md:h-12 text-xs md:text-sm bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-green font-mono"
+                className="h-10 md:h-12 text-xs md:text-sm bg-card hover:bg-muted text-foreground border-2 border-green-500 font-mono shadow-sm"
               >
                 <Banknote className="mr-1 h-3 w-3 md:h-4 md:w-4" />
                 ESP
@@ -448,7 +448,7 @@ const Index = () => {
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-10 md:h-12 text-xs md:text-sm bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-purple font-mono"
+                className="h-10 md:h-12 text-xs md:text-sm bg-card hover:bg-muted text-foreground border-2 border-purple-500 font-mono shadow-sm"
               >
                 <Smartphone className="mr-1 h-3 w-3 md:h-4 md:w-4" />
                 SANS
