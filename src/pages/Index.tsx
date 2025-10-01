@@ -266,70 +266,10 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Main content - Modern 3-column layout */}
+      {/* Main content - Modern 3-column layout: TICKET | CALCULATRICE | ARTICLES */}
       <div className="flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-0 overflow-hidden">
-        {/* LEFT SIDEBAR - Categories with modern design */}
-        <div className="hidden lg:block lg:col-span-3 xl:col-span-2 bg-white border-r border-border overflow-y-auto">
-          <div className="p-4">
-            <h2 className="text-foreground font-bold text-sm mb-4 px-2 flex items-center gap-2">
-              <div className="h-1 w-1 rounded-full bg-primary"></div>
-              CATÉGORIES
-            </h2>
-            <CategoryGrid onProductSelect={handleProductSelect} />
-          </div>
-        </div>
-
-        {/* COLONNE CENTRE - Scan & Clavier */}
-        <div className="lg:col-span-5 bg-background p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto lg:overflow-hidden">
-          {/* Zone de scan */}
-          <Card className="bg-white border border-border p-3 md:p-6 flex-shrink-0 shadow-sm">
-            <form onSubmit={handleScanSubmit}>
-              <div className="flex items-center gap-2 md:gap-3">
-                <Scan className="h-6 w-6 md:h-8 md:w-8 text-primary animate-pulse flex-shrink-0" />
-                <div className="flex-1">
-                  <label className="text-muted-foreground text-xs md:text-sm font-mono mb-1 md:mb-2 block">Scanner / Code barre</label>
-                  <Input
-                    ref={scanInputRef}
-                    value={scanInput}
-                    onChange={(e) => setScanInput(e.target.value)}
-                    placeholder="Scanner..."
-                    className="h-10 md:h-12 bg-background border-input text-foreground text-base md:text-xl font-mono focus:border-primary"
-                  />
-                </div>
-              </div>
-            </form>
-          </Card>
-
-          {/* Catégories sur mobile */}
-          <Card className="lg:hidden bg-white border border-border p-3 flex-1 overflow-y-auto shadow-sm">
-            <h2 className="text-foreground font-semibold text-sm mb-2 font-mono">Catégories</h2>
-            <CategoryGrid onProductSelect={handleProductSelect} />
-          </Card>
-
-          {/* Clavier numérique */}
-          <Card className="hidden lg:block bg-white border border-border p-3 xl:p-4 flex-shrink-0 shadow-sm">
-            <div className="text-muted-foreground text-xs md:text-sm font-mono mb-2 md:mb-3">Quantité</div>
-            <div className="bg-muted p-2 md:p-4 rounded mb-2 md:mb-4 border border-border">
-              <div className="text-primary text-2xl md:text-4xl font-mono text-center font-bold">
-                {quantityInput}
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 md:gap-3">
-              {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
-                <Button
-                  key={key}
-                  onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)}
-                  className="h-12 xl:h-16 text-lg xl:text-2xl font-bold bg-card hover:bg-muted text-foreground border-2 border-border font-mono transition-all active:scale-95 shadow-sm hover:shadow-md"
-                >
-                  {key}
-                </Button>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        {/* RIGHT PANEL - Modern ticket design */}
-        <div className="lg:col-span-3 bg-white border-t lg:border-t-0 lg:border-l-2 border-border flex flex-col overflow-hidden shadow-xl">
+        {/* LEFT PANEL - Ticket à gauche */}
+        <div className="lg:col-span-3 bg-white border-t lg:border-t-0 lg:border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
           {/* Ticket header - Clean gradient */}
           <div className="bg-gradient-to-r from-primary to-primary-glow p-4 flex-shrink-0 shadow-lg">
             <div className="flex items-center justify-between text-white">
@@ -458,6 +398,66 @@ const Index = () => {
                 ANN
               </Button>
             </div>
+          </div>
+        </div>
+
+        {/* COLONNE CENTRE - Calculatrice & Scan */}
+        <div className="lg:col-span-6 bg-background p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto lg:overflow-hidden">
+          {/* Zone de scan */}
+          <Card className="bg-white border border-border p-3 md:p-6 flex-shrink-0 shadow-sm">
+            <form onSubmit={handleScanSubmit}>
+              <div className="flex items-center gap-2 md:gap-3">
+                <Scan className="h-6 w-6 md:h-8 md:w-8 text-primary animate-pulse flex-shrink-0" />
+                <div className="flex-1">
+                  <label className="text-muted-foreground text-xs md:text-sm font-mono mb-1 md:mb-2 block">Scanner / Code barre</label>
+                  <Input
+                    ref={scanInputRef}
+                    value={scanInput}
+                    onChange={(e) => setScanInput(e.target.value)}
+                    placeholder="Scanner..."
+                    className="h-10 md:h-12 bg-background border-input text-foreground text-base md:text-xl font-mono focus:border-primary"
+                  />
+                </div>
+              </div>
+            </form>
+          </Card>
+
+          {/* Catégories sur mobile */}
+          <Card className="lg:hidden bg-white border border-border p-3 flex-1 overflow-y-auto shadow-sm">
+            <h2 className="text-foreground font-semibold text-sm mb-2 font-mono">Catégories</h2>
+            <CategoryGrid onProductSelect={handleProductSelect} />
+          </Card>
+
+          {/* Clavier numérique */}
+          <Card className="hidden lg:block bg-white border border-border p-3 xl:p-4 flex-shrink-0 shadow-sm">
+            <div className="text-muted-foreground text-xs md:text-sm font-mono mb-2 md:mb-3">Quantité</div>
+            <div className="bg-muted p-2 md:p-4 rounded mb-2 md:mb-4 border border-border">
+              <div className="text-primary text-2xl md:text-4xl font-mono text-center font-bold">
+                {quantityInput}
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 md:gap-3">
+              {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
+                <Button
+                  key={key}
+                  onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)}
+                  className="h-12 xl:h-16 text-lg xl:text-2xl font-bold bg-card hover:bg-muted text-foreground border-2 border-border font-mono transition-all active:scale-95 shadow-sm hover:shadow-md"
+                >
+                  {key}
+                </Button>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        {/* RIGHT PANEL - Articles/Catégories */}
+        <div className="hidden lg:block lg:col-span-3 bg-white border-l border-border overflow-y-auto">
+          <div className="p-4">
+            <h2 className="text-foreground font-bold text-sm mb-4 px-2 flex items-center gap-2">
+              <div className="h-1 w-1 rounded-full bg-primary"></div>
+              CATÉGORIES
+            </h2>
+            <CategoryGrid onProductSelect={handleProductSelect} />
           </div>
         </div>
       </div>
