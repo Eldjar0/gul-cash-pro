@@ -6,7 +6,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Smartphone, Banknote, Calculator } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle } from 'lucide-react';
 import { NumericKeypad } from './NumericKeypad';
 
 type PaymentMethod = 'cash' | 'card' | 'mobile';
@@ -40,7 +41,7 @@ export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment }: P
   };
 
   const getRoundedAmount = (amount: number) => {
-    return Math.ceil(amount * 20) / 20; // Arrondir à 0.05€
+    return Math.ceil(amount * 20) / 20;
   };
 
   const handleConfirm = () => {
@@ -52,74 +53,102 @@ export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment }: P
     }
   };
 
+  const handleBack = () => {
+    setMethod(null);
+    setAmountPaid('');
+  };
+
   const suggestedAmounts = [
     total,
     getRoundedAmount(total),
     Math.ceil(total),
     Math.ceil(total / 5) * 5,
     Math.ceil(total / 10) * 10,
-  ].filter((v, i, a) => a.indexOf(v) === i);
+  ].filter((v, i, a) => a.indexOf(v) === i && v >= total);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl glass border-2 border-primary/30">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Paiement - {total.toFixed(2)}€</DialogTitle>
+          <DialogTitle className="text-2xl gradient-text flex items-center gap-2">
+            <CreditCard className="h-6 w-6" />
+            Paiement
+          </DialogTitle>
+          <p className="text-3xl font-black mt-2">{total.toFixed(2)}€</p>
         </DialogHeader>
 
         {!method ? (
-          <div className="grid grid-cols-3 gap-6 py-8">
-            <Button
-              size="lg"
+          <div className="grid grid-cols-3 gap-4 py-6">
+            <Card
               onClick={() => setMethod('cash')}
-              className="h-40 flex flex-col gap-4 bg-gradient-to-br from-category-green to-primary text-white hover:scale-105 transition-all shadow-2xl hover:shadow-3xl border-0"
+              className="relative h-40 cursor-pointer group overflow-hidden border-2 hover:border-white/50 transition-all duration-300 hover:scale-105 hover:shadow-glow-lg bg-gradient-to-br from-pos-success to-category-green"
             >
-              <Banknote className="h-16 w-16" />
-              <span className="text-xl font-bold">💵 Espèces</span>
-            </Button>
-            <Button
-              size="lg"
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative h-full flex flex-col items-center justify-center gap-4">
+                <Banknote className="h-16 w-16 text-white drop-shadow-lg" />
+                <span className="text-white font-bold text-lg drop-shadow-md">Espèces</span>
+              </div>
+            </Card>
+
+            <Card
               onClick={() => setMethod('card')}
-              className="h-40 flex flex-col gap-4 bg-gradient-to-br from-category-blue to-secondary text-white hover:scale-105 transition-all shadow-2xl hover:shadow-3xl border-0"
+              className="relative h-40 cursor-pointer group overflow-hidden border-2 hover:border-white/50 transition-all duration-300 hover:scale-105 hover:shadow-glow-lg bg-gradient-to-br from-primary to-secondary"
             >
-              <CreditCard className="h-16 w-16" />
-              <span className="text-xl font-bold">💳 Carte</span>
-            </Button>
-            <Button
-              size="lg"
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative h-full flex flex-col items-center justify-center gap-4">
+                <CreditCard className="h-16 w-16 text-white drop-shadow-lg" />
+                <span className="text-white font-bold text-lg drop-shadow-md">Carte</span>
+              </div>
+            </Card>
+
+            <Card
               onClick={() => setMethod('mobile')}
-              className="h-40 flex flex-col gap-4 bg-gradient-to-br from-category-purple to-accent text-white hover:scale-105 transition-all shadow-2xl hover:shadow-3xl border-0"
+              className="relative h-40 cursor-pointer group overflow-hidden border-2 hover:border-white/50 transition-all duration-300 hover:scale-105 hover:shadow-glow-lg bg-gradient-to-br from-secondary to-category-purple"
             >
-              <Smartphone className="h-16 w-16" />
-              <span className="text-xl font-bold">📱 Mobile</span>
-            </Button>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative h-full flex flex-col items-center justify-center gap-4">
+                <Smartphone className="h-16 w-16 text-white drop-shadow-lg" />
+                <span className="text-white font-bold text-lg drop-shadow-md">Mobile</span>
+              </div>
+            </Card>
           </div>
         ) : method === 'cash' ? (
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-pos-display to-secondary p-8 rounded-2xl shadow-2xl border-2 border-primary/30">
-              <div className="text-sm text-white/80 mb-2 font-semibold">💰 Montant reçu</div>
-              <div className="text-5xl font-black text-white mb-6 tracking-tight">
-                {amountPaid || '0.00'}€
-              </div>
-              {amountPaid && parseFloat(amountPaid) >= total && (
-                <div className="text-3xl font-bold text-pos-success bg-white/20 px-4 py-3 rounded-xl backdrop-blur-sm animate-pulse-soft">
-                  ✅ À rendre: {getChange().toFixed(2)}€
+          <div className="space-y-6 animate-fade-in">
+            <Card className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-[var(--gradient-display)]"></div>
+              <div className="relative p-6">
+                <p className="text-sm text-white/70 mb-2 font-medium">Montant reçu</p>
+                <div className="text-5xl font-black text-white mb-4 tracking-tight">
+                  {amountPaid || '0.00'}€
                 </div>
-              )}
-            </div>
+                {amountPaid && parseFloat(amountPaid) >= total && (
+                  <Card className="bg-pos-success/20 border-pos-success/30 p-4 animate-bounce-in">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-8 w-8 text-pos-success" />
+                      <div>
+                        <p className="text-white font-bold text-lg">Rendu de monnaie</p>
+                        <p className="text-pos-success text-3xl font-black">{getChange().toFixed(2)}€</p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+              </div>
+            </Card>
 
-            <div className="grid grid-cols-5 gap-3">
-              {suggestedAmounts.map((amount) => (
-                <Button
-                  key={amount}
-                  variant="outline"
-                  onClick={() => setAmountPaid(amount.toFixed(2))}
-                  className="h-14 bg-gradient-to-br from-category-teal to-pos-info text-white hover:scale-105 transition-all font-bold shadow-lg border-0"
-                >
-                  {amount.toFixed(2)}€
-                </Button>
-              ))}
-            </div>
+            {suggestedAmounts.length > 0 && (
+              <div className="grid grid-cols-5 gap-2">
+                {suggestedAmounts.map((amount) => (
+                  <Button
+                    key={amount}
+                    variant="outline"
+                    onClick={() => setAmountPaid(amount.toFixed(2))}
+                    className="h-12 bg-gradient-to-br from-accent to-accent/80 text-white border-0 hover:scale-105 active:scale-95 transition-all font-bold shadow-lg"
+                  >
+                    {amount.toFixed(2)}€
+                  </Button>
+                ))}
+              </div>
+            )}
 
             <NumericKeypad
               onNumberClick={handleNumberClick}
@@ -127,29 +156,55 @@ export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment }: P
               onBackspace={handleBackspace}
             />
 
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setMethod(null)} className="flex-1">
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={handleBack} 
+                className="flex-1 h-14 gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
                 Retour
               </Button>
               <Button
                 onClick={handleConfirm}
                 disabled={!amountPaid || parseFloat(amountPaid) < total}
-                className="flex-1 bg-pos-success text-primary-foreground hover:bg-pos-success/90"
+                className="flex-1 h-14 bg-gradient-to-r from-pos-success to-category-green text-white hover:scale-105 transition-all font-bold text-lg shadow-lg disabled:opacity-50 disabled:hover:scale-100"
               >
                 Valider
               </Button>
             </div>
           </div>
         ) : (
-          <div className="space-y-4 py-6">
-            <div className="text-center text-lg text-muted-foreground">
-              {method === 'card' ? 'Insérez ou présentez la carte' : 'Présentez le téléphone'}
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setMethod(null)} className="flex-1">
+          <div className="space-y-6 py-6 animate-fade-in">
+            <Card className="p-8 text-center bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
+              <div className="animate-pulse-soft">
+                {method === 'card' ? (
+                  <CreditCard className="h-20 w-20 mx-auto mb-4 text-primary" />
+                ) : (
+                  <Smartphone className="h-20 w-20 mx-auto mb-4 text-secondary" />
+                )}
+              </div>
+              <p className="text-lg text-foreground font-medium">
+                {method === 'card' 
+                  ? 'Insérez ou présentez la carte bancaire' 
+                  : 'Présentez le téléphone sur le terminal'}
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">En attente du paiement...</p>
+            </Card>
+
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={handleBack} 
+                className="flex-1 h-14 gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
                 Retour
               </Button>
-              <Button onClick={handleConfirm} className="flex-1 bg-pos-success text-primary-foreground hover:bg-pos-success/90">
+              <Button 
+                onClick={handleConfirm} 
+                className="flex-1 h-14 bg-gradient-to-r from-pos-success to-category-green text-white hover:scale-105 transition-all font-bold text-lg shadow-lg"
+              >
                 Paiement effectué
               </Button>
             </div>

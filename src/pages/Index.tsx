@@ -19,7 +19,7 @@ import { Receipt } from '@/components/pos/Receipt';
 import { QuickCalculator } from '@/components/pos/QuickCalculator';
 import { CashDrawerActions } from '@/components/pos/CashDrawerActions';
 import { NumericKeypad } from '@/components/pos/NumericKeypad';
-import { Product, useProducts, useSearchProducts } from '@/hooks/useProducts';
+import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateSale } from '@/hooks/useSales';
 import { toast } from 'sonner';
@@ -71,12 +71,14 @@ const Index = () => {
   }, [user, authLoading, navigate]);
 
   if (authLoading || !user) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-        <p className="mt-4 text-muted-foreground">Chargement...</p>
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground font-medium">Chargement...</p>
+        </div>
       </div>
-    </div>;
+    );
   }
 
   const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount']) => {
@@ -115,7 +117,7 @@ const Index = () => {
     };
 
     setCart([...cart, newItem]);
-    toast.success(`${product.name} ajouté au panier`);
+    toast.success(`${product.name} ajouté`);
   };
 
   const handleWeightConfirm = () => {
@@ -132,7 +134,7 @@ const Index = () => {
   const handleRemoveItem = (index: number) => {
     const newCart = cart.filter((_, i) => i !== index);
     setCart(newCart);
-    toast.info('Article retiré du panier');
+    toast.info('Article retiré');
   };
 
   const handleUpdateQuantity = (index: number, quantity: number) => {
@@ -235,8 +237,10 @@ const Index = () => {
       setCart([]);
       setPaymentDialogOpen(false);
       setReceiptDialogOpen(true);
+      toast.success('Paiement réussi!');
     } catch (error) {
       console.error('Error creating sale:', error);
+      toast.error('Erreur lors du paiement');
     }
   };
 
@@ -293,45 +297,66 @@ const Index = () => {
   const totals = getTotals();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-primary via-secondary to-primary text-white shadow-xl">
-        <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                  <ShoppingCart className="h-6 w-6" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold tracking-tight">Caisse GUL REYHAN</h1>
-                  <p className="text-xs opacity-80">Point de vente</p>
-                </div>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Modern Header */}
+      <header className="relative overflow-hidden border-b border-border/50 shadow-xl">
+        <div className="absolute inset-0 bg-[var(--gradient-primary)]"></div>
+        <div className="relative px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shadow-lg">
+                <ShoppingCart className="h-7 w-7 text-white" />
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <div className="text-sm font-medium">Caisse #1</div>
-                  <div className="text-xs opacity-80">{new Date().toLocaleDateString('fr-BE')}</div>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={signOut}
-                  className="text-white hover:bg-white/20"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Déconnexion
-                </Button>
+              <div>
+                <h1 className="text-2xl font-black text-white tracking-tight">Point de Vente</h1>
+                <p className="text-sm text-white/90 font-medium">Système moderne</p>
               </div>
             </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right mr-2">
+                <div className="text-sm font-bold text-white">Caisse #1</div>
+                <div className="text-xs text-white/80">{new Date().toLocaleDateString('fr-BE')}</div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-11 w-11 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm"
+              >
+                <BarChart3 className="h-5 w-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-11 w-11 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-11 w-11 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm"
+              >
+                <Package className="h-5 w-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={signOut}
+                className="h-11 w-11 rounded-xl bg-white/10 hover:bg-destructive text-white border border-white/20 backdrop-blur-sm"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto p-3">
-        <div className="grid lg:grid-cols-12 gap-3">
-          {/* Left Column - Panier */}
-          <div className="lg:col-span-5 space-y-3">
-            <div className="h-[calc(100vh-200px)]">
+      <div className="flex-1 p-6 overflow-hidden">
+        <div className="grid lg:grid-cols-12 gap-6 h-full">
+          {/* Left Column - Cart */}
+          <div className="lg:col-span-5 flex flex-col gap-4">
+            <div className="flex-1 min-h-0">
               <CartDisplay
                 items={cart}
                 onRemoveItem={handleRemoveItem}
@@ -340,59 +365,55 @@ const Index = () => {
               />
             </div>
             
-            {/* Boutons d'action principaux */}
+            {/* Action Buttons */}
             <div className="grid grid-cols-2 gap-3">
               <Button
-                size="lg"
-                variant="outline"
                 onClick={handleClearCart}
+                variant="outline"
                 disabled={cart.length === 0}
-                className="h-16 flex flex-col gap-1 hover:scale-105 transition-all shadow-lg hover:shadow-xl border-2 hover:border-destructive"
+                className="h-16 bg-gradient-to-br from-destructive to-destructive/80 text-white hover:scale-105 active:scale-95 border-0 font-bold shadow-lg hover:shadow-glow-lg transition-all disabled:opacity-50 disabled:hover:scale-100"
               >
-                <XCircle className="h-5 w-5 text-destructive" />
-                <span className="font-bold text-sm">Vider</span>
+                <XCircle className="mr-2 h-5 w-5" />
+                Annuler
               </Button>
               <Button
-                size="lg"
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-16 flex flex-col gap-0.5 bg-gradient-to-br from-pos-success to-category-green text-white hover:scale-105 transition-all shadow-xl hover:shadow-2xl border-0"
+                className="h-16 bg-gradient-to-br from-pos-success to-category-green text-white hover:scale-105 active:scale-95 border-0 font-bold text-lg shadow-lg hover:shadow-glow-lg transition-all disabled:opacity-50 disabled:hover:scale-100 relative overflow-hidden group"
               >
-                <span className="font-bold text-sm">💳 PAYER</span>
-                <span className="text-2xl font-black">{totals.total.toFixed(2)}€</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                <Printer className="mr-2 h-5 w-5 relative z-10" />
+                <span className="relative z-10">Payer</span>
               </Button>
             </div>
           </div>
 
-          {/* Right Column - Recherche, Calculatrice & Actions */}
-          <div className="lg:col-span-7 space-y-3">
-            {/* Calculatrice / Code produit */}
-            <QuickCalculator
-              onProductCode={handleProductCode}
-              onCreateProduct={handleCreateProduct}
-            />
-
-            {/* Actions de caisse */}
-            <CashDrawerActions
-              onOpenDrawer={handleOpenDrawer}
-              onViewStats={handleViewStats}
-              onViewHistory={handleViewHistory}
-              onManageCustomers={handleManageCustomers}
-              onManageProducts={handleManageProducts}
-              onSettings={handleSettings}
-            />
-
-            {/* Catégories de produits */}
-            <Card className="p-4 shadow-xl border-2 border-primary/30">
-              <CategoryGrid onProductSelect={handleProductSelect} />
+          {/* Right Column - Products */}
+          <div className="lg:col-span-7 flex flex-col gap-4 min-h-0">
+            {/* Search Bar */}
+            <Card className="p-4 shadow-xl glass border-2 border-primary/20">
+              <ProductSearch onProductSelect={handleProductSelect} />
             </Card>
 
-            {/* Recherche rapide */}
-            <Card className="p-4 shadow-xl border-2 border-secondary/30">
-              <h2 className="text-base font-semibold mb-3 text-foreground flex items-center gap-2">
-                🔍 Recherche
-              </h2>
-              <ProductSearch onProductSelect={handleProductSelect} />
+            {/* Quick Tools */}
+            <div className="grid grid-cols-2 gap-3">
+              <QuickCalculator
+                onProductCode={handleProductCode}
+                onCreateProduct={handleCreateProduct}
+              />
+              <CashDrawerActions
+                onOpenDrawer={handleOpenDrawer}
+                onViewStats={handleViewStats}
+                onViewHistory={handleViewHistory}
+                onManageCustomers={handleManageCustomers}
+                onManageProducts={handleManageProducts}
+                onSettings={handleSettings}
+              />
+            </div>
+
+            {/* Categories - Main Product Area */}
+            <Card className="flex-1 p-6 overflow-auto glass border-2 border-border/50 shadow-xl min-h-0">
+              <CategoryGrid onProductSelect={handleProductSelect} />
             </Card>
           </div>
         </div>
@@ -408,9 +429,9 @@ const Index = () => {
 
       {/* Receipt Dialog */}
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md glass border-2 border-primary/30">
           <DialogHeader>
-            <DialogTitle>Ticket de caisse</DialogTitle>
+            <DialogTitle className="gradient-text">Ticket de caisse</DialogTitle>
           </DialogHeader>
           {currentSale && (
             <Receipt 
@@ -427,8 +448,8 @@ const Index = () => {
               }} 
             />
           )}
-          <div className="flex gap-2">
-            <Button onClick={handlePrint} className="flex-1">
+          <div className="flex gap-3">
+            <Button onClick={handlePrint} className="flex-1 bg-gradient-to-r from-primary to-secondary">
               <Printer className="h-4 w-4 mr-2" />
               Imprimer
             </Button>
@@ -441,12 +462,12 @@ const Index = () => {
 
       {/* Discount Dialog */}
       <Dialog open={discountDialogOpen} onOpenChange={setDiscountDialogOpen}>
-        <DialogContent>
+        <DialogContent className="glass border-2 border-primary/30">
           <DialogHeader>
-            <DialogTitle>Appliquer une remise</DialogTitle>
+            <DialogTitle className="gradient-text">Appliquer une remise</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button
                 variant={discountType === 'percentage' ? 'default' : 'outline'}
                 onClick={() => setDiscountType('percentage')}
@@ -470,13 +491,14 @@ const Index = () => {
                 onChange={(e) => setDiscountValue(e.target.value)}
                 placeholder={discountType === 'percentage' ? '10' : '5.00'}
                 step="0.01"
+                className="mt-2"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button variant="outline" onClick={() => setDiscountDialogOpen(false)} className="flex-1">
                 Annuler
               </Button>
-              <Button onClick={confirmDiscount} className="flex-1">
+              <Button onClick={confirmDiscount} className="flex-1 bg-gradient-to-r from-accent to-accent/80">
                 Appliquer
               </Button>
             </div>
@@ -486,30 +508,33 @@ const Index = () => {
 
       {/* Weight Input Dialog */}
       <Dialog open={weightDialogOpen} onOpenChange={setWeightDialogOpen}>
-        <DialogContent>
+        <DialogContent className="glass border-2 border-primary/30">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="gradient-text">
               Poids - {selectedProduct?.name}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="bg-pos-display p-6 rounded-lg">
-              <div className="text-sm text-pos-display-foreground mb-2">Poids (kg)</div>
-              <div className="text-4xl font-bold text-pos-display-foreground">
-                {weightInput || '0.000'}
-              </div>
-              {weightInput && selectedProduct && (
-                <div className="text-lg text-pos-display-foreground mt-2">
-                  Prix: {(parseFloat(weightInput) * selectedProduct.price).toFixed(2)}€
+            <Card className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-[var(--gradient-display)]"></div>
+              <div className="relative p-6">
+                <div className="text-sm text-white/70 mb-2">Poids (kg)</div>
+                <div className="text-4xl font-bold text-white">
+                  {weightInput || '0.000'}
                 </div>
-              )}
-            </div>
+                {weightInput && selectedProduct && (
+                  <div className="text-lg text-pos-success mt-2 font-bold">
+                    Prix: {(parseFloat(weightInput) * selectedProduct.price).toFixed(2)}€
+                  </div>
+                )}
+              </div>
+            </Card>
             <NumericKeypad
               onNumberClick={(num) => setWeightInput((prev) => prev + num)}
               onClear={() => setWeightInput('')}
               onBackspace={() => setWeightInput((prev) => prev.slice(0, -1))}
             />
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button
                 variant="outline"
                 onClick={() => setWeightDialogOpen(false)}
@@ -520,7 +545,7 @@ const Index = () => {
               <Button
                 onClick={handleWeightConfirm}
                 disabled={!weightInput || parseFloat(weightInput) <= 0}
-                className="flex-1 bg-pos-success text-primary-foreground hover:bg-pos-success/90"
+                className="flex-1 bg-gradient-to-r from-pos-success to-category-green text-white disabled:opacity-50"
               >
                 Valider
               </Button>
