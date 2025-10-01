@@ -6,94 +6,79 @@
 
 @layer base {
   :root {
-    /* Base colors - Clean and modern */
-    --background: 220 20% 97%;
-    --foreground: 220 15% 10%;
+    /* Base colors - Ultra clean modern app */
+    --background: 0 0% 98%;
+    --foreground: 220 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 10%;
+    --card-foreground: 220 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 10%;
+    --popover-foreground: 220 15% 15%;
 
-    /* Primary - Vibrant Blue */
-    --primary: 217 91% 60%;
+    /* Primary - SHOPCAISSE Blue */
+    --primary: 210 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 217 91% 70%;
+    --primary-glow: 210 100% 60%;
 
-    /* Secondary - Deep Purple */
-    --secondary: 262 83% 58%;
-    --secondary-foreground: 0 0% 100%;
-    --secondary-glow: 262 83% 68%;
+    /* Secondary - Clean Gray */
+    --secondary: 220 10% 96%;
+    --secondary-foreground: 220 15% 20%;
+    --secondary-glow: 220 10% 90%;
 
-    /* Accent - Cyan */
-    --accent: 189 94% 43%;
+    /* Accent - Success Green */
+    --accent: 145 65% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --muted: 220 15% 93%;
-    --muted-foreground: 220 10% 40%;
+    --muted: 220 10% 95%;
+    --muted-foreground: 220 10% 45%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 85% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 88%;
-    --input: 220 13% 91%;
-    --ring: 217 91% 60%;
+    --border: 220 13% 91%;
+    --input: 220 13% 94%;
+    --ring: 210 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;
     
-    /* POS specific colors - iPhone Calculator theme */
-    --pos-display: 0 0% 0%;
+    /* POS specific - Modern clean colors */
+    --pos-display: 220 25% 15%;
     --pos-display-foreground: 0 0% 100%;
-    --pos-key: 0 0% 31%;
-    --pos-key-foreground: 0 0% 100%;
-    --pos-key-hover: 0 0% 41%;
-    --pos-key-active: 0 0% 51%;
-    --pos-success: 28 100% 53%;
-    --pos-warning: 38 100% 68%;
-    --pos-error: 0 84% 60%;
-    --pos-info: 0 0% 83%;
+    --pos-key: 0 0% 100%;
+    --pos-key-foreground: 220 15% 20%;
+    --pos-key-hover: 210 100% 96%;
+    --pos-key-active: 210 100% 92%;
+    --pos-success: 145 65% 50%;
+    --pos-warning: 35 100% 55%;
+    --pos-error: 0 85% 55%;
+    --pos-info: 210 100% 50%;
     
-    /* Gradients - Modern and vibrant */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(262 83% 58%));
-    --gradient-secondary: linear-gradient(135deg, hsl(262 83% 58%), hsl(280 70% 60%));
-    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%), hsl(158 64% 52%));
-    --gradient-display: linear-gradient(180deg, hsl(220 25% 12%), hsl(220 25% 18%));
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(220 20% 99%));
-    --gradient-glow: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(262 83% 58% / 0.1));
-    
-    /* Shadows - Elegant depth */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-    --shadow-glow: 0 0 20px hsl(217 91% 60% / 0.3);
-    --shadow-glow-strong: 0 0 40px hsl(217 91% 60% / 0.5);
-    
-    /* Transitions - Smooth and natural */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    /* Category colors - Vibrant palette */
-    --category-blue: 217 91% 60%;
-    --category-green: 142 71% 45%;
-    --category-orange: 25 95% 53%;
-    --category-purple: 262 83% 58%;
-    --category-red: 0 84% 60%;
-    --category-teal: 189 94% 43%;
-    --category-pink: 330 81% 60%;
-    --category-yellow: 45 93% 58%;
+    /* Category colors - SHOPCAISSE inspired vibrant palette */
+    --category-blue: 210 100% 50%;
+    --category-green: 145 65% 50%;
+    --category-orange: 25 100% 55%;
+    --category-purple: 270 70% 60%;
+    --category-red: 0 85% 55%;
+    --category-teal: 180 70% 50%;
+    --category-pink: 330 75% 60%;
+    --category-yellow: 45 100% 60%;
 
     /* Sidebar */
-    --sidebar-background: 220 20% 98%;
-    --sidebar-foreground: 220 15% 10%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 15% 15%;
+    --sidebar-primary: 210 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 95%;
-    --sidebar-accent-foreground: 220 15% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 220 10% 96%;
+    --sidebar-accent-foreground: 220 15% 20%;
+    --sidebar-border: 220 13% 93%;
+    --sidebar-ring: 210 100% 50%;
+    
+    /* Modern gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 50%), hsl(210 100% 60%));
+    --gradient-success: linear-gradient(135deg, hsl(145 65% 50%), hsl(145 65% 60%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 10% 98%));
+    --gradient-display: linear-gradient(180deg, hsl(220 25% 15%), hsl(220 25% 20%));
   }
 
   .dark {
