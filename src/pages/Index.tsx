@@ -166,15 +166,8 @@ const Index = () => {
       }
     }
 
-    if (results.length === 1) {
-      // Si un seul résultat, l'ajouter directement
-      handleProductSelect(results[0]);
-      setScanInput('');
-      setSearchResults([]);
-    } else {
-      // Plusieurs résultats ou aucun, les afficher
-      setSearchResults(results);
-    }
+    // Toujours afficher les résultats sans auto-ajout
+    setSearchResults(results);
   };
 
   const handleScanSubmit = (e: React.FormEvent) => {
