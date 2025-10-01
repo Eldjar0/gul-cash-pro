@@ -457,47 +457,6 @@ const Index = () => {
                 </Button>
               </div>
             </form>
-
-            {/* Résultats de recherche */}
-            {searchResults.length > 0 && (
-              <div className="mt-3 border-t border-border pt-3">
-                <div className="text-xs text-muted-foreground mb-2 font-medium">
-                  {searchResults.length} résultat{searchResults.length > 1 ? 's' : ''} trouvé{searchResults.length > 1 ? 's' : ''}
-                </div>
-                <ScrollArea className="max-h-48">
-                  <div className="space-y-2">
-                    {searchResults.map((product) => (
-                      <button
-                        key={product.id}
-                        onClick={() => handleSelectSearchResult(product)}
-                        className="w-full p-3 bg-muted/50 hover:bg-primary/10 border border-border rounded-lg text-left transition-all hover:shadow-md group"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="font-bold text-foreground group-hover:text-primary transition-colors">
-                              {product.name}
-                            </div>
-                            {product.barcode && (
-                              <div className="text-xs text-muted-foreground mt-0.5">
-                                Code: {product.barcode}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-primary">
-                              {product.price.toFixed(2)}€
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {product.type === 'weight' ? 'au kg' : 'unité'}
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </div>
-            )}
           </Card>
 
           {/* Catégories sur mobile */}
@@ -528,14 +487,68 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* RIGHT PANEL - Articles/Catégories */}
+        {/* RIGHT PANEL - Articles/Catégories/Résultats */}
         <div className="hidden lg:block lg:col-span-3 bg-white border-l border-border overflow-y-auto">
           <div className="p-4">
-            <h2 className="text-foreground font-bold text-sm mb-4 px-2 flex items-center gap-2">
-              <div className="h-1 w-1 rounded-full bg-primary"></div>
-              CATÉGORIES
-            </h2>
-            <CategoryGrid onProductSelect={handleProductSelect} />
+            {searchResults.length > 0 ? (
+              <>
+                <div className="flex items-center justify-between mb-4 px-2">
+                  <h2 className="text-foreground font-bold text-sm flex items-center gap-2">
+                    <div className="h-1 w-1 rounded-full bg-primary"></div>
+                    RÉSULTATS ({searchResults.length})
+                  </h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setScanInput('');
+                      setSearchResults([]);
+                    }}
+                    className="h-7 text-xs"
+                  >
+                    Effacer
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {searchResults.map((product) => (
+                    <button
+                      key={product.id}
+                      onClick={() => handleSelectSearchResult(product)}
+                      className="w-full p-3 bg-muted/50 hover:bg-primary/10 border border-border rounded-lg text-left transition-all hover:shadow-md group"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <div className="font-bold text-foreground group-hover:text-primary transition-colors text-sm">
+                            {product.name}
+                          </div>
+                          {product.barcode && (
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              Code: {product.barcode}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <div className="text-xs text-muted-foreground">
+                          {product.type === 'weight' ? 'au kg' : 'unité'}
+                        </div>
+                        <div className="text-lg font-bold text-primary">
+                          {product.price.toFixed(2)}€
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-foreground font-bold text-sm mb-4 px-2 flex items-center gap-2">
+                  <div className="h-1 w-1 rounded-full bg-primary"></div>
+                  CATÉGORIES
+                </h2>
+                <CategoryGrid onProductSelect={handleProductSelect} />
+              </>
+            )}
           </div>
         </div>
       </div>
