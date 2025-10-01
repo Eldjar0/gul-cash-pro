@@ -14,6 +14,7 @@ import {
   Percent,
   Edit,
   Ticket,
+  Eye,
 } from 'lucide-react';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
@@ -405,6 +406,28 @@ const Index = () => {
     toast.success(`Client sélectionné: ${customer.name}`);
   };
 
+  const handlePreviewReceipt = () => {
+    if (cart.length === 0) return;
+
+    const totals = getTotals();
+    
+    const previewSale = {
+      saleNumber: 'PREVIEW-' + Date.now(),
+      date: new Date(),
+      items: cart,
+      subtotal: totals.subtotal,
+      totalVat: totals.totalVat,
+      totalDiscount: totals.totalDiscount,
+      total: totals.total,
+      paymentMethod: 'cash' as const,
+      is_invoice: isInvoiceMode,
+      customer: isInvoiceMode ? selectedCustomer : undefined,
+    };
+    
+    setCurrentSale(previewSale);
+    setReceiptDialogOpen(true);
+  };
+
   const handleApplyPromoCode = (code: string, type: 'percentage' | 'amount', value: number) => {
     setAppliedPromoCode({ code, type, value });
   };
@@ -727,7 +750,7 @@ const Index = () => {
                 </Button>
               </div>
             )}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -750,6 +773,16 @@ const Index = () => {
               >
                 <Ticket className="mr-1 h-3 w-3" />
                 Code promo
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreviewReceipt}
+                disabled={cart.length === 0}
+                className="h-8 text-xs border-muted-foreground text-muted-foreground hover:bg-muted/50"
+              >
+                <Eye className="mr-1 h-3 w-3" />
+                Aperçu
               </Button>
             </div>
             <div className="flex justify-between items-center text-primary text-3xl font-bold pt-3 border-t-2 border-border">
