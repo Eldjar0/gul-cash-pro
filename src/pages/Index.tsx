@@ -56,6 +56,7 @@ const Index = () => {
   const [scanInput, setScanInput] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [quantityInput, setQuantityInput] = useState('1');
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -119,20 +120,45 @@ const Index = () => {
     toast.success(`${product.name} ajouté`);
   };
 
+  const handleSearch = () => {
+    if (!scanInput.trim() || !products) {
+      setSearchResults([]);
+      return;
+    }
+
+    const searchTerm = scanInput.toLowerCase();
+    const results = products.filter((p) => {
+      return (
+        p.barcode?.toLowerCase().includes(searchTerm) ||
+        p.name.toLowerCase().includes(searchTerm) ||
+        p.id.toLowerCase().includes(searchTerm) ||
+        p.description?.toLowerCase().includes(searchTerm)
+      );
+    });
+
+    if (results.length === 1) {
+      // Si un seul résultat, l'ajouter directement
+      handleProductSelect(results[0]);
+      setScanInput('');
+      setSearchResults([]);
+    } else if (results.length > 1) {
+      // Plusieurs résultats, les afficher
+      setSearchResults(results);
+    } else {
+      toast.error(`Aucun produit trouvé`);
+      setSearchResults([]);
+    }
+  };
+
   const handleScanSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!scanInput.trim()) return;
+    handleSearch();
+  };
 
-    const product = products?.find(
-      (p) => p.barcode === scanInput || p.name.toLowerCase().includes(scanInput.toLowerCase())
-    );
-
-    if (product) {
-      handleProductSelect(product);
-    } else {
-      toast.error(`Produit introuvable: ${scanInput}`);
-      setScanInput('');
-    }
+  const handleSelectSearchResult = (product: Product) => {
+    handleProductSelect(product);
+    setScanInput('');
+    setSearchResults([]);
   };
 
   const handleRemoveItem = (index: number) => {
@@ -409,17 +435,69 @@ const Index = () => {
               <div className="flex items-center gap-2 md:gap-3">
                 <Scan className="h-6 w-6 md:h-8 md:w-8 text-primary animate-pulse flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-muted-foreground text-xs md:text-sm font-mono mb-1 md:mb-2 block">Scanner / Code barre</label>
+                  <label className="text-muted-foreground text-xs md:text-sm font-mono mb-1 md:mb-2 block">Rechercher produit</label>
                   <Input
                     ref={scanInputRef}
                     value={scanInput}
-                    onChange={(e) => setScanInput(e.target.value)}
-                    placeholder="Scanner..."
+                    onChange={(e) => {
+                      setScanInput(e.target.value);
+                      if (!e.target.value.trim()) {
+                        setSearchResults([]);
+                      }
+                    }}
+                    placeholder="Code-barres, nom, catégorie..."
                     className="h-10 md:h-12 bg-background border-input text-foreground text-base md:text-xl font-mono focus:border-primary"
                   />
                 </div>
+                <Button
+                  type="submit"
+                  className="h-10 md:h-12 px-4 bg-primary hover:bg-primary/90 text-white"
+                >
+                  <Scan className="h-5 w-5" />
+                </Button>
               </div>
             </form>
+
+            {/* Résultats de recherche */}
+            {searchResults.length > 0 && (
+              <div className="mt-3 border-t border-border pt-3">
+                <div className="text-xs text-muted-foreground mb-2 font-medium">
+                  {searchResults.length} résultat{searchResults.length > 1 ? 's' : ''} trouvé{searchResults.length > 1 ? 's' : ''}
+                </div>
+                <ScrollArea className="max-h-48">
+                  <div className="space-y-2">
+                    {searchResults.map((product) => (
+                      <button
+                        key={product.id}
+                        onClick={() => handleSelectSearchResult(product)}
+                        className="w-full p-3 bg-muted/50 hover:bg-primary/10 border border-border rounded-lg text-left transition-all hover:shadow-md group"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="font-bold text-foreground group-hover:text-primary transition-colors">
+                              {product.name}
+                            </div>
+                            {product.barcode && (
+                              <div className="text-xs text-muted-foreground mt-0.5">
+                                Code: {product.barcode}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-primary">
+                              {product.price.toFixed(2)}€
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {product.type === 'weight' ? 'au kg' : 'unité'}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
           </Card>
 
           {/* Catégories sur mobile */}
