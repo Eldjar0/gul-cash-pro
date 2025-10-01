@@ -236,9 +236,9 @@ const Index = () => {
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="h-screen flex flex-col bg-[#1a1a1a] overflow-hidden">
+    <div className="h-screen flex flex-col bg-black overflow-hidden">
       {/* Barre d'état supérieure - Style terminal */}
-      <div className="bg-[#0a0a0a] border-b-2 border-pos-success/30 px-3 md:px-6 py-2 flex-shrink-0">
+      <div className="bg-black border-b border-gray-900 px-3 md:px-6 py-2 flex-shrink-0">
         <div className="flex items-center justify-between text-pos-success font-mono">
           <div className="flex items-center gap-2 md:gap-6">
             <div className="flex items-center gap-2">
@@ -266,17 +266,17 @@ const Index = () => {
       {/* Contenu principal - Responsive layout */}
       <div className="flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-0 overflow-hidden">
         {/* COLONNE GAUCHE - Catégories (cachée sur mobile, visible sur desktop) */}
-        <div className="hidden lg:block lg:col-span-3 bg-[#252525] border-r-2 border-[#333] overflow-y-auto">
+        <div className="hidden lg:block lg:col-span-3 bg-black border-r border-gray-900 overflow-y-auto">
           <div className="p-3 xl:p-4">
-            <h2 className="text-white font-bold text-base xl:text-lg mb-3 font-mono">CATÉGORIES</h2>
+            <h2 className="text-white font-light text-base xl:text-lg mb-3">CATÉGORIES</h2>
             <CategoryGrid onProductSelect={handleProductSelect} />
           </div>
         </div>
 
         {/* COLONNE CENTRE - Scan & Clavier */}
-        <div className="lg:col-span-5 bg-[#1a1a1a] p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto lg:overflow-hidden">
+        <div className="lg:col-span-5 bg-black p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto lg:overflow-hidden">
           {/* Zone de scan */}
-          <Card className="bg-[#0a0a0a] border-2 border-pos-success/30 p-3 md:p-6 flex-shrink-0">
+          <Card className="bg-black border border-gray-900 p-3 md:p-6 flex-shrink-0">
             <form onSubmit={handleScanSubmit}>
               <div className="flex items-center gap-2 md:gap-3">
                 <Scan className="h-6 w-6 md:h-8 md:w-8 text-pos-success animate-pulse flex-shrink-0" />
@@ -295,13 +295,13 @@ const Index = () => {
           </Card>
 
           {/* Catégories sur mobile */}
-          <Card className="lg:hidden bg-[#0a0a0a] border-2 border-[#333] p-3 flex-1 overflow-y-auto">
+          <Card className="lg:hidden bg-black border border-gray-900 p-3 flex-1 overflow-y-auto">
             <h2 className="text-white font-bold text-sm mb-2 font-mono">CATÉGORIES</h2>
             <CategoryGrid onProductSelect={handleProductSelect} />
           </Card>
 
           {/* Clavier numérique */}
-          <Card className="hidden lg:block bg-[#0a0a0a] border-2 border-[#333] p-3 xl:p-4 flex-shrink-0">
+          <Card className="hidden lg:block bg-black border border-gray-900 p-3 xl:p-4 flex-shrink-0">
             <div className="text-pos-success text-xs md:text-sm font-mono mb-2 md:mb-3">QUANTITÉ</div>
             <div className="bg-[#1a1a1a] p-2 md:p-4 rounded mb-2 md:mb-4 border border-pos-success/30">
               <div className="text-pos-success text-2xl md:text-4xl font-mono text-center font-bold">
@@ -323,7 +323,7 @@ const Index = () => {
         </div>
 
         {/* COLONNE DROITE - Ticket & Paiement */}
-        <div className="lg:col-span-4 bg-[#0a0a0a] border-t-2 lg:border-t-0 lg:border-l-2 border-[#333] flex flex-col overflow-hidden">
+        <div className="lg:col-span-4 bg-black border-t lg:border-t-0 lg:border-l border-gray-900 flex flex-col overflow-hidden">
           {/* En-tête du ticket */}
           <div className="bg-[#1a1a1a] border-b-2 border-pos-success/30 p-3 md:p-4 flex-shrink-0">
             <div className="flex items-center justify-between">

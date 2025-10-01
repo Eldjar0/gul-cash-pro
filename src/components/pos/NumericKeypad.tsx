@@ -15,29 +15,26 @@ export function NumericKeypad({ onNumberClick, onClear, onBackspace }: NumericKe
       {numbers.map((num) => (
         <Button
           key={num}
-          variant="outline"
-          size="lg"
           onClick={() => onNumberClick(num)}
-          className="h-16 text-xl font-bold bg-gradient-to-br from-primary to-primary-glow text-white border-0 shadow-lg hover:shadow-glow hover:scale-105 active:scale-95 transition-all duration-200"
+          className="aspect-square text-3xl font-light text-white border-0 transition-all duration-150 hover:brightness-110 active:brightness-90 rounded-full"
+          style={{ backgroundColor: '#505050' }}
         >
           {num}
         </Button>
       ))}
       <Button
-        variant="outline"
-        size="lg"
         onClick={onBackspace}
-        className="h-16 bg-gradient-to-br from-accent to-accent/80 text-white border-0 shadow-lg hover:shadow-glow hover:scale-105 active:scale-95 transition-all duration-200"
+        className="aspect-square text-white border-0 transition-all duration-150 hover:brightness-110 active:brightness-90 rounded-full"
+        style={{ backgroundColor: '#D4D4D2' }}
       >
-        <Delete className="h-6 w-6" />
+        <Delete className="h-6 w-6 text-black" />
       </Button>
       <Button
-        variant="outline"
-        size="lg"
         onClick={onClear}
-        className="h-16 text-lg font-bold bg-gradient-to-br from-destructive to-destructive/80 text-white border-0 shadow-lg hover:shadow-glow hover:scale-105 active:scale-95 transition-all duration-200 col-span-2"
+        className="aspect-square text-xl font-light border-0 transition-all duration-150 hover:brightness-110 active:brightness-90 rounded-full col-span-2"
+        style={{ backgroundColor: '#D4D4D2', color: '#000000' }}
       >
-        EFFACER
+        C
       </Button>
     </div>
   );
