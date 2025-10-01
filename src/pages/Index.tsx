@@ -114,20 +114,45 @@ const Index = () => {
 
   const handleProductSelect = (product: Product, quantity?: number) => {
     const qty = quantity || parseFloat(quantityInput) || 1;
-    const { subtotal, vatAmount, total } = calculateItemTotal(product, qty);
+    
+    // Check if product already exists in cart
+    const existingItemIndex = cart.findIndex(item => item.product.id === product.id);
+    
+    if (existingItemIndex !== -1) {
+      // Product exists, update its quantity
+      const newCart = [...cart];
+      const existingItem = newCart[existingItemIndex];
+      const newQuantity = existingItem.quantity + qty;
+      const { subtotal, vatAmount, total } = calculateItemTotal(product, newQuantity, existingItem.discount);
+      
+      newCart[existingItemIndex] = {
+        ...existingItem,
+        quantity: newQuantity,
+        subtotal,
+        vatAmount,
+        total,
+      };
+      
+      setCart(newCart);
+      toast.success(`${product.name} quantité mise à jour`);
+    } else {
+      // New product, add to cart
+      const { subtotal, vatAmount, total } = calculateItemTotal(product, qty);
 
-    const newItem: CartItem = {
-      product,
-      quantity: qty,
-      subtotal,
-      vatAmount,
-      total,
-    };
+      const newItem: CartItem = {
+        product,
+        quantity: qty,
+        subtotal,
+        vatAmount,
+        total,
+      };
 
-    setCart([...cart, newItem]);
+      setCart([...cart, newItem]);
+      toast.success(`${product.name} ajouté`);
+    }
+    
     setQuantityInput('1');
     setScanInput('');
-    toast.success(`${product.name} ajouté`);
   };
 
   const handleSearch = () => {
