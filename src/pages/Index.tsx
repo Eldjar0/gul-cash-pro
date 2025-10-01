@@ -15,6 +15,7 @@ import {
   Edit,
   Ticket,
   Eye,
+  History,
 } from 'lucide-react';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
@@ -519,6 +520,15 @@ const Index = () => {
               <Clock className="h-4 w-4" />
               <span className="text-sm font-medium">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/sales')}
+              className="text-white hover:bg-white/20 text-xs md:text-sm"
+            >
+              <History className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Ventes</span>
+            </Button>
           </div>
           {user ? (
             <Button

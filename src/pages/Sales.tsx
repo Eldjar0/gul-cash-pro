@@ -1,0 +1,309 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+  ArrowLeft,
+  Search,
+  Eye,
+  FileText,
+  Calendar,
+  Euro,
+  User,
+  CreditCard,
+  Receipt,
+} from 'lucide-react';
+import { useSales } from '@/hooks/useSales';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Receipt as ReceiptComponent } from '@/components/pos/Receipt';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+
+export default function Sales() {
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSale, setSelectedSale] = useState<any>(null);
+  const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+
+  const { data: sales = [], isLoading } = useSales();
+
+  const filteredSales = sales.filter((sale) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      sale.sale_number?.toLowerCase().includes(searchLower) ||
+      format(new Date(sale.date), 'dd/MM/yyyy').includes(searchLower)
+    );
+  });
+
+  const handleViewReceipt = (sale: any) => {
+    // Transform sale data to match Receipt component format
+    const saleForReceipt = {
+      ...sale,
+      saleNumber: sale.sale_number,
+      items: sale.sale_items?.map((item: any) => ({
+        product: {
+          name: item.product_name,
+          price: item.unit_price,
+          vat_rate: item.vat_rate,
+          type: 'unit' as const,
+        },
+        quantity: item.quantity,
+        discount: item.discount_type ? {
+          type: item.discount_type as 'percentage' | 'amount',
+          value: item.discount_value || 0,
+        } : undefined,
+        subtotal: item.subtotal,
+        vatAmount: item.vat_amount,
+        total: item.total,
+      })) || [],
+      subtotal: sale.subtotal,
+      totalVat: sale.total_vat,
+      totalDiscount: sale.total_discount,
+      total: sale.total,
+      paymentMethod: sale.payment_method,
+      amountPaid: sale.amount_paid,
+      change: sale.change_amount,
+      is_invoice: sale.is_invoice,
+    };
+
+    setSelectedSale(saleForReceipt);
+    setReceiptDialogOpen(true);
+  };
+
+  const getTotalsByDate = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todaySales = sales.filter((sale) => {
+      const saleDate = new Date(sale.date);
+      saleDate.setHours(0, 0, 0, 0);
+      return saleDate.getTime() === today.getTime();
+    });
+
+    const totalToday = todaySales.reduce((sum, sale) => sum + sale.total, 0);
+    const countToday = todaySales.length;
+
+    const totalAll = sales.reduce((sum, sale) => sum + sale.total, 0);
+    const countAll = sales.length;
+
+    return { totalToday, countToday, totalAll, countAll };
+  };
+
+  const { totalToday, countToday, totalAll, countAll } = getTotalsByDate();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/')}
+              className="text-white hover:bg-white/20"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-white">Historique des Ventes</h1>
+              <p className="text-sm text-white/80">Tickets et factures</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 md:p-6 max-w-7xl mx-auto">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card className="p-4 bg-white">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <Euro className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Total Aujourd'hui</p>
+                <p className="text-xl font-bold text-primary">{totalToday.toFixed(2)}€</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 bg-white">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-accent/10 rounded-lg">
+                <Receipt className="h-5 w-5 text-accent" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Ventes Aujourd'hui</p>
+                <p className="text-xl font-bold">{countToday}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 bg-white">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <Euro className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Total Global</p>
+                <p className="text-xl font-bold text-primary">{totalAll.toFixed(2)}€</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 bg-white">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-accent/10 rounded-lg">
+                <Receipt className="h-5 w-5 text-accent" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Total Ventes</p>
+                <p className="text-xl font-bold">{countAll}</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Search */}
+        <Card className="p-4 bg-white mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher par numéro ou date..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </Card>
+
+        {/* Sales List */}
+        <Card className="bg-white">
+          <ScrollArea className="h-[calc(100vh-400px)]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Numéro</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Articles</TableHead>
+                  <TableHead>Paiement</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredSales.map((sale) => (
+                  <TableRow key={sale.id}>
+                    <TableCell className="font-mono font-semibold">
+                      {sale.sale_number}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">
+                          {format(new Date(sale.date), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={sale.is_invoice ? 'default' : 'secondary'}>
+                        {sale.is_invoice ? (
+                          <><FileText className="h-3 w-3 mr-1" /> Facture</>
+                        ) : (
+                          <><Receipt className="h-3 w-3 mr-1" /> Ticket</>
+                        )}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">
+                        {sale.sale_items?.length || 0} article{(sale.sale_items?.length || 0) > 1 ? 's' : ''}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm capitalize">
+                          {sale.payment_method === 'cash' ? 'Espèces' : 
+                           sale.payment_method === 'card' ? 'Carte' : 'Mobile'}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-primary">
+                      {sale.total.toFixed(2)}€
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewReceipt(sale)}
+                        className="h-8"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Voir
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredSales.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      Aucune vente trouvée
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        </Card>
+      </div>
+
+      {/* Receipt Dialog */}
+      <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
+        <DialogContent className="max-w-md bg-[#1a1a1a] border-2 border-pos-success/30">
+          <DialogHeader>
+            <DialogTitle className="text-pos-success text-xl flex items-center gap-2">
+              <Receipt className="h-5 w-5" />
+              {selectedSale?.is_invoice ? 'Facture' : 'Ticket'}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedSale && <ReceiptComponent sale={selectedSale} />}
+          <Button
+            onClick={() => window.print()}
+            className="w-full bg-pos-success hover:bg-pos-success/90 text-white"
+          >
+            Imprimer
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
