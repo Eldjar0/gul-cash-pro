@@ -92,7 +92,7 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="w-full aspect-square flex flex-col justify-center items-center gap-3 text-white font-mono transition-all duration-200 rounded-xl active:scale-95 hover:opacity-90"
+          className="w-48 h-48 mx-auto flex flex-col justify-center items-center gap-3 text-white font-mono transition-all duration-200 rounded-xl active:scale-95 hover:opacity-90"
           style={{ backgroundColor: category.color }}
         >
           {category.icon && (
