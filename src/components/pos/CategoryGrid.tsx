@@ -49,26 +49,28 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
       <div className="space-y-3">
         <Button 
           onClick={handleBack}
-          className="w-full bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border-2 border-[#444] font-mono"
+          className="w-full text-white border-0 font-medium shadow-md hover:scale-[1.02] transition-transform"
+          style={{ background: 'linear-gradient(135deg, hsl(217, 91%, 60%), hsl(217, 91%, 50%))' }}
         >
           <ChevronLeft className="h-4 w-4 mr-2" />
           RETOUR
         </Button>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           {products.map((product) => (
             <Button
               key={product.id}
               onClick={() => onProductSelect(product)}
-              className="h-20 flex flex-col justify-center items-center p-2 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border-2 hover:border-pos-success/50 transition-all font-mono"
+              className="h-24 flex flex-col justify-center items-center p-3 text-white border-2 hover:scale-[1.02] transition-all font-medium rounded-xl shadow-md"
               style={{ 
-                borderColor: currentCategory?.color || '#444',
+                background: 'linear-gradient(135deg, rgba(58, 134, 255, 0.1), rgba(58, 134, 255, 0.05))',
+                borderColor: currentCategory?.color || 'hsl(217, 91%, 60%)',
               }}
             >
-              <span className="font-bold text-xs text-center line-clamp-2 mb-1">
+              <span className="font-semibold text-sm text-center line-clamp-2 mb-1.5">
                 {product.name}
               </span>
-              <span className="text-pos-success text-sm font-bold">
+              <span className="text-primary text-base font-bold">
                 {product.price.toFixed(2)}€
               </span>
             </Button>
@@ -86,19 +88,19 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 p-2 animate-fade-in bg-black">
+    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2.5 p-3 animate-fade-in">
       {categories.map((category) => (
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="aspect-square flex flex-col justify-center items-center gap-2 text-white font-light transition-all duration-150 hover:brightness-110 active:brightness-90 overflow-hidden rounded-full shadow-xl border-0"
+          className="aspect-square flex flex-col justify-center items-center gap-1.5 text-white font-light transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-primary/30 active:scale-95 overflow-hidden rounded-2xl shadow-md border border-gray-800"
           style={{ 
-            backgroundColor: '#505050',
+            background: 'linear-gradient(135deg, hsl(217, 91%, 60%), hsl(217, 91%, 50%))',
           }}
         >
-          <span className="text-2xl">{category.icon || '📦'}</span>
-          <span className="text-[8px] font-normal tracking-tight leading-tight text-center px-1">
-            {category.name}
+          <span className="text-3xl drop-shadow-lg">{category.icon || '📦'}</span>
+          <span className="text-[10px] font-medium tracking-wide leading-tight text-center px-1.5">
+            {category.name.toUpperCase()}
           </span>
         </Button>
       ))}

@@ -24,10 +24,10 @@ export function NumericKeypad({ onNumberClick, onClear, onBackspace }: NumericKe
       ))}
       <Button
         onClick={onBackspace}
-        className="aspect-square text-white border-0 transition-all duration-150 hover:brightness-110 active:brightness-90 rounded-full"
-        style={{ backgroundColor: '#D4D4D2' }}
+        className="aspect-square text-white border-0 transition-all duration-200 hover:scale-105 active:scale-95 rounded-full shadow-lg"
+        style={{ background: 'linear-gradient(135deg, hsl(217, 91%, 60%), hsl(217, 91%, 50%))' }}
       >
-        <Delete className="h-6 w-6 text-black" />
+        <Delete className="h-6 w-6 text-white" />
       </Button>
       <Button
         onClick={onClear}
