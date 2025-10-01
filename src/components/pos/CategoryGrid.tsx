@@ -86,21 +86,18 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 p-1 pt-2 animate-fade-in">
+    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 p-2 animate-fade-in bg-black">
       {categories.map((category) => (
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="group relative h-28 flex flex-col justify-between items-center p-3 text-white font-bold transition-all duration-200 font-mono hover:scale-[1.05] active:scale-95 overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl"
+          className="aspect-square flex flex-col justify-center items-center gap-2 text-white font-light transition-all duration-150 hover:brightness-110 active:brightness-90 overflow-hidden rounded-full shadow-xl border-0"
           style={{ 
-            backgroundColor: category.color,
+            backgroundColor: '#505050',
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
-          
-          <span className="text-3xl relative z-10 mt-1">{category.icon || '📦'}</span>
-          
-          <span className="text-[9px] relative z-10 tracking-wide uppercase font-bold leading-tight text-center">
+          <span className="text-2xl">{category.icon || '📦'}</span>
+          <span className="text-[8px] font-normal tracking-tight leading-tight text-center px-1">
             {category.name}
           </span>
         </Button>
