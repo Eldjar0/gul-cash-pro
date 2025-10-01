@@ -1,24 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
-  ShoppingCart,
-  BarChart3,
-  Settings,
-  Package,
-  Printer,
-  XCircle,
+  Scan,
+  CreditCard,
+  Banknote,
+  Smartphone,
+  Trash2,
+  DollarSign,
   LogOut,
+  Clock,
+  User,
 } from 'lucide-react';
-import { ProductSearch } from '@/components/pos/ProductSearch';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
-import { CartDisplay } from '@/components/pos/CartDisplay';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
 import { Receipt } from '@/components/pos/Receipt';
-import { QuickCalculator } from '@/components/pos/QuickCalculator';
-import { CashDrawerActions } from '@/components/pos/CashDrawerActions';
-import { NumericKeypad } from '@/components/pos/NumericKeypad';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateSale } from '@/hooks/useSales';
@@ -30,7 +27,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -51,18 +48,15 @@ const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { data: products } = useProducts();
   const createSale = useCreateSale();
+  const scanInputRef = useRef<HTMLInputElement>(null);
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
-  const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
   const [currentSale, setCurrentSale] = useState<any>(null);
-  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
-  const [discountValue, setDiscountValue] = useState('');
-  const [discountType, setDiscountType] = useState<DiscountType>('percentage');
-  const [weightInput, setWeightInput] = useState('');
-  const [weightDialogOpen, setWeightDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [scanInput, setScanInput] = useState('');
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [quantityInput, setQuantityInput] = useState('1');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -70,12 +64,23 @@ const Index = () => {
     }
   }, [user, authLoading, navigate]);
 
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (scanInputRef.current) {
+      scanInputRef.current.focus();
+    }
+  }, [cart]);
+
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
+      <div className="min-h-screen flex items-center justify-center bg-pos-display">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground font-medium">Chargement...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pos-success mx-auto mb-4"></div>
+          <p className="text-white font-medium">Chargement...</p>
         </div>
       </div>
     );
@@ -98,14 +103,7 @@ const Index = () => {
   };
 
   const handleProductSelect = (product: Product, quantity?: number) => {
-    if (product.type === 'weight' && !quantity) {
-      setSelectedProduct(product);
-      setWeightInput('');
-      setWeightDialogOpen(true);
-      return;
-    }
-
-    const qty = quantity || 1;
+    const qty = quantity || parseFloat(quantityInput) || 1;
     const { subtotal, vatAmount, total } = calculateItemTotal(product, qty);
 
     const newItem: CartItem = {
@@ -117,17 +115,24 @@ const Index = () => {
     };
 
     setCart([...cart, newItem]);
+    setQuantityInput('1');
+    setScanInput('');
     toast.success(`${product.name} ajouté`);
   };
 
-  const handleWeightConfirm = () => {
-    if (selectedProduct && weightInput) {
-      const weight = parseFloat(weightInput);
-      if (weight > 0) {
-        handleProductSelect(selectedProduct, weight);
-        setWeightDialogOpen(false);
-        setSelectedProduct(null);
-      }
+  const handleScanSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!scanInput.trim()) return;
+
+    const product = products?.find(
+      (p) => p.barcode === scanInput || p.name.toLowerCase().includes(scanInput.toLowerCase())
+    );
+
+    if (product) {
+      handleProductSelect(product);
+    } else {
+      toast.error(`Produit introuvable: ${scanInput}`);
+      setScanInput('');
     }
   };
 
@@ -151,38 +156,6 @@ const Index = () => {
     };
     
     setCart(newCart);
-  };
-
-  const handleApplyDiscount = (index: number) => {
-    setSelectedItemIndex(index);
-    setDiscountValue('');
-    setDiscountType('percentage');
-    setDiscountDialogOpen(true);
-  };
-
-  const confirmDiscount = () => {
-    if (selectedItemIndex !== null && discountValue) {
-      const value = parseFloat(discountValue);
-      if (value > 0) {
-        const newCart = [...cart];
-        const item = newCart[selectedItemIndex];
-        
-        const discount = { type: discountType, value };
-        const { subtotal, vatAmount, total } = calculateItemTotal(item.product, item.quantity, discount);
-        
-        newCart[selectedItemIndex] = {
-          ...item,
-          discount,
-          subtotal,
-          vatAmount,
-          total,
-        };
-        
-        setCart(newCart);
-        setDiscountDialogOpen(false);
-        toast.success('Remise appliquée');
-      }
-    }
   };
 
   const getTotals = () => {
@@ -237,15 +210,11 @@ const Index = () => {
       setCart([]);
       setPaymentDialogOpen(false);
       setReceiptDialogOpen(true);
-      toast.success('Paiement réussi!');
+      toast.success('Paiement validé');
     } catch (error) {
       console.error('Error creating sale:', error);
-      toast.error('Erreur lors du paiement');
+      toast.error('Erreur paiement');
     }
-  };
-
-  const handlePrint = () => {
-    window.print();
   };
 
   const handleClearCart = () => {
@@ -255,171 +224,235 @@ const Index = () => {
     }
   };
 
-  const handleProductCode = (code: string) => {
-    const product = products?.find(
-      (p) => p.barcode === code || p.id === code
-    );
-    if (product) {
-      handleProductSelect(product, product.type === 'unit' ? 1 : undefined);
-    } else {
-      toast.error(`Produit non trouvé: ${code}`);
-    }
+  const handleNumberClick = (num: string) => {
+    setQuantityInput(prev => prev === '1' ? num : prev + num);
   };
 
-  const handleCreateProduct = () => {
-    toast.info('Création de produit - À venir');
-  };
-
-  const handleOpenDrawer = () => {
-    toast.success('💰 Caisse ouverte');
-  };
-
-  const handleViewStats = () => {
-    toast.info('📊 Statistiques - À venir');
-  };
-
-  const handleViewHistory = () => {
-    toast.info('📋 Historique - À venir');
-  };
-
-  const handleManageCustomers = () => {
-    toast.info('👥 Gestion clients - À venir');
-  };
-
-  const handleManageProducts = () => {
-    toast.info('📦 Gestion produits - À venir');
-  };
-
-  const handleSettings = () => {
-    toast.info('⚙️ Paramètres - À venir');
+  const handleClearQuantity = () => {
+    setQuantityInput('1');
   };
 
   const totals = getTotals();
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Modern Header */}
-      <header className="relative overflow-hidden border-b border-border/50 shadow-xl">
-        <div className="absolute inset-0 bg-[var(--gradient-primary)]"></div>
-        <div className="relative px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shadow-lg">
-                <ShoppingCart className="h-7 w-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-black text-white tracking-tight">Point de Vente</h1>
-                <p className="text-sm text-white/90 font-medium">Système moderne</p>
-              </div>
+    <div className="min-h-screen flex flex-col bg-[#1a1a1a]">
+      {/* Barre d'état supérieure - Style terminal */}
+      <div className="bg-[#0a0a0a] border-b-2 border-pos-success/30 px-6 py-2">
+        <div className="flex items-center justify-between text-pos-success font-mono">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span className="text-sm font-bold">CAISSE #1</span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right mr-2">
-                <div className="text-sm font-bold text-white">Caisse #1</div>
-                <div className="text-xs text-white/80">{new Date().toLocaleDateString('fr-BE')}</div>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-11 w-11 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm"
-              >
-                <BarChart3 className="h-5 w-5" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-11 w-11 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm"
-              >
-                <Settings className="h-5 w-5" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-11 w-11 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm"
-              >
-                <Package className="h-5 w-5" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={signOut}
-                className="h-11 w-11 rounded-xl bg-white/10 hover:bg-destructive text-white border border-white/20 backdrop-blur-sm"
-              >
-                <LogOut className="h-5 w-5" />
-              </Button>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span className="text-sm">{currentTime.toLocaleTimeString('fr-FR')}</span>
             </div>
+            <div className="text-sm">{currentTime.toLocaleDateString('fr-FR')}</div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={signOut}
+            className="text-pos-success hover:bg-pos-success/10 font-mono"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            QUITTER
+          </Button>
+        </div>
+      </div>
+
+      {/* Contenu principal - 3 colonnes */}
+      <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
+        {/* COLONNE GAUCHE - Catégories & PLU */}
+        <div className="col-span-3 bg-[#252525] border-r-2 border-[#333] p-4 overflow-auto">
+          <div className="mb-4">
+            <h2 className="text-white font-bold text-lg mb-3 font-mono">CATÉGORIES</h2>
+            <CategoryGrid onProductSelect={handleProductSelect} />
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <div className="flex-1 p-6 overflow-hidden">
-        <div className="grid lg:grid-cols-12 gap-6 h-full">
-          {/* Left Column - Cart */}
-          <div className="lg:col-span-5 flex flex-col gap-4">
-            <div className="flex-1 min-h-0">
-              <CartDisplay
-                items={cart}
-                onRemoveItem={handleRemoveItem}
-                onUpdateQuantity={handleUpdateQuantity}
-                onApplyDiscount={handleApplyDiscount}
-              />
+        {/* COLONNE CENTRE - Scan & Recherche */}
+        <div className="col-span-5 bg-[#1a1a1a] p-4 flex flex-col gap-4">
+          {/* Zone de scan */}
+          <Card className="bg-[#0a0a0a] border-2 border-pos-success/30 p-6">
+            <form onSubmit={handleScanSubmit}>
+              <div className="flex items-center gap-3 mb-4">
+                <Scan className="h-8 w-8 text-pos-success animate-pulse" />
+                <div className="flex-1">
+                  <label className="text-pos-success text-sm font-mono mb-2 block">SCANNER / CODE BARRE</label>
+                  <Input
+                    ref={scanInputRef}
+                    value={scanInput}
+                    onChange={(e) => setScanInput(e.target.value)}
+                    placeholder="Scanner un article..."
+                    className="h-12 bg-[#1a1a1a] border-pos-success/50 text-white text-xl font-mono focus:border-pos-success"
+                  />
+                </div>
+              </div>
+            </form>
+          </Card>
+
+          {/* Clavier numérique XXL */}
+          <Card className="bg-[#0a0a0a] border-2 border-[#333] p-4">
+            <div className="text-pos-success text-sm font-mono mb-3">QUANTITÉ</div>
+            <div className="bg-[#1a1a1a] p-4 rounded mb-4 border border-pos-success/30">
+              <div className="text-pos-success text-4xl font-mono text-center font-bold">
+                {quantityInput}
+              </div>
             </div>
-            
-            {/* Action Buttons */}
+            <div className="grid grid-cols-3 gap-3">
+              {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
+                <Button
+                  key={key}
+                  onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)}
+                  className="h-16 text-2xl font-bold bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono"
+                >
+                  {key}
+                </Button>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        {/* COLONNE DROITE - Ticket & Paiement */}
+        <div className="col-span-4 bg-[#0a0a0a] border-l-2 border-[#333] flex flex-col">
+          {/* En-tête du ticket */}
+          <div className="bg-[#1a1a1a] border-b-2 border-pos-success/30 p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-pos-success font-bold text-xl font-mono">TICKET DE CAISSE</h2>
+              <div className="text-pos-success font-mono">
+                <span className="text-sm">ARTICLES: </span>
+                <span className="text-xl font-bold">{totalItems}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Liste des articles */}
+          <ScrollArea className="flex-1 p-4">
+            {cart.length === 0 ? (
+              <div className="text-center py-12">
+                <Scan className="h-16 w-16 mx-auto mb-4 text-gray-600" />
+                <p className="text-gray-500 font-mono">Aucun article scanné</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {cart.map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-[#1a1a1a] border border-[#333] p-3 rounded font-mono"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <div className="text-white font-bold text-sm">{item.product.name}</div>
+                        <div className="text-gray-400 text-xs mt-1">
+                          {item.product.price.toFixed(2)}€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveItem(index)}
+                        className="h-8 w-8 hover:bg-destructive/20 text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleUpdateQuantity(index, Math.max(0.1, item.quantity - 1))}
+                          className="h-7 w-7 p-0 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border border-[#444]"
+                        >
+                          -
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleUpdateQuantity(index, item.quantity + 1)}
+                          className="h-7 w-7 p-0 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border border-[#444]"
+                        >
+                          +
+                        </Button>
+                      </div>
+                      <div className="text-pos-success text-lg font-bold">
+                        {item.total.toFixed(2)}€
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+
+          {/* Totaux */}
+          <div className="bg-[#1a1a1a] border-t-2 border-pos-success/30 p-4 space-y-2">
+            <div className="flex justify-between text-gray-400 font-mono">
+              <span>Sous-total HT:</span>
+              <span>{totals.subtotal.toFixed(2)}€</span>
+            </div>
+            <div className="flex justify-between text-gray-400 font-mono">
+              <span>TVA:</span>
+              <span>{totals.totalVat.toFixed(2)}€</span>
+            </div>
+            <div className="flex justify-between text-pos-success text-3xl font-bold font-mono pt-3 border-t-2 border-[#333]">
+              <span>TOTAL:</span>
+              <span>{totals.total.toFixed(2)}€</span>
+            </div>
+          </div>
+
+          {/* Boutons de paiement */}
+          <div className="bg-[#0a0a0a] p-4 space-y-3 border-t-2 border-[#333]">
             <div className="grid grid-cols-2 gap-3">
               <Button
                 onClick={handleClearCart}
-                variant="outline"
                 disabled={cart.length === 0}
-                className="h-16 bg-gradient-to-br from-destructive to-destructive/80 text-white hover:scale-105 active:scale-95 border-0 font-bold shadow-lg hover:shadow-glow-lg transition-all disabled:opacity-50 disabled:hover:scale-100"
+                className="h-16 bg-destructive hover:bg-destructive/90 text-white font-bold text-lg font-mono"
               >
-                <XCircle className="mr-2 h-5 w-5" />
-                Annuler
+                <Trash2 className="mr-2 h-5 w-5" />
+                ANNULER
               </Button>
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-16 bg-gradient-to-br from-pos-success to-category-green text-white hover:scale-105 active:scale-95 border-0 font-bold text-lg shadow-lg hover:shadow-glow-lg transition-all disabled:opacity-50 disabled:hover:scale-100 relative overflow-hidden group"
+                className="h-16 bg-pos-success hover:bg-pos-success/90 text-black font-bold text-lg font-mono"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                <Printer className="mr-2 h-5 w-5 relative z-10" />
-                <span className="relative z-10">Payer</span>
+                <DollarSign className="mr-2 h-5 w-5" />
+                PAYER
               </Button>
             </div>
-          </div>
-
-          {/* Right Column - Products */}
-          <div className="lg:col-span-7 flex flex-col gap-4 min-h-0">
-            {/* Search Bar */}
-            <Card className="p-4 shadow-xl glass border-2 border-primary/20">
-              <ProductSearch onProductSelect={handleProductSelect} />
-            </Card>
-
-            {/* Quick Tools */}
-            <div className="grid grid-cols-2 gap-3">
-              <QuickCalculator
-                onProductCode={handleProductCode}
-                onCreateProduct={handleCreateProduct}
-              />
-              <CashDrawerActions
-                onOpenDrawer={handleOpenDrawer}
-                onViewStats={handleViewStats}
-                onViewHistory={handleViewHistory}
-                onManageCustomers={handleManageCustomers}
-                onManageProducts={handleManageProducts}
-                onSettings={handleSettings}
-              />
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                onClick={() => setPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-12 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-blue font-mono"
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                CB
+              </Button>
+              <Button
+                onClick={() => setPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-12 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-green font-mono"
+              >
+                <Banknote className="mr-2 h-4 w-4" />
+                ESP
+              </Button>
+              <Button
+                onClick={() => setPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-12 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-purple font-mono"
+              >
+                <Smartphone className="mr-2 h-4 w-4" />
+                SANS
+              </Button>
             </div>
-
-            {/* Categories - Main Product Area */}
-            <Card className="flex-1 p-6 overflow-auto glass border-2 border-border/50 shadow-xl min-h-0">
-              <CategoryGrid onProductSelect={handleProductSelect} />
-            </Card>
           </div>
         </div>
       </div>
 
-      {/* Payment Dialog */}
+      {/* Dialogs */}
       <PaymentDialog
         open={paymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
@@ -427,11 +460,10 @@ const Index = () => {
         onConfirmPayment={handleConfirmPayment}
       />
 
-      {/* Receipt Dialog */}
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
-        <DialogContent className="max-w-md glass border-2 border-primary/30">
+        <DialogContent className="max-w-md bg-[#1a1a1a] border-2 border-pos-success/30">
           <DialogHeader>
-            <DialogTitle className="gradient-text">Ticket de caisse</DialogTitle>
+            <DialogTitle className="text-pos-success font-mono">TICKET DE CAISSE</DialogTitle>
           </DialogHeader>
           {currentSale && (
             <Receipt 
@@ -448,109 +480,15 @@ const Index = () => {
               }} 
             />
           )}
-          <div className="flex gap-3">
-            <Button onClick={handlePrint} className="flex-1 bg-gradient-to-r from-primary to-secondary">
-              <Printer className="h-4 w-4 mr-2" />
-              Imprimer
-            </Button>
-            <Button variant="outline" onClick={() => setReceiptDialogOpen(false)} className="flex-1">
-              Fermer
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Discount Dialog */}
-      <Dialog open={discountDialogOpen} onOpenChange={setDiscountDialogOpen}>
-        <DialogContent className="glass border-2 border-primary/30">
-          <DialogHeader>
-            <DialogTitle className="gradient-text">Appliquer une remise</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex gap-3">
-              <Button
-                variant={discountType === 'percentage' ? 'default' : 'outline'}
-                onClick={() => setDiscountType('percentage')}
-                className="flex-1"
-              >
-                Pourcentage (%)
-              </Button>
-              <Button
-                variant={discountType === 'amount' ? 'default' : 'outline'}
-                onClick={() => setDiscountType('amount')}
-                className="flex-1"
-              >
-                Montant (€)
-              </Button>
-            </div>
-            <div>
-              <Label>Valeur de la remise</Label>
-              <Input
-                type="number"
-                value={discountValue}
-                onChange={(e) => setDiscountValue(e.target.value)}
-                placeholder={discountType === 'percentage' ? '10' : '5.00'}
-                step="0.01"
-                className="mt-2"
-              />
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setDiscountDialogOpen(false)} className="flex-1">
-                Annuler
-              </Button>
-              <Button onClick={confirmDiscount} className="flex-1 bg-gradient-to-r from-accent to-accent/80">
-                Appliquer
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Weight Input Dialog */}
-      <Dialog open={weightDialogOpen} onOpenChange={setWeightDialogOpen}>
-        <DialogContent className="glass border-2 border-primary/30">
-          <DialogHeader>
-            <DialogTitle className="gradient-text">
-              Poids - {selectedProduct?.name}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Card className="relative overflow-hidden">
-              <div className="absolute inset-0 bg-[var(--gradient-display)]"></div>
-              <div className="relative p-6">
-                <div className="text-sm text-white/70 mb-2">Poids (kg)</div>
-                <div className="text-4xl font-bold text-white">
-                  {weightInput || '0.000'}
-                </div>
-                {weightInput && selectedProduct && (
-                  <div className="text-lg text-pos-success mt-2 font-bold">
-                    Prix: {(parseFloat(weightInput) * selectedProduct.price).toFixed(2)}€
-                  </div>
-                )}
-              </div>
-            </Card>
-            <NumericKeypad
-              onNumberClick={(num) => setWeightInput((prev) => prev + num)}
-              onClear={() => setWeightInput('')}
-              onBackspace={() => setWeightInput((prev) => prev.slice(0, -1))}
-            />
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setWeightDialogOpen(false)}
-                className="flex-1"
-              >
-                Annuler
-              </Button>
-              <Button
-                onClick={handleWeightConfirm}
-                disabled={!weightInput || parseFloat(weightInput) <= 0}
-                className="flex-1 bg-gradient-to-r from-pos-success to-category-green text-white disabled:opacity-50"
-              >
-                Valider
-              </Button>
-            </div>
-          </div>
+          <Button
+            onClick={() => {
+              setReceiptDialogOpen(false);
+              window.print();
+            }}
+            className="w-full bg-pos-success hover:bg-pos-success/90 text-black font-bold font-mono"
+          >
+            IMPRIMER
+          </Button>
         </DialogContent>
       </Dialog>
     </div>
