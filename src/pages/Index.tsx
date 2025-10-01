@@ -7,16 +7,18 @@ import {
   CreditCard,
   Banknote,
   Trash2,
-  DollarSign,
+  Euro,
   LogOut,
   Clock,
   ShoppingBag,
   Percent,
   Edit,
+  Ticket,
 } from 'lucide-react';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
 import { DiscountDialog } from '@/components/pos/DiscountDialog';
+import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { Receipt } from '@/components/pos/Receipt';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
@@ -66,6 +68,8 @@ const Index = () => {
   const [globalDiscount, setGlobalDiscount] = useState<{ type: DiscountType; value: number } | null>(null);
   const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
   const [discountTarget, setDiscountTarget] = useState<{ type: 'item' | 'global'; index?: number } | null>(null);
+  const [promoDialogOpen, setPromoDialogOpen] = useState(false);
+  const [appliedPromoCode, setAppliedPromoCode] = useState<{ code: string; type: 'percentage' | 'amount'; value: number } | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -269,6 +273,7 @@ const Index = () => {
     
     let total = cart.reduce((sum, item) => sum + item.total, 0);
     let globalDiscountAmount = 0;
+    let promoCodeAmount = 0;
     
     if (globalDiscount) {
       globalDiscountAmount = globalDiscount.type === 'percentage'
@@ -277,7 +282,14 @@ const Index = () => {
       total -= globalDiscountAmount;
     }
     
-    const totalDiscount = itemDiscounts + globalDiscountAmount;
+    if (appliedPromoCode) {
+      promoCodeAmount = appliedPromoCode.type === 'percentage'
+        ? (total * appliedPromoCode.value) / 100
+        : appliedPromoCode.value;
+      total -= promoCodeAmount;
+    }
+    
+    const totalDiscount = itemDiscounts + globalDiscountAmount + promoCodeAmount;
     
     return { subtotal, totalVat, totalDiscount, total };
   };
@@ -340,8 +352,13 @@ const Index = () => {
     if (cart.length > 0) {
       setCart([]);
       setGlobalDiscount(null);
+      setAppliedPromoCode(null);
       toast.info('Panier vidé');
     }
+  };
+
+  const handleApplyPromoCode = (code: string, type: 'percentage' | 'amount', value: number) => {
+    setAppliedPromoCode({ code, type, value });
   };
 
   const handleApplyDiscount = (type: DiscountType, value: number) => {
@@ -420,7 +437,7 @@ const Index = () => {
           <div className="flex items-center gap-3 md:gap-6">
             <div className="flex items-center gap-2 md:gap-3">
               <div className="h-8 w-8 md:h-10 md:w-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <Euro className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <div>
                 <h1 className="text-sm md:text-lg font-bold tracking-tight">CAISSE #1</h1>
@@ -608,19 +625,47 @@ const Index = () => {
                 </Button>
               </div>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setDiscountTarget({ type: 'global' });
-                setDiscountDialogOpen(true);
-              }}
-              disabled={cart.length === 0}
-              className="w-full h-8 text-xs border-accent text-accent hover:bg-accent/10"
-            >
-              <Percent className="mr-1 h-3 w-3" />
-              Remise globale
-            </Button>
+            {appliedPromoCode && (
+              <div className="flex items-center justify-between text-xs bg-primary/10 px-2 py-1 rounded">
+                <span className="text-primary flex items-center gap-1">
+                  <Ticket className="h-3 w-3" />
+                  Code {appliedPromoCode.code}: {appliedPromoCode.type === 'percentage' ? `${appliedPromoCode.value}%` : `${appliedPromoCode.value}€`}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAppliedPromoCode(null)}
+                  className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
+                >
+                  ×
+                </Button>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setDiscountTarget({ type: 'global' });
+                  setDiscountDialogOpen(true);
+                }}
+                disabled={cart.length === 0}
+                className="h-8 text-xs border-accent text-accent hover:bg-accent/10"
+              >
+                <Percent className="mr-1 h-3 w-3" />
+                Remise
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPromoDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-8 text-xs border-primary text-primary hover:bg-primary/10"
+              >
+                <Ticket className="mr-1 h-3 w-3" />
+                Code promo
+              </Button>
+            </div>
             <div className="flex justify-between items-center text-primary text-3xl font-bold pt-3 border-t-2 border-border">
               <span>TOTAL</span>
               <span>{totals.total.toFixed(2)}€</span>
@@ -634,7 +679,7 @@ const Index = () => {
               disabled={cart.length === 0}
               className="w-full h-14 md:h-16 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <DollarSign className="mr-2 h-6 w-6" />
+              <Euro className="mr-2 h-6 w-6" />
               PAYER {cart.length > 0 && `${totals.total.toFixed(2)}€`}
             </Button>
             <div className="grid grid-cols-3 gap-2">
@@ -806,6 +851,12 @@ const Index = () => {
         onOpenChange={setDiscountDialogOpen}
         onApply={handleApplyDiscount}
         title={discountTarget?.type === 'global' ? 'Remise globale' : 'Remise sur article'}
+      />
+
+      <PromoCodeDialog
+        open={promoDialogOpen}
+        onOpenChange={setPromoDialogOpen}
+        onApply={handleApplyPromoCode}
       />
 
       <PaymentDialog
