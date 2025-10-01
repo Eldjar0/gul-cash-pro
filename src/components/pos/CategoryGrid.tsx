@@ -92,13 +92,13 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="w-32 h-32 mx-auto flex flex-col justify-center items-center gap-2 text-white font-mono transition-all duration-200 rounded-xl active:scale-95 hover:opacity-90"
+          className="w-full h-14 flex items-center justify-start gap-3 px-4 text-white font-mono transition-all duration-200 rounded-lg hover:brightness-110 active:scale-98"
           style={{ backgroundColor: category.color }}
         >
           {category.icon && (
-            <DynamicIcon name={category.icon} size={36} />
+            <DynamicIcon name={category.icon} size={24} className="flex-shrink-0" />
           )}
-          <span className="text-sm font-bold tracking-wide text-center px-2">
+          <span className="text-sm font-bold tracking-wide">
             {category.name}
           </span>
         </Button>
