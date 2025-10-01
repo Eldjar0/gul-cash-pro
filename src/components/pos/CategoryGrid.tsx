@@ -91,16 +91,17 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="relative h-20 flex flex-col justify-center items-center gap-1.5 text-white font-bold border-2 transition-all font-mono hover:scale-[1.02] hover:shadow-2xl active:scale-95 overflow-hidden group"
+          className="relative h-24 sm:h-28 flex flex-col justify-center items-center gap-2 text-white font-extrabold border-[3px] transition-all font-mono hover:scale-105 active:scale-95 overflow-hidden shadow-lg hover:shadow-2xl"
           style={{ 
             backgroundColor: category.color,
             borderColor: category.color,
-            boxShadow: `0 8px 24px -8px ${category.color}80`,
+            boxShadow: `0 10px 30px -10px ${category.color}90, inset 0 1px 0 rgba(255,255,255,0.2)`,
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <span className="text-2xl drop-shadow-lg relative z-10 group-hover:scale-110 transition-transform duration-300">{category.icon || '📦'}</span>
-          <span className="text-[10px] relative z-10 tracking-wider uppercase font-semibold">{category.name}</span>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          <span className="text-3xl sm:text-4xl drop-shadow-2xl relative z-10 filter brightness-110">{category.icon || '📦'}</span>
+          <span className="text-[11px] sm:text-xs relative z-10 tracking-widest uppercase font-black drop-shadow-md px-2 py-0.5 bg-black/20 rounded">{category.name}</span>
         </Button>
       ))}
     </div>
