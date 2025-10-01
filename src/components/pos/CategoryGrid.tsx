@@ -86,7 +86,7 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 p-1">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 lg:gap-4 p-1 pt-2 animate-fade-in">
       {categories.map((category) => (
         <Button
           key={category.id}
