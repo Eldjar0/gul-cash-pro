@@ -91,7 +91,7 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="relative h-28 flex flex-col justify-center items-center gap-2 text-white font-bold border-2 transition-all font-mono hover:scale-[1.02] hover:shadow-2xl active:scale-95 overflow-hidden group"
+          className="relative h-20 flex flex-col justify-center items-center gap-1.5 text-white font-bold border-2 transition-all font-mono hover:scale-[1.02] hover:shadow-2xl active:scale-95 overflow-hidden group"
           style={{ 
             backgroundColor: category.color,
             borderColor: category.color,
@@ -99,8 +99,8 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <span className="text-4xl drop-shadow-lg relative z-10 group-hover:scale-110 transition-transform duration-300">{category.icon || '📦'}</span>
-          <span className="text-sm relative z-10 tracking-wide uppercase">{category.name}</span>
+          <span className="text-2xl drop-shadow-lg relative z-10 group-hover:scale-110 transition-transform duration-300">{category.icon || '📦'}</span>
+          <span className="text-[10px] relative z-10 tracking-wider uppercase font-semibold">{category.name}</span>
         </Button>
       ))}
     </div>
