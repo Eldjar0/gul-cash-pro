@@ -4,6 +4,7 @@ import { useProductsByCategory } from '@/hooks/useProducts';
 import { useState } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { ChevronLeft, Package2 } from 'lucide-react';
+import { DynamicIcon } from '@/components/ui/dynamic-icon';
 
 interface CategoryGridProps {
   onProductSelect: (product: Product) => void;
@@ -94,7 +95,9 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
           className="w-full h-16 flex items-center gap-3 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white font-mono transition-all duration-200 border-2 rounded-xl active:scale-95"
           style={{ borderColor: category.color }}
         >
-          <span className="text-3xl ml-2">{category.icon}</span>
+          {category.icon && (
+            <DynamicIcon name={category.icon} className="ml-2" size={28} />
+          )}
           <span className="text-sm font-bold tracking-wide">
             {category.name}
           </span>
