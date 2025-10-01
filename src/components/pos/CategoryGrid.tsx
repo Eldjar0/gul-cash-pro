@@ -86,26 +86,21 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 lg:gap-4 p-1 pt-2 animate-fade-in">
+    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 p-1 pt-2 animate-fade-in">
       {categories.map((category) => (
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="group relative h-24 sm:h-28 flex flex-col justify-center items-center gap-2 text-white font-bold border-2 transition-all duration-300 font-mono hover:scale-[1.02] active:scale-[0.98] overflow-hidden rounded-xl"
+          className="group relative h-28 flex flex-col justify-between items-center p-3 text-white font-bold transition-all duration-200 font-mono hover:scale-[1.05] active:scale-95 overflow-hidden rounded-[20px] shadow-lg hover:shadow-xl"
           style={{ 
             backgroundColor: category.color,
-            borderColor: category.color,
-            boxShadow: `0 4px 20px -4px ${category.color}80`,
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20" />
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-white/20 via-transparent to-black/10 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
           
-          <div className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
-            <span className="text-2xl sm:text-3xl">{category.icon || '📦'}</span>
-          </div>
+          <span className="text-3xl relative z-10 mt-1">{category.icon || '📦'}</span>
           
-          <span className="text-[10px] sm:text-xs relative z-10 tracking-wider uppercase font-semibold px-3 py-1 bg-black/30 backdrop-blur-sm rounded-full">
+          <span className="text-[9px] relative z-10 tracking-wide uppercase font-bold leading-tight text-center">
             {category.name}
           </span>
         </Button>
