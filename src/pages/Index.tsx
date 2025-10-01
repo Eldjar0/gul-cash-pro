@@ -19,12 +19,16 @@ import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
 import { DiscountDialog } from '@/components/pos/DiscountDialog';
 import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
+import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { Receipt } from '@/components/pos/Receipt';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateSale } from '@/hooks/useSales';
 import { useCategories } from '@/hooks/useCategories';
+import { Customer } from '@/hooks/useCustomers';
 import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -70,6 +74,9 @@ const Index = () => {
   const [discountTarget, setDiscountTarget] = useState<{ type: 'item' | 'global'; index?: number } | null>(null);
   const [promoDialogOpen, setPromoDialogOpen] = useState(false);
   const [appliedPromoCode, setAppliedPromoCode] = useState<{ code: string; type: 'percentage' | 'amount'; value: number } | null>(null);
+  const [isInvoiceMode, setIsInvoiceMode] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -307,6 +314,16 @@ const Index = () => {
       return;
     }
 
+    // Si mode facture, vérifier qu'un client est sélectionné
+    if (isInvoiceMode && !selectedCustomer) {
+      toast.error('Client requis', {
+        description: 'Veuillez sélectionner un client pour créer une facture',
+      });
+      setPaymentDialogOpen(false);
+      setCustomerDialogOpen(true);
+      return;
+    }
+
     const totals = getTotals();
     
     const saleData = {
@@ -317,9 +334,10 @@ const Index = () => {
       payment_method: method,
       amount_paid: amountPaid,
       change_amount: amountPaid ? amountPaid - totals.total : 0,
-      is_invoice: false,
+      is_invoice: isInvoiceMode,
       is_cancelled: false,
       cashier_id: user.id,
+      customer_id: isInvoiceMode ? selectedCustomer?.id : undefined,
       items: cart.map(item => ({
         product_id: item.product.id,
         product_name: item.product.name,
@@ -337,11 +355,33 @@ const Index = () => {
 
     try {
       const sale = await createSale.mutateAsync(saleData);
-      setCurrentSale(sale);
+      
+      // Préparer les données de vente pour le reçu
+      const saleForReceipt = {
+        ...sale,
+        saleNumber: sale.sale_number,
+        date: sale.date,
+        items: cart,
+        subtotal: totals.subtotal,
+        totalVat: totals.totalVat,
+        totalDiscount: totals.totalDiscount,
+        total: totals.total,
+        paymentMethod: method,
+        amountPaid: amountPaid,
+        change: amountPaid ? amountPaid - totals.total : 0,
+        is_invoice: isInvoiceMode,
+        customer: isInvoiceMode ? selectedCustomer : undefined,
+      };
+      
+      setCurrentSale(saleForReceipt);
       setCart([]);
+      setGlobalDiscount(null);
+      setAppliedPromoCode(null);
+      setIsInvoiceMode(false);
+      setSelectedCustomer(null);
       setPaymentDialogOpen(false);
       setReceiptDialogOpen(true);
-      toast.success('Paiement validé');
+      toast.success(isInvoiceMode ? 'Facture créée' : 'Paiement validé');
     } catch (error) {
       console.error('Error creating sale:', error);
       toast.error('Erreur paiement');
@@ -353,8 +393,16 @@ const Index = () => {
       setCart([]);
       setGlobalDiscount(null);
       setAppliedPromoCode(null);
+      setIsInvoiceMode(false);
+      setSelectedCustomer(null);
       toast.info('Panier vidé');
     }
+  };
+
+  const handleSelectCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setIsInvoiceMode(true);
+    toast.success(`Client sélectionné: ${customer.name}`);
   };
 
   const handleApplyPromoCode = (code: string, type: 'percentage' | 'amount', value: number) => {
@@ -595,7 +643,45 @@ const Index = () => {
           </ScrollArea>
 
           {/* Totals - Modern design */}
-          <div className="bg-white border-t-2 border-border p-4 space-y-2 flex-shrink-0">
+          <div className="bg-white border-t-2 border-border p-4 space-y-3 flex-shrink-0">
+            {/* Ticket/Facture toggle */}
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border">
+              <div className="flex items-center gap-3">
+                <Label htmlFor="invoice-mode" className="text-sm font-semibold cursor-pointer">
+                  {isInvoiceMode ? 'Mode Facture' : 'Mode Ticket'}
+                </Label>
+                {isInvoiceMode && selectedCustomer && (
+                  <div className="text-xs text-muted-foreground">
+                    {selectedCustomer.name}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {isInvoiceMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCustomerDialogOpen(true)}
+                    className="h-7 text-xs"
+                  >
+                    <Edit className="h-3 w-3 mr-1" />
+                    {selectedCustomer ? 'Modifier' : 'Client'}
+                  </Button>
+                )}
+                <Switch
+                  id="invoice-mode"
+                  checked={isInvoiceMode}
+                  onCheckedChange={(checked) => {
+                    setIsInvoiceMode(checked);
+                    if (checked && !selectedCustomer) {
+                      setCustomerDialogOpen(true);
+                    } else if (!checked) {
+                      setSelectedCustomer(null);
+                    }
+                  }}
+                />
+              </div>
+            </div>
             <div className="flex justify-between text-muted-foreground text-sm">
               <span>Sous-total HT</span>
               <span className="font-medium">{totals.subtotal.toFixed(2)}€</span>
@@ -864,6 +950,12 @@ const Index = () => {
         onOpenChange={setPaymentDialogOpen}
         total={totals.total}
         onConfirmPayment={handleConfirmPayment}
+      />
+
+      <CustomerDialog
+        open={customerDialogOpen}
+        onOpenChange={setCustomerDialogOpen}
+        onSelectCustomer={handleSelectCustomer}
       />
 
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>

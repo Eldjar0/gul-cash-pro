@@ -15,6 +15,16 @@ interface CartItem {
   total: number;
 }
 
+interface Customer {
+  name: string;
+  vat_number?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  postal_code?: string;
+}
+
 interface Sale {
   id?: string;
   sale_number?: string;
@@ -33,6 +43,8 @@ interface Sale {
   amountPaid?: number;
   change_amount?: number;
   change?: number;
+  is_invoice?: boolean;
+  customer?: Customer;
 }
 
 interface ReceiptProps {
@@ -40,6 +52,8 @@ interface ReceiptProps {
 }
 
 export function Receipt({ sale }: ReceiptProps) {
+  const isInvoice = sale.is_invoice || false;
+  
   return (
     <div className="font-mono text-xs max-w-80 mx-auto bg-card p-6 print:p-0">
       <div className="text-center border-b-2 border-dashed pb-4 mb-4">
@@ -49,11 +63,38 @@ export function Receipt({ sale }: ReceiptProps) {
           {COMPANY_INFO.postalCode} {COMPANY_INFO.city}
         </p>
         <p className="text-foreground mt-2">TVA: {COMPANY_INFO.vat}</p>
+        {COMPANY_INFO.phone && <p className="text-foreground">Tél: {COMPANY_INFO.phone}</p>}
+        {COMPANY_INFO.email && <p className="text-foreground">{COMPANY_INFO.email}</p>}
       </div>
+
+      {/* Customer info - Only for invoices */}
+      {isInvoice && sale.customer && (
+        <div className="mb-4 p-3 bg-accent/50 rounded border border-border">
+          <h3 className="font-bold text-foreground mb-2">CLIENT</h3>
+          <p className="text-foreground font-semibold">{sale.customer.name}</p>
+          {sale.customer.vat_number && (
+            <p className="text-muted-foreground">TVA: {sale.customer.vat_number}</p>
+          )}
+          {sale.customer.address && (
+            <p className="text-muted-foreground text-[10px]">{sale.customer.address}</p>
+          )}
+          {(sale.customer.postal_code || sale.customer.city) && (
+            <p className="text-muted-foreground text-[10px]">
+              {sale.customer.postal_code} {sale.customer.city}
+            </p>
+          )}
+          {sale.customer.email && (
+            <p className="text-muted-foreground text-[10px]">{sale.customer.email}</p>
+          )}
+          {sale.customer.phone && (
+            <p className="text-muted-foreground text-[10px]">{sale.customer.phone}</p>
+          )}
+        </div>
+      )}
 
       <div className="mb-4">
         <div className="flex justify-between text-muted-foreground">
-          <span>N° Ticket:</span>
+          <span>N° {isInvoice ? 'Facture' : 'Ticket'}:</span>
           <span className="font-bold text-foreground">{sale.saleNumber || sale.sale_number}</span>
         </div>
         <div className="flex justify-between text-muted-foreground">
@@ -130,8 +171,21 @@ export function Receipt({ sale }: ReceiptProps) {
       </div>
 
       <div className="text-center mt-6 pt-4 border-t-2 border-dashed text-muted-foreground">
-        <p>Merci de votre visite!</p>
-        <p className="mt-2">À bientôt</p>
+        {isInvoice ? (
+          <>
+            <p className="text-[10px] mb-2">
+              Facture établie conformément aux dispositions légales
+            </p>
+            <p className="text-[10px]">
+              Cette facture est payable dans les 30 jours
+            </p>
+          </>
+        ) : (
+          <>
+            <p>Merci de votre visite!</p>
+            <p className="mt-2">À bientôt</p>
+          </>
+        )}
       </div>
     </div>
   );
