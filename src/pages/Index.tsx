@@ -236,78 +236,84 @@ const Index = () => {
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#1a1a1a]">
+    <div className="h-screen flex flex-col bg-[#1a1a1a] overflow-hidden">
       {/* Barre d'état supérieure - Style terminal */}
-      <div className="bg-[#0a0a0a] border-b-2 border-pos-success/30 px-6 py-2">
+      <div className="bg-[#0a0a0a] border-b-2 border-pos-success/30 px-3 md:px-6 py-2 flex-shrink-0">
         <div className="flex items-center justify-between text-pos-success font-mono">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 md:gap-6">
             <div className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              <span className="text-sm font-bold">CAISSE #1</span>
+              <User className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="text-xs md:text-sm font-bold">CAISSE #1</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span className="text-sm">{currentTime.toLocaleTimeString('fr-FR')}</span>
             </div>
-            <div className="text-sm">{currentTime.toLocaleDateString('fr-FR')}</div>
+            <div className="hidden md:block text-sm">{currentTime.toLocaleDateString('fr-FR')}</div>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={signOut}
-            className="text-pos-success hover:bg-pos-success/10 font-mono"
+            className="text-pos-success hover:bg-pos-success/10 font-mono text-xs md:text-sm"
           >
-            <LogOut className="h-4 w-4 mr-2" />
-            QUITTER
+            <LogOut className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+            <span className="hidden md:inline">QUITTER</span>
           </Button>
         </div>
       </div>
 
-      {/* Contenu principal - 3 colonnes */}
-      <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
-        {/* COLONNE GAUCHE - Catégories & PLU */}
-        <div className="col-span-3 bg-[#252525] border-r-2 border-[#333] p-4 overflow-auto">
-          <div className="mb-4">
-            <h2 className="text-white font-bold text-lg mb-3 font-mono">CATÉGORIES</h2>
+      {/* Contenu principal - Responsive layout */}
+      <div className="flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-0 overflow-hidden">
+        {/* COLONNE GAUCHE - Catégories (cachée sur mobile, visible sur desktop) */}
+        <div className="hidden lg:block lg:col-span-3 bg-[#252525] border-r-2 border-[#333] overflow-y-auto">
+          <div className="p-3 xl:p-4">
+            <h2 className="text-white font-bold text-base xl:text-lg mb-3 font-mono">CATÉGORIES</h2>
             <CategoryGrid onProductSelect={handleProductSelect} />
           </div>
         </div>
 
-        {/* COLONNE CENTRE - Scan & Recherche */}
-        <div className="col-span-5 bg-[#1a1a1a] p-4 flex flex-col gap-4">
+        {/* COLONNE CENTRE - Scan & Clavier */}
+        <div className="lg:col-span-5 bg-[#1a1a1a] p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto lg:overflow-hidden">
           {/* Zone de scan */}
-          <Card className="bg-[#0a0a0a] border-2 border-pos-success/30 p-6">
+          <Card className="bg-[#0a0a0a] border-2 border-pos-success/30 p-3 md:p-6 flex-shrink-0">
             <form onSubmit={handleScanSubmit}>
-              <div className="flex items-center gap-3 mb-4">
-                <Scan className="h-8 w-8 text-pos-success animate-pulse" />
+              <div className="flex items-center gap-2 md:gap-3">
+                <Scan className="h-6 w-6 md:h-8 md:w-8 text-pos-success animate-pulse flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-pos-success text-sm font-mono mb-2 block">SCANNER / CODE BARRE</label>
+                  <label className="text-pos-success text-xs md:text-sm font-mono mb-1 md:mb-2 block">SCANNER / CODE BARRE</label>
                   <Input
                     ref={scanInputRef}
                     value={scanInput}
                     onChange={(e) => setScanInput(e.target.value)}
-                    placeholder="Scanner un article..."
-                    className="h-12 bg-[#1a1a1a] border-pos-success/50 text-white text-xl font-mono focus:border-pos-success"
+                    placeholder="Scanner..."
+                    className="h-10 md:h-12 bg-[#1a1a1a] border-pos-success/50 text-white text-base md:text-xl font-mono focus:border-pos-success"
                   />
                 </div>
               </div>
             </form>
           </Card>
 
-          {/* Clavier numérique XXL */}
-          <Card className="bg-[#0a0a0a] border-2 border-[#333] p-4">
-            <div className="text-pos-success text-sm font-mono mb-3">QUANTITÉ</div>
-            <div className="bg-[#1a1a1a] p-4 rounded mb-4 border border-pos-success/30">
-              <div className="text-pos-success text-4xl font-mono text-center font-bold">
+          {/* Catégories sur mobile */}
+          <Card className="lg:hidden bg-[#0a0a0a] border-2 border-[#333] p-3 flex-1 overflow-y-auto">
+            <h2 className="text-white font-bold text-sm mb-2 font-mono">CATÉGORIES</h2>
+            <CategoryGrid onProductSelect={handleProductSelect} />
+          </Card>
+
+          {/* Clavier numérique */}
+          <Card className="hidden lg:block bg-[#0a0a0a] border-2 border-[#333] p-3 xl:p-4 flex-shrink-0">
+            <div className="text-pos-success text-xs md:text-sm font-mono mb-2 md:mb-3">QUANTITÉ</div>
+            <div className="bg-[#1a1a1a] p-2 md:p-4 rounded mb-2 md:mb-4 border border-pos-success/30">
+              <div className="text-pos-success text-2xl md:text-4xl font-mono text-center font-bold">
                 {quantityInput}
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 md:gap-3">
               {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
                 <Button
                   key={key}
                   onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)}
-                  className="h-16 text-2xl font-bold bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono"
+                  className="h-12 xl:h-16 text-lg xl:text-2xl font-bold bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono transition-all active:scale-95"
                 >
                   {key}
                 </Button>
@@ -317,35 +323,35 @@ const Index = () => {
         </div>
 
         {/* COLONNE DROITE - Ticket & Paiement */}
-        <div className="col-span-4 bg-[#0a0a0a] border-l-2 border-[#333] flex flex-col">
+        <div className="lg:col-span-4 bg-[#0a0a0a] border-t-2 lg:border-t-0 lg:border-l-2 border-[#333] flex flex-col overflow-hidden">
           {/* En-tête du ticket */}
-          <div className="bg-[#1a1a1a] border-b-2 border-pos-success/30 p-4">
+          <div className="bg-[#1a1a1a] border-b-2 border-pos-success/30 p-3 md:p-4 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <h2 className="text-pos-success font-bold text-xl font-mono">TICKET DE CAISSE</h2>
+              <h2 className="text-pos-success font-bold text-base md:text-xl font-mono">TICKET</h2>
               <div className="text-pos-success font-mono">
-                <span className="text-sm">ARTICLES: </span>
-                <span className="text-xl font-bold">{totalItems}</span>
+                <span className="text-xs md:text-sm">ART: </span>
+                <span className="text-lg md:text-xl font-bold">{totalItems}</span>
               </div>
             </div>
           </div>
 
           {/* Liste des articles */}
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-2 md:p-4">
             {cart.length === 0 ? (
-              <div className="text-center py-12">
-                <Scan className="h-16 w-16 mx-auto mb-4 text-gray-600" />
-                <p className="text-gray-500 font-mono">Aucun article scanné</p>
+              <div className="text-center py-8 md:py-12">
+                <Scan className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4 text-gray-600" />
+                <p className="text-gray-500 font-mono text-sm">Aucun article</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {cart.map((item, index) => (
                   <div
                     key={index}
-                    className="bg-[#1a1a1a] border border-[#333] p-3 rounded font-mono"
+                    className="bg-[#1a1a1a] border border-[#333] p-2 md:p-3 rounded font-mono hover:border-pos-success/30 transition-colors"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
-                        <div className="text-white font-bold text-sm">{item.product.name}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-bold text-xs md:text-sm truncate">{item.product.name}</div>
                         <div className="text-gray-400 text-xs mt-1">
                           {item.product.price.toFixed(2)}€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}
                         </div>
@@ -354,29 +360,29 @@ const Index = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleRemoveItem(index)}
-                        className="h-8 w-8 hover:bg-destructive/20 text-destructive"
+                        className="h-7 w-7 md:h-8 md:w-8 hover:bg-destructive/20 text-destructive flex-shrink-0 ml-2"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                       </Button>
                     </div>
                     <div className="flex justify-between items-center">
-                      <div className="flex gap-2">
+                      <div className="flex gap-1 md:gap-2">
                         <Button
                           size="sm"
                           onClick={() => handleUpdateQuantity(index, Math.max(0.1, item.quantity - 1))}
-                          className="h-7 w-7 p-0 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border border-[#444]"
+                          className="h-6 w-6 md:h-7 md:w-7 p-0 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border border-[#444]"
                         >
                           -
                         </Button>
                         <Button
                           size="sm"
                           onClick={() => handleUpdateQuantity(index, item.quantity + 1)}
-                          className="h-7 w-7 p-0 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border border-[#444]"
+                          className="h-6 w-6 md:h-7 md:w-7 p-0 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border border-[#444]"
                         >
                           +
                         </Button>
                       </div>
-                      <div className="text-pos-success text-lg font-bold">
+                      <div className="text-pos-success text-base md:text-lg font-bold">
                         {item.total.toFixed(2)}€
                       </div>
                     </div>
@@ -387,64 +393,64 @@ const Index = () => {
           </ScrollArea>
 
           {/* Totaux */}
-          <div className="bg-[#1a1a1a] border-t-2 border-pos-success/30 p-4 space-y-2">
-            <div className="flex justify-between text-gray-400 font-mono">
+          <div className="bg-[#1a1a1a] border-t-2 border-pos-success/30 p-3 md:p-4 space-y-1 md:space-y-2 flex-shrink-0">
+            <div className="flex justify-between text-gray-400 font-mono text-xs md:text-sm">
               <span>Sous-total HT:</span>
               <span>{totals.subtotal.toFixed(2)}€</span>
             </div>
-            <div className="flex justify-between text-gray-400 font-mono">
+            <div className="flex justify-between text-gray-400 font-mono text-xs md:text-sm">
               <span>TVA:</span>
               <span>{totals.totalVat.toFixed(2)}€</span>
             </div>
-            <div className="flex justify-between text-pos-success text-3xl font-bold font-mono pt-3 border-t-2 border-[#333]">
+            <div className="flex justify-between text-pos-success text-xl md:text-3xl font-bold font-mono pt-2 md:pt-3 border-t-2 border-[#333]">
               <span>TOTAL:</span>
               <span>{totals.total.toFixed(2)}€</span>
             </div>
           </div>
 
           {/* Boutons de paiement */}
-          <div className="bg-[#0a0a0a] p-4 space-y-3 border-t-2 border-[#333]">
-            <div className="grid grid-cols-2 gap-3">
+          <div className="bg-[#0a0a0a] p-2 md:p-4 space-y-2 md:space-y-3 border-t-2 border-[#333] flex-shrink-0">
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
               <Button
                 onClick={handleClearCart}
                 disabled={cart.length === 0}
-                className="h-16 bg-destructive hover:bg-destructive/90 text-white font-bold text-lg font-mono"
+                className="h-12 md:h-16 bg-destructive hover:bg-destructive/90 text-white font-bold text-sm md:text-lg font-mono"
               >
-                <Trash2 className="mr-2 h-5 w-5" />
+                <Trash2 className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
                 ANNULER
               </Button>
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-16 bg-pos-success hover:bg-pos-success/90 text-black font-bold text-lg font-mono"
+                className="h-12 md:h-16 bg-pos-success hover:bg-pos-success/90 text-black font-bold text-sm md:text-lg font-mono"
               >
-                <DollarSign className="mr-2 h-5 w-5" />
+                <DollarSign className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
                 PAYER
               </Button>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1 md:gap-2">
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-12 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-blue font-mono"
+                className="h-10 md:h-12 text-xs md:text-sm bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-blue font-mono"
               >
-                <CreditCard className="mr-2 h-4 w-4" />
+                <CreditCard className="mr-1 h-3 w-3 md:h-4 md:w-4" />
                 CB
               </Button>
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-12 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-green font-mono"
+                className="h-10 md:h-12 text-xs md:text-sm bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-green font-mono"
               >
-                <Banknote className="mr-2 h-4 w-4" />
+                <Banknote className="mr-1 h-3 w-3 md:h-4 md:w-4" />
                 ESP
               </Button>
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-12 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-purple font-mono"
+                className="h-10 md:h-12 text-xs md:text-sm bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-category-purple font-mono"
               >
-                <Smartphone className="mr-2 h-4 w-4" />
+                <Smartphone className="mr-1 h-3 w-3 md:h-4 md:w-4" />
                 SANS
               </Button>
             </div>
