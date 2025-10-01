@@ -91,17 +91,23 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="relative h-20 sm:h-24 flex flex-col justify-center items-center gap-1.5 text-white font-bold border-[3px] transition-all font-mono hover:scale-105 active:scale-95 overflow-hidden shadow-lg hover:shadow-2xl"
+          className="group relative h-24 sm:h-28 flex flex-col justify-center items-center gap-2 text-white font-bold border-2 transition-all duration-300 font-mono hover:scale-[1.02] active:scale-[0.98] overflow-hidden rounded-xl"
           style={{ 
             backgroundColor: category.color,
             borderColor: category.color,
-            boxShadow: `0 10px 30px -10px ${category.color}90, inset 0 1px 0 rgba(255,255,255,0.2)`,
+            boxShadow: `0 4px 20px -4px ${category.color}80`,
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-black/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-          <span className="text-2xl sm:text-3xl drop-shadow-lg relative z-10">{category.icon || '📦'}</span>
-          <span className="text-[9px] sm:text-[10px] relative z-10 tracking-wide uppercase font-semibold drop-shadow-md">{category.name}</span>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20" />
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-white/20 via-transparent to-black/10 transition-opacity duration-300" />
+          
+          <div className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
+            <span className="text-2xl sm:text-3xl">{category.icon || '📦'}</span>
+          </div>
+          
+          <span className="text-[10px] sm:text-xs relative z-10 tracking-wider uppercase font-semibold px-3 py-1 bg-black/30 backdrop-blur-sm rounded-full">
+            {category.name}
+          </span>
         </Button>
       ))}
     </div>
