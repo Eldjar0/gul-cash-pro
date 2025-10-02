@@ -297,7 +297,7 @@ const Index = () => {
 
   // Détection ultra-robuste des scans de lecteur code-barres (HID)
   useEffect(() => {
-    const DEBUG_SCAN = false; // Mettre à true pour debug
+    const DEBUG_SCAN = true; // ACTIVÉ pour debug
     let buffer = "";
     let lastKeyTime = 0;
     let isScanning = false;
@@ -320,9 +320,9 @@ const Index = () => {
 
     // Convertit un événement clavier en chiffre fiable, indépendamment du layout (AZERTY/Numpad)
     const mapEventToDigit = (e: KeyboardEvent): string | null => {
-      const code = (e as KeyboardEvent).code;
+      const code = e.code;
 
-      // 1) Rangée de chiffres physique (Digit0..Digit9)
+      // 1) Rangée de chiffres physique (Digit0..Digit9) - PRIORITÉ ABSOLUE
       if (code && code.startsWith('Digit')) {
         const d = code.replace('Digit', '');
         return /^[0-9]$/.test(d) ? d : null;
@@ -334,25 +334,18 @@ const Index = () => {
         return /^[0-9]$/.test(d) ? d : null;
       }
 
-      // 3) Si le navigateur fournit déjà un chiffre
-      if (/^[0-9]$/.test(e.key)) return e.key;
+      // 3) UNIQUEMENT si code n'est pas disponible (très rare)
+      if (!code && /^[0-9]$/.test(e.key)) {
+        return e.key;
+      }
 
-      // 4) Fallback AZERTY (symboles → chiffres)
-      const azertyMap: Record<string, string> = {
-        '&': '1', '!': '1', 'é': '2', '@': '2', '"': '3', '#': '3',
-        "'": '4', '$': '4', '(': '5', '%': '5', '-': '6', '^': '6',
-        'è': '7', '_': '8', '*': '8', 'ç': '9', 'à': '0', ')': '0',
-        '§': '6'
-      };
-      return azertyMap[e.key] ?? null;
+      return null;
     };
 
     const processScan = () => {
       if (buffer.length >= 3) {
         const duration = Date.now() - scanStartTime;
-        if (DEBUG_SCAN) {
-          console.log('[SCAN] Processing:', buffer, `(${duration}ms, ${buffer.length} chars)`);
-        }
+        console.log('[SCAN] 🔍 Processing:', buffer, `(${duration}ms, ${buffer.length} chars)`);
         handleBarcodeScan(buffer);
       }
       buffer = "";
@@ -403,7 +396,7 @@ const Index = () => {
             isScanning = true;
             e.preventDefault();
             e.stopPropagation();
-            if (DEBUG_SCAN) console.log('[SCAN] Start detected');
+            console.log('[SCAN] 🚀 Start detected, code:', e.code, '→ digit:', digit);
             buffer += digit;
           } else {
             // Pas un chiffre → ignorer
@@ -415,8 +408,9 @@ const Index = () => {
             // Deuxième touche: si < 50ms, on confirme le scan
             if (buffer.length === 1 && delta < 50) {
               isScanning = true;
-              if (DEBUG_SCAN) console.log('[SCAN] Confirmed (fast typing)');
+              console.log('[SCAN] ✓ Confirmed (fast typing)');
             }
+            console.log('[SCAN] 📥 Adding digit:', digit, 'from code:', e.code);
             buffer += digit;
             // Empêcher toute écriture à l'écran pendant le scan
             e.preventDefault();
@@ -432,11 +426,11 @@ const Index = () => {
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
           if (buffer.length >= 8) {
-            if (DEBUG_SCAN) console.log('[SCAN] Auto-finalize (timeout)');
+            console.log('[SCAN] ⏱️ Auto-finalize (timeout)');
             processScan();
           } else if (buffer.length > 0) {
             // Trop court, probablement pas un scan
-            if (DEBUG_SCAN) console.log('[SCAN] Reset: trop court', buffer);
+            console.log('[SCAN] ❌ Reset: trop court', buffer);
             buffer = "";
             isScanning = false;
             scanStartTime = 0;
