@@ -27,11 +27,16 @@ import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { Receipt } from '@/components/pos/Receipt';
 
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
+import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
+import { ReportXDialog } from '@/components/pos/ReportXDialog';
+import { CloseDayDialog } from '@/components/pos/CloseDayDialog';
+import { CashDrawerActions } from '@/components/pos/CashDrawerActions';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateSale } from '@/hooks/useSales';
 import { useCategories } from '@/hooks/useCategories';
 import { Customer } from '@/hooks/useCustomers';
+import { useTodayReport, useOpenDay, useCloseDay, getTodayReportData, ReportData } from '@/hooks/useDailyReports';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -66,6 +71,11 @@ const Index = () => {
   const { data: categories } = useCategories();
   const createSale = useCreateSale();
   const scanInputRef = useRef<HTMLInputElement>(null);
+  
+  // Daily reports hooks
+  const { data: todayReport } = useTodayReport();
+  const openDay = useOpenDay();
+  const closeDay = useCloseDay();
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
@@ -86,6 +96,12 @@ const Index = () => {
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
   const [customerDisplayWindow, setCustomerDisplayWindow] = useState<Window | null>(null);
   const [displayChannel] = useState(() => new BroadcastChannel('customer_display'));
+  
+  // Daily reports states
+  const [openDayDialogOpen, setOpenDayDialogOpen] = useState(false);
+  const [closeDayDialogOpen, setCloseDayDialogOpen] = useState(false);
+  const [reportXDialogOpen, setReportXDialogOpen] = useState(false);
+  const [reportData, setReportData] = useState<ReportData | null>(null);
 
   // Calculate totals - defined before useEffect to avoid initialization errors
   const getTotals = () => {
@@ -868,6 +884,28 @@ const Index = () => {
     setQuantityInput('1');
   };
 
+  // Daily reports handlers
+  const handleOpenDay = (openingAmount: number) => {
+    openDay.mutate(openingAmount);
+  };
+
+  const handleCloseDay = async (closingAmount: number) => {
+    if (!todayReport) return;
+    
+    const data = await getTodayReportData();
+    closeDay.mutate({
+      reportId: todayReport.id,
+      closingAmount,
+      reportData: data,
+    });
+  };
+
+  const handleReportX = async () => {
+    const data = await getTodayReportData();
+    setReportData(data);
+    setReportXDialogOpen(true);
+  };
+
   const totals = getTotals();
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -1348,6 +1386,20 @@ const Index = () => {
               ))}
             </div>
           </Card>
+          
+          {/* Actions de caisse et gestion de journée */}
+          <CashDrawerActions
+            onOpenDrawer={() => toast.info('Tiroir-caisse ouvert')}
+            onViewStats={() => navigate('/sales')}
+            onViewHistory={() => navigate('/sales')}
+            onManageCustomers={() => toast.info('Gestion clients à venir')}
+            onManageProducts={() => navigate('/products')}
+            onSettings={() => navigate('/settings')}
+            onOpenDay={() => setOpenDayDialogOpen(true)}
+            onCloseDay={() => setCloseDayDialogOpen(true)}
+            onReportX={handleReportX}
+            isDayOpen={!!todayReport && !todayReport.closing_amount}
+          />
         </div>
 
         {/* RIGHT PANEL - Articles/Catégories/Résultats */}
@@ -1522,6 +1574,30 @@ const Index = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Daily Reports Dialogs */}
+      <OpenDayDialog
+        open={openDayDialogOpen}
+        onOpenChange={setOpenDayDialogOpen}
+        onConfirm={handleOpenDay}
+      />
+
+      <CloseDayDialog
+        open={closeDayDialogOpen}
+        onOpenChange={setCloseDayDialogOpen}
+        onConfirm={handleCloseDay}
+        reportData={reportData || { totalSales: 0, totalCash: 0, totalCard: 0, totalMobile: 0, salesCount: 0, vatByRate: {} }}
+        todayReport={todayReport}
+      />
+
+      {reportData && (
+        <ReportXDialog
+          open={reportXDialogOpen}
+          onOpenChange={setReportXDialogOpen}
+          reportData={reportData}
+          todayReport={todayReport}
+        />
+      )}
     </div>
   );
 };
