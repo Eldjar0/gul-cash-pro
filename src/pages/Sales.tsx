@@ -25,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Receipt as ReceiptComponent } from '@/components/pos/Receipt';
+import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import {
   Table,
   TableBody,
@@ -288,20 +288,37 @@ export default function Sales() {
 
       {/* Receipt Dialog */}
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
-        <DialogContent className="max-w-md bg-[#1a1a1a] border-2 border-pos-success/30">
-          <DialogHeader>
-            <DialogTitle className="text-pos-success text-xl flex items-center gap-2">
-              <Receipt className="h-5 w-5" />
-              {selectedSale?.is_invoice ? 'Facture' : 'Ticket'}
-            </DialogTitle>
+        <DialogContent className="max-w-sm bg-white border-2 border-primary p-0">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle className="text-primary font-bold text-center">TICKET DE CAISSE</DialogTitle>
           </DialogHeader>
-          {selectedSale && <ReceiptComponent sale={selectedSale} />}
-          <Button
-            onClick={() => window.print()}
-            className="w-full bg-pos-success hover:bg-pos-success/90 text-white"
-          >
-            Imprimer
-          </Button>
+          <div className="max-h-[70vh] overflow-y-auto">
+            {selectedSale && <ThermalReceipt sale={selectedSale} />}
+          </div>
+          <div className="p-4 border-t bg-muted/30 flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setReceiptDialogOpen(false);
+                setSelectedSale(null);
+              }}
+              className="flex-1 h-12 font-semibold"
+            >
+              Fermer
+            </Button>
+            <Button
+              onClick={() => {
+                printThermalReceipt();
+                setTimeout(() => {
+                  setReceiptDialogOpen(false);
+                  setSelectedSale(null);
+                }, 500);
+              }}
+              className="flex-1 h-12 bg-accent hover:bg-accent/90 text-white font-bold"
+            >
+              IMPRIMER
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

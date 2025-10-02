@@ -100,7 +100,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           src={logoMarket} 
           alt="Logo"
           style={{ 
-            width: '137px', 
+            width: '180px', 
             height: 'auto', 
             margin: '0 auto',
             display: 'block'
