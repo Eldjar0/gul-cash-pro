@@ -17,6 +17,7 @@ import {
   Eye,
   History,
   Settings as SettingsIcon,
+  FileText,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -981,6 +982,14 @@ const Index = () => {
             
             {user ? (
               <>
+                <Button
+                  onClick={() => navigate('/reports-history')}
+                  size="icon"
+                  className="bg-gradient-to-br from-destructive to-destructive/80 hover:from-destructive/90 hover:to-destructive/70 text-white h-10 w-10 shadow-md"
+                  title="Historique Rapports Z"
+                >
+                  <FileText className="h-5 w-5" />
+                </Button>
                 <Button
                   onClick={() => navigate('/settings')}
                   size="icon"

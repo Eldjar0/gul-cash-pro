@@ -215,3 +215,66 @@ export const useSale = (id: string) => {
     enabled: !!id,
   });
 };
+
+export const useDeleteSale = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (saleId: string) => {
+      // Marquer la vente comme annulée plutôt que de la supprimer
+      const { error } = await supabase
+        .from('sales')
+        .update({ is_cancelled: true })
+        .eq('id', saleId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      toast({
+        title: 'Vente supprimée',
+        description: 'La vente a été marquée comme annulée.',
+      });
+    },
+    onError: (error: Error) => {
+      console.error('Error deleting sale:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer la vente.',
+        variant: 'destructive',
+      });
+    },
+  });
+};
+
+export const useUpdateSale = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ saleId, updates }: { saleId: string; updates: Record<string, any> }) => {
+      const { error } = await supabase
+        .from('sales')
+        .update(updates)
+        .eq('id', saleId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      toast({
+        title: 'Vente modifiée',
+        description: 'La vente a été modifiée avec succès.',
+      });
+    },
+    onError: (error: Error) => {
+      console.error('Error updating sale:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de modifier la vente.',
+        variant: 'destructive',
+      });
+    },
+  });
+};

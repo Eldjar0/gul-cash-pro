@@ -15,8 +15,20 @@ import {
   User,
   CreditCard,
   Receipt,
+  Trash2,
+  Edit,
 } from 'lucide-react';
-import { useSales } from '@/hooks/useSales';
+import { useSales, useDeleteSale } from '@/hooks/useSales';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import {
@@ -40,16 +52,34 @@ export default function Sales() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSale, setSelectedSale] = useState<any>(null);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [saleToDelete, setSaleToDelete] = useState<string | null>(null);
 
   const { data: sales = [], isLoading } = useSales();
+  const deleteSale = useDeleteSale();
 
-  const filteredSales = sales.filter((sale) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      sale.sale_number?.toLowerCase().includes(searchLower) ||
-      format(new Date(sale.date), 'dd/MM/yyyy').includes(searchLower)
-    );
-  });
+  const handleDeleteClick = (saleId: string) => {
+    setSaleToDelete(saleId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (saleToDelete) {
+      deleteSale.mutate(saleToDelete);
+      setDeleteDialogOpen(false);
+      setSaleToDelete(null);
+    }
+  };
+
+  const filteredSales = sales
+    .filter((sale) => !sale.is_cancelled) // Exclure les ventes annulées
+    .filter((sale) => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        sale.sale_number?.toLowerCase().includes(searchLower) ||
+        format(new Date(sale.date), 'dd/MM/yyyy').includes(searchLower)
+      );
+    });
 
   const handleViewReceipt = (sale: any) => {
     // Transform sale data to match Receipt component format
@@ -260,15 +290,24 @@ export default function Sales() {
                       {sale.total.toFixed(2)}€
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewReceipt(sale)}
-                        className="h-8"
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        Voir
-                      </Button>
+                      <div className="flex gap-1 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewReceipt(sale)}
+                          className="h-8"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(sale.id)}
+                          className="h-8 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -321,6 +360,28 @@ export default function Sales() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette vente sera marquée comme annulée et n'apparaîtra plus dans les rapports X et Z.
+              Cette action ne peut pas être annulée.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
