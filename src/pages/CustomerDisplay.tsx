@@ -229,160 +229,102 @@ const CustomerDisplay = () => {
   }
 
   return (
-    <div 
-      className="min-h-screen p-4 md:p-8"
-      style={{
-        background: `linear-gradient(135deg, ${displaySettings.primary_color}08, transparent, ${displaySettings.secondary_color}08)`,
-      }}
-    >
-      <div className="max-w-6xl mx-auto space-y-4">
-        {/* En-tête avec client/facture */}
-        <div className="text-center space-y-2 animate-fade-in">
-          <div className="flex items-center justify-center gap-4">
-            <h1 className="text-4xl md:text-5xl font-bold" style={{ color: displaySettings.text_color }}>
-              Votre {displayState.isInvoice ? 'Facture' : 'Ticket'}
-            </h1>
-            {displayState.isInvoice && displayState.customer && (
-              <div className="px-4 py-2 rounded-lg" style={{ 
-                backgroundColor: displaySettings.primary_color + '20',
-                color: displaySettings.text_color,
-              }}>
-                <p className="text-lg font-semibold">{displayState.customer.name}</p>
-              </div>
-            )}
-          </div>
-          <p className="text-xl md:text-2xl" style={{ color: displaySettings.text_color + 'aa' }}>
-            Vérifiez vos articles
-          </p>
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl bg-white border-4 border-black p-8 shadow-2xl">
+        {/* Header avec nom entreprise */}
+        <div className="text-center mb-6 pb-6 border-b-2 border-black">
+          <h1 className="text-4xl font-black uppercase mb-4 tracking-wide">
+            {displayState.customer?.name || 'MAGASIN'}
+          </h1>
         </div>
 
-        {/* Articles */}
-        <Card className="p-4 md:p-6 shadow-lg animate-scale-in" key={displayState.timestamp}>
-          <div className="space-y-4">
-            {/* Liste des articles */}
-            <div className="space-y-2">
-              {displayState.items.map((item, index) => {
-                const subtotal = calculateSubtotal(item);
-                const vat = calculateVAT(item);
-                
-                return (
-                  <div
-                    key={index}
-                    className="border rounded-lg p-3 animate-fade-in"
-                    style={{ 
-                      animationDelay: `${index * 0.1}s`,
-                      borderColor: displaySettings.primary_color + '30',
-                    }}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
-                        <p className="text-xl font-bold" style={{ color: displaySettings.text_color }}>
-                          {item.name}
-                        </p>
-                        <div className="flex gap-2 items-center mt-1 flex-wrap">
-                          <span className="text-lg" style={{ color: displaySettings.text_color + 'aa' }}>
-                            Qté: {item.quantity} {item.unit || 'u'}
-                          </span>
-                          {item.hasCustomPrice && (
-                            <span className="px-2 py-0.5 rounded text-sm font-semibold" style={{
-                              backgroundColor: displaySettings.secondary_color + '20',
-                              color: displaySettings.secondary_color,
-                            }}>
-                              Prix modifié
-                            </span>
-                          )}
-                          {item.discount && (
-                            <span className="px-2 py-0.5 rounded text-sm font-semibold" style={{
-                              backgroundColor: displaySettings.secondary_color + '20',
-                              color: displaySettings.secondary_color,
-                            }}>
-                              Remise: {item.discount.type === 'percentage' ? `${item.discount.value}%` : `${item.discount.value}€`}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold" style={{ color: displaySettings.primary_color }}>
-                          {item.total.toFixed(2)} €
-                        </div>
-                        <div className="text-sm" style={{ color: displaySettings.text_color + '88' }}>
-                          HT: {subtotal.toFixed(2)}€ + TVA: {vat.toFixed(2)}€
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Remises et promos */}
-            {(displayState.globalDiscount || displayState.promoCode) && (
-              <div className="space-y-2 py-4 border-t-2" style={{ borderColor: displaySettings.primary_color + '30' }}>
-                {displayState.globalDiscount && (
-                  <div className="flex justify-between items-center px-3 py-2 rounded-lg" style={{
-                    backgroundColor: displaySettings.secondary_color + '15',
-                  }}>
-                    <span className="text-lg font-semibold" style={{ color: displaySettings.text_color }}>
-                      Remise globale
-                    </span>
-                    <span className="text-xl font-bold" style={{ color: displaySettings.secondary_color }}>
-                      -{displayState.globalDiscount.type === 'percentage' 
-                        ? `${displayState.globalDiscount.value}%` 
-                        : `${displayState.globalDiscount.value}€`}
-                    </span>
-                  </div>
-                )}
-                {displayState.promoCode && (
-                  <div className="flex justify-between items-center px-3 py-2 rounded-lg" style={{
-                    backgroundColor: displaySettings.primary_color + '15',
-                  }}>
-                    <div>
-                      <span className="text-lg font-semibold" style={{ color: displaySettings.text_color }}>
-                        Code promo: {displayState.promoCode.code}
-                      </span>
-                    </div>
-                    <span className="text-xl font-bold" style={{ color: displaySettings.primary_color }}>
-                      -{displayState.promoCode.type === 'percentage' 
-                        ? `${displayState.promoCode.value}%` 
-                        : `${displayState.promoCode.value}€`}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Totaux */}
-            {displayState.totals && (
-              <div className="space-y-2 pt-4 border-t-2" style={{ borderColor: displaySettings.primary_color + '40' }}>
-                <div className="flex justify-between text-xl" style={{ color: displaySettings.text_color + 'aa' }}>
-                  <span>Sous-total HT</span>
-                  <span className="font-semibold">{displayState.totals.subtotal.toFixed(2)} €</span>
-                </div>
-                <div className="flex justify-between text-xl" style={{ color: displaySettings.text_color + 'aa' }}>
-                  <span>TVA</span>
-                  <span className="font-semibold">{displayState.totals.totalVat.toFixed(2)} €</span>
-                </div>
-                {displayState.totals.totalDiscount > 0 && (
-                  <div className="flex justify-between text-xl" style={{ color: displaySettings.secondary_color }}>
-                    <span className="font-semibold">Remise totale</span>
-                    <span className="font-bold">-{displayState.totals.totalDiscount.toFixed(2)} €</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-3xl md:text-4xl font-bold pt-3 border-t" style={{ 
-                  color: displaySettings.text_color,
-                  borderColor: displaySettings.primary_color + '40',
-                }}>
-                  <span>Total TTC</span>
-                  <span style={{ color: displaySettings.primary_color }}>{displayState.totals.total.toFixed(2)} €</span>
-                </div>
-              </div>
-            )}
+        {/* Tableau des articles */}
+        <div className="mb-6">
+          {/* En-têtes du tableau */}
+          <div className="grid grid-cols-12 gap-2 mb-3 pb-2 border-b-2 border-black text-lg font-bold">
+            <div className="col-span-2 text-left">QTE</div>
+            <div className="col-span-5 text-left">DESIGNATION</div>
+            <div className="col-span-2 text-right">UNITAIRE</div>
+            <div className="col-span-3 text-right">TOTAL</div>
           </div>
-        </Card>
 
-        {/* Animation de panier */}
-        <div className="flex justify-center animate-pulse">
-          <ShoppingBag className="w-12 h-12 md:w-16 md:h-16" style={{ color: displaySettings.primary_color + '30' }} />
+          {/* Articles */}
+          <div className="space-y-3">
+            {displayState.items.map((item, index) => (
+              <div 
+                key={index} 
+                className="grid grid-cols-12 gap-2 text-xl animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="col-span-2 text-left font-semibold">
+                  {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)}
+                </div>
+                <div className="col-span-5 text-left font-bold uppercase">
+                  {item.name}
+                </div>
+                <div className="col-span-2 text-right">
+                  {item.price.toFixed(2)}
+                </div>
+                <div className="col-span-3 text-right font-bold">
+                  {item.total.toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Séparateur */}
+        <div className="border-t-2 border-dashed border-black my-6"></div>
+
+        {/* Total TTC */}
+        <div className="mb-4">
+          <div className="flex justify-between items-center text-3xl font-black mb-3">
+            <span>TOTAL TTC</span>
+            <span>{getTotalTTC().toFixed(2)} €</span>
+          </div>
+
+          {/* TVA détaillée par taux */}
+          <div className="space-y-1 text-lg text-right">
+            {(() => {
+              // Grouper par taux de TVA
+              const vatByRate = displayState.items.reduce((acc, item) => {
+                const vat = calculateVAT(item);
+                if (!acc[item.vatRate]) {
+                  acc[item.vatRate] = 0;
+                }
+                acc[item.vatRate] += vat;
+                return acc;
+              }, {} as Record<number, number>);
+
+              return Object.entries(vatByRate).map(([rate, amount]) => (
+                <div key={rate} className="flex justify-end gap-4">
+                  <span>DONT TVA {parseFloat(rate).toFixed(2)} %</span>
+                  <span className="font-semibold w-24">{amount.toFixed(2)} €</span>
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+
+        {/* Séparateur */}
+        <div className="border-t-2 border-dashed border-black my-6"></div>
+
+        {/* Mode de paiement */}
+        <div className="flex justify-between items-center text-2xl font-bold mb-6">
+          <span>Paiement en cours...</span>
+          <span></span>
+        </div>
+
+        {/* Ligne de séparation */}
+        <div className="border-t-2 border-black my-6"></div>
+
+        {/* Footer - animation d'attente */}
+        <div className="text-center">
+          <div className="flex justify-center gap-2">
+            <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+            <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+          </div>
         </div>
       </div>
     </div>
