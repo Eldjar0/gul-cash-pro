@@ -196,6 +196,9 @@ const CustomerDisplay = () => {
             <div className="w-4 h-4 rounded-full animate-bounce bg-primary" style={{ animationDelay: '0.2s' }}></div>
             <div className="w-4 h-4 rounded-full animate-bounce bg-primary" style={{ animationDelay: '0.4s' }}></div>
           </div>
+          <p className="text-xl text-muted-foreground/60 mt-6">
+            Développé par jlprod.be
+          </p>
         </div>
       </div>
     );
