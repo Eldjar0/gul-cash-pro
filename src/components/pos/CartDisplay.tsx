@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Trash2, Percent, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Product } from '@/hooks/useProducts';
+import logoMarket from '@/assets/logo-market.png';
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -51,13 +52,16 @@ export function CartDisplay({ items, onRemoveItem, onUpdateQuantity, onApplyDisc
       {/* Header with gradient */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[var(--gradient-primary)]"></div>
-        <div className="relative p-4 flex items-center gap-3">
-          <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-            <ShoppingBag className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-white">Panier</h2>
-            <p className="text-xs text-white/80">{items.length} article{items.length > 1 ? 's' : ''}</p>
+        <div className="relative p-4 flex items-center justify-between gap-3">
+          <img src={logoMarket} alt="Logo" className="h-12 object-contain" />
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+              <ShoppingBag className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Panier</h2>
+              <p className="text-xs text-white/80">{items.length} article{items.length > 1 ? 's' : ''}</p>
+            </div>
           </div>
         </div>
       </div>

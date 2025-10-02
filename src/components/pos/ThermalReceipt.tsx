@@ -1,6 +1,6 @@
 import { COMPANY_INFO } from '@/data/company';
 import { Product } from '@/hooks/useProducts';
-import logoTicket from '@/assets/logo-ticket.png';
+import logoMarket from '@/assets/logo-market.png';
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -96,8 +96,8 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       {/* Logo centré */}
       <div className="text-center mb-2">
         <img 
-          src={logoTicket} 
-          alt="Logo" 
+          src={logoMarket} 
+          alt="Logo"
           style={{ 
             width: '137px', 
             height: 'auto', 

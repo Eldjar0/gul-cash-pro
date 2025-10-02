@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ShoppingBag, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import logo from '@/assets/logo.jpg';
+import logoMarket from '@/assets/logo-market.png';
 
 interface DisplayItem {
   name: string;
@@ -191,7 +191,7 @@ const CustomerDisplay = () => {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-8">
         <div className="text-center space-y-8 animate-fade-in">
-          <img src={logo} alt="Logo" className="w-64 h-64 mx-auto object-contain animate-scale-in" />
+          <img src={logoMarket} alt="Logo" className="w-64 h-64 mx-auto object-contain animate-scale-in" />
           <div className="space-y-4">
             <h1 className="text-7xl font-black animate-scale-in text-foreground tracking-tight">
               Bienvenue
@@ -220,7 +220,7 @@ const CustomerDisplay = () => {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-8">
         <div className="text-center space-y-8 animate-scale-in">
-          <img src={logo} alt="Logo" className="w-64 h-64 mx-auto object-contain animate-scale-in" />
+          <img src={logoMarket} alt="Logo" className="w-64 h-64 mx-auto object-contain animate-scale-in" />
           <CheckCircle2 className="w-40 h-40 mx-auto animate-scale-in text-accent" />
           <div className="space-y-6">
             <h1 className="text-8xl font-black animate-fade-in text-foreground tracking-tight">
@@ -240,7 +240,7 @@ const CustomerDisplay = () => {
       {/* Header fixe avec logo */}
       <div className="fixed top-0 left-0 right-0 bg-white border-b-4 border-primary shadow-lg p-4 z-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <img src={logo} alt="Logo" className="h-16 object-contain" />
+          <img src={logoMarket} alt="Logo" className="h-16 object-contain" />
           <div className="text-center flex-1">
             <h1 className="text-4xl font-black text-foreground tracking-tight">
               {displayState.isInvoice ? 'FACTURE' : 'TICKET'} {displayState.saleNumber || 'EN COURS'}
