@@ -169,6 +169,10 @@ const Index = () => {
     let isScanning = false;
     let timeoutId: NodeJS.Timeout | null = null;
     let scanStartTime = 0;
+    let editableTarget: HTMLInputElement | HTMLTextAreaElement | null = null;
+    let editableInitialValue = '';
+    let editableInitialStart: number | null = null;
+    let editableInitialEnd: number | null = null;
 
     const isEditableField = (target: EventTarget | null): boolean => {
       if (!target || !(target instanceof HTMLElement)) return false;
@@ -193,6 +197,10 @@ const Index = () => {
       buffer = "";
       isScanning = false;
       scanStartTime = 0;
+      editableTarget = null;
+      editableInitialValue = '';
+      editableInitialStart = null;
+      editableInitialEnd = null;
     };
 
     const handler = (e: KeyboardEvent) => {
@@ -224,20 +232,45 @@ const Index = () => {
           scanStartTime = 0;
         }
 
-        // Première touche: démarrer le scan SI pas dans un champ éditable
+        // Première touche: on démarre un candidat scan, même si la cible est éditable (on restaurera si confirmé)
         if (buffer.length === 0) {
-          if (isEditableField(e.target)) {
-            // L'utilisateur tape dans un champ, ne pas intercepter
-            return;
+          if (isEditableField(e.target) && e.target instanceof HTMLElement) {
+            const el = e.target as HTMLInputElement | HTMLTextAreaElement;
+            if (!el.readOnly && !el.disabled && 'value' in el) {
+              editableTarget = el;
+              // Sauvegarder l'état initial pour annuler le premier caractère si c'est un scan
+              editableInitialValue = (el as any).value ?? '';
+              try {
+                editableInitialStart = (el as any).selectionStart ?? null;
+                editableInitialEnd = (el as any).selectionEnd ?? null;
+              } catch {}
+            }
           }
           scanStartTime = now;
-          isScanning = true;
-          if (DEBUG_SCAN) console.log('[SCAN] Start');
+          // On ne confirme pas encore isScanning, on attend la 2e touche rapide
+          isScanning = false;
+          if (DEBUG_SCAN) console.log('[SCAN] Start candidate');
         }
 
         // Deuxième touche: si < 50ms, confirmer que c'est un scan
         if (buffer.length === 1 && delta < 50) {
           isScanning = true;
+          // Annuler le premier caractère injecté dans un champ éditable
+          if (editableTarget) {
+            try {
+              (editableTarget as any).value = editableInitialValue;
+              if (
+                typeof editableInitialStart === 'number' &&
+                typeof editableInitialEnd === 'number' &&
+                (editableTarget as any).setSelectionRange
+              ) {
+                (editableTarget as any).setSelectionRange(editableInitialStart, editableInitialEnd);
+              }
+            } catch {}
+          }
+          // Éviter que ce 2e caractère s'injecte
+          e.preventDefault();
+          e.stopPropagation();
           if (DEBUG_SCAN) console.log('[SCAN] Confirmed (fast typing detected)');
         }
 
