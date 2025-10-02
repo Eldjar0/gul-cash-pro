@@ -246,6 +246,28 @@ const Index = () => {
     return normalized.replace(/\D+/g, ''); // Supprimer tout ce qui n'est pas un chiffre
   };
 
+  // Calcul du total d'un article avec TVA TTC
+  const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount'], customPrice?: number) => {
+    const unitPriceTTC = customPrice ?? product.price;
+    
+    // Prix TTC → HT : diviser par (1 + taux_TVA/100)
+    const unitPriceHT = unitPriceTTC / (1 + product.vat_rate / 100);
+    const subtotal = unitPriceHT * quantity;
+    const vatAmount = subtotal * (product.vat_rate / 100);
+    
+    let discountAmount = 0;
+    if (discount) {
+      const totalTTC = unitPriceTTC * quantity;
+      discountAmount = discount.type === 'percentage' 
+        ? (totalTTC * discount.value) / 100 
+        : discount.value;
+    }
+    
+    const total = (unitPriceTTC * quantity) - discountAmount;
+    
+    return { subtotal, vatAmount, total };
+  };
+
   // Gestion de la sélection de produit - MUST BE BEFORE handleBarcodeScan
   const handleProductSelect = (product: Product, quantity?: number) => {
     const qty = quantity || parseFloat(quantityInput) || 1;
@@ -494,27 +516,6 @@ const Index = () => {
       </div>
     );
   }
-
-  const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount'], customPrice?: number) => {
-    const unitPriceTTC = customPrice ?? product.price;
-    
-    // Prix TTC → HT : diviser par (1 + taux_TVA/100)
-    const unitPriceHT = unitPriceTTC / (1 + product.vat_rate / 100);
-    const subtotal = unitPriceHT * quantity;
-    const vatAmount = subtotal * (product.vat_rate / 100);
-    
-    let discountAmount = 0;
-    if (discount) {
-      const totalTTC = unitPriceTTC * quantity;
-      discountAmount = discount.type === 'percentage' 
-        ? (totalTTC * discount.value) / 100 
-        : discount.value;
-    }
-    
-    const total = (unitPriceTTC * quantity) - discountAmount;
-    
-    return { subtotal, vatAmount, total };
-  };
 
   const handleSearch = () => {
     if (!scanInput.trim() || !products) {
