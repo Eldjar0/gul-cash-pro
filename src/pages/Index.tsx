@@ -1066,14 +1066,14 @@ const Index = () => {
                           data-scan-ignore="true"
                           type="text"
                           key={`qty-${index}-${item.quantity}`}
-                          defaultValue={item.quantity.toFixed(item.product.type === 'weight' ? 1 : 0)}
+                          defaultValue={item.quantity.toFixed(3)}
                           onBlur={(e) => {
                             const value = e.target.value.replace(',', '.');
                             const newQty = parseFloat(value);
                             if (!isNaN(newQty) && newQty > 0) {
                               handleUpdateQuantity(index, newQty);
                             } else {
-                              e.target.value = item.quantity.toFixed(item.product.type === 'weight' ? 1 : 0);
+                              e.target.value = item.quantity.toFixed(3);
                             }
                           }}
                           className="h-6 w-16 text-xs px-1 text-center bg-white font-bold"
