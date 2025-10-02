@@ -158,8 +158,7 @@ export async function getTodayReportData(): Promise<ReportData> {
       sale_items (*)
     `)
     .gte('date', today.toISOString())
-    .lt('date', tomorrow.toISOString())
-    .eq('is_cancelled', false); // Exclure les ventes annulées
+    .lt('date', tomorrow.toISOString());
 
   if (error) throw error;
 

@@ -222,19 +222,27 @@ export const useDeleteSale = () => {
 
   return useMutation({
     mutationFn: async (saleId: string) => {
-      // Marquer la vente comme annulée plutôt que de la supprimer
-      const { error } = await supabase
+      // Supprimer d'abord les items de vente
+      const { error: itemsError } = await supabase
+        .from('sale_items')
+        .delete()
+        .eq('sale_id', saleId);
+
+      if (itemsError) throw itemsError;
+
+      // Supprimer la vente
+      const { error: saleError } = await supabase
         .from('sales')
-        .update({ is_cancelled: true })
+        .delete()
         .eq('id', saleId);
 
-      if (error) throw error;
+      if (saleError) throw saleError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] });
       toast({
         title: 'Vente supprimée',
-        description: 'La vente a été marquée comme annulée.',
+        description: 'La vente a été supprimée définitivement.',
       });
     },
     onError: (error: Error) => {

@@ -71,15 +71,13 @@ export default function Sales() {
     }
   };
 
-  const filteredSales = sales
-    .filter((sale) => !sale.is_cancelled) // Exclure les ventes annulées
-    .filter((sale) => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        sale.sale_number?.toLowerCase().includes(searchLower) ||
-        format(new Date(sale.date), 'dd/MM/yyyy').includes(searchLower)
-      );
-    });
+  const filteredSales = sales.filter((sale) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      sale.sale_number?.toLowerCase().includes(searchLower) ||
+      format(new Date(sale.date), 'dd/MM/yyyy').includes(searchLower)
+    );
+  });
 
   const handleViewReceipt = (sale: any) => {
     // Transform sale data to match Receipt component format
@@ -367,8 +365,8 @@ export default function Sales() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette vente sera marquée comme annulée et n'apparaîtra plus dans les rapports X et Z.
-              Cette action ne peut pas être annulée.
+              Cette vente sera définitivement supprimée de la base de données.
+              Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
