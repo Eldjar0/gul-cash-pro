@@ -53,6 +53,7 @@ interface ThermalReceiptProps {
 
 export function ThermalReceipt({ sale }: ThermalReceiptProps) {
   const isInvoice = sale.is_invoice || false;
+  const saleDate = new Date(sale.date || new Date());
   
   return (
     <div 
@@ -63,18 +64,21 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         maxWidth: '302px',
         margin: '0 auto',
         fontFamily: 'Courier New, monospace',
-        fontSize: '11px',
-        lineHeight: '1.4'
+        fontSize: '12px',
+        lineHeight: '1.5'
       }}
     >
       {/* Header - Company Info */}
-      <div className="text-center border-b-2 border-dashed border-black pb-3 mb-3">
-        <div className="text-base font-bold uppercase mb-1">{COMPANY_INFO.name}</div>
-        <div className="text-xs">{COMPANY_INFO.address}</div>
-        <div className="text-xs">{COMPANY_INFO.postalCode} {COMPANY_INFO.city}</div>
-        <div className="text-xs mt-2">TVA: {COMPANY_INFO.vat}</div>
-        {COMPANY_INFO.phone && <div className="text-xs">Tel: {COMPANY_INFO.phone}</div>}
-        {COMPANY_INFO.email && <div className="text-xs">{COMPANY_INFO.email}</div>}
+      <div className="text-center pb-3 mb-3">
+        <div className="text-xl font-black uppercase mb-2" style={{ letterSpacing: '0.05em' }}>
+          {COMPANY_INFO.name}
+        </div>
+        <div className="text-sm font-semibold">{COMPANY_INFO.address}</div>
+        <div className="text-sm font-semibold">{COMPANY_INFO.postalCode} {COMPANY_INFO.city}</div>
+        <div className="text-sm mt-2">TVA: {COMPANY_INFO.vat}</div>
+        {COMPANY_INFO.phone && <div className="text-sm">Tel: {COMPANY_INFO.phone}</div>}
+        {COMPANY_INFO.email && <div className="text-sm">{COMPANY_INFO.email}</div>}
+        <div className="border-b-2 border-black mt-3" style={{ borderStyle: 'dashed' }}></div>
       </div>
 
       {/* Customer info - Only for invoices */}
@@ -96,115 +100,152 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         </div>
       )}
 
-      {/* Sale info */}
-      <div className="mb-3 pb-2 border-b border-dashed border-black">
-        <div className="flex justify-between">
-          <span>{isInvoice ? 'FACTURE' : 'TICKET'}:</span>
-          <span className="font-bold">{sale.saleNumber || sale.sale_number}</span>
+      {/* Sale info - Big Title */}
+      <div className="mb-3 pb-3">
+        <div className="text-center mb-3">
+          <div className="text-2xl font-black uppercase mb-1" style={{ letterSpacing: '0.1em' }}>
+            {isInvoice ? '■ FACTURE ■' : '■ TICKET ■'}
+          </div>
+          <div className="text-lg font-bold">{sale.saleNumber || sale.sale_number}</div>
         </div>
-        <div className="flex justify-between">
-          <span>DATE:</span>
-          <span>{new Date(sale.date || new Date()).toLocaleString('fr-BE', {
-            day: '2-digit',
-            month: '2-digit', 
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          })}</span>
+        
+        <div className="text-center space-y-1">
+          <div className="text-base font-bold">
+            {saleDate.toLocaleDateString('fr-BE', { 
+              weekday: 'long',
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric'
+            }).toUpperCase()}
+          </div>
+          <div className="text-xl font-black" style={{ letterSpacing: '0.05em' }}>
+            {saleDate.toLocaleTimeString('fr-BE', { 
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </div>
         </div>
+        <div className="border-b-2 border-black mt-3" style={{ borderStyle: 'dashed' }}></div>
       </div>
 
       {/* Items */}
-      <div className="mb-3 pb-2 border-b-2 border-dashed border-black">
+      <div className="mb-3 pb-3">
+        <div className="text-center text-base font-black mb-2" style={{ letterSpacing: '0.05em' }}>
+          ARTICLES
+        </div>
+        <div className="border-b border-black mb-2"></div>
+        
         {sale.items.map((item, index) => (
-          <div key={index} className="mb-2">
-            <div className="font-bold">{item.product.name}</div>
-            <div className="flex justify-between">
+          <div key={index} className="mb-3 pb-2 border-b border-black" style={{ borderStyle: 'dotted' }}>
+            <div className="font-bold text-sm mb-1">{item.product.name}</div>
+            <div className="flex justify-between text-sm">
               <span>
-                {item.product.price.toFixed(2)} x {item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0)}
+                {item.product.price.toFixed(2)}€ x {item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0)}
                 {item.product.type === 'weight' && 'kg'}
               </span>
-              <span>{item.subtotal.toFixed(2)}</span>
+              <span className="font-bold">{item.subtotal.toFixed(2)}€</span>
             </div>
             {item.discount && (
-              <div className="text-[10px]">
+              <div className="text-xs mt-1">
                 Remise: -{item.discount.value}
-                {item.discount.type === 'percentage' ? '%' : 'EUR'}
+                {item.discount.type === 'percentage' ? '%' : '€'}
               </div>
             )}
-            <div className="flex justify-between text-[10px]">
+            <div className="flex justify-between text-xs mt-1">
               <span>TVA {item.product.vat_rate}%</span>
-              <span>{item.vatAmount.toFixed(2)}</span>
+              <span>{item.vatAmount.toFixed(2)}€</span>
             </div>
           </div>
         ))}
+        <div className="border-b-2 border-black"></div>
       </div>
 
-      {/* Totals */}
-      <div className="mb-3 pb-2 border-b-2 border-dashed border-black">
-        <div className="flex justify-between">
+      {/* Totals - Clean and organized */}
+      <div className="mb-3 pb-3 space-y-2">
+        <div className="flex justify-between text-sm">
           <span>SOUS-TOTAL HT:</span>
-          <span>{sale.subtotal.toFixed(2)}</span>
+          <span className="font-bold">{sale.subtotal.toFixed(2)} €</span>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between text-sm">
           <span>TVA:</span>
-          <span>{(sale.totalVat || sale.total_vat || 0).toFixed(2)}</span>
+          <span className="font-bold">{(sale.totalVat || sale.total_vat || 0).toFixed(2)} €</span>
         </div>
         {(sale.totalDiscount || sale.total_discount || 0) > 0 && (
-          <div className="flex justify-between">
-            <span>REMISE:</span>
-            <span>-{(sale.totalDiscount || sale.total_discount || 0).toFixed(2)}</span>
+          <div className="flex justify-between text-sm">
+            <span>REMISE TOTALE:</span>
+            <span className="font-bold">-{(sale.totalDiscount || sale.total_discount || 0).toFixed(2)} €</span>
           </div>
         )}
-        <div className="flex justify-between text-lg font-bold mt-2 pt-2 border-t border-black">
-          <span>TOTAL TTC:</span>
-          <span>{sale.total.toFixed(2)} EUR</span>
+        
+        <div className="border-t-2 border-black pt-2 mt-2" style={{ borderStyle: 'double' }}>
+          <div className="flex justify-between items-center">
+            <span className="text-xl font-black">TOTAL TTC:</span>
+            <span className="text-2xl font-black">{sale.total.toFixed(2)} €</span>
+          </div>
         </div>
+        <div className="border-b-2 border-black"></div>
       </div>
 
-      {/* Payment info */}
-      <div className="mb-3 pb-2 border-b border-dashed border-black">
-        <div className="flex justify-between">
-          <span>PAIEMENT:</span>
-          <span className="font-bold">
+      {/* Payment info - Big and clear */}
+      <div className="mb-4 pb-3 space-y-2">
+        <div className="text-center mb-2">
+          <div className="text-base font-black mb-1" style={{ letterSpacing: '0.05em' }}>
+            MODE DE PAIEMENT
+          </div>
+          <div className="text-xl font-black uppercase bg-black text-white py-2 px-3" style={{ letterSpacing: '0.1em' }}>
             {(sale.paymentMethod || sale.payment_method) === 'cash' 
-              ? 'ESPECES' 
+              ? '💵 ESPECES' 
               : (sale.paymentMethod || sale.payment_method) === 'card' 
-              ? 'CARTE' 
-              : 'MOBILE'}
-          </span>
+              ? '💳 CARTE BANCAIRE' 
+              : '📱 PAIEMENT MOBILE'}
+          </div>
         </div>
+        
         {(sale.paymentMethod || sale.payment_method) === 'cash' && (sale.amountPaid || sale.amount_paid) && (
-          <>
-            <div className="flex justify-between">
-              <span>RECU:</span>
-              <span>{(sale.amountPaid || sale.amount_paid || 0).toFixed(2)}</span>
+          <div className="space-y-2 mt-3">
+            <div className="flex justify-between text-base">
+              <span className="font-bold">TOTAL A PAYER:</span>
+              <span className="font-black">{sale.total.toFixed(2)} €</span>
             </div>
-            <div className="flex justify-between">
-              <span>RENDU:</span>
-              <span>{(sale.change || sale.change_amount || 0).toFixed(2)}</span>
+            <div className="flex justify-between text-base">
+              <span className="font-bold">MONTANT RECU:</span>
+              <span className="font-black">{(sale.amountPaid || sale.amount_paid || 0).toFixed(2)} €</span>
             </div>
-          </>
+            <div className="border-t-2 border-black pt-2">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-black">MONNAIE RENDUE:</span>
+                <span className="text-2xl font-black">{(sale.change || sale.change_amount || 0).toFixed(2)} €</span>
+              </div>
+            </div>
+          </div>
         )}
+        <div className="border-b-2 border-black mt-3"></div>
       </div>
 
       {/* Footer */}
-      <div className="text-center mt-4 pt-3 border-t-2 border-dashed border-black">
+      <div className="text-center mt-4 pt-4">
         {isInvoice ? (
           <>
-            <div className="text-[10px] mb-2">
+            <div className="text-xs mb-2 font-semibold">
               Facture conforme aux dispositions legales
             </div>
-            <div className="text-[10px]">
+            <div className="text-xs font-semibold">
               Payable sous 30 jours
             </div>
           </>
         ) : (
           <>
-            <div className="font-bold mb-1">MERCI DE VOTRE VISITE!</div>
-            <div className="mt-1">A BIENTOT</div>
+            <div className="text-lg font-black mb-2" style={{ letterSpacing: '0.1em' }}>
+              ★ MERCI DE VOTRE VISITE ★
+            </div>
+            <div className="text-base font-bold mb-3">A TRES BIENTOT!</div>
           </>
         )}
+        <div className="border-t-2 border-black pt-3 mt-3" style={{ borderStyle: 'dashed' }}>
+          <div className="text-xs">
+            Ticket edite le {saleDate.toLocaleDateString('fr-BE')} a {saleDate.toLocaleTimeString('fr-BE')}
+          </div>
+        </div>
       </div>
     </div>
   );
