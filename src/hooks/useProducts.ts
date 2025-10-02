@@ -121,21 +121,25 @@ export const useUpdateProduct = () => {
 
   return useMutation({
     mutationFn: async ({ id, ...product }: Partial<Product> & { id: string }) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('products')
         .update(product)
-        .eq('id', id)
-        .select()
-        .single();
+        .eq('id', id);
 
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast({
         title: 'Produit mis à jour',
         description: 'Le produit a été mis à jour avec succès.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour le produit.',
+        variant: 'destructive',
       });
     },
   });
