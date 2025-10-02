@@ -353,15 +353,39 @@ export default function Products() {
                   pattern="[0-9]*"
                   autoComplete="off"
                   value={formData.barcode}
+                  onKeyDown={(e) => {
+                    // Convertir les touches physiques en chiffres (indépendant du layout)
+                    const code = e.code;
+                    let digit = '';
+                    
+                    if (code.startsWith('Digit')) {
+                      digit = code.replace('Digit', '');
+                    } else if (code.startsWith('Numpad')) {
+                      digit = code.replace('Numpad', '');
+                    }
+                    
+                    if (digit && /^[0-9]$/.test(digit)) {
+                      e.preventDefault();
+                      const newValue = formData.barcode + digit;
+                      setFormData({ ...formData, barcode: newValue });
+                    } else if (e.key === 'Backspace') {
+                      e.preventDefault();
+                      const newValue = formData.barcode.slice(0, -1);
+                      setFormData({ ...formData, barcode: newValue });
+                    } else if (e.key === 'Enter' || e.key === 'Tab') {
+                      // Laisser passer Enter et Tab
+                      return;
+                    } else if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
+                      // Bloquer tous les autres caractères non-numériques
+                      e.preventDefault();
+                    }
+                  }}
                   onChange={(e) => {
-                    // Normalisation AZERTY → chiffres + filtrage digits uniquement
-                    const azertyMap: Record<string, string> = {
-                      '&': '1', '!': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
-                      '-': '6', '§': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0', ')': '0'
-                    };
-                    const normalized = e.target.value.split('').map(c => azertyMap[c] ?? c).join('');
-                    const digitsOnly = normalized.replace(/\D+/g, '');
-                    setFormData({ ...formData, barcode: digitsOnly });
+                    // Fallback pour le copier-coller: ne garder que les chiffres
+                    const digitsOnly = e.target.value.replace(/\D+/g, '');
+                    if (digitsOnly !== formData.barcode) {
+                      setFormData({ ...formData, barcode: digitsOnly });
+                    }
                   }}
                   placeholder="Ex: 3760123456789"
                 />
