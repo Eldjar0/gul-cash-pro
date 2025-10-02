@@ -350,7 +350,16 @@ export default function Products() {
                 <Input
                   id="barcode"
                   value={formData.barcode}
-                  onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                  onChange={(e) => {
+                    // Normalisation AZERTY → chiffres pour les scans
+                    const azertyMap: Record<string, string> = {
+                      '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
+                      '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0',
+                      '§': '6'
+                    };
+                    const normalized = e.target.value.split('').map(c => azertyMap[c] || c).join('');
+                    setFormData({ ...formData, barcode: normalized });
+                  }}
                   placeholder="Ex: 3760123456789"
                 />
               </div>
