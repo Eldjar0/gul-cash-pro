@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -52,6 +52,7 @@ export default function Products() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const barcodeInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     barcode: '',
     name: '',
@@ -67,6 +68,15 @@ export default function Products() {
     supplier: '',
     image: '',
   });
+
+  // Auto-focus sur le champ code-barres quand le dialogue s'ouvre
+  useEffect(() => {
+    if (dialogOpen && barcodeInputRef.current) {
+      setTimeout(() => {
+        barcodeInputRef.current?.focus();
+      }, 100);
+    }
+  }, [dialogOpen]);
 
   const filteredProducts = products.filter((product) => {
     const searchLower = searchTerm.toLowerCase();
@@ -348,6 +358,7 @@ export default function Products() {
               <div className="col-span-2 md:col-span-1">
                 <Label htmlFor="barcode">Code-barres</Label>
                 <Input
+                  ref={barcodeInputRef}
                   id="barcode"
                   inputMode="numeric"
                   pattern="[0-9]*"
