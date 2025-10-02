@@ -880,76 +880,84 @@ const Index = () => {
         }}
         autoFocus={false}
       />
-      {/* Modern header */}
-      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-3 py-2 flex-shrink-0 shadow-lg">
-        <div className="flex items-center justify-between text-white">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <div className="h-10 w-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm p-1">
-                <img src={logoMarket} alt="Logo" className="h-full w-full object-contain" />
-              </div>
-              <div>
-                <h1 className="text-sm font-bold tracking-tight">CAISSE #1</h1>
-              </div>
+      {/* Header redesigné */}
+      <div className="bg-white border-b-2 border-border px-4 py-3 flex-shrink-0 shadow-md">
+        <div className="flex items-center justify-between">
+          {/* Logo et titre */}
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center p-1.5 border-2 border-primary/20">
+              <img src={logoMarket} alt="Logo" className="h-full w-full object-contain" />
             </div>
+            <div>
+              <h1 className="text-lg font-bold text-foreground">GÜL REYHAN</h1>
+              <p className="text-xs text-muted-foreground">Caisse #1</p>
+            </div>
+          </div>
+
+          {/* Boutons de navigation centraux */}
+          <div className="flex items-center gap-2">
             <Button
-              variant="ghost"
-              size="sm"
               onClick={() => navigate('/sales')}
-              className="text-white hover:bg-white/20 text-xs h-7 px-2"
+              className="bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white h-10 px-4 shadow-md"
             >
-              <History className="h-3 w-3 mr-1" />
+              <History className="h-4 w-4 mr-2" />
               Ventes
             </Button>
             <Button
-              variant="ghost"
-              size="sm"
               onClick={() => navigate('/products')}
-              className="text-white hover:bg-white/20 text-xs h-7 px-2"
+              className="bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white h-10 px-4 shadow-md"
             >
-              <ShoppingBag className="h-3 w-3 mr-1" />
+              <ShoppingBag className="h-4 w-4 mr-2" />
               Produits
             </Button>
             <Button
-              variant="ghost"
-              size="sm"
               onClick={openCustomerDisplay}
-              className="text-white hover:bg-white/20 text-xs h-7 px-2"
+              className="bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white h-10 px-4 shadow-md"
             >
-              <Eye className="h-3 w-3 mr-1" />
+              <Eye className="h-4 w-4 mr-2" />
               Affichage
             </Button>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-3 py-1 bg-white/10 rounded-lg backdrop-blur-sm">
-              <Clock className="h-4 w-4" />
-              <span className="text-xs font-medium">
-                {currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} - {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-              </span>
+
+          {/* Date/Heure et actions à droite */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-muted/50 to-muted rounded-xl border border-border">
+              <Clock className="h-4 w-4 text-primary" />
+              <div className="text-right">
+                <div className="text-xs font-bold text-foreground leading-tight">
+                  {currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
+                </div>
+                <div className="text-xs text-muted-foreground leading-tight">
+                  {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
             </div>
+            
             {user ? (
               <>
                 <Button
                   onClick={() => navigate('/settings')}
-                  className="bg-white/10 hover:bg-white/20 text-white text-xs h-9 px-4 border border-white/20 font-semibold"
+                  size="icon"
+                  className="bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white h-10 w-10 shadow-md"
+                  title="Paramètres"
                 >
-                  <SettingsIcon className="h-4 w-4 mr-1" />
-                  Paramètres
+                  <SettingsIcon className="h-5 w-5" />
                 </Button>
                 <Button
                   onClick={signOut}
-                  className="bg-white/10 hover:bg-white/20 text-white text-xs h-9 px-4 border border-white/20 font-semibold"
+                  size="icon"
+                  className="bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white h-10 w-10 shadow-md"
+                  title="Déconnexion"
                 >
-                  <LogOut className="h-4 w-4 mr-1" />
-                  Déconnexion
+                  <LogOut className="h-5 w-5" />
                 </Button>
               </>
             ) : (
               <Button
                 onClick={() => navigate('/auth')}
-                className="bg-white/10 hover:bg-white/20 text-white text-xs h-9 px-4 border border-white/20 font-semibold"
+                className="bg-gradient-to-br from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white h-10 px-4 shadow-md"
               >
-                <LogOut className="h-4 w-4 mr-1" />
+                <LogOut className="h-4 w-4 mr-2" />
                 Connexion
               </Button>
             )}
