@@ -18,6 +18,7 @@ import {
   History,
   Settings as SettingsIcon,
 } from 'lucide-react';
+import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
 import { DiscountDialog } from '@/components/pos/DiscountDialog';
@@ -884,16 +885,18 @@ const Index = () => {
         <div className="flex items-center justify-between text-white">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                <Euro className="h-5 w-5 text-white" />
+              <div className="h-10 w-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm p-1">
+                <img src={logoMarket} alt="Logo" className="h-full w-full object-contain" />
               </div>
               <div>
                 <h1 className="text-sm font-bold tracking-tight">CAISSE #1</h1>
               </div>
             </div>
-            <div className="flex items-center gap-1 px-2 py-1 bg-white/10 rounded-lg backdrop-blur-sm">
+            <div className="flex items-center gap-1 px-3 py-1 bg-white/10 rounded-lg backdrop-blur-sm">
               <Clock className="h-3 w-3" />
-              <span className="text-xs font-medium">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+              <span className="text-xs font-medium">
+                {currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} - {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+              </span>
             </div>
             <Button
               variant="ghost"
