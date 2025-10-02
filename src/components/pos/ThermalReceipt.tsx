@@ -387,6 +387,14 @@ export function printThermalReceipt() {
             letter-spacing: 0.025em !important;
           }
           
+          .text-center {
+            text-align: center !important;
+          }
+          
+          .mb-2 {
+            margin-bottom: 0.5rem !important;
+          }
+          
           @media print {
             body {
               width: 80mm;
@@ -398,6 +406,10 @@ export function printThermalReceipt() {
             
             #thermal-receipt {
               page-break-inside: avoid;
+            }
+            
+            .text-center {
+              text-align: center !important;
             }
           }
         </style>
