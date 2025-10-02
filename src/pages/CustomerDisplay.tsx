@@ -68,6 +68,17 @@ const CustomerDisplay = () => {
     text_color: '#1F2937',
   });
 
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Mise à jour de l'heure toutes les secondes
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     // Canal de communication
     const channel = new BroadcastChannel('customer_display');
@@ -228,7 +239,7 @@ const CustomerDisplay = () => {
     <div className="min-h-screen bg-white flex flex-col overflow-hidden">
       {/* Header fixe avec logo */}
       <div className="fixed top-0 left-0 right-0 bg-white border-b-4 border-primary shadow-lg p-4 z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <img src={logo} alt="Logo" className="h-16 object-contain" />
           <div className="text-center flex-1">
             <h1 className="text-4xl font-black text-foreground tracking-tight">
@@ -237,6 +248,20 @@ const CustomerDisplay = () => {
             {displayState.isInvoice && displayState.customer && (
               <p className="text-xl text-primary font-bold mt-1">{displayState.customer.name}</p>
             )}
+            <div className="text-sm text-muted-foreground mt-1">
+              {currentTime.toLocaleDateString('fr-BE', { 
+                weekday: 'long', 
+                day: '2-digit', 
+                month: 'long', 
+                year: 'numeric' 
+              })}
+              {' - '}
+              {currentTime.toLocaleTimeString('fr-BE', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+              })}
+            </div>
           </div>
           <div className="text-right">
             <p className="text-lg text-muted-foreground">Caisse:</p>
