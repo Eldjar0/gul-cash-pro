@@ -61,18 +61,16 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
             <Button
               key={product.id}
               onClick={() => onProductSelect(product)}
-              className="h-16 flex flex-col justify-center items-center p-1.5 bg-white hover:shadow-lg text-foreground border hover:scale-[1.03] transition-all duration-200 rounded-lg active:scale-95 shadow-sm group"
+              className="h-16 flex flex-col justify-center items-center p-2 hover:shadow-lg border-2 hover:scale-[1.03] transition-all duration-200 rounded-lg active:scale-95 shadow-sm"
               style={{ 
+                backgroundColor: `${currentCategory?.color}15`,
                 borderColor: currentCategory?.color || 'hsl(210, 100%, 50%)',
               }}
             >
-              <div className="p-1 rounded-lg mb-0.5 transition-colors" style={{ backgroundColor: `${currentCategory?.color}20` }}>
-                <Package2 className="h-3 w-3" style={{ color: currentCategory?.color }} />
-              </div>
-              <span className="font-bold text-xs text-center line-clamp-2 mb-0.5 leading-tight">
+              <span className="font-bold text-xs text-center line-clamp-2 mb-1 leading-tight text-foreground">
                 {product.name}
               </span>
-              <span className="text-primary text-xs font-black">
+              <span className="text-xs font-black" style={{ color: currentCategory?.color }}>
                 {product.price.toFixed(2)}€/{product.unit || 'u'}
               </span>
             </Button>
