@@ -23,6 +23,7 @@ import { DiscountDialog } from '@/components/pos/DiscountDialog';
 import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { Receipt } from '@/components/pos/Receipt';
+import { UnknownBarcodeDialog } from '@/components/pos/UnknownBarcodeDialog';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateSale } from '@/hooks/useSales';
@@ -79,6 +80,8 @@ const Index = () => {
   const [isInvoiceMode, setIsInvoiceMode] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
+  const [unknownBarcodeDialogOpen, setUnknownBarcodeDialogOpen] = useState(false);
+  const [unknownBarcode, setUnknownBarcode] = useState('');
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -219,7 +222,23 @@ const Index = () => {
       }
     }
 
+    // Si aucun résultat et que c'est un scan direct (pas de résultats intermédiaires)
+    if (results.length === 0 && searchTerm.length >= 3) {
+      // Ouvrir le dialog pour code-barres inconnu
+      setUnknownBarcode(searchTerm);
+      setUnknownBarcodeDialogOpen(true);
+      setScanInput('');
+      return;
+    }
+
     setSearchResults(results);
+  };
+
+  const handleProductLinked = (productId: string) => {
+    const product = products?.find(p => p.id === productId);
+    if (product) {
+      handleProductSelect(product);
+    }
   };
 
   const handleScanSubmit = (e: React.FormEvent) => {
@@ -559,10 +578,10 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Main content - Toujours 3 colonnes: TICKET | CALCULATRICE | ARTICLES */}
+      {/* Main content - 3 colonnes: TICKET (5) | CALCULATRICE (4) | ARTICLES (3) */}
       <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
         {/* LEFT PANEL - Ticket à gauche */}
-        <div className="col-span-4 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
+        <div className="col-span-5 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
           {/* Ticket header - Clean gradient */}
           <div className="bg-gradient-to-r from-primary to-primary-glow p-2 flex-shrink-0 shadow-lg">
             <div className="flex items-center justify-between text-white">
@@ -577,7 +596,7 @@ const Index = () => {
           </div>
 
           {/* Items list - Modern cards */}
-          <ScrollArea className="flex-1 p-2 bg-background/50">
+          <ScrollArea className="flex-1 p-2 bg-background/50 max-h-[calc(100vh-400px)]">
             {cart.length === 0 ? (
               <div className="text-center py-8">
                 <div className="p-4 bg-muted/50 rounded-full w-16 h-16 mx-auto mb-2 flex items-center justify-center">
@@ -846,7 +865,7 @@ const Index = () => {
         </div>
 
         {/* COLONNE CENTRE - Calculatrice & Scan */}
-        <div className="col-span-5 bg-background p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto">
+        <div className="col-span-4 bg-background p-2 flex flex-col gap-2 overflow-y-auto">
           {/* Zone de scan */}
           <Card className="bg-white border border-border p-2 flex-shrink-0 shadow-sm">
             <form onSubmit={handleScanSubmit}>
@@ -878,19 +897,19 @@ const Index = () => {
           </Card>
 
           {/* Clavier numérique */}
-          <Card className="bg-white border border-border p-2 flex-shrink-0 shadow-sm">
+          <Card className="bg-white border border-border p-1.5 flex-shrink-0 shadow-sm">
             <div className="text-muted-foreground text-xs font-mono mb-1">Quantité</div>
-            <div className="bg-muted p-2 rounded mb-2 border border-border">
-              <div className="text-primary text-2xl font-mono text-center font-bold">
+            <div className="bg-muted p-1.5 rounded mb-1.5 border border-border">
+              <div className="text-primary text-xl font-mono text-center font-bold">
                 {quantityInput}
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1">
               {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
                 <Button
                   key={key}
                   onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)}
-                  className="h-10 text-base font-bold bg-card hover:bg-muted text-foreground border border-border font-mono transition-all active:scale-95 shadow-sm hover:shadow-md"
+                  className="h-9 text-sm font-bold bg-card hover:bg-muted text-foreground border border-border font-mono transition-all active:scale-95 shadow-sm hover:shadow-md"
                 >
                   {key}
                 </Button>
@@ -900,8 +919,8 @@ const Index = () => {
         </div>
 
         {/* RIGHT PANEL - Articles/Catégories/Résultats */}
-        <div className="col-span-3 bg-white border-l border-border overflow-y-auto">
-          <div className="p-4">
+        <div className="col-span-3 bg-white border-l border-border overflow-y-auto max-h-[calc(100vh-60px)]">
+          <div className="p-2">
             {scanInput.trim() && searchResults.length === 0 ? (
               <div className="text-center py-16">
                 <div className="p-6 bg-muted/50 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center">
@@ -998,6 +1017,13 @@ const Index = () => {
         open={customerDialogOpen}
         onOpenChange={setCustomerDialogOpen}
         onSelectCustomer={handleSelectCustomer}
+      />
+
+      <UnknownBarcodeDialog
+        open={unknownBarcodeDialogOpen}
+        onClose={() => setUnknownBarcodeDialogOpen(false)}
+        barcode={unknownBarcode}
+        onProductLinked={handleProductLinked}
       />
 
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
