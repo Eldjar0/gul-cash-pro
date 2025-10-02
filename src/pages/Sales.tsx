@@ -121,72 +121,70 @@ export default function Sales() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/')}
-              className="text-white hover:bg-white/20"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-white">Historique des Ventes</h1>
-              <p className="text-sm text-white/80">Tickets et factures</p>
-            </div>
+      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-3">
+        <div className="flex items-center gap-2 md:gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="text-white hover:bg-white/20 shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="min-w-0">
+            <h1 className="text-lg md:text-2xl font-bold text-white truncate">Historique des Ventes</h1>
+            <p className="text-xs md:text-sm text-white/80">Tickets et factures</p>
           </div>
         </div>
       </div>
 
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="p-4 bg-white">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <Euro className="h-5 w-5 text-primary" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
+          <Card className="p-3 md:p-4 bg-white">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-2 md:p-3 bg-primary/10 rounded-lg shrink-0">
+                <Euro className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Total Aujourd'hui</p>
-                <p className="text-xl font-bold text-primary">{totalToday.toFixed(2)}€</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-4 bg-white">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-accent/10 rounded-lg">
-                <Receipt className="h-5 w-5 text-accent" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Ventes Aujourd'hui</p>
-                <p className="text-xl font-bold">{countToday}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Total Aujourd'hui</p>
+                <p className="text-sm md:text-xl font-bold text-primary truncate">{totalToday.toFixed(2)}€</p>
               </div>
             </div>
           </Card>
 
-          <Card className="p-4 bg-white">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <Euro className="h-5 w-5 text-primary" />
+          <Card className="p-3 md:p-4 bg-white">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-2 md:p-3 bg-accent/10 rounded-lg shrink-0">
+                <Receipt className="h-4 w-4 md:h-5 md:w-5 text-accent" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Total Global</p>
-                <p className="text-xl font-bold text-primary">{totalAll.toFixed(2)}€</p>
+              <div className="min-w-0">
+                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Ventes Aujourd'hui</p>
+                <p className="text-sm md:text-xl font-bold truncate">{countToday}</p>
               </div>
             </div>
           </Card>
 
-          <Card className="p-4 bg-white">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-accent/10 rounded-lg">
-                <Receipt className="h-5 w-5 text-accent" />
+          <Card className="p-3 md:p-4 bg-white">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-2 md:p-3 bg-primary/10 rounded-lg shrink-0">
+                <Euro className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Total Ventes</p>
-                <p className="text-xl font-bold">{countAll}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Total Global</p>
+                <p className="text-sm md:text-xl font-bold text-primary truncate">{totalAll.toFixed(2)}€</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-3 md:p-4 bg-white">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-2 md:p-3 bg-accent/10 rounded-lg shrink-0">
+                <Receipt className="h-4 w-4 md:h-5 md:w-5 text-accent" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Total Ventes</p>
+                <p className="text-sm md:text-xl font-bold truncate">{countAll}</p>
               </div>
             </div>
           </Card>
@@ -206,20 +204,21 @@ export default function Sales() {
         </Card>
 
         {/* Sales List */}
-        <Card className="bg-white">
-          <ScrollArea className="h-[calc(100vh-400px)]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Numéro</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Articles</TableHead>
-                  <TableHead>Paiement</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
+        <Card className="bg-white overflow-hidden">
+          <div className="overflow-x-auto">
+            <ScrollArea className="h-[calc(100vh-400px)]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[120px]">Numéro</TableHead>
+                    <TableHead className="min-w-[140px]">Date</TableHead>
+                    <TableHead className="min-w-[100px]">Type</TableHead>
+                    <TableHead className="min-w-[80px]">Articles</TableHead>
+                    <TableHead className="min-w-[100px]">Paiement</TableHead>
+                    <TableHead className="text-right min-w-[80px]">Total</TableHead>
+                    <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
               <TableBody>
                 {filteredSales.map((sale) => (
                   <TableRow key={sale.id}>
@@ -283,6 +282,7 @@ export default function Sales() {
               </TableBody>
             </Table>
           </ScrollArea>
+          </div>
         </Card>
       </div>
 
