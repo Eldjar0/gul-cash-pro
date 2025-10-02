@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 import { ShoppingBag, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import logo from '@/assets/logo.jpg';
 
 interface DisplayItem {
   name: string;
@@ -176,29 +176,25 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'idle') {
     return (
-      <div 
-        className="min-h-screen bg-gradient-to-br flex items-center justify-center p-8"
-        style={{
-          background: `linear-gradient(135deg, ${displaySettings.primary_color}10, transparent, ${displaySettings.secondary_color}10)`,
-        }}
-      >
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-8">
         <div className="text-center space-y-8 animate-fade-in">
-          <ShoppingBag className="w-32 h-32 mx-auto animate-pulse" style={{ color: displaySettings.primary_color + '40' }} />
+          <img src={logo} alt="Logo" className="w-64 h-64 mx-auto object-contain animate-scale-in" />
+          <ShoppingBag className="w-32 h-32 mx-auto animate-pulse text-primary/40" />
           <div className="space-y-4">
-            <h1 className="text-6xl font-bold animate-scale-in" style={{ color: displaySettings.text_color }}>
-              {displaySettings.welcome_text}
+            <h1 className="text-7xl font-black animate-scale-in text-foreground tracking-tight">
+              Bienvenue
             </h1>
-            <p className="text-3xl animate-fade-in" style={{ animationDelay: '0.2s', color: displaySettings.text_color + 'aa' }}>
+            <p className="text-4xl animate-fade-in text-muted-foreground" style={{ animationDelay: '0.2s' }}>
               Veuillez patienter
             </p>
-            <p className="text-2xl animate-fade-in" style={{ animationDelay: '0.4s', color: displaySettings.text_color + '88' }}>
+            <p className="text-3xl animate-fade-in text-muted-foreground/70" style={{ animationDelay: '0.4s' }}>
               Un collaborateur arrive
             </p>
           </div>
-          <div className="flex justify-center gap-2 mt-8">
-            <div className="w-3 h-3 rounded-full animate-bounce" style={{ animationDelay: '0s', backgroundColor: displaySettings.primary_color }}></div>
-            <div className="w-3 h-3 rounded-full animate-bounce" style={{ animationDelay: '0.2s', backgroundColor: displaySettings.primary_color }}></div>
-            <div className="w-3 h-3 rounded-full animate-bounce" style={{ animationDelay: '0.4s', backgroundColor: displaySettings.primary_color }}></div>
+          <div className="flex justify-center gap-3 mt-8">
+            <div className="w-4 h-4 rounded-full animate-bounce bg-primary" style={{ animationDelay: '0s' }}></div>
+            <div className="w-4 h-4 rounded-full animate-bounce bg-primary" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-4 h-4 rounded-full animate-bounce bg-primary" style={{ animationDelay: '0.4s' }}></div>
           </div>
         </div>
       </div>
@@ -207,19 +203,15 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'completed') {
     return (
-      <div 
-        className="min-h-screen bg-gradient-to-br flex items-center justify-center p-8"
-        style={{
-          background: `linear-gradient(135deg, ${displaySettings.secondary_color}20, transparent, ${displaySettings.primary_color}10)`,
-        }}
-      >
+      <div className="min-h-screen bg-gradient-to-br from-accent/10 via-background to-primary/5 flex items-center justify-center p-8">
         <div className="text-center space-y-8 animate-scale-in">
-          <CheckCircle2 className="w-32 h-32 mx-auto animate-scale-in" style={{ color: displaySettings.secondary_color }} />
-          <div className="space-y-4">
-            <h1 className="text-6xl font-bold animate-fade-in" style={{ color: displaySettings.text_color }}>
-              {displaySettings.thank_you_text}
+          <img src={logo} alt="Logo" className="w-64 h-64 mx-auto object-contain animate-scale-in" />
+          <CheckCircle2 className="w-40 h-40 mx-auto animate-scale-in text-accent" />
+          <div className="space-y-6">
+            <h1 className="text-8xl font-black animate-fade-in text-foreground tracking-tight">
+              Merci !
             </h1>
-            <p className="text-3xl animate-fade-in" style={{ animationDelay: '0.2s', color: displaySettings.text_color + 'aa' }}>
+            <p className="text-5xl animate-fade-in text-muted-foreground" style={{ animationDelay: '0.2s' }}>
               À bientôt !
             </p>
           </div>
@@ -229,101 +221,109 @@ const CustomerDisplay = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl bg-white border-4 border-black p-8 shadow-2xl">
-        {/* Header avec nom entreprise */}
-        <div className="text-center mb-6 pb-6 border-b-2 border-black">
-          <h1 className="text-4xl font-black uppercase mb-4 tracking-wide">
-            {displayState.customer?.name || 'MAGASIN'}
-          </h1>
-        </div>
-
-        {/* Tableau des articles */}
-        <div className="mb-6">
-          {/* En-têtes du tableau */}
-          <div className="grid grid-cols-12 gap-2 mb-3 pb-2 border-b-2 border-black text-lg font-bold">
-            <div className="col-span-2 text-left">QTE</div>
-            <div className="col-span-5 text-left">DESIGNATION</div>
-            <div className="col-span-2 text-right">UNITAIRE</div>
-            <div className="col-span-3 text-right">TOTAL</div>
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex flex-col overflow-hidden">
+      {/* Header fixe avec logo */}
+      <div className="bg-card border-b-4 border-primary shadow-lg p-6">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <img src={logo} alt="Logo" className="h-20 object-contain" />
+          <div className="text-right">
+            <h1 className="text-5xl font-black text-foreground tracking-tight">
+              {displayState.isInvoice ? 'FACTURE' : 'TICKET'}
+            </h1>
+            {displayState.isInvoice && displayState.customer && (
+              <p className="text-2xl text-primary font-bold mt-1">{displayState.customer.name}</p>
+            )}
           </div>
+        </div>
+      </div>
 
-          {/* Articles */}
-          <div className="space-y-3">
-            {displayState.items.map((item, index) => (
-              <div 
-                key={index} 
-                className="grid grid-cols-12 gap-2 text-xl animate-fade-in"
+      {/* Zone scrollable pour les articles */}
+      <div className="flex-1 overflow-y-auto py-8 px-6">
+        <div className="max-w-7xl mx-auto space-y-4">
+          {displayState.items.map((item, index) => {
+            const subtotal = calculateSubtotal(item);
+            const vat = calculateVAT(item);
+            
+            return (
+              <div
+                key={index}
+                className="bg-card rounded-2xl shadow-lg p-8 border-2 border-primary/20 animate-fade-in hover:shadow-xl transition-all"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="col-span-2 text-left font-semibold">
-                  {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)}
-                </div>
-                <div className="col-span-5 text-left font-bold uppercase">
-                  {item.name}
-                </div>
-                <div className="col-span-2 text-right">
-                  {item.price.toFixed(2)}
-                </div>
-                <div className="col-span-3 text-right font-bold">
-                  {item.total.toFixed(2)}
+                <div className="flex justify-between items-center">
+                  <div className="flex-1">
+                    <h3 className="text-4xl font-black text-foreground uppercase tracking-tight mb-3">
+                      {item.name}
+                    </h3>
+                    <div className="flex gap-6 items-center flex-wrap">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl font-bold text-muted-foreground">
+                          {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)} {item.unit || 'u'}
+                        </span>
+                        <span className="text-2xl text-muted-foreground">×</span>
+                        <span className="text-3xl font-semibold text-muted-foreground">
+                          {item.price.toFixed(2)} €
+                        </span>
+                      </div>
+                      {item.hasCustomPrice && (
+                        <span className="px-4 py-2 rounded-full text-xl font-bold bg-accent/20 text-accent">
+                          Prix modifié
+                        </span>
+                      )}
+                      {item.discount && (
+                        <span className="px-4 py-2 rounded-full text-xl font-bold bg-destructive/20 text-destructive">
+                          -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-6xl font-black text-primary">
+                      {item.total.toFixed(2)} €
+                    </div>
+                    <div className="text-xl text-muted-foreground mt-2">
+                      HT: {subtotal.toFixed(2)}€ + TVA: {vat.toFixed(2)}€
+                    </div>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
+      </div>
 
-        {/* Séparateur */}
-        <div className="border-t-2 border-dashed border-black my-6"></div>
+      {/* Footer fixe avec total en bas à droite */}
+      <div className="bg-gradient-to-r from-primary to-accent shadow-2xl">
+        <div className="max-w-7xl mx-auto p-8">
+          <div className="flex justify-between items-center">
+            {/* Infos TVA à gauche */}
+            <div className="space-y-2 text-white">
+              {(() => {
+                const vatByRate = displayState.items.reduce((acc, item) => {
+                  const vat = calculateVAT(item);
+                  if (!acc[item.vatRate]) {
+                    acc[item.vatRate] = 0;
+                  }
+                  acc[item.vatRate] += vat;
+                  return acc;
+                }, {} as Record<number, number>);
 
-        {/* Total TTC */}
-        <div className="mb-4">
-          <div className="flex justify-between items-center text-3xl font-black mb-3">
-            <span>TOTAL TTC</span>
-            <span>{getTotalTTC().toFixed(2)} €</span>
-          </div>
+                return Object.entries(vatByRate).map(([rate, amount]) => (
+                  <div key={rate} className="text-2xl font-semibold flex items-center gap-3">
+                    <span className="opacity-90">TVA {parseFloat(rate).toFixed(2)}%:</span>
+                    <span className="font-bold">{amount.toFixed(2)} €</span>
+                  </div>
+                ));
+              })()}
+            </div>
 
-          {/* TVA détaillée par taux */}
-          <div className="space-y-1 text-lg text-right">
-            {(() => {
-              // Grouper par taux de TVA
-              const vatByRate = displayState.items.reduce((acc, item) => {
-                const vat = calculateVAT(item);
-                if (!acc[item.vatRate]) {
-                  acc[item.vatRate] = 0;
-                }
-                acc[item.vatRate] += vat;
-                return acc;
-              }, {} as Record<number, number>);
-
-              return Object.entries(vatByRate).map(([rate, amount]) => (
-                <div key={rate} className="flex justify-end gap-4">
-                  <span>DONT TVA {parseFloat(rate).toFixed(2)} %</span>
-                  <span className="font-semibold w-24">{amount.toFixed(2)} €</span>
-                </div>
-              ));
-            })()}
-          </div>
-        </div>
-
-        {/* Séparateur */}
-        <div className="border-t-2 border-dashed border-black my-6"></div>
-
-        {/* Mode de paiement */}
-        <div className="flex justify-between items-center text-2xl font-bold mb-6">
-          <span>Paiement en cours...</span>
-          <span></span>
-        </div>
-
-        {/* Ligne de séparation */}
-        <div className="border-t-2 border-black my-6"></div>
-
-        {/* Footer - animation d'attente */}
-        <div className="text-center">
-          <div className="flex justify-center gap-2">
-            <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-            <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-3 h-3 bg-black rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            {/* Total TTC à droite - ÉNORME */}
+            <div className="text-right">
+              <div className="text-3xl font-bold text-white/90 mb-2">TOTAL À PAYER</div>
+              <div className="text-9xl font-black text-white tracking-tighter leading-none">
+                {getTotalTTC().toFixed(2)} €
+              </div>
+            </div>
           </div>
         </div>
       </div>
