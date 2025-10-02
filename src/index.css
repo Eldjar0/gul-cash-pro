@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    /* Base colors - Ultra clean modern app */
+    /* Base colors - Ultra clean light mode only */
     --background: 0 0% 98%;
     --foreground: 220 15% 15%;
 
@@ -80,60 +80,6 @@
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 10% 98%));
     --gradient-display: linear-gradient(180deg, hsl(220 25% 15%), hsl(220 25% 20%));
   }
-
-  .dark {
-    /* Dark mode - Rich and modern */
-    --background: 220 25% 8%;
-    --foreground: 220 15% 95%;
-
-    --card: 220 20% 12%;
-    --card-foreground: 220 15% 95%;
-
-    --popover: 220 20% 12%;
-    --popover-foreground: 220 15% 95%;
-
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 217 91% 70%;
-
-    --secondary: 262 83% 58%;
-    --secondary-foreground: 0 0% 100%;
-    --secondary-glow: 262 83% 68%;
-
-    --accent: 189 94% 43%;
-    --accent-foreground: 0 0% 100%;
-
-    --muted: 220 20% 18%;
-    --muted-foreground: 220 15% 60%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 20% 22%;
-    --input: 220 20% 18%;
-    --ring: 217 91% 60%;
-    
-    --pos-display: 0 0% 0%;
-    --pos-display-foreground: 0 0% 100%;
-    --pos-key: 0 0% 31%;
-    --pos-key-foreground: 0 0% 100%;
-    --pos-key-hover: 0 0% 41%;
-    --pos-key-active: 0 0% 51%;
-    
-    --gradient-display: linear-gradient(180deg, hsl(220 25% 4%), hsl(220 25% 10%));
-    --gradient-card: linear-gradient(135deg, hsl(220 20% 12%), hsl(220 20% 14%));
-    --shadow-glow: 0 0 20px hsl(217 91% 60% / 0.5);
-    --shadow-glow-strong: 0 0 40px hsl(217 91% 60% / 0.7);
-    
-    --sidebar-background: 220 25% 8%;
-    --sidebar-foreground: 220 15% 95%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 15%;
-    --sidebar-accent-foreground: 220 15% 95%;
-    --sidebar-border: 220 20% 20%;
-    --sidebar-ring: 217 91% 60%;
-  }
 }
 
 @layer base {
@@ -168,15 +114,10 @@
 @layer utilities {
   /* Glass morphism effect */
   .glass {
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-  }
-  
-  .dark .glass {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
   }
   
   /* Gradient text */
@@ -187,12 +128,21 @@
     background-clip: text;
   }
   
-  /* Hover glow effect */
-  .hover-glow {
-    transition: var(--transition-smooth);
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  .hover-glow:hover {
-    box-shadow: var(--shadow-glow);
+  /* Print styles for thermal receipt */
+  @media print {
+    @page {
+      size: 80mm auto;
+      margin: 0;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+    }
   }
 }

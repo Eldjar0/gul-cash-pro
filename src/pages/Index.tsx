@@ -24,6 +24,7 @@ import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { Receipt } from '@/components/pos/Receipt';
 import { UnknownBarcodeDialog } from '@/components/pos/UnknownBarcodeDialog';
+import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateSale } from '@/hooks/useSales';
@@ -82,6 +83,7 @@ const Index = () => {
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [unknownBarcodeDialogOpen, setUnknownBarcodeDialogOpen] = useState(false);
   const [unknownBarcode, setUnknownBarcode] = useState('');
+  const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -407,7 +409,9 @@ const Index = () => {
       setIsInvoiceMode(false);
       setSelectedCustomer(null);
       setPaymentDialogOpen(false);
-      setReceiptDialogOpen(true);
+      
+      // Demander si l'utilisateur veut imprimer
+      setPrintConfirmDialogOpen(true);
       toast.success(isInvoiceMode ? 'Facture créée' : 'Paiement validé');
     } catch (error) {
       console.error('Error creating sale:', error);
@@ -1026,35 +1030,74 @@ const Index = () => {
         onProductLinked={handleProductLinked}
       />
 
-      <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
-        <DialogContent className="max-w-md bg-[#1a1a1a] border-2 border-pos-success/30">
+      {/* Confirmation d'impression */}
+      <Dialog open={printConfirmDialogOpen} onOpenChange={setPrintConfirmDialogOpen}>
+        <DialogContent className="max-w-md bg-white border-2 border-primary">
           <DialogHeader>
-            <DialogTitle className="text-pos-success font-mono">TICKET DE CAISSE</DialogTitle>
+            <DialogTitle className="text-primary text-xl font-bold">Voulez-vous imprimer le ticket?</DialogTitle>
           </DialogHeader>
-          {currentSale && (
-            <Receipt 
-              sale={{
-                ...currentSale,
-                items: cart.map(item => ({
-                  product: item.product,
-                  quantity: item.quantity,
-                  discount: item.discount,
-                  subtotal: item.subtotal,
-                  vatAmount: item.vatAmount,
-                  total: item.total,
-                })),
-              }} 
-            />
-          )}
-          <Button
-            onClick={() => {
-              setReceiptDialogOpen(false);
-              window.print();
-            }}
-            className="w-full bg-pos-success hover:bg-pos-success/90 text-black font-bold font-mono"
-          >
-            IMPRIMER
-          </Button>
+          <div className="text-center py-4">
+            <p className="text-muted-foreground mb-6">
+              Impression sur imprimante thermique POS80
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setPrintConfirmDialogOpen(false);
+                  setCurrentSale(null);
+                }}
+                className="flex-1 h-14 text-base font-semibold"
+              >
+                Non, merci
+              </Button>
+              <Button
+                onClick={() => {
+                  setPrintConfirmDialogOpen(false);
+                  setReceiptDialogOpen(true);
+                }}
+                className="flex-1 h-14 bg-primary hover:bg-primary/90 text-white text-base font-bold"
+              >
+                Oui, imprimer
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog d'impression thermique */}
+      <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
+        <DialogContent className="max-w-sm bg-white border-2 border-primary p-0">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle className="text-primary font-bold text-center">TICKET DE CAISSE</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[70vh] overflow-y-auto">
+            {currentSale && <ThermalReceipt sale={currentSale} />}
+          </div>
+          <div className="p-4 border-t bg-muted/30 flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setReceiptDialogOpen(false);
+                setCurrentSale(null);
+              }}
+              className="flex-1 h-12 font-semibold"
+            >
+              Fermer
+            </Button>
+            <Button
+              onClick={() => {
+                printThermalReceipt();
+                setTimeout(() => {
+                  setReceiptDialogOpen(false);
+                  setCurrentSale(null);
+                }, 500);
+              }}
+              className="flex-1 h-12 bg-accent hover:bg-accent/90 text-white font-bold"
+            >
+              IMPRIMER
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
