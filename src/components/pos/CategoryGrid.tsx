@@ -73,7 +73,7 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
                 {product.name}
               </span>
               <span className="text-primary text-xs font-black">
-                {product.price.toFixed(2)}€
+                {product.price.toFixed(2)}€/{product.unit || 'u'}
               </span>
             </Button>
           ))}

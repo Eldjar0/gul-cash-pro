@@ -59,6 +59,7 @@ export default function Products() {
     price: '',
     cost_price: '',
     type: 'unit' as 'unit' | 'weight',
+    unit: 'unité',
     category_id: '',
     vat_rate: '21',
     stock: '',
@@ -86,6 +87,7 @@ export default function Products() {
         price: product.price.toString(),
         cost_price: product.cost_price?.toString() || '',
         type: product.type,
+        unit: product.unit || 'unité',
         category_id: product.category_id || '',
         vat_rate: product.vat_rate.toString(),
         stock: product.stock?.toString() || '',
@@ -102,6 +104,7 @@ export default function Products() {
         price: '',
         cost_price: '',
         type: 'unit',
+        unit: 'unité',
         category_id: '',
         vat_rate: '21',
         stock: '',
@@ -283,7 +286,7 @@ export default function Products() {
                           )}
                         </TableCell>
                         <TableCell className="font-semibold">
-                          {product.price.toFixed(2)}€
+                          {product.price.toFixed(2)}€ / {product.unit || 'u'}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -405,6 +408,33 @@ export default function Products() {
                   <SelectContent>
                     <SelectItem value="unit">Unité</SelectItem>
                     <SelectItem value="weight">Poids (kg)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-2 md:col-span-1">
+                <Label htmlFor="unit">Unité de vente</Label>
+                <Select
+                  value={formData.unit}
+                  onValueChange={(value) => setFormData({ ...formData, unit: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unité">Unité (u)</SelectItem>
+                    <SelectItem value="carton">Carton</SelectItem>
+                    <SelectItem value="lot">Lot</SelectItem>
+                    <SelectItem value="pack">Pack</SelectItem>
+                    <SelectItem value="kg">Kilogramme (kg)</SelectItem>
+                    <SelectItem value="g">Gramme (g)</SelectItem>
+                    <SelectItem value="litre">Litre (L)</SelectItem>
+                    <SelectItem value="ml">Millilitre (ml)</SelectItem>
+                    <SelectItem value="m">Mètre (m)</SelectItem>
+                    <SelectItem value="m2">Mètre carré (m²)</SelectItem>
+                    <SelectItem value="m3">Mètre cube (m³)</SelectItem>
+                    <SelectItem value="pièce">Pièce</SelectItem>
+                    <SelectItem value="boîte">Boîte</SelectItem>
+                    <SelectItem value="sachet">Sachet</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

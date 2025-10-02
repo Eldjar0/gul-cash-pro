@@ -99,6 +99,7 @@ const Index = () => {
         originalPrice: item.product.price,
         vatRate: item.product.vat_rate,
         total: item.total,
+        unit: item.product.unit,
         discount: item.discount ? {
           type: item.discount.type,
           value: item.discount.value,
@@ -1004,7 +1005,7 @@ const Index = () => {
                             }}
                             className="h-5 w-14 text-xs px-1 text-center bg-background"
                           />
-                          <span className="text-muted-foreground text-xs">€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}</span>
+                          <span className="text-muted-foreground text-xs">€/{item.product.unit || 'u'} × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}</span>
                         </div>
                         {item.discount && (
                           <div className="flex items-center gap-1 mt-0.5">
@@ -1053,8 +1054,8 @@ const Index = () => {
                         >
                           -
                         </Button>
-                        <div className="px-1 flex items-center justify-center min-w-[1.5rem] font-bold text-xs">
-                          {item.quantity.toFixed(item.product.type === 'weight' ? 1 : 0)}
+                        <div className="px-1 flex items-center justify-center min-w-[2.5rem] font-bold text-xs">
+                          {item.quantity.toFixed(item.product.type === 'weight' ? 1 : 0)} {item.product.unit || 'u'}
                         </div>
                         <Button
                           size="sm"

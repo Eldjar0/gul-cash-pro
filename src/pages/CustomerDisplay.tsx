@@ -10,6 +10,7 @@ interface DisplayItem {
   originalPrice: number;
   vatRate: number;
   total: number;
+  unit?: string;
   discount?: {
     type: 'percentage' | 'amount';
     value: number;
@@ -278,9 +279,9 @@ const CustomerDisplay = () => {
                         <p className="text-xl font-bold" style={{ color: displaySettings.text_color }}>
                           {item.name}
                         </p>
-                        <div className="flex gap-2 items-center mt-1">
+                        <div className="flex gap-2 items-center mt-1 flex-wrap">
                           <span className="text-lg" style={{ color: displaySettings.text_color + 'aa' }}>
-                            Qté: {item.quantity}
+                            Qté: {item.quantity} {item.unit || 'u'}
                           </span>
                           {item.hasCustomPrice && (
                             <span className="px-2 py-0.5 rounded text-sm font-semibold" style={{

@@ -10,6 +10,7 @@ export interface Product {
   price: number;
   cost_price?: number;
   type: 'unit' | 'weight';
+  unit?: string; // unité, carton, lot, kg, g, litre, ml, etc.
   category_id?: string;
   vat_rate: number;
   stock?: number;

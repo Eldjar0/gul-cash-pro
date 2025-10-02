@@ -242,6 +242,7 @@ export type Database = {
           stock: number | null
           supplier: string | null
           type: Database["public"]["Enums"]["product_type"]
+          unit: string | null
           updated_at: string | null
           vat_rate: number
         }
@@ -260,6 +261,7 @@ export type Database = {
           stock?: number | null
           supplier?: string | null
           type?: Database["public"]["Enums"]["product_type"]
+          unit?: string | null
           updated_at?: string | null
           vat_rate?: number
         }
@@ -278,6 +280,7 @@ export type Database = {
           stock?: number | null
           supplier?: string | null
           type?: Database["public"]["Enums"]["product_type"]
+          unit?: string | null
           updated_at?: string | null
           vat_rate?: number
         }
