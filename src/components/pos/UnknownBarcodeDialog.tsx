@@ -57,11 +57,12 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
         type: newProduct.type,
         is_active: true,
         stock: 0,
+        min_stock: 0,
       });
 
       toast({
         title: 'Produit créé',
-        description: `${result.name} a été créé avec succès.`,
+        description: `${result.name} créé avec le code-barres ${barcode}`,
       });
 
       onProductLinked(result.id);
@@ -69,7 +70,7 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
     } catch (error: any) {
       toast({
         title: 'Erreur',
-        description: error.message || 'Connexion requise pour créer un produit.',
+        description: error.message || 'Impossible de créer le produit.',
         variant: 'destructive',
       });
     }
@@ -77,9 +78,11 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-white">
         <DialogHeader>
-          <DialogTitle>Code-barres inconnu: {barcode}</DialogTitle>
+          <DialogTitle className="text-primary text-xl font-bold">
+            Code-barres inconnu: {barcode}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -87,16 +90,16 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
             <Button
               variant={mode === 'select' ? 'default' : 'outline'}
               onClick={() => setMode('select')}
-              className="flex-1"
+              className="flex-1 h-12 text-base font-semibold"
             >
-              Lier à un produit
+              Lier à un produit existant
             </Button>
             <Button
               variant={mode === 'create' ? 'default' : 'outline'}
               onClick={() => setMode('create')}
-              className="flex-1"
+              className="flex-1 h-12 text-base font-semibold bg-accent hover:bg-accent/90 text-white border-accent"
             >
-              Créer un produit
+              Créer un nouveau produit
             </Button>
           </div>
 
@@ -133,18 +136,27 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4 bg-muted/30 p-4 rounded-lg border-2 border-accent/30">
+              <div className="bg-accent/10 p-3 rounded-lg border border-accent/30 mb-4">
+                <p className="text-sm font-semibold text-accent">
+                  📦 Création d'un nouveau produit avec le code-barres: <span className="font-mono font-bold">{barcode}</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ce code-barres sera automatiquement lié au produit créé.
+                </p>
+              </div>
               <div>
-                <Label htmlFor="name">Nom du produit *</Label>
+                <Label htmlFor="name" className="text-base font-semibold">Nom du produit *</Label>
                 <Input
                   id="name"
                   value={newProduct.name}
                   onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
                   placeholder="Ex: Coca-Cola 33cl"
+                  className="h-12 text-base mt-2"
                 />
               </div>
               <div>
-                <Label htmlFor="price">Prix (€) *</Label>
+                <Label htmlFor="price" className="text-base font-semibold">Prix (€) *</Label>
                 <Input
                   id="price"
                   type="number"
@@ -152,49 +164,56 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
                   value={newProduct.price}
                   onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
                   placeholder="0.00"
+                  className="h-12 text-base mt-2"
                 />
               </div>
               <div>
-                <Label htmlFor="vat">TVA (%)</Label>
+                <Label htmlFor="vat" className="text-base font-semibold">TVA (%)</Label>
                 <Input
                   id="vat"
                   type="number"
                   step="0.01"
                   value={newProduct.vat_rate}
                   onChange={(e) => setNewProduct({ ...newProduct, vat_rate: e.target.value })}
+                  className="h-12 text-base mt-2"
                 />
               </div>
               <div>
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="type" className="text-base font-semibold">Type de produit</Label>
                 <Select
                   value={newProduct.type}
                   onValueChange={(value: 'unit' | 'weight') =>
                     setNewProduct({ ...newProduct, type: value })
                   }
                 >
-                  <SelectTrigger id="type">
+                  <SelectTrigger id="type" className="h-12 text-base mt-2">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unit">Unité</SelectItem>
-                    <SelectItem value="weight">Poids</SelectItem>
+                    <SelectItem value="unit">Unité (pièce)</SelectItem>
+                    <SelectItem value="weight">Poids (kg)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Le code-barres {barcode} sera automatiquement associé.
-              </p>
             </div>
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="border-t pt-4">
+          <Button 
+            variant="outline" 
+            onClick={onClose}
+            className="h-12 px-6 text-base font-semibold"
+          >
             Annuler
           </Button>
           {mode === 'create' && (
-            <Button onClick={handleCreateNew} disabled={createProduct.isPending}>
-              {createProduct.isPending ? 'Création...' : 'Créer'}
+            <Button 
+              onClick={handleCreateNew} 
+              disabled={createProduct.isPending}
+              className="h-12 px-6 bg-accent hover:bg-accent/90 text-white text-base font-bold"
+            >
+              {createProduct.isPending ? 'Création...' : '✓ Créer et ajouter au panier'}
             </Button>
           )}
         </DialogFooter>
