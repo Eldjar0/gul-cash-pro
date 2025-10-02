@@ -84,6 +84,62 @@ const Index = () => {
   const [unknownBarcodeDialogOpen, setUnknownBarcodeDialogOpen] = useState(false);
   const [unknownBarcode, setUnknownBarcode] = useState('');
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
+  const [customerDisplayWindow, setCustomerDisplayWindow] = useState<Window | null>(null);
+  const [displayChannel] = useState(() => new BroadcastChannel('customer_display'));
+
+  // Synchroniser l'affichage client avec le panier
+  useEffect(() => {
+    const updateCustomerDisplay = () => {
+      const displayItems = cart.map(item => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.custom_price ?? item.product.price,
+        vatRate: item.product.vat_rate,
+        total: item.total,
+      }));
+
+      const state = {
+        items: displayItems,
+        status: cart.length > 0 ? 'shopping' : 'idle',
+        timestamp: Date.now(),
+      };
+
+      // Envoyer via BroadcastChannel
+      displayChannel.postMessage(state);
+      
+      // Sauvegarder dans localStorage pour persistance
+      localStorage.setItem('customer_display_state', JSON.stringify(state));
+    };
+
+    updateCustomerDisplay();
+  }, [cart, displayChannel]);
+
+  // Ouvrir l'affichage client dans une nouvelle fenêtre
+  const openCustomerDisplay = () => {
+    const width = window.screen.width;
+    const height = window.screen.height;
+    
+    // Ouvrir en plein écran sur l'écran secondaire si disponible
+    const newWindow = window.open(
+      '/customer-display',
+      'customerDisplay',
+      `width=${width},height=${height},left=${width},top=0,fullscreen=yes`
+    );
+    
+    if (newWindow) {
+      setCustomerDisplayWindow(newWindow);
+      toast.success('Affichage client ouvert');
+    } else {
+      toast.error('Impossible d\'ouvrir l\'affichage client');
+    }
+  };
+
+  // Nettoyer à la fermeture
+  useEffect(() => {
+    return () => {
+      displayChannel.close();
+    };
+  }, [displayChannel]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -610,6 +666,27 @@ const Index = () => {
       };
       
       setCurrentSale(saleForReceipt);
+      
+      // Mettre à jour l'affichage client avec statut "completed"
+      const completedState = {
+        items: [],
+        status: 'completed',
+        timestamp: Date.now(),
+      };
+      displayChannel.postMessage(completedState);
+      localStorage.setItem('customer_display_state', JSON.stringify(completedState));
+      
+      // Retour à "idle" après 5 secondes
+      setTimeout(() => {
+        const idleState = {
+          items: [],
+          status: 'idle',
+          timestamp: Date.now(),
+        };
+        displayChannel.postMessage(idleState);
+        localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+      }, 5000);
+      
       setCart([]);
       setGlobalDiscount(null);
       setAppliedPromoCode(null);
@@ -633,6 +710,16 @@ const Index = () => {
       setAppliedPromoCode(null);
       setIsInvoiceMode(false);
       setSelectedCustomer(null);
+      
+      // Retour à l'état "idle" sur l'affichage client
+      const idleState = {
+        items: [],
+        status: 'idle',
+        timestamp: Date.now(),
+      };
+      displayChannel.postMessage(idleState);
+      localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+      
       toast.info('Panier vidé');
     }
   };
@@ -778,6 +865,15 @@ const Index = () => {
             >
               <History className="h-3 w-3 mr-1" />
               Ventes
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={openCustomerDisplay}
+              className="text-white hover:bg-white/20 text-xs h-7 px-2"
+            >
+              <Eye className="h-3 w-3 mr-1" />
+              Affichage Client
             </Button>
           </div>
           {user ? (
