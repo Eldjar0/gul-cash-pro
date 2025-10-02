@@ -554,10 +554,10 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Main content - Modern 3-column layout: TICKET | CALCULATRICE | ARTICLES */}
-      <div className="flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-0 overflow-hidden">
+      {/* Main content - Toujours 3 colonnes: TICKET | CALCULATRICE | ARTICLES */}
+      <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
         {/* LEFT PANEL - Ticket à gauche */}
-        <div className="lg:col-span-3 bg-white border-t lg:border-t-0 lg:border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
+        <div className="col-span-3 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
           {/* Ticket header - Clean gradient */}
           <div className="bg-gradient-to-r from-primary to-primary-glow p-4 flex-shrink-0 shadow-lg">
             <div className="flex items-center justify-between text-white">
@@ -841,7 +841,7 @@ const Index = () => {
         </div>
 
         {/* COLONNE CENTRE - Calculatrice & Scan */}
-        <div className="lg:col-span-6 bg-background p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto lg:overflow-hidden">
+        <div className="col-span-6 bg-background p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto">
           {/* Zone de scan */}
           <Card className="bg-white border border-border p-3 md:p-6 flex-shrink-0 shadow-sm">
             <form onSubmit={handleScanSubmit}>
@@ -872,14 +872,8 @@ const Index = () => {
             </form>
           </Card>
 
-          {/* Catégories sur mobile */}
-          <Card className="lg:hidden bg-white border border-border p-3 flex-1 overflow-y-auto shadow-sm">
-            <h2 className="text-foreground font-semibold text-sm mb-2 font-mono">Catégories</h2>
-            <CategoryGrid onProductSelect={handleProductSelect} />
-          </Card>
-
           {/* Clavier numérique */}
-          <Card className="hidden lg:block bg-white border border-border p-3 xl:p-4 flex-shrink-0 shadow-sm">
+          <Card className="bg-white border border-border p-3 xl:p-4 flex-shrink-0 shadow-sm">
             <div className="text-muted-foreground text-xs md:text-sm font-mono mb-2 md:mb-3">Quantité</div>
             <div className="bg-muted p-2 md:p-4 rounded mb-2 md:mb-4 border border-border">
               <div className="text-primary text-2xl md:text-4xl font-mono text-center font-bold">
@@ -901,7 +895,7 @@ const Index = () => {
         </div>
 
         {/* RIGHT PANEL - Articles/Catégories/Résultats */}
-        <div className="hidden lg:block lg:col-span-3 bg-white border-l border-border overflow-y-auto">
+        <div className="col-span-3 bg-white border-l border-border overflow-y-auto">
           <div className="p-4">
             {scanInput.trim() && searchResults.length === 0 ? (
               <div className="text-center py-16">
