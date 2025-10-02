@@ -170,10 +170,10 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
               {/* Ligne avec quantité, prix unitaire et total */}
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700' }}>
                 <span>
-                  {qtyDisplay} {unitDisplay} x {pricePerUnit} EUR
+                  {qtyDisplay} {unitDisplay} x {pricePerUnit}€
                 </span>
                 <span style={{ fontWeight: '900' }}>
-                  {item.total.toFixed(2)} EUR
+                  {item.total.toFixed(2)}€
                 </span>
               </div>
               
@@ -185,7 +185,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
               {/* Remise si applicable */}
               {item.discount && (
                 <div style={{ fontSize: '11px', fontWeight: '800', fontStyle: 'italic' }}>
-                  REMISE -{item.discount.value}{item.discount.type === 'percentage' ? '%' : ' EUR'}
+                  REMISE -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
                 </div>
               )}
             </div>
@@ -201,10 +201,10 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         {Object.entries(vatByRate).map(([rate, amounts]) => (
           <div key={rate} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
             <span>
-              {parseFloat(rate).toFixed(0)}% sur {amounts.totalHT.toFixed(2)} EUR
+              {parseFloat(rate).toFixed(0)}% sur {amounts.totalHT.toFixed(2)}€
             </span>
             <span style={{ fontWeight: '800' }}>
-              {amounts.totalVAT.toFixed(2)} EUR
+              {amounts.totalVAT.toFixed(2)}€
             </span>
           </div>
         ))}
@@ -216,16 +216,16 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       <div style={{ fontSize: '12px', marginBottom: '4px', fontWeight: '700' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
           <span>SOUS-TOTAL HT</span>
-          <span style={{ fontWeight: '800' }}>{sale.subtotal.toFixed(2)} EUR</span>
+          <span style={{ fontWeight: '800' }}>{sale.subtotal.toFixed(2)}€</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
           <span>TVA TOTALE</span>
-          <span style={{ fontWeight: '800' }}>{(sale.totalVat || sale.total_vat || 0).toFixed(2)} EUR</span>
+          <span style={{ fontWeight: '800' }}>{(sale.totalVat || sale.total_vat || 0).toFixed(2)}€</span>
         </div>
         {(sale.totalDiscount || sale.total_discount || 0) > 0 && (
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
             <span>REMISE</span>
-            <span style={{ fontWeight: '800' }}>-{(sale.totalDiscount || sale.total_discount || 0).toFixed(2)} EUR</span>
+            <span style={{ fontWeight: '800' }}>-{(sale.totalDiscount || sale.total_discount || 0).toFixed(2)}€</span>
           </div>
         )}
       </div>
@@ -234,7 +234,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       <div style={{ borderTop: '2px solid #000', borderBottom: '2px solid #000', padding: '8px 0', margin: '8px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '900' }}>
           <span>TOTAL</span>
-          <span>{sale.total.toFixed(2)} EUR</span>
+          <span>{sale.total.toFixed(2)}€</span>
         </div>
       </div>
 
@@ -245,17 +245,17 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
             {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
              (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE BANCAIRE' : 'PAIEMENT MOBILE'}
           </span>
-          <span>{sale.total.toFixed(2)} EUR</span>
+          <span>{sale.total.toFixed(2)}€</span>
         </div>
         {(sale.paymentMethod || sale.payment_method) === 'cash' && (sale.amountPaid || sale.amount_paid) && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
               <span>Reçu</span>
-              <span>{(sale.amountPaid || sale.amount_paid || 0).toFixed(2)} EUR</span>
+              <span>{(sale.amountPaid || sale.amount_paid || 0).toFixed(2)}€</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: '800' }}>
               <span>Rendu</span>
-              <span>{(sale.change || sale.change_amount || 0).toFixed(2)} EUR</span>
+              <span>{(sale.change || sale.change_amount || 0).toFixed(2)}€</span>
             </div>
           </>
         )}
