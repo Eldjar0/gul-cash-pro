@@ -480,41 +480,44 @@ const Index = () => {
   const handleProductSelect = (product: Product, quantity?: number) => {
     const qty = quantity || parseFloat(quantityInput) || 1;
     
-    // Check if product already exists in cart
-    const existingItemIndex = cart.findIndex(item => item.product.id === product.id);
-    
-    if (existingItemIndex !== -1) {
-      // Product exists, update its quantity
-      const newCart = [...cart];
-      const existingItem = newCart[existingItemIndex];
-      const newQuantity = existingItem.quantity + qty;
-      const { subtotal, vatAmount, total } = calculateItemTotal(product, newQuantity, existingItem.discount, existingItem.custom_price);
+    // Utiliser la forme callback de setState pour éviter les problèmes de scans rapides
+    setCart(prevCart => {
+      // Check if product already exists in cart
+      const existingItemIndex = prevCart.findIndex(item => item.product.id === product.id);
       
-      newCart[existingItemIndex] = {
-        ...existingItem,
-        quantity: newQuantity,
-        subtotal,
-        vatAmount,
-        total,
-      };
-      
-      setCart(newCart);
-      toast.success(`${product.name} quantité mise à jour`);
-    } else {
-      // New product, add to cart
-      const { subtotal, vatAmount, total } = calculateItemTotal(product, qty);
+      if (existingItemIndex !== -1) {
+        // Product exists, update its quantity
+        const newCart = [...prevCart];
+        const existingItem = newCart[existingItemIndex];
+        const newQuantity = existingItem.quantity + qty;
+        const { subtotal, vatAmount, total } = calculateItemTotal(product, newQuantity, existingItem.discount, existingItem.custom_price);
+        
+        newCart[existingItemIndex] = {
+          ...existingItem,
+          quantity: newQuantity,
+          subtotal,
+          vatAmount,
+          total,
+        };
+        
+        toast.success(`${product.name} (${newQuantity})`);
+        return newCart;
+      } else {
+        // New product, add to cart
+        const { subtotal, vatAmount, total } = calculateItemTotal(product, qty);
 
-      const newItem: CartItem = {
-        product,
-        quantity: qty,
-        subtotal,
-        vatAmount,
-        total,
-      };
+        const newItem: CartItem = {
+          product,
+          quantity: qty,
+          subtotal,
+          vatAmount,
+          total,
+        };
 
-      setCart([...cart, newItem]);
-      toast.success(`${product.name} ajouté`);
-    }
+        toast.success(`${product.name} ajouté`);
+        return [...prevCart, newItem];
+      }
+    });
     
     setQuantityInput('1');
     setScanInput('');
