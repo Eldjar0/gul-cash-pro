@@ -20,16 +20,109 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Euro, AlertTriangle, FileText, CreditCard, Smartphone, Receipt, Printer } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar, Euro, AlertTriangle, FileText, CreditCard, Smartphone, Receipt, Printer, Download, Archive } from 'lucide-react';
 import { ReportData, DailyReport } from '@/hooks/useDailyReports';
 import { ReportZContent } from './ReportZContent';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface CloseDayDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (closingAmount: number) => void;
+  onConfirm: (closingAmount: number, archiveAndDelete?: boolean) => void;
   reportData: ReportData;
   todayReport: DailyReport | null;
+}
+
+async function exportAndArchiveSales() {
+  try {
+    toast.info('Préparation de l\'archive des ventes...');
+    
+    // Récupérer toutes les ventes avec leurs items et clients
+    const { data: sales, error } = await supabase
+      .from('sales')
+      .select(`
+        *,
+        sale_items(*),
+        customers(*)
+      `)
+      .order('date', { ascending: true });
+
+    if (error) throw error;
+
+    const date = new Date().toISOString().split('T')[0];
+    
+    // 1. Créer l'archive JSON complète
+    const archive = {
+      export_date: new Date().toISOString(),
+      total_sales: sales?.length || 0,
+      warning: 'CONSERVATION OBLIGATOIRE - LOI BELGE: Ces données doivent être conservées pendant 7 ans minimum à des fins fiscales et légales.',
+      legal_notice: 'Ce fichier contient des données fiscales. Ne pas modifier. En cas de contrôle fiscal, ce fichier doit être présenté aux autorités compétentes.',
+      sales: sales || [],
+    };
+
+    // Télécharger le fichier JSON
+    const blobJSON = new Blob([JSON.stringify(archive, null, 2)], { type: 'application/json' });
+    const urlJSON = URL.createObjectURL(blobJSON);
+    const linkJSON = document.createElement('a');
+    linkJSON.href = urlJSON;
+    linkJSON.download = `archive-ventes-${date}.json`;
+    document.body.appendChild(linkJSON);
+    linkJSON.click();
+    document.body.removeChild(linkJSON);
+    URL.revokeObjectURL(urlJSON);
+
+    // 2. Créer un fichier CSV pour Excel
+    const csvRows: string[] = [];
+    csvRows.push('# ARCHIVE VENTES - CONSERVATION OBLIGATOIRE 7 ANS (LOI BELGE)');
+    csvRows.push('# Export du: ' + new Date().toISOString());
+    csvRows.push('');
+    csvRows.push('N° Vente;Date;Type;Client;Articles;Sous-total HT;TVA;Total TTC;Paiement;Statut');
+    
+    sales?.forEach(sale => {
+      const items = sale.sale_items?.length || 0;
+      const customer = sale.customers?.name || '';
+      const type = sale.is_invoice ? 'Facture' : 'Ticket';
+      const status = sale.is_cancelled ? 'ANNULÉE' : 'Valide';
+      
+      csvRows.push(
+        `${sale.sale_number};${new Date(sale.date).toLocaleString('fr-BE')};${type};${customer};${items};${sale.subtotal.toFixed(2)};${sale.total_vat.toFixed(2)};${sale.total.toFixed(2)};${sale.payment_method};${status}`
+      );
+    });
+
+    const csvContent = csvRows.join('\n');
+    const blobCSV = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM pour Excel
+    const urlCSV = URL.createObjectURL(blobCSV);
+    const linkCSV = document.createElement('a');
+    linkCSV.href = urlCSV;
+    linkCSV.download = `archive-ventes-${date}.csv`;
+    document.body.appendChild(linkCSV);
+    linkCSV.click();
+    document.body.removeChild(linkCSV);
+    URL.revokeObjectURL(urlCSV);
+
+    toast.success('Archives téléchargées (JSON + CSV)');
+    
+    // Supprimer les ventes (sauf celles de la journée en cours)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const { error: deleteError } = await supabase
+      .from('sales')
+      .delete()
+      .lt('date', today.toISOString());
+
+    if (deleteError) throw deleteError;
+
+    toast.success('Base de données nettoyée - Espace libéré');
+    
+    return true;
+  } catch (error) {
+    console.error('Error archiving sales:', error);
+    toast.error('Erreur lors de l\'archivage');
+    return false;
+  }
 }
 
 export function printReportZ() {
@@ -121,6 +214,8 @@ export function CloseDayDialog({ open, onOpenChange, onConfirm, reportData, toda
   const [amount, setAmount] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [archiveAndDelete, setArchiveAndDelete] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   const expectedCash = todayReport ? todayReport.opening_amount + reportData.totalCash : reportData.totalCash;
   const difference = amount ? parseFloat(amount) - expectedCash : 0;
@@ -133,12 +228,25 @@ export function CloseDayDialog({ open, onOpenChange, onConfirm, reportData, toda
     setShowReport(true);
   };
 
-  const handleConfirmClose = () => {
+  const handleConfirmClose = async () => {
     const parsedAmount = parseFloat(amount);
     setShowConfirm(false);
-    onConfirm(parsedAmount);
+    
+    if (archiveAndDelete) {
+      setIsArchiving(true);
+      const success = await exportAndArchiveSales();
+      setIsArchiving(false);
+      
+      if (!success) {
+        toast.error('Clôture annulée suite à l\'erreur d\'archivage');
+        return;
+      }
+    }
+    
+    onConfirm(parsedAmount, archiveAndDelete);
     setAmount('');
     setShowReport(false);
+    setArchiveAndDelete(false);
     onOpenChange(false);
   };
 
@@ -196,30 +304,81 @@ export function CloseDayDialog({ open, onOpenChange, onConfirm, reportData, toda
         </Dialog>
 
         <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-          <AlertDialogContent>
+          <AlertDialogContent className="max-w-lg">
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" />
                 Confirmer la clôture
               </AlertDialogTitle>
-              <AlertDialogDescription>
-                Cette action est irréversible. La journée sera définitivement fermée et le rapport Z sera enregistré.
+              <AlertDialogDescription className="space-y-4">
+                <p>Cette action est irréversible. La journée sera définitivement fermée et le rapport Z sera enregistré.</p>
+                
                 {difference !== 0 && (
-                  <div className={`mt-3 p-3 rounded ${difference > 0 ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+                  <div className={`p-3 rounded ${difference > 0 ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
                     <p className="font-semibold">
                       Écart de caisse détecté: {difference > 0 ? '+' : ''}{difference.toFixed(2)}€
                     </p>
                   </div>
                 )}
+
+                <div className="border-t pt-4">
+                  <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+                    <Checkbox 
+                      id="archive-delete" 
+                      checked={archiveAndDelete}
+                      onCheckedChange={(checked) => setArchiveAndDelete(checked as boolean)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="archive-delete" className="text-sm font-semibold cursor-pointer flex items-center gap-2">
+                        <Archive className="h-4 w-4" />
+                        Archiver et supprimer les ventes anciennes
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Créer une archive JSON des ventes et libérer de l'espace en base de données (conserve la journée en cours).
+                      </p>
+                    </div>
+                  </div>
+
+                  {archiveAndDelete && (
+                    <div className="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                        <div className="space-y-2">
+                          <p className="text-sm font-bold text-amber-900">
+                            ⚖️ OBLIGATION LÉGALE BELGE
+                          </p>
+                          <p className="text-xs text-amber-800">
+                            Vous devez <strong>conserver ce fichier pendant 7 ans minimum</strong> conformément à la législation fiscale belge. En cas de contrôle du SPF Finances, vous devrez présenter ces archives.
+                          </p>
+                          <p className="text-xs text-amber-800 font-semibold">
+                            📥 Le fichier sera téléchargé sur votre ordinateur. Conservez-le en lieu sûr !
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogCancel disabled={isArchiving}>Annuler</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleConfirmClose}
+                disabled={isArchiving}
                 className="bg-destructive hover:bg-destructive/90"
               >
-                Confirmer la clôture
+                {isArchiving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Archivage en cours...
+                  </>
+                ) : (
+                  <>
+                    {archiveAndDelete && <Download className="h-4 w-4 mr-2" />}
+                    Confirmer la clôture
+                  </>
+                )}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

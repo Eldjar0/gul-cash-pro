@@ -890,7 +890,7 @@ const Index = () => {
     openDay.mutate(openingAmount);
   };
 
-  const handleCloseDay = async (closingAmount: number) => {
+  const handleCloseDay = async (closingAmount: number, archiveAndDelete?: boolean) => {
     if (!todayReport) return;
     
     const data = await getTodayReportData();
@@ -899,6 +899,11 @@ const Index = () => {
       closingAmount,
       reportData: data,
     });
+    
+    // L'archivage et la suppression sont déjà gérés dans CloseDayDialog
+    if (archiveAndDelete) {
+      console.log('Archive créée et ventes anciennes supprimées');
+    }
   };
 
   const handleReportX = async () => {
