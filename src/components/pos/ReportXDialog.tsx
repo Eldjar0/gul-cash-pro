@@ -18,6 +18,91 @@ interface ReportXDialogProps {
   todayReport: DailyReport | null;
 }
 
+export function printReportX() {
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    alert('Veuillez autoriser les popups pour imprimer');
+    return;
+  }
+
+  const reportContent = document.getElementById('report-x-content');
+  if (!reportContent) return;
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Rapport X</title>
+        <meta charset="UTF-8">
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          @page {
+            size: 80mm auto;
+            margin: 0;
+          }
+          
+          body {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            width: 80mm;
+            max-width: 302px;
+            background: white;
+            color: black;
+          }
+          
+          #report-x-content {
+            width: 100%;
+            padding: 8px;
+            background: white;
+            color: black;
+          }
+          
+          .text-center {
+            text-align: center !important;
+          }
+          
+          @media print {
+            body {
+              width: 80mm;
+              margin: 0;
+              padding: 0;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            
+            #report-x-content {
+              page-break-inside: avoid;
+            }
+            
+            .text-center {
+              text-align: center !important;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        ${reportContent.innerHTML}
+      </body>
+    </html>
+  `);
+  
+  printWindow.document.close();
+  
+  setTimeout(() => {
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  }, 250);
+}
+
 export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: ReportXDialogProps) {
   const handlePrint = () => {
     window.print();
@@ -32,8 +117,9 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
 
         <ScrollArea className="max-h-[70vh]">
           <div 
+            id="report-x-content"
             className="font-mono bg-white text-black"
-            style={{ 
+            style={{
               width: '80mm',
               maxWidth: '302px',
               margin: '0 auto',
@@ -190,11 +276,16 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
             Fermer
           </Button>
           <Button
-            onClick={handlePrint}
+            onClick={() => {
+              printReportX();
+              setTimeout(() => {
+                onOpenChange(false);
+              }, 500);
+            }}
             className="flex-1 h-12 bg-accent hover:bg-accent/90 text-white font-bold"
           >
             <Printer className="h-5 w-5 mr-2" />
-            Imprimer
+            IMPRIMER
           </Button>
         </div>
       </DialogContent>
