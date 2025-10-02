@@ -796,44 +796,43 @@ const Index = () => {
     setAppliedPromoCode({ code, type, value });
   };
 
-  // Fonction pour ouvrir le tiroir-caisse via commande ESC/POS
-  const openCashDrawer = async () => {
-    try {
-      // Commande ESC/POS pour ouvrir le tiroir: ESC p m t1 t2
-      // ESC = 0x1B, p = 0x70, m = 0x00 (pin 2), t1 = 0x19 (25ms ON), t2 = 0xFA (250ms OFF)
-      const escPos = new Uint8Array([0x1B, 0x70, 0x00, 0x19, 0xFA]);
-      
-      // Créer un blob avec la commande
-      const blob = new Blob([escPos], { type: 'application/octet-stream' });
-      
-      // Créer une URL pour le blob
-      const url = URL.createObjectURL(blob);
-      
-      // Créer un iframe caché pour l'impression
-      const printFrame = document.createElement('iframe');
-      printFrame.style.display = 'none';
-      document.body.appendChild(printFrame);
-      
-      // Charger le contenu et imprimer
-      printFrame.onload = () => {
-        printFrame.contentWindow?.print();
-        setTimeout(() => {
-          document.body.removeChild(printFrame);
-          URL.revokeObjectURL(url);
-        }, 100);
-      };
-      
-      printFrame.src = url;
-      
-      toast.success('Commande envoyée', {
-        description: 'Ouverture du tiroir-caisse...',
-      });
-    } catch (error) {
-      console.error('Erreur ouverture tiroir:', error);
+  // Fonction pour ouvrir le tiroir-caisse
+  const openCashDrawer = () => {
+    // Créer un contenu HTML avec la commande ESC/POS encodée
+    // Cette méthode utilise l'impression système standard
+    const escCommand = String.fromCharCode(27, 112, 0, 25, 250); // ESC p 0 25 250
+    
+    const printWindow = window.open('', '', 'width=1,height=1');
+    if (!printWindow) {
       toast.error('Erreur', {
-        description: 'Impossible d\'ouvrir le tiroir-caisse',
+        description: 'Impossible d\'ouvrir la fenêtre d\'impression. Vérifiez les popups.',
       });
+      return;
     }
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Ouverture tiroir-caisse</title>
+        </head>
+        <body style="margin:0;padding:0;">
+          <pre style="font-family:monospace;font-size:1px;margin:0;padding:0;">${escCommand}</pre>
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    
+    setTimeout(() => {
+      printWindow.print();
+      setTimeout(() => {
+        printWindow.close();
+      }, 100);
+    }, 250);
+
+    toast.info('Commande d\'impression envoyée', {
+      description: 'Sélectionnez votre imprimante POS pour ouvrir le tiroir',
+    });
   };
 
   const handleApplyDiscount = (type: DiscountType, value: number) => {
