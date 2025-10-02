@@ -1000,12 +1000,15 @@ const Index = () => {
                           <Input
                             data-scan-ignore="true"
                             type="text"
-                            value={item.custom_price ?? item.product.price}
-                            onChange={(e) => {
+                            key={`price-${index}-${item.custom_price ?? item.product.price}`}
+                            defaultValue={item.custom_price ?? item.product.price}
+                            onBlur={(e) => {
                               const value = e.target.value.replace(',', '.');
                               const newPrice = parseFloat(value);
-                              if (!isNaN(newPrice) && newPrice >= 0) {
+                              if (!isNaN(newPrice) && newPrice > 0) {
                                 handleUpdatePrice(index, newPrice);
+                              } else {
+                                e.target.value = (item.custom_price ?? item.product.price).toString();
                               }
                             }}
                             className="h-5 w-14 text-xs px-1 text-center bg-background"
@@ -1062,12 +1065,15 @@ const Index = () => {
                         <Input
                           data-scan-ignore="true"
                           type="text"
-                          value={item.quantity.toFixed(item.product.type === 'weight' ? 1 : 0)}
-                          onChange={(e) => {
+                          key={`qty-${index}-${item.quantity}`}
+                          defaultValue={item.quantity.toFixed(item.product.type === 'weight' ? 1 : 0)}
+                          onBlur={(e) => {
                             const value = e.target.value.replace(',', '.');
                             const newQty = parseFloat(value);
                             if (!isNaN(newQty) && newQty > 0) {
                               handleUpdateQuantity(index, newQty);
+                            } else {
+                              e.target.value = item.quantity.toFixed(item.product.type === 'weight' ? 1 : 0);
                             }
                           }}
                           className="h-6 w-16 text-xs px-1 text-center bg-white font-bold"
