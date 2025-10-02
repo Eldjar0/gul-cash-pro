@@ -163,45 +163,48 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           const pricePerUnit = item.product.price.toFixed(2);
           
           return (
-            <div key={index} style={{ marginBottom: '4px' }}>
-              {/* Nom du produit */}
-              <div style={{ 
-                fontWeight: '900', 
-                textTransform: 'uppercase', 
-                marginBottom: '1px',
-                wordWrap: 'break-word',
-                overflowWrap: 'break-word',
-                maxWidth: '100%',
-                fontSize: '19.2px',
-                letterSpacing: '0.4px'
-              }}>
-                {item.product.name}
-              </div>
-              
-              {/* Ligne avec quantité, prix unitaire et total - REMISE SUR LA MÊME LIGNE */}
+            <div key={index} style={{ marginBottom: '3px' }}>
+              {/* Nom du produit ET infos sur la MÊME ligne */}
               <div style={{ 
                 display: 'flex', 
-                justifyContent: 'space-between', 
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 fontWeight: '900',
-                gap: '3px',
-                fontSize: '12.3px'
+                gap: '4px',
+                marginBottom: '1px'
               }}>
                 <span style={{ 
-                  whiteSpace: 'nowrap',
+                  fontWeight: '900', 
+                  textTransform: 'uppercase',
+                  fontSize: '16px',
+                  letterSpacing: '0.3px',
+                  flex: '1',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  flex: '1'
+                  whiteSpace: 'nowrap'
                 }}>
-                  {qtyDisplay} {unitDisplay} x {pricePerUnit}€
-                  {item.discount && (
-                    <span style={{ fontStyle: 'italic', marginLeft: '5px' }}>
-                      REM -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
-                    </span>
-                  )}
+                  {item.product.name}
                 </span>
-                <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>
+                <span style={{ 
+                  fontWeight: '900', 
+                  whiteSpace: 'nowrap',
+                  fontSize: '14px'
+                }}>
                   {item.total.toFixed(2)}€
                 </span>
+              </div>
+              
+              {/* Ligne avec quantité, prix unitaire - REMISE SUR LA MÊME LIGNE */}
+              <div style={{ 
+                fontSize: '11px',
+                fontWeight: '800'
+              }}>
+                {qtyDisplay} {unitDisplay} x {pricePerUnit}€
+                {item.discount && (
+                  <span style={{ fontStyle: 'italic', marginLeft: '5px' }}>
+                    REM -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
+                  </span>
+                )}
               </div>
             </div>
           );
