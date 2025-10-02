@@ -176,7 +176,7 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'idle') {
     return (
-      <div className="min-h-screen bg-[#f5f5f0] flex items-center justify-center p-8">
+      <div className="min-h-screen bg-white flex items-center justify-center p-8">
         <div className="text-center space-y-8 animate-fade-in">
           <img src={logo} alt="Logo" className="w-64 h-64 mx-auto object-contain animate-scale-in" />
           <ShoppingBag className="w-32 h-32 mx-auto animate-pulse text-primary/40" />
@@ -203,7 +203,7 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'completed') {
     return (
-      <div className="min-h-screen bg-[#f5f5f0] flex items-center justify-center p-8">
+      <div className="min-h-screen bg-white flex items-center justify-center p-8">
         <div className="text-center space-y-8 animate-scale-in">
           <img src={logo} alt="Logo" className="w-64 h-64 mx-auto object-contain animate-scale-in" />
           <CheckCircle2 className="w-40 h-40 mx-auto animate-scale-in text-accent" />
@@ -221,7 +221,7 @@ const CustomerDisplay = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f0] flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-white flex flex-col overflow-hidden">
       {/* Header fixe avec logo */}
       <div className="bg-white border-b-4 border-primary shadow-lg p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
