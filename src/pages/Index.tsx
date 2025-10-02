@@ -241,11 +241,14 @@ const Index = () => {
   // Normalisation AZERTY → chiffres pour les codes-barres
   const normalizeBarcode = (raw: string): string => {
     const azertyMap: Record<string, string> = {
-      '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
-      '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0',
-      '§': '6' // § correspond au 6 sur certains claviers AZERTY
+      '&': '1', '!': '1', 'é': '2', '@': '2', '"': '3', '#': '3', 
+      "'": '4', '$': '4', '(': '5', '%': '5', '-': '6', '^': '6',
+      'è': '7', '_': '8', '*': '8', 'ç': '9', 
+      'à': '0', ')': '0', '§': '6'
     };
-    return raw.split('').map(c => azertyMap[c] || c).join('');
+    // Mapper les caractères AZERTY puis garder uniquement les chiffres
+    const normalized = raw.split('').map(c => azertyMap[c] ?? c).join('');
+    return normalized.replace(/\D+/g, ''); // Supprimer tout ce qui n'est pas un chiffre
   };
 
   // Traitement du code-barres scanné
@@ -302,12 +305,12 @@ const Index = () => {
       if (!target || !(target instanceof HTMLElement)) return false;
       const tagName = target.tagName.toLowerCase();
       const isContentEditable = target.isContentEditable;
-      return (
-        tagName === 'input' ||
-        tagName === 'textarea' ||
-        tagName === 'select' ||
-        isContentEditable
-      );
+      const isInput = tagName === 'input' || tagName === 'textarea' || tagName === 'select';
+      
+      // Ignorer aussi si on est dans un dialogue (DialogContent)
+      const isInDialog = target.closest('[role="dialog"]') !== null;
+      
+      return isInput || isContentEditable || isInDialog;
     };
 
     // Convertit un événement clavier en chiffre fiable, indépendamment du layout (AZERTY/Numpad)
@@ -331,8 +334,9 @@ const Index = () => {
 
       // 4) Fallback AZERTY (symboles → chiffres)
       const azertyMap: Record<string, string> = {
-        '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
-        '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0',
+        '&': '1', '!': '1', 'é': '2', '@': '2', '"': '3', '#': '3',
+        "'": '4', '$': '4', '(': '5', '%': '5', '-': '6', '^': '6',
+        'è': '7', '_': '8', '*': '8', 'ç': '9', 'à': '0', ')': '0',
         '§': '6'
       };
       return azertyMap[e.key] ?? null;
