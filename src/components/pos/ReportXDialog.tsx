@@ -119,12 +119,12 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
           <div 
             id="report-x-content"
             className="font-mono bg-white text-black"
-            style={{
+            style={{ 
               width: '80mm',
               maxWidth: '302px',
               margin: '0 auto',
               fontFamily: "'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif",
-              fontSize: '16.4px',
+              fontSize: '18px',
               lineHeight: '1.3',
               padding: '8px',
               paddingRight: '24px',
@@ -136,7 +136,7 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
             {/* Géant X */}
             <div className="text-center mb-2">
               <div style={{ 
-                fontSize: '120px',
+                fontSize: '140px',
                 fontWeight: '900',
                 lineHeight: '1',
                 color: '#3B82F6',
@@ -147,120 +147,120 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
             </div>
 
             {/* En-tête société */}
-            <div className="text-center" style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900' }}>
+            <div className="text-center" style={{ fontSize: '14px', marginBottom: '6px', fontWeight: '900' }}>
               <div style={{ lineHeight: '1.2' }}>
-                <div>{COMPANY_INFO.name}</div>
-                <div>{COMPANY_INFO.address}</div>
-                <div>{COMPANY_INFO.postalCode} {COMPANY_INFO.city}</div>
-                {COMPANY_INFO.phone && <div>Tel: {COMPANY_INFO.phone}</div>}
-                <div style={{ marginTop: '1px' }}>TVA: {COMPANY_INFO.vat}</div>
+                <div style={{ fontWeight: '900' }}>{COMPANY_INFO.name}</div>
+                <div style={{ fontWeight: '900' }}>{COMPANY_INFO.address}</div>
+                <div style={{ fontWeight: '900' }}>{COMPANY_INFO.postalCode} {COMPANY_INFO.city}</div>
+                {COMPANY_INFO.phone && <div style={{ fontWeight: '900' }}>Tel: {COMPANY_INFO.phone}</div>}
+                <div style={{ marginTop: '1px', fontWeight: '900' }}>TVA: {COMPANY_INFO.vat}</div>
               </div>
             </div>
 
-            <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
+            <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }}></div>
 
             {/* Type de rapport */}
-            <div className="text-center" style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900' }}>
-              <div style={{ fontSize: '17.8px', fontWeight: '900', letterSpacing: '0.7px', marginBottom: '2px' }}>
+            <div className="text-center" style={{ fontSize: '14px', marginBottom: '6px', fontWeight: '900' }}>
+              <div style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '0.7px', marginBottom: '2px' }}>
                 RAPPORT X
               </div>
-              <div style={{ fontSize: '10.9px', color: '#666', fontWeight: '800' }}>
+              <div style={{ fontSize: '12px', color: '#666', fontWeight: '900' }}>
                 (Rapport intermédiaire non fiscal)
               </div>
-              <div style={{ marginTop: '4px', fontSize: '12.3px' }}>
+              <div style={{ marginTop: '4px', fontSize: '14px', fontWeight: '900' }}>
                 Date: {new Date().toLocaleDateString('fr-BE')}
               </div>
-              <div style={{ fontSize: '12.3px' }}>
+              <div style={{ fontSize: '14px', fontWeight: '900' }}>
                 Heure: {new Date().toLocaleTimeString('fr-BE')}
               </div>
             </div>
 
-            <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
+            <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }}></div>
 
             {/* Ventes */}
             <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
-              <div style={{ fontSize: '13.7px', fontWeight: '900', marginBottom: '4px' }}>
+              <div style={{ fontSize: '15px', fontWeight: '900', marginBottom: '4px' }}>
                 RECAPITULATIF DES VENTES
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                <span>Nombre de transactions:</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontWeight: '900' }}>
+                <span style={{ fontWeight: '900' }}>Nombre de transactions:</span>
                 <span style={{ fontWeight: '900' }}>{reportData.salesCount}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '900', color: '#3B82F6', gap: '8px' }}>
-                <span>TOTAL VENTES:</span>
-                <span style={{ whiteSpace: 'nowrap' }}>{reportData.totalSales.toFixed(2)}€</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '20px', fontWeight: '900', color: '#3B82F6', gap: '8px' }}>
+                <span style={{ fontWeight: '900' }}>TOTAL VENTES:</span>
+                <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{reportData.totalSales.toFixed(2)}€</span>
               </div>
             </div>
 
-            <div style={{ borderTop: '1.4px solid #000', margin: '6px 0' }}></div>
+            <div style={{ borderTop: '2px solid #000', margin: '6px 0' }}></div>
 
             {/* Moyens de paiement */}
             <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
-              <div style={{ fontSize: '13.7px', fontWeight: '900', marginBottom: '4px' }}>
+              <div style={{ fontSize: '15px', fontWeight: '900', marginBottom: '4px' }}>
                 MOYENS DE PAIEMENT
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12.3px' }}>
-                <span>Espèces</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '14px', fontWeight: '900' }}>
+                <span style={{ fontWeight: '900' }}>Espèces</span>
                 <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalCash.toFixed(2)}€</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12.3px' }}>
-                <span>Carte bancaire</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '14px', fontWeight: '900' }}>
+                <span style={{ fontWeight: '900' }}>Carte bancaire</span>
                 <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalCard.toFixed(2)}€</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.3px' }}>
-                <span>Paiement mobile</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: '900' }}>
+                <span style={{ fontWeight: '900' }}>Paiement mobile</span>
                 <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalMobile.toFixed(2)}€</span>
               </div>
             </div>
 
-            <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
+            <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }}></div>
 
             {/* TVA */}
             <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
-              <div style={{ fontSize: '13.7px', fontWeight: '900', marginBottom: '4px' }}>
+              <div style={{ fontSize: '15px', fontWeight: '900', marginBottom: '4px' }}>
                 DETAIL TVA
               </div>
               {Object.entries(reportData.vatByRate).map(([rate, amounts]) => (
-                <div key={rate} style={{ marginBottom: '4px', fontSize: '11px' }}>
+                <div key={rate} style={{ marginBottom: '4px', fontSize: '13px', fontWeight: '900' }}>
                   <div style={{ fontWeight: '900' }}>TVA {parseFloat(rate).toFixed(0)}%</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px' }}>
-                    <span>Base HT:</span>
-                    <span style={{ whiteSpace: 'nowrap' }}>{amounts.totalHT.toFixed(2)}€</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px', fontWeight: '900' }}>
+                    <span style={{ fontWeight: '900' }}>Base HT:</span>
+                    <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{amounts.totalHT.toFixed(2)}€</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px' }}>
-                    <span>Montant TVA:</span>
-                    <span style={{ whiteSpace: 'nowrap' }}>{amounts.totalVAT.toFixed(2)}€</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px', fontWeight: '900' }}>
+                    <span style={{ fontWeight: '900' }}>Montant TVA:</span>
+                    <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{amounts.totalVAT.toFixed(2)}€</span>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
+            <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }}></div>
 
             {/* Caisse */}
             {todayReport && (
               <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
-                <div style={{ fontSize: '13.7px', fontWeight: '900', marginBottom: '4px' }}>
+                <div style={{ fontSize: '15px', fontWeight: '900', marginBottom: '4px' }}>
                   ETAT DE LA CAISSE
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12.3px' }}>
-                  <span>Ouverture:</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '14px', fontWeight: '900' }}>
+                  <span style={{ fontWeight: '900' }}>Ouverture:</span>
                   <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{todayReport.opening_amount.toFixed(2)}€</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12.3px' }}>
-                  <span>Espèces du jour:</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '14px', fontWeight: '900' }}>
+                  <span style={{ fontWeight: '900' }}>Espèces du jour:</span>
                   <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalCash.toFixed(2)}€</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: '900', color: '#3B82F6', gap: '8px', borderTop: '1.4px solid #000', paddingTop: '4px', marginTop: '4px' }}>
-                  <span>Espèces attendues:</span>
-                  <span style={{ whiteSpace: 'nowrap' }}>{(todayReport.opening_amount + reportData.totalCash).toFixed(2)}€</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: '900', color: '#3B82F6', gap: '8px', borderTop: '2px solid #000', paddingTop: '4px', marginTop: '4px' }}>
+                  <span style={{ fontWeight: '900' }}>Espèces attendues:</span>
+                  <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{(todayReport.opening_amount + reportData.totalCash).toFixed(2)}€</span>
                 </div>
               </div>
             )}
 
             {/* Footer */}
-            <div style={{ borderTop: '1.4px dashed #000', marginTop: '8px', paddingTop: '8px' }}>
-              <div className="text-center" style={{ fontSize: '10.9px', color: '#666', fontWeight: '900' }}>
+            <div style={{ borderTop: '2px dashed #000', marginTop: '8px', paddingTop: '8px' }}>
+              <div className="text-center" style={{ fontSize: '12px', color: '#666', fontWeight: '900' }}>
                 www.JLprod.be
               </div>
             </div>

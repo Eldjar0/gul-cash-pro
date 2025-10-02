@@ -22,7 +22,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar, Euro, AlertTriangle, FileText, CreditCard, Smartphone, Receipt, Printer } from 'lucide-react';
 import { ReportData, DailyReport } from '@/hooks/useDailyReports';
-import { COMPANY_INFO } from '@/data/company';
+import { ReportZContent } from './ReportZContent';
 
 interface CloseDayDialogProps {
   open: boolean;
@@ -30,6 +30,91 @@ interface CloseDayDialogProps {
   onConfirm: (closingAmount: number) => void;
   reportData: ReportData;
   todayReport: DailyReport | null;
+}
+
+export function printReportZ() {
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    alert('Veuillez autoriser les popups pour imprimer');
+    return;
+  }
+
+  const reportContent = document.getElementById('report-z-content');
+  if (!reportContent) return;
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Rapport Z</title>
+        <meta charset="UTF-8">
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          @page {
+            size: 80mm auto;
+            margin: 0;
+          }
+          
+          body {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            width: 80mm;
+            max-width: 302px;
+            background: white;
+            color: black;
+          }
+          
+          #report-z-content {
+            width: 100%;
+            padding: 8px;
+            background: white;
+            color: black;
+          }
+          
+          .text-center {
+            text-align: center !important;
+          }
+          
+          @media print {
+            body {
+              width: 80mm;
+              margin: 0;
+              padding: 0;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            
+            #report-z-content {
+              page-break-inside: avoid;
+            }
+            
+            .text-center {
+              text-align: center !important;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        ${reportContent.innerHTML}
+      </body>
+    </html>
+  `);
+  
+  printWindow.document.close();
+  
+  setTimeout(() => {
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  }, 250);
 }
 
 export function CloseDayDialog({ open, onOpenChange, onConfirm, reportData, todayReport }: CloseDayDialogProps) {
@@ -58,141 +143,28 @@ export function CloseDayDialog({ open, onOpenChange, onConfirm, reportData, toda
   };
 
   const handlePrint = () => {
-    window.print();
+    printReportZ();
   };
 
   if (showReport) {
     return (
       <>
         <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="max-w-md bg-white border-2 border-destructive p-0">
+          <DialogContent className="max-w-sm bg-white border-2 border-destructive p-0">
             <DialogHeader className="p-4 pb-0">
-              <DialogTitle className="text-destructive font-bold text-2xl flex items-center gap-2">
-                <FileText className="h-6 w-6" />
-                Rapport Z - Clôture de journée
-              </DialogTitle>
-              <DialogDescription className="text-destructive/80">
-                ⚠️ Ce rapport est irréversible et ferme définitivement la journée
+              <DialogTitle className="text-destructive font-bold text-center">RAPPORT Z - CLOTURE FISCALE</DialogTitle>
+              <DialogDescription className="text-center text-destructive/80">
+                ⚠️ Action irréversible
               </DialogDescription>
             </DialogHeader>
 
-            <ScrollArea className="max-h-[60vh] p-4">
-              <div className="space-y-4 font-mono text-sm">
-                {/* En-tête */}
-                <div className="text-center border-b pb-3">
-                  <h3 className="font-bold text-lg">{COMPANY_INFO.name}</h3>
-                  <p className="text-xs">{COMPANY_INFO.address}</p>
-                  <p className="text-xs">{COMPANY_INFO.postalCode} {COMPANY_INFO.city}</p>
-                  <p className="text-xs">TVA: {COMPANY_INFO.vat}</p>
-                </div>
-
-                {/* Type de rapport */}
-                <div className="text-center border-b pb-3 bg-destructive/10 -mx-4 px-4 py-2">
-                  <h2 className="font-bold text-xl text-destructive">RAPPORT Z</h2>
-                  <p className="text-xs text-destructive/80">(Rapport de clôture fiscal)</p>
-                  <p className="text-sm mt-2">
-                    Date: {new Date().toLocaleDateString('fr-BE')}
-                  </p>
-                  <p className="text-sm">
-                    Heure: {new Date().toLocaleTimeString('fr-BE')}
-                  </p>
-                </div>
-
-                {/* Ventes */}
-                <div className="space-y-2 border-b pb-3">
-                  <h3 className="font-bold text-base flex items-center gap-2">
-                    <Receipt className="h-4 w-4" />
-                    Récapitulatif des ventes
-                  </h3>
-                  <div className="flex justify-between">
-                    <span>Nombre de transactions:</span>
-                    <span className="font-bold">{reportData.salesCount}</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold text-primary">
-                    <span>TOTAL VENTES:</span>
-                    <span>{reportData.totalSales.toFixed(2)}€</span>
-                  </div>
-                </div>
-
-                {/* Moyens de paiement */}
-                <div className="space-y-2 border-b pb-3">
-                  <h3 className="font-bold text-base">Moyens de paiement</h3>
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2">
-                      <Euro className="h-4 w-4" />
-                      Espèces
-                    </span>
-                    <span className="font-bold">{reportData.totalCash.toFixed(2)}€</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2">
-                      <CreditCard className="h-4 w-4" />
-                      Carte bancaire
-                    </span>
-                    <span className="font-bold">{reportData.totalCard.toFixed(2)}€</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2">
-                      <Smartphone className="h-4 w-4" />
-                      Paiement mobile
-                    </span>
-                    <span className="font-bold">{reportData.totalMobile.toFixed(2)}€</span>
-                  </div>
-                </div>
-
-                {/* TVA */}
-                <div className="space-y-2 border-b pb-3">
-                  <h3 className="font-bold text-base">Détail TVA (Obligatoire BE)</h3>
-                  {Object.entries(reportData.vatByRate).map(([rate, amounts]) => (
-                    <div key={rate} className="space-y-1 text-xs">
-                      <div className="font-semibold">TVA {parseFloat(rate).toFixed(0)}%</div>
-                      <div className="flex justify-between pl-4">
-                        <span>Base HT:</span>
-                        <span>{amounts.totalHT.toFixed(2)}€</span>
-                      </div>
-                      <div className="flex justify-between pl-4">
-                        <span>Montant TVA:</span>
-                        <span>{amounts.totalVAT.toFixed(2)}€</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Caisse */}
-                {todayReport && (
-                  <div className="space-y-2 border-b pb-3">
-                    <h3 className="font-bold text-base">État de la caisse</h3>
-                    <div className="flex justify-between">
-                      <span>Ouverture:</span>
-                      <span className="font-bold">{todayReport.opening_amount.toFixed(2)}€</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Espèces du jour:</span>
-                      <span className="font-bold">{reportData.totalCash.toFixed(2)}€</span>
-                    </div>
-                    <div className="flex justify-between font-bold">
-                      <span>Espèces attendues:</span>
-                      <span>{expectedCash.toFixed(2)}€</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Espèces comptées:</span>
-                      <span>{parseFloat(amount).toFixed(2)}€</span>
-                    </div>
-                    <div className={`flex justify-between text-lg font-bold ${difference === 0 ? 'text-accent' : difference > 0 ? 'text-primary' : 'text-destructive'}`}>
-                      <span>Écart:</span>
-                      <span>{difference > 0 ? '+' : ''}{difference.toFixed(2)}€</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Conformité légale */}
-                <div className="bg-muted p-3 rounded text-xs">
-                  <p className="font-semibold mb-1">⚖️ Conformité légale Belgique</p>
-                  <p className="text-muted-foreground">
-                    Ce rapport Z constitue une clôture fiscale journalière conformément à la législation belge sur les systèmes de caisse enregistreuse.
-                  </p>
-                </div>
-              </div>
+            <ScrollArea className="max-h-[70vh]">
+              <ReportZContent 
+                reportData={reportData}
+                todayReport={todayReport}
+                closingAmount={parseFloat(amount)}
+                difference={difference}
+              />
             </ScrollArea>
 
             <div className="p-4 border-t bg-muted/30 flex gap-2">
