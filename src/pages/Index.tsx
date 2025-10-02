@@ -184,7 +184,15 @@ const Index = () => {
 
     const searchTerm = scanInput.toLowerCase();
     
-    // Search in products by name, barcode, id, description
+    // Recherche exacte par code-barre d'abord
+    const exactBarcode = products.find(p => p.barcode?.toLowerCase() === searchTerm);
+    if (exactBarcode) {
+      // Ajout direct au panier
+      handleProductSelect(exactBarcode);
+      return;
+    }
+
+    // Si pas de correspondance exacte, recherche générale
     let results = products.filter((p) => {
       return (
         p.barcode?.toLowerCase().includes(searchTerm) ||
@@ -194,7 +202,7 @@ const Index = () => {
       );
     });
 
-    // Also search by category name
+    // Recherche par catégorie
     if (categories && categories.length > 0) {
       const matchingCategories = categories.filter((cat) =>
         cat.name.toLowerCase().includes(searchTerm)
@@ -205,14 +213,12 @@ const Index = () => {
         const productsByCategory = products.filter((p) =>
           p.category_id && categoryIds.includes(p.category_id)
         );
-        // Merge results and remove duplicates
         results = [...results, ...productsByCategory].filter(
           (product, index, self) => self.findIndex((p) => p.id === product.id) === index
         );
       }
     }
 
-    // Toujours afficher les résultats sans auto-ajout
     setSearchResults(results);
   };
 
@@ -504,30 +510,29 @@ const Index = () => {
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Modern header */}
-      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-3 flex-shrink-0 shadow-lg">
+      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-3 py-2 flex-shrink-0 shadow-lg">
         <div className="flex items-center justify-between text-white">
-          <div className="flex items-center gap-3 md:gap-6">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="h-8 w-8 md:h-10 md:w-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                <Euro className="h-5 w-5 md:h-6 md:w-6 text-white" />
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                <Euro className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-sm md:text-lg font-bold tracking-tight">CAISSE #1</h1>
-                <p className="text-xs text-white/80 hidden md:block">Point de Vente</p>
+                <h1 className="text-sm font-bold tracking-tight">CAISSE #1</h1>
               </div>
             </div>
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg backdrop-blur-sm">
-              <Clock className="h-4 w-4" />
-              <span className="text-sm font-medium">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+            <div className="flex items-center gap-1 px-2 py-1 bg-white/10 rounded-lg backdrop-blur-sm">
+              <Clock className="h-3 w-3" />
+              <span className="text-xs font-medium">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/sales')}
-              className="text-white hover:bg-white/20 text-xs md:text-sm"
+              className="text-white hover:bg-white/20 text-xs h-7 px-2"
             >
-              <History className="h-4 w-4 md:mr-2" />
-              <span className="hidden md:inline">Ventes</span>
+              <History className="h-3 w-3 mr-1" />
+              Ventes
             </Button>
           </div>
           {user ? (
@@ -535,20 +540,20 @@ const Index = () => {
               variant="ghost"
               size="sm"
               onClick={signOut}
-              className="text-white hover:bg-white/20 text-xs md:text-sm"
+              className="text-white hover:bg-white/20 text-xs h-7 px-2"
             >
-              <LogOut className="h-4 w-4 md:mr-2" />
-              <span className="hidden md:inline">Déconnexion</span>
+              <LogOut className="h-3 w-3 mr-1" />
+              Déco
             </Button>
           ) : (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/auth')}
-              className="text-white hover:bg-white/20 text-xs md:text-sm"
+              className="text-white hover:bg-white/20 text-xs h-7 px-2"
             >
-              <LogOut className="h-4 w-4 md:mr-2" />
-              <span className="hidden md:inline">Se connecter</span>
+              <LogOut className="h-3 w-3 mr-1" />
+              Connexion
             </Button>
           )}
         </div>
@@ -559,34 +564,34 @@ const Index = () => {
         {/* LEFT PANEL - Ticket à gauche */}
         <div className="col-span-3 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
           {/* Ticket header - Clean gradient */}
-          <div className="bg-gradient-to-r from-primary to-primary-glow p-4 flex-shrink-0 shadow-lg">
+          <div className="bg-gradient-to-r from-primary to-primary-glow p-2 flex-shrink-0 shadow-lg">
             <div className="flex items-center justify-between text-white">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5" />
-                <h2 className="font-bold text-lg">Ticket</h2>
+              <div className="flex items-center gap-1">
+                <ShoppingBag className="h-4 w-4" />
+                <h2 className="font-bold text-sm">Ticket</h2>
               </div>
-              <div className="bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                <span className="text-sm font-bold">{totalItems} articles</span>
+              <div className="bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                <span className="text-xs font-bold">{totalItems} articles</span>
               </div>
             </div>
           </div>
 
           {/* Items list - Modern cards */}
-          <ScrollArea className="flex-1 p-3 md:p-4 bg-background/50">
+          <ScrollArea className="flex-1 p-2 bg-background/50">
             {cart.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="p-6 bg-muted/50 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-                  <ShoppingBag className="h-12 w-12 text-muted-foreground" />
+              <div className="text-center py-8">
+                <div className="p-4 bg-muted/50 rounded-full w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+                  <ShoppingBag className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <p className="text-muted-foreground font-medium">Panier vide</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">Scannez ou sélectionnez un produit</p>
+                <p className="text-muted-foreground font-medium text-sm">Panier vide</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">Scannez un produit</p>
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-1.5">
                 {cart.map((item, index) => (
                   <div
                     key={index}
-                    className="bg-white border-2 border-border p-3 rounded-lg hover:border-primary/40 hover:shadow-md transition-all group"
+                    className="bg-white border border-border p-2 rounded-lg hover:border-primary/40 hover:shadow-md transition-all group"
                   >
                     <div className="flex justify-between items-start mb-2.5">
                       <div className="flex-1 min-w-0">
