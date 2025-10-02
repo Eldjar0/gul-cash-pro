@@ -1004,6 +1004,7 @@ const Index = () => {
                         <div className="text-foreground font-bold text-xs truncate">{item.product.name}</div>
                         <div className="flex items-center gap-1 mt-0.5">
                           <Input
+                            data-scan-ignore="true"
                             type="number"
                             step="0.01"
                             min="0"
@@ -1273,8 +1274,8 @@ const Index = () => {
                         }
                       }}
                       placeholder="Scannez ou tapez..."
-                      className="h-9 bg-background border-input text-foreground text-base font-mono focus:border-primary pr-8"
                       autoComplete="off"
+                      className="h-9 bg-background border-input text-foreground text-base font-mono focus:border-primary pr-8"
                     />
                     {scanInput && (
                       <Button
