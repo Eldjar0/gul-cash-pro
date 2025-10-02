@@ -110,132 +110,6 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, [scanInput]);
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-pos-display">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pos-success mx-auto mb-4"></div>
-          <p className="text-white font-medium">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount'], customPrice?: number) => {
-    const unitPrice = customPrice ?? product.price;
-    const subtotal = unitPrice * quantity;
-    const vatAmount = (subtotal * product.vat_rate) / 100;
-    
-    let discountAmount = 0;
-    if (discount) {
-      discountAmount = discount.type === 'percentage' 
-        ? (subtotal * discount.value) / 100 
-        : discount.value;
-    }
-    
-    const total = subtotal + vatAmount - discountAmount;
-    
-    return { subtotal, vatAmount, total };
-  };
-
-  const handleProductSelect = (product: Product, quantity?: number) => {
-    const qty = quantity || parseFloat(quantityInput) || 1;
-    
-    // Check if product already exists in cart
-    const existingItemIndex = cart.findIndex(item => item.product.id === product.id);
-    
-    if (existingItemIndex !== -1) {
-      // Product exists, update its quantity
-      const newCart = [...cart];
-      const existingItem = newCart[existingItemIndex];
-      const newQuantity = existingItem.quantity + qty;
-      const { subtotal, vatAmount, total } = calculateItemTotal(product, newQuantity, existingItem.discount, existingItem.custom_price);
-      
-      newCart[existingItemIndex] = {
-        ...existingItem,
-        quantity: newQuantity,
-        subtotal,
-        vatAmount,
-        total,
-      };
-      
-      setCart(newCart);
-      toast.success(`${product.name} quantité mise à jour`);
-    } else {
-      // New product, add to cart
-      const { subtotal, vatAmount, total } = calculateItemTotal(product, qty);
-
-      const newItem: CartItem = {
-        product,
-        quantity: qty,
-        subtotal,
-        vatAmount,
-        total,
-      };
-
-      setCart([...cart, newItem]);
-      toast.success(`${product.name} ajouté`);
-    }
-    
-    setQuantityInput('1');
-    setScanInput('');
-  };
-
-  const handleSearch = () => {
-    if (!scanInput.trim() || !products) {
-      setSearchResults([]);
-      return;
-    }
-
-    const searchTerm = scanInput.toLowerCase();
-    
-    // Recherche exacte par code-barre d'abord
-    const exactBarcode = products.find(p => p.barcode?.toLowerCase() === searchTerm);
-    if (exactBarcode) {
-      // Ajout direct au panier
-      handleProductSelect(exactBarcode);
-      return;
-    }
-
-    // Si pas de correspondance exacte, recherche générale
-    let results = products.filter((p) => {
-      return (
-        p.barcode?.toLowerCase().includes(searchTerm) ||
-        p.name.toLowerCase().includes(searchTerm) ||
-        p.id.toLowerCase().includes(searchTerm) ||
-        p.description?.toLowerCase().includes(searchTerm)
-      );
-    });
-
-    // Recherche par catégorie
-    if (categories && categories.length > 0) {
-      const matchingCategories = categories.filter((cat) =>
-        cat.name.toLowerCase().includes(searchTerm)
-      );
-      
-      if (matchingCategories.length > 0) {
-        const categoryIds = matchingCategories.map((cat) => cat.id);
-        const productsByCategory = products.filter((p) =>
-          p.category_id && categoryIds.includes(p.category_id)
-        );
-        results = [...results, ...productsByCategory].filter(
-          (product, index, self) => self.findIndex((p) => p.id === product.id) === index
-        );
-      }
-    }
-
-    // Si aucun résultat et que c'est un scan direct (pas de résultats intermédiaires)
-    if (results.length === 0 && searchTerm.length >= 3) {
-      // Ouvrir le dialog pour code-barres inconnu
-      setUnknownBarcode(searchTerm);
-      setUnknownBarcodeDialogOpen(true);
-      setScanInput('');
-      return;
-    }
-
-    setSearchResults(results);
-  };
-
   // Normalisation AZERTY → chiffres pour les codes-barres
   const normalizeBarcode = (raw: string): string => {
     const azertyMap: Record<string, string> = {
@@ -402,6 +276,132 @@ const Index = () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [products]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-pos-display">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pos-success mx-auto mb-4"></div>
+          <p className="text-white font-medium">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount'], customPrice?: number) => {
+    const unitPrice = customPrice ?? product.price;
+    const subtotal = unitPrice * quantity;
+    const vatAmount = (subtotal * product.vat_rate) / 100;
+    
+    let discountAmount = 0;
+    if (discount) {
+      discountAmount = discount.type === 'percentage' 
+        ? (subtotal * discount.value) / 100 
+        : discount.value;
+    }
+    
+    const total = subtotal + vatAmount - discountAmount;
+    
+    return { subtotal, vatAmount, total };
+  };
+
+  const handleProductSelect = (product: Product, quantity?: number) => {
+    const qty = quantity || parseFloat(quantityInput) || 1;
+    
+    // Check if product already exists in cart
+    const existingItemIndex = cart.findIndex(item => item.product.id === product.id);
+    
+    if (existingItemIndex !== -1) {
+      // Product exists, update its quantity
+      const newCart = [...cart];
+      const existingItem = newCart[existingItemIndex];
+      const newQuantity = existingItem.quantity + qty;
+      const { subtotal, vatAmount, total } = calculateItemTotal(product, newQuantity, existingItem.discount, existingItem.custom_price);
+      
+      newCart[existingItemIndex] = {
+        ...existingItem,
+        quantity: newQuantity,
+        subtotal,
+        vatAmount,
+        total,
+      };
+      
+      setCart(newCart);
+      toast.success(`${product.name} quantité mise à jour`);
+    } else {
+      // New product, add to cart
+      const { subtotal, vatAmount, total } = calculateItemTotal(product, qty);
+
+      const newItem: CartItem = {
+        product,
+        quantity: qty,
+        subtotal,
+        vatAmount,
+        total,
+      };
+
+      setCart([...cart, newItem]);
+      toast.success(`${product.name} ajouté`);
+    }
+    
+    setQuantityInput('1');
+    setScanInput('');
+  };
+
+  const handleSearch = () => {
+    if (!scanInput.trim() || !products) {
+      setSearchResults([]);
+      return;
+    }
+
+    const searchTerm = scanInput.toLowerCase();
+    
+    // Recherche exacte par code-barre d'abord
+    const exactBarcode = products.find(p => p.barcode?.toLowerCase() === searchTerm);
+    if (exactBarcode) {
+      // Ajout direct au panier
+      handleProductSelect(exactBarcode);
+      return;
+    }
+
+    // Si pas de correspondance exacte, recherche générale
+    let results = products.filter((p) => {
+      return (
+        p.barcode?.toLowerCase().includes(searchTerm) ||
+        p.name.toLowerCase().includes(searchTerm) ||
+        p.id.toLowerCase().includes(searchTerm) ||
+        p.description?.toLowerCase().includes(searchTerm)
+      );
+    });
+
+    // Recherche par catégorie
+    if (categories && categories.length > 0) {
+      const matchingCategories = categories.filter((cat) =>
+        cat.name.toLowerCase().includes(searchTerm)
+      );
+      
+      if (matchingCategories.length > 0) {
+        const categoryIds = matchingCategories.map((cat) => cat.id);
+        const productsByCategory = products.filter((p) =>
+          p.category_id && categoryIds.includes(p.category_id)
+        );
+        results = [...results, ...productsByCategory].filter(
+          (product, index, self) => self.findIndex((p) => p.id === product.id) === index
+        );
+      }
+    }
+
+    // Si aucun résultat et que c'est un scan direct (pas de résultats intermédiaires)
+    if (results.length === 0 && searchTerm.length >= 3) {
+      // Ouvrir le dialog pour code-barres inconnu
+      setUnknownBarcode(searchTerm);
+      setUnknownBarcodeDialogOpen(true);
+      setScanInput('');
+      return;
+    }
+
+    setSearchResults(results);
+  };
 
   const handleProductLinked = (productId: string) => {
     const product = products?.find(p => p.id === productId);
