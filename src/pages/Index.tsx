@@ -236,24 +236,24 @@ const Index = () => {
     setSearchResults(results);
   };
 
-  // Capture et traitement des scans de lecteur code-barres (HID)
+  // Normalisation AZERTY → chiffres pour les codes-barres
+  const normalizeBarcode = (raw: string): string => {
+    const azertyMap: Record<string, string> = {
+      '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
+      '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0'
+    };
+    return raw.split('').map(c => azertyMap[c] || c).join('');
+  };
+
+  // Traitement du code-barres scanné
   const handleBarcodeScan = (raw: string) => {
-    const term = raw.trim();
-    if (!term) return;
+    const normalized = normalizeBarcode(raw.trim());
+    if (!normalized || normalized.length < 3) return;
 
-    const searchTerm = term.toLowerCase();
-
-    const exactBarcode = products?.find(
-      (p) => p.barcode?.toLowerCase() === searchTerm
+    // Recherche exacte sur le code-barres normalisé
+    const found = products?.find(
+      (p) => p.barcode && normalizeBarcode(p.barcode).toLowerCase() === normalized.toLowerCase()
     );
-
-    // Essai avec version "nettoyée" (chiffres uniquement) si nécessaire
-    const cleaned = term.replace(/\D+/g, "");
-    const exactClean = !exactBarcode && cleaned
-      ? products?.find((p) => p.barcode?.toLowerCase() === cleaned.toLowerCase())
-      : undefined;
-
-    const found = exactBarcode || exactClean;
 
     if (found) {
       handleProductSelect(found);
@@ -262,50 +262,82 @@ const Index = () => {
       return;
     }
 
-    // Si inconnu, ouvrir le dialogue dédié
-    if (term.length >= 3) {
-      setUnknownBarcode(term);
-      setUnknownBarcodeDialogOpen(true);
-      setScanInput("");
-    }
+    // Si inconnu, ouvrir le dialogue avec le barcode normalisé
+    setUnknownBarcode(normalized);
+    setUnknownBarcodeDialogOpen(true);
+    setScanInput("");
   };
 
-  // Écoute globale du clavier pour détecter un scan rapide terminé par Entrée
+  // Détection robuste des scans de lecteur code-barres (HID)
   useEffect(() => {
-    const bufferRef = { value: "" } as { value: string };
-    let lastTime = 0;
+    let buffer = "";
+    let lastKeyTime = 0;
+    let isScanning = false;
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    const processScan = () => {
+      if (buffer.length >= 3) {
+        handleBarcodeScan(buffer);
+      }
+      buffer = "";
+      isScanning = false;
+    };
 
     const handler = (e: KeyboardEvent) => {
       const now = Date.now();
-      const delta = now - lastTime;
+      const delta = now - lastKeyTime;
+      lastKeyTime = now;
 
-      // Si délai trop long entre 2 touches, on considère un nouveau buffer
-      if (delta > 120) bufferRef.value = "";
-      lastTime = now;
+      // Reset si trop de temps écoulé (>150ms = frappe humaine)
+      if (delta > 150) {
+        buffer = "";
+        isScanning = false;
+      }
 
-      if (e.key === "Enter") {
-        const payload = bufferRef.value;
-        bufferRef.value = "";
-        if (payload.length >= 3) {
+      // Touches de finalisation
+      if (e.key === "Enter" || e.key === "Tab" || e.key === "NumpadEnter") {
+        if (buffer.length >= 3) {
           e.preventDefault();
-          handleBarcodeScan(payload);
+          e.stopPropagation();
+          if (timeoutId) clearTimeout(timeoutId);
+          processScan();
         }
         return;
       }
 
-      // On n'empile que les touches "caractère"
+      // Caractères uniquement
       if (e.key.length === 1) {
-        bufferRef.value += e.key;
-
-        // Optionnel: si beaucoup de caractères très vite sans Enter, on tente quand même
-        if (bufferRef.value.length >= 8 && delta < 30) {
-          // On attend Enter pour être sûr — ne rien faire ici
+        // Détection de scan: si 2 touches < 50ms = lecteur HID
+        if (delta < 50 && buffer.length > 0) {
+          isScanning = true;
         }
+
+        buffer += e.key;
+
+        // En mode scan, empêcher l'écriture dans les champs
+        if (isScanning) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
+        // Timeout: finaliser si pas de nouvelle touche après 100ms
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (isScanning && buffer.length >= 3) {
+            processScan();
+          } else {
+            buffer = "";
+            isScanning = false;
+          }
+        }, 100);
       }
     };
 
     window.addEventListener("keydown", handler, { capture: true });
-    return () => window.removeEventListener("keydown", handler, { capture: true } as any);
+    return () => {
+      window.removeEventListener("keydown", handler, { capture: true } as any);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [products]);
 
   const handleProductLinked = (productId: string) => {
