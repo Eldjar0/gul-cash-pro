@@ -240,63 +240,98 @@ const Index = () => {
   const normalizeBarcode = (raw: string): string => {
     const azertyMap: Record<string, string> = {
       '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
-      '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0'
+      '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0',
+      '§': '' // Ignorer §
     };
     return raw.split('').map(c => azertyMap[c] || c).join('');
   };
 
   // Traitement du code-barres scanné
   const handleBarcodeScan = (raw: string) => {
+    const DEBUG_SCAN = false; // Mettre à true pour debug
+    
     const normalized = normalizeBarcode(raw.trim());
+    const normalizedDigits = normalized.replace(/\D+/g, ''); // Fallback: chiffres uniquement
+    
+    if (DEBUG_SCAN) {
+      console.log('[SCAN] Raw:', raw, '| Normalized:', normalized, '| Digits:', normalizedDigits);
+    }
+    
     if (!normalized || normalized.length < 3) return;
 
-    // Recherche exacte sur le code-barres normalisé
-    const found = products?.find(
+    // 1. Recherche exacte sur le code-barres normalisé
+    let found = products?.find(
       (p) => p.barcode && normalizeBarcode(p.barcode).toLowerCase() === normalized.toLowerCase()
     );
 
+    // 2. Recherche sur chiffres uniquement (fallback)
+    if (!found && normalizedDigits.length >= 3) {
+      found = products?.find(
+        (p) => p.barcode && p.barcode.replace(/\D+/g, '') === normalizedDigits
+      );
+    }
+
     if (found) {
+      if (DEBUG_SCAN) console.log('[SCAN] Product found:', found.name);
       handleProductSelect(found);
       setScanInput("");
       setSearchResults([]);
       return;
     }
 
-    // Si inconnu, ouvrir le dialogue avec le barcode normalisé
-    setUnknownBarcode(normalized);
+    // Si inconnu, ouvrir le dialogue avec le barcode (priorité aux chiffres si disponibles)
+    const barcodeToUse = normalizedDigits.length >= 3 ? normalizedDigits : normalized;
+    if (DEBUG_SCAN) console.log('[SCAN] Unknown barcode:', barcodeToUse);
+    setUnknownBarcode(barcodeToUse);
     setUnknownBarcodeDialogOpen(true);
     setScanInput("");
   };
 
-  // Détection robuste des scans de lecteur code-barres (HID)
+  // Détection ultra-robuste des scans de lecteur code-barres (HID)
   useEffect(() => {
+    const DEBUG_SCAN = false; // Mettre à true pour debug
     let buffer = "";
     let lastKeyTime = 0;
     let isScanning = false;
     let timeoutId: NodeJS.Timeout | null = null;
+    let scanStartTime = 0;
+
+    const isEditableField = (target: EventTarget | null): boolean => {
+      if (!target || !(target instanceof HTMLElement)) return false;
+      const tagName = target.tagName.toLowerCase();
+      const isContentEditable = target.isContentEditable;
+      return (
+        tagName === 'input' ||
+        tagName === 'textarea' ||
+        tagName === 'select' ||
+        isContentEditable
+      );
+    };
 
     const processScan = () => {
       if (buffer.length >= 3) {
+        const duration = Date.now() - scanStartTime;
+        if (DEBUG_SCAN) {
+          console.log('[SCAN] Processing:', buffer, `(${duration}ms, ${buffer.length} chars)`);
+        }
         handleBarcodeScan(buffer);
       }
       buffer = "";
       isScanning = false;
+      scanStartTime = 0;
     };
 
     const handler = (e: KeyboardEvent) => {
+      // Ignorer si fenêtre inactive
+      if (document.hidden) return;
+
       const now = Date.now();
       const delta = now - lastKeyTime;
       lastKeyTime = now;
 
-      // Reset si trop de temps écoulé (>150ms = frappe humaine)
-      if (delta > 150) {
-        buffer = "";
-        isScanning = false;
-      }
-
       // Touches de finalisation
       if (e.key === "Enter" || e.key === "Tab" || e.key === "NumpadEnter") {
-        if (buffer.length >= 3) {
+        if (isScanning && buffer.length >= 3) {
           e.preventDefault();
           e.stopPropagation();
           if (timeoutId) clearTimeout(timeoutId);
@@ -307,9 +342,29 @@ const Index = () => {
 
       // Caractères uniquement
       if (e.key.length === 1) {
-        // Détection de scan: si 2 touches < 50ms = lecteur HID
-        if (delta < 50 && buffer.length > 0) {
+        // Reset si trop de temps écoulé (>200ms = frappe humaine probable)
+        if (delta > 200 && buffer.length > 0) {
+          if (DEBUG_SCAN) console.log('[SCAN] Reset: delta trop grand', delta);
+          buffer = "";
+          isScanning = false;
+          scanStartTime = 0;
+        }
+
+        // Première touche: démarrer le scan SI pas dans un champ éditable
+        if (buffer.length === 0) {
+          if (isEditableField(e.target)) {
+            // L'utilisateur tape dans un champ, ne pas intercepter
+            return;
+          }
+          scanStartTime = now;
           isScanning = true;
+          if (DEBUG_SCAN) console.log('[SCAN] Start');
+        }
+
+        // Deuxième touche: si < 50ms, confirmer que c'est un scan
+        if (buffer.length === 1 && delta < 50) {
+          isScanning = true;
+          if (DEBUG_SCAN) console.log('[SCAN] Confirmed (fast typing detected)');
         }
 
         buffer += e.key;
@@ -320,22 +375,30 @@ const Index = () => {
           e.stopPropagation();
         }
 
-        // Timeout: finaliser si pas de nouvelle touche après 100ms
+        // Timeout: finaliser si pas de nouvelle touche après 200ms ET longueur >= 8
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
-          if (isScanning && buffer.length >= 3) {
+          if (buffer.length >= 8) {
+            if (DEBUG_SCAN) console.log('[SCAN] Auto-finalize (timeout)');
             processScan();
-          } else {
+          } else if (buffer.length > 0) {
+            // Trop court, probablement pas un scan
+            if (DEBUG_SCAN) console.log('[SCAN] Reset: trop court', buffer);
             buffer = "";
             isScanning = false;
+            scanStartTime = 0;
           }
-        }, 100);
+        }, 200);
       }
     };
 
+    // Écouter keydown et keypress pour couvrir tous les lecteurs
     window.addEventListener("keydown", handler, { capture: true });
+    window.addEventListener("keypress", handler, { capture: true });
+    
     return () => {
       window.removeEventListener("keydown", handler, { capture: true } as any);
+      window.removeEventListener("keypress", handler, { capture: true } as any);
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [products]);
@@ -636,6 +699,21 @@ const Index = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Hidden input to capture scanner input without stealing focus */}
+      <input
+        type="text"
+        aria-hidden="true"
+        tabIndex={-1}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          width: '1px',
+          height: '1px',
+          opacity: 0,
+          pointerEvents: 'none'
+        }}
+        autoFocus={false}
+      />
       {/* Modern header */}
       <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-3 py-2 flex-shrink-0 shadow-lg">
         <div className="flex items-center justify-between text-white">
