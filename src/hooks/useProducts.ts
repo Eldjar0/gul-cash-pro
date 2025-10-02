@@ -93,10 +93,10 @@ export const useCreateProduct = () => {
         .from('products')
         .insert(product)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      return data;
+      return data as Product | null;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -108,7 +108,7 @@ export const useCreateProduct = () => {
     onError: (error) => {
       toast({
         title: 'Erreur',
-        description: 'Impossible de créer le produit.',
+        description: "Impossible de créer le produit.",
         variant: 'destructive',
       });
     },
@@ -121,12 +121,15 @@ export const useUpdateProduct = () => {
 
   return useMutation({
     mutationFn: async ({ id, ...product }: Partial<Product> & { id: string }) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('products')
         .update(product)
-        .eq('id', id);
+        .eq('id', id)
+        .select()
+        .maybeSingle();
 
       if (error) throw error;
+      return data as Product | null;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
