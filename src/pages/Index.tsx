@@ -303,14 +303,16 @@ const Index = () => {
 
     const isEditableField = (target: EventTarget | null): boolean => {
       if (!target || !(target instanceof HTMLElement)) return false;
+      
+      // Si un dialogue est ouvert, ignorer TOUS les scans
+      const hasOpenDialog = document.querySelector('[role="dialog"]') !== null;
+      if (hasOpenDialog) return true;
+      
       const tagName = target.tagName.toLowerCase();
       const isContentEditable = target.isContentEditable;
       const isInput = tagName === 'input' || tagName === 'textarea' || tagName === 'select';
       
-      // Ignorer aussi si on est dans un dialogue (DialogContent)
-      const isInDialog = target.closest('[role="dialog"]') !== null;
-      
-      return isInput || isContentEditable || isInDialog;
+      return isInput || isContentEditable;
     };
 
     // Convertit un événement clavier en chiffre fiable, indépendamment du layout (AZERTY/Numpad)

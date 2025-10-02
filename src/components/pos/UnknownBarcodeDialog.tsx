@@ -111,6 +111,7 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
                   placeholder="Rechercher un produit..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => e.stopPropagation()}
                   className="pl-9"
                 />
               </div>
@@ -149,8 +150,13 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
                 <Label htmlFor="name" className="text-base font-semibold">Nom du produit *</Label>
                 <Input
                   id="name"
+                  autoFocus
                   value={newProduct.name}
                   onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  onKeyDown={(e) => {
+                    // Empêcher le système de scan global de capturer les événements
+                    e.stopPropagation();
+                  }}
                   placeholder="Ex: Coca-Cola 33cl"
                   className="h-12 text-base mt-2"
                 />
@@ -163,6 +169,7 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
                   step="0.01"
                   value={newProduct.price}
                   onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                  onKeyDown={(e) => e.stopPropagation()}
                   placeholder="0.00"
                   className="h-12 text-base mt-2"
                 />
@@ -175,6 +182,7 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
                   step="0.01"
                   value={newProduct.vat_rate}
                   onChange={(e) => setNewProduct({ ...newProduct, vat_rate: e.target.value })}
+                  onKeyDown={(e) => e.stopPropagation()}
                   className="h-12 text-base mt-2"
                 />
               </div>

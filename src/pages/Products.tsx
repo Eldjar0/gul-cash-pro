@@ -365,6 +365,9 @@ export default function Products() {
                   autoComplete="off"
                   value={formData.barcode}
                   onKeyDown={(e) => {
+                    // Empêcher le système de scan global de capturer
+                    e.stopPropagation();
+                    
                     // Convertir les touches physiques en chiffres (indépendant du layout)
                     const code = e.code;
                     let digit = '';
