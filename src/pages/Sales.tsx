@@ -123,17 +123,20 @@ export default function Sales() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Exclure les ventes annulées (conformité légale belge)
     const todaySales = sales.filter((sale) => {
       const saleDate = new Date(sale.date);
       saleDate.setHours(0, 0, 0, 0);
-      return saleDate.getTime() === today.getTime();
+      return saleDate.getTime() === today.getTime() && !sale.is_cancelled;
     });
 
     const totalToday = todaySales.reduce((sum, sale) => sum + sale.total, 0);
     const countToday = todaySales.length;
 
-    const totalAll = sales.reduce((sum, sale) => sum + sale.total, 0);
-    const countAll = sales.length;
+    // Exclure également les ventes annulées du total général
+    const activeSales = sales.filter((sale) => !sale.is_cancelled);
+    const totalAll = activeSales.reduce((sum, sale) => sum + sale.total, 0);
+    const countAll = activeSales.length;
 
     return { totalToday, countToday, totalAll, countAll };
   };
