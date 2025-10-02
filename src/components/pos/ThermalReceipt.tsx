@@ -85,9 +85,9 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         maxWidth: '302px',
         margin: '0 auto',
         fontFamily: "'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif",
-        fontSize: '18px',
+        fontSize: '11.7px',
         lineHeight: '1.3',
-        padding: '6px',
+        padding: '4px',
         fontWeight: '900',
         overflow: 'hidden',
         boxSizing: 'border-box'
@@ -99,7 +99,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           src={logoTicket} 
           alt="Logo" 
           style={{ 
-            width: '150px', 
+            width: '98px', 
             height: 'auto', 
             margin: '0 auto',
             display: 'block'
@@ -108,22 +108,22 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       </div>
 
       {/* Company Info - centrée */}
-      <div className="text-center mb-2" style={{ fontWeight: '900', fontSize: '13.5px' }}>
+      <div className="text-center mb-2" style={{ fontWeight: '900', fontSize: '8.8px' }}>
         <div style={{ lineHeight: '1.2' }}>
           <div>{COMPANY_INFO.address}</div>
           <div>{COMPANY_INFO.postalCode} {COMPANY_INFO.city}</div>
           {COMPANY_INFO.phone && <div>Tel: {COMPANY_INFO.phone}</div>}
-          <div style={{ marginTop: '2px' }}>TVA: {COMPANY_INFO.vat}</div>
+          <div style={{ marginTop: '1px' }}>TVA: {COMPANY_INFO.vat}</div>
         </div>
       </div>
 
-      <div style={{ borderTop: '1.5px dashed #000', margin: '7.5px 0' }}></div>
+      <div style={{ borderTop: '1px dashed #000', margin: '5px 0' }}></div>
 
       {/* Customer info - Only for invoices */}
       {isInvoice && sale.customer && (
         <>
-          <div style={{ fontSize: '13.5px', marginBottom: '7.5px', fontWeight: '900', paddingRight: '3px' }}>
-            <div style={{ fontWeight: '900', marginBottom: '3px' }}>CLIENT:</div>
+          <div style={{ fontSize: '8.8px', marginBottom: '5px', fontWeight: '900', paddingRight: '2px' }}>
+            <div style={{ fontWeight: '900', marginBottom: '2px' }}>CLIENT:</div>
             <div style={{ fontWeight: '900', wordWrap: 'break-word' }}>{sale.customer.name}</div>
             {sale.customer.vat_number && <div style={{ wordWrap: 'break-word' }}>TVA: {sale.customer.vat_number}</div>}
             {sale.customer.address && <div style={{ wordWrap: 'break-word' }}>{sale.customer.address}</div>}
@@ -131,19 +131,19 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
               <div>{sale.customer.postal_code} {sale.customer.city}</div>
             )}
           </div>
-          <div style={{ borderTop: '1.5px dashed #000', margin: '7.5px 0' }}></div>
+          <div style={{ borderTop: '1px dashed #000', margin: '5px 0' }}></div>
         </>
       )}
 
       {/* Sale info */}
-      <div style={{ fontSize: '13.5px', marginBottom: '7.5px', fontWeight: '900', paddingRight: '3px' }}>
+      <div style={{ fontSize: '8.8px', marginBottom: '5px', fontWeight: '900', paddingRight: '2px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900' }}>
           <span>{isInvoice ? 'FACTURE' : 'TICKET'} N°:</span>
-          <span style={{ fontSize: '15px' }}>{sale.saleNumber || sale.sale_number}</span>
+          <span style={{ fontSize: '9.8px' }}>{sale.saleNumber || sale.sale_number}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1px' }}>
           <span>DATE:</span>
-          <span style={{ fontSize: '12px' }}>{saleDate.toLocaleString('fr-BE', { 
+          <span style={{ fontSize: '7.8px' }}>{saleDate.toLocaleString('fr-BE', { 
             day: '2-digit', 
             month: '2-digit', 
             year: 'numeric',
@@ -153,27 +153,27 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         </div>
       </div>
 
-      <div style={{ borderTop: '1.5px dashed #000', margin: '7.5px 0' }}></div>
+      <div style={{ borderTop: '1px dashed #000', margin: '5px 0' }}></div>
 
       {/* Items - Style Lidl */}
-      <div style={{ marginBottom: '7.5px', paddingRight: '3px' }}>
+      <div style={{ marginBottom: '5px', paddingRight: '2px' }}>
         {sale.items.map((item, index) => {
           const unitDisplay = item.product.type === 'weight' ? 'kg' : 'pc';
           const qtyDisplay = item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0);
           const pricePerUnit = item.product.price.toFixed(2);
           
           return (
-            <div key={index} style={{ marginBottom: '4.5px' }}>
+            <div key={index} style={{ marginBottom: '3px' }}>
               {/* Nom du produit */}
               <div style={{ 
                 fontWeight: '900', 
                 textTransform: 'uppercase', 
-                marginBottom: '1.5px',
+                marginBottom: '1px',
                 wordWrap: 'break-word',
                 overflowWrap: 'break-word',
                 maxWidth: '100%',
-                fontSize: '21px',
-                letterSpacing: '0.45px'
+                fontSize: '13.7px',
+                letterSpacing: '0.3px'
               }}>
                 {item.product.name}
               </div>
@@ -183,8 +183,8 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 fontWeight: '900',
-                gap: '4.5px',
-                fontSize: '13.5px'
+                gap: '3px',
+                fontSize: '8.8px'
               }}>
                 <span style={{ 
                   whiteSpace: 'nowrap',
@@ -194,7 +194,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                 }}>
                   {qtyDisplay} {unitDisplay} x {pricePerUnit}€
                   {item.discount && (
-                    <span style={{ fontStyle: 'italic', marginLeft: '6px' }}>
+                    <span style={{ fontStyle: 'italic', marginLeft: '4px' }}>
                       REM -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
                     </span>
                   )}
@@ -208,32 +208,32 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         })}
       </div>
 
-      <div style={{ borderTop: '1.5px solid #000', margin: '7.5px 0' }}></div>
+      <div style={{ borderTop: '1px solid #000', margin: '5px 0' }}></div>
 
       {/* Détail TVA par taux (comme Lidl) - CENTRÉ */}
-      <div className="text-center" style={{ fontSize: '13.5px', marginBottom: '7.5px', fontWeight: '900' }}>
-        <div style={{ fontWeight: '900', marginBottom: '3px' }}>DETAIL TVA:</div>
+      <div className="text-center" style={{ fontSize: '8.8px', marginBottom: '5px', fontWeight: '900' }}>
+        <div style={{ fontWeight: '900', marginBottom: '2px' }}>DETAIL TVA:</div>
         {Object.entries(vatByRate).map(([rate, amounts]) => (
-          <div key={rate} style={{ marginBottom: '1.5px', fontSize: '12px' }}>
+          <div key={rate} style={{ marginBottom: '1px', fontSize: '7.8px' }}>
             {parseFloat(rate).toFixed(0)}% sur {amounts.totalHT.toFixed(2)}€ = {amounts.totalVAT.toFixed(2)}€
           </div>
         ))}
       </div>
 
-      <div style={{ borderTop: '1.5px dashed #000', margin: '7.5px 0' }}></div>
+      <div style={{ borderTop: '1px dashed #000', margin: '5px 0' }}></div>
 
       {/* Totaux */}
-      <div style={{ fontSize: '15px', marginBottom: '4.5px', fontWeight: '900', paddingRight: '3px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5px', gap: '4.5px' }}>
+      <div style={{ fontSize: '9.8px', marginBottom: '3px', fontWeight: '900', paddingRight: '2px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px', gap: '3px' }}>
           <span>SOUS-TOTAL HT</span>
           <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{sale.subtotal.toFixed(2)}€</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5px', gap: '4.5px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px', gap: '3px' }}>
           <span>TVA TOTALE</span>
           <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{(sale.totalVat || sale.total_vat || 0).toFixed(2)}€</span>
         </div>
         {(sale.totalDiscount || sale.total_discount || 0) > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5px', gap: '4.5px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px', gap: '3px' }}>
             <span>REMISE</span>
             <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>-{(sale.totalDiscount || sale.total_discount || 0).toFixed(2)}€</span>
           </div>
@@ -241,16 +241,16 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       </div>
 
       {/* Total principal - Style Lidl */}
-      <div style={{ borderTop: '3px solid #000', borderBottom: '3px solid #000', padding: '4.5px 3px', margin: '7.5px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '22.5px', fontWeight: '900', gap: '9px' }}>
+      <div style={{ borderTop: '2px solid #000', borderBottom: '2px solid #000', padding: '3px 2px', margin: '5px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14.6px', fontWeight: '900', gap: '6px' }}>
           <span>TOTAL</span>
           <span style={{ whiteSpace: 'nowrap' }}>{sale.total.toFixed(2)}€</span>
         </div>
       </div>
 
       {/* Payment */}
-      <div style={{ fontSize: '15px', marginTop: '7.5px', marginBottom: '7.5px', fontWeight: '900', paddingRight: '3px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', marginBottom: '3px', gap: '4.5px' }}>
+      <div style={{ fontSize: '9.8px', marginTop: '5px', marginBottom: '5px', fontWeight: '900', paddingRight: '2px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', marginBottom: '2px', gap: '3px' }}>
           <span style={{ flex: '1', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
              (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE' : 'PAIEMENT'}
@@ -259,11 +259,11 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         </div>
         {(sale.paymentMethod || sale.payment_method) === 'cash' && (sale.amountPaid || sale.amount_paid) && (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px', gap: '4.5px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8.8px', gap: '3px' }}>
               <span>Reçu</span>
               <span style={{ whiteSpace: 'nowrap' }}>{(sale.amountPaid || sale.amount_paid || 0).toFixed(2)}€</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px', fontWeight: '900', gap: '4.5px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8.8px', fontWeight: '900', gap: '3px' }}>
               <span>Rendu</span>
               <span style={{ whiteSpace: 'nowrap' }}>{(sale.change || sale.change_amount || 0).toFixed(2)}€</span>
             </div>
@@ -271,26 +271,26 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         )}
       </div>
 
-      <div style={{ borderTop: '1.5px dashed #000', margin: '9px 0' }}></div>
+      <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }}></div>
 
       {/* Footer */}
-      <div className="text-center" style={{ marginTop: '9px', fontWeight: '900' }}>
+      <div className="text-center" style={{ marginTop: '6px', fontWeight: '900' }}>
         {isInvoice ? (
-          <div style={{ fontSize: '13.5px' }}>
-            <div style={{ fontWeight: '900', marginBottom: '3px' }}>FACTURE</div>
+          <div style={{ fontSize: '8.8px' }}>
+            <div style={{ fontWeight: '900', marginBottom: '2px' }}>FACTURE</div>
             <div>Payable sous 30 jours</div>
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: '19.5px', fontWeight: '900', letterSpacing: '0.75px', marginBottom: '3px' }}>
+            <div style={{ fontSize: '12.7px', fontWeight: '900', letterSpacing: '0.5px', marginBottom: '2px' }}>
               MERCI DE VOTRE VISITE
             </div>
-            <div style={{ fontSize: '16.5px', fontWeight: '900' }}>
+            <div style={{ fontSize: '10.7px', fontWeight: '900' }}>
               A BIENTOT !
             </div>
           </div>
         )}
-        <div style={{ fontSize: '12px', marginTop: '7.5px', color: '#666', fontWeight: '800' }}>
+        <div style={{ fontSize: '7.8px', marginTop: '5px', color: '#666', fontWeight: '800' }}>
           www.JLprod.be
         </div>
       </div>
