@@ -999,12 +999,11 @@ const Index = () => {
                         <div className="flex items-center gap-1 mt-0.5">
                           <Input
                             data-scan-ignore="true"
-                            type="number"
-                            step="0.01"
-                            min="0"
+                            type="text"
                             value={item.custom_price ?? item.product.price}
                             onChange={(e) => {
-                              const newPrice = parseFloat(e.target.value);
+                              const value = e.target.value.replace(',', '.');
+                              const newPrice = parseFloat(value);
                               if (!isNaN(newPrice) && newPrice >= 0) {
                                 handleUpdatePrice(index, newPrice);
                               }
@@ -1060,9 +1059,20 @@ const Index = () => {
                         >
                           -
                         </Button>
-                        <div className="px-1 flex items-center justify-center min-w-[2.5rem] font-bold text-xs">
-                          {item.quantity.toFixed(item.product.type === 'weight' ? 1 : 0)} {item.product.unit || 'u'}
-                        </div>
+                        <Input
+                          data-scan-ignore="true"
+                          type="text"
+                          value={item.quantity.toFixed(item.product.type === 'weight' ? 1 : 0)}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(',', '.');
+                            const newQty = parseFloat(value);
+                            if (!isNaN(newQty) && newQty > 0) {
+                              handleUpdateQuantity(index, newQty);
+                            }
+                          }}
+                          className="h-6 w-16 text-xs px-1 text-center bg-white font-bold"
+                        />
+                        <span className="text-xs text-muted-foreground self-center">{item.product.unit || 'u'}</span>
                         <Button
                           size="sm"
                           onClick={() => handleUpdateQuantity(index, item.quantity + 1)}
