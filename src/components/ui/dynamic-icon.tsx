@@ -9,24 +9,23 @@ interface DynamicIconProps extends Omit<LucideProps, 'ref'> {
 }
 
 export function DynamicIcon({ name, ...props }: DynamicIconProps) {
-  // Convert the name to kebab-case if needed
   const iconName = name.toLowerCase().replace(/\s+/g, '-');
   
+  // Validate icon exists before lazy loading
   if (!iconName || !(iconName in dynamicIconImports)) {
-    // Return a default icon component for invalid names
-    const DefaultIcon = lazy(dynamicIconImports['package']);
-    return (
-      <Suspense fallback={fallback}>
-        <DefaultIcon {...props} />
-      </Suspense>
-    );
+    return fallback;
   }
   
-  const LucideIcon = lazy(dynamicIconImports[iconName as keyof typeof dynamicIconImports]);
-  
-  return (
-    <Suspense fallback={fallback}>
-      <LucideIcon {...props} />
-    </Suspense>
-  );
+  try {
+    const LucideIcon = lazy(dynamicIconImports[iconName as keyof typeof dynamicIconImports]);
+    
+    return (
+      <Suspense fallback={fallback}>
+        <LucideIcon {...props} />
+      </Suspense>
+    );
+  } catch (error) {
+    console.error(`Failed to load icon: ${iconName}`, error);
+    return fallback;
+  }
 }
