@@ -16,6 +16,7 @@ import {
   Ticket,
   Eye,
   History,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
@@ -875,23 +876,43 @@ const Index = () => {
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => navigate('/products')}
+              className="text-white hover:bg-white/20 text-xs h-7 px-2"
+            >
+              <ShoppingBag className="h-3 w-3 mr-1" />
+              Produits
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={openCustomerDisplay}
               className="text-white hover:bg-white/20 text-xs h-7 px-2"
             >
               <Eye className="h-3 w-3 mr-1" />
-              Affichage Client
+              Affichage
             </Button>
           </div>
           {user ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={signOut}
-              className="text-white hover:bg-white/20 text-xs h-7 px-2"
-            >
-              <LogOut className="h-3 w-3 mr-1" />
-              Déco
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/settings')}
+                className="text-white hover:bg-white/20 text-xs h-7 px-2"
+              >
+                <SettingsIcon className="h-3 w-3 mr-1" />
+                Paramètres
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={signOut}
+                className="text-white hover:bg-white/20 text-xs h-7 px-2"
+              >
+                <LogOut className="h-3 w-3 mr-1" />
+                Déco
+              </Button>
+            </div>
           ) : (
             <Button
               variant="ghost"
