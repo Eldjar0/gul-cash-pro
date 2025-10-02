@@ -159,6 +159,7 @@ export async function getTodayReportData(): Promise<ReportData> {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
+  // Exclure les ventes annulées (conformité légale belge)
   const { data: sales, error } = await supabase
     .from('sales')
     .select(`
@@ -166,7 +167,8 @@ export async function getTodayReportData(): Promise<ReportData> {
       sale_items (*)
     `)
     .gte('date', today.toISOString())
-    .lt('date', tomorrow.toISOString());
+    .lt('date', tomorrow.toISOString())
+    .eq('is_cancelled', false);
 
   if (error) throw error;
 

@@ -254,9 +254,16 @@ export default function Sales() {
                 </TableHeader>
               <TableBody>
                 {filteredSales.map((sale) => (
-                  <TableRow key={sale.id}>
+                  <TableRow key={sale.id} className={sale.is_cancelled ? 'bg-red-50 opacity-60' : ''}>
                     <TableCell className="font-mono font-semibold">
-                      {sale.sale_number}
+                      <div className="flex flex-col gap-1">
+                        <span>{sale.sale_number}</span>
+                        {sale.is_cancelled && (
+                          <Badge variant="destructive" className="text-xs w-fit">
+                            ANNULÉE
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -276,9 +283,16 @@ export default function Sales() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {sale.sale_items?.length || 0} article{(sale.sale_items?.length || 0) > 1 ? 's' : ''}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm text-muted-foreground">
+                          {sale.sale_items?.length || 0} article{(sale.sale_items?.length || 0) > 1 ? 's' : ''}
+                        </span>
+                        {sale.is_cancelled && sale.notes && (
+                          <span className="text-xs text-destructive italic">
+                            {sale.notes}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -290,7 +304,16 @@ export default function Sales() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-bold text-primary">
-                      {sale.total.toFixed(2)}€
+                      {sale.is_cancelled ? (
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="line-through text-muted-foreground text-sm">
+                            {sale.total.toFixed(2)}€
+                          </span>
+                          <span className="text-destructive font-black">0.00€</span>
+                        </div>
+                      ) : (
+                        <span>{sale.total.toFixed(2)}€</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
@@ -307,6 +330,8 @@ export default function Sales() {
                           size="sm"
                           onClick={() => handleDeleteClick(sale.id)}
                           className="h-8 text-destructive hover:text-destructive"
+                          disabled={sale.is_cancelled}
+                          title={sale.is_cancelled ? 'Cette vente est déjà annulée' : 'Annuler cette vente'}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
