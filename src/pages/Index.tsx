@@ -562,7 +562,7 @@ const Index = () => {
       {/* Main content - Toujours 3 colonnes: TICKET | CALCULATRICE | ARTICLES */}
       <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
         {/* LEFT PANEL - Ticket à gauche */}
-        <div className="col-span-3 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
+        <div className="col-span-4 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
           {/* Ticket header - Clean gradient */}
           <div className="bg-gradient-to-r from-primary to-primary-glow p-2 flex-shrink-0 shadow-lg">
             <div className="flex items-center justify-between text-white">
@@ -846,7 +846,7 @@ const Index = () => {
         </div>
 
         {/* COLONNE CENTRE - Calculatrice & Scan */}
-        <div className="col-span-6 bg-background p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto">
+        <div className="col-span-5 bg-background p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto">
           {/* Zone de scan */}
           <Card className="bg-white border border-border p-3 md:p-6 flex-shrink-0 shadow-sm">
             <form onSubmit={handleScanSubmit}>
