@@ -148,6 +148,8 @@ const Index = () => {
         items: displayItems,
         status: cart.length > 0 ? 'shopping' : 'idle',
         timestamp: Date.now(),
+        cashierName: user?.email?.split('@')[0] || 'Caisse',
+        saleNumber: 'EN COURS',
         globalDiscount: globalDiscount ? {
           type: globalDiscount.type,
           value: globalDiscount.value,
@@ -494,18 +496,22 @@ const Index = () => {
   }
 
   const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount'], customPrice?: number) => {
-    const unitPrice = customPrice ?? product.price;
-    const subtotal = unitPrice * quantity;
-    const vatAmount = (subtotal * product.vat_rate) / 100;
+    const unitPriceTTC = customPrice ?? product.price;
+    
+    // Prix TTC → HT : diviser par (1 + taux_TVA/100)
+    const unitPriceHT = unitPriceTTC / (1 + product.vat_rate / 100);
+    const subtotal = unitPriceHT * quantity;
+    const vatAmount = subtotal * (product.vat_rate / 100);
     
     let discountAmount = 0;
     if (discount) {
+      const totalTTC = unitPriceTTC * quantity;
       discountAmount = discount.type === 'percentage' 
-        ? (subtotal * discount.value) / 100 
+        ? (totalTTC * discount.value) / 100 
         : discount.value;
     }
     
-    const total = subtotal + vatAmount - discountAmount;
+    const total = (unitPriceTTC * quantity) - discountAmount;
     
     return { subtotal, vatAmount, total };
   };

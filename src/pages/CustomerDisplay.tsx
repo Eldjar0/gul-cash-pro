@@ -22,6 +22,8 @@ interface DisplayState {
   items: DisplayItem[];
   status: 'idle' | 'shopping' | 'completed';
   timestamp: number;
+  cashierName?: string;
+  saleNumber?: string;
   globalDiscount?: {
     type: 'percentage' | 'amount';
     value: number;
@@ -225,23 +227,27 @@ const CustomerDisplay = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col overflow-hidden">
       {/* Header fixe avec logo */}
-      <div className="fixed top-0 left-0 right-0 bg-white border-b-4 border-primary shadow-lg p-6 z-10">
+      <div className="fixed top-0 left-0 right-0 bg-white border-b-4 border-primary shadow-lg p-4 z-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <img src={logo} alt="Logo" className="h-20 object-contain" />
-          <div className="text-right">
-            <h1 className="text-5xl font-black text-foreground tracking-tight">
-              {displayState.isInvoice ? 'FACTURE' : 'TICKET'}
+          <img src={logo} alt="Logo" className="h-16 object-contain" />
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-black text-foreground tracking-tight">
+              {displayState.isInvoice ? 'FACTURE' : 'TICKET'} {displayState.saleNumber || 'EN COURS'}
             </h1>
             {displayState.isInvoice && displayState.customer && (
-              <p className="text-2xl text-primary font-bold mt-1">{displayState.customer.name}</p>
+              <p className="text-xl text-primary font-bold mt-1">{displayState.customer.name}</p>
             )}
+          </div>
+          <div className="text-right">
+            <p className="text-lg text-muted-foreground">Caisse:</p>
+            <p className="text-2xl font-bold text-primary">{displayState.cashierName || 'N/A'}</p>
           </div>
         </div>
       </div>
 
       {/* Zone scrollable pour les articles - avec padding top et bottom pour header/footer fixes */}
-      <div className="flex-1 overflow-y-auto pt-32 pb-64 px-6">
-        <div className="max-w-7xl mx-auto space-y-4 flex flex-col-reverse">
+      <div className="flex-1 overflow-y-auto pt-24 pb-48 px-4">
+        <div className="max-w-7xl mx-auto space-y-2 flex flex-col-reverse">
           {displayState.items.map((item, index) => {
             const subtotal = calculateSubtotal(item);
             const vat = calculateVAT(item);
@@ -250,40 +256,40 @@ const CustomerDisplay = () => {
             return (
               <div
                 key={`${item.name}-${index}`}
-                className="bg-white rounded-2xl shadow-lg p-8 border-2 border-primary/20 hover:shadow-xl transition-all"
+                className="bg-white rounded-xl shadow-md p-4 border border-primary/20 hover:shadow-lg transition-all"
               >
-                <div className="flex justify-between items-start gap-8">
+                <div className="flex justify-between items-start gap-4">
                   <div className="flex-1">
-                    <h3 className="text-4xl font-black text-foreground uppercase tracking-tight mb-4">
+                    <h3 className="text-2xl font-bold text-foreground uppercase tracking-tight mb-2">
                       {item.name}
                     </h3>
-                    <div className="flex gap-6 items-center flex-wrap mb-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl font-bold text-muted-foreground">
+                    <div className="flex gap-3 items-center flex-wrap mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl font-bold text-muted-foreground">
                           {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)} {unitDisplay}
                         </span>
-                        <span className="text-2xl text-muted-foreground">×</span>
-                        <span className="text-3xl font-semibold text-muted-foreground">
+                        <span className="text-lg text-muted-foreground">×</span>
+                        <span className="text-xl font-semibold text-muted-foreground">
                           {item.price.toFixed(2)} €
                         </span>
                       </div>
                       {item.hasCustomPrice && (
-                        <span className="px-4 py-2 rounded-full text-xl font-bold bg-accent/20 text-accent">
+                        <span className="px-2 py-1 rounded-full text-sm font-bold bg-accent/20 text-accent">
                           Prix modifié
                         </span>
                       )}
                       {item.discount && (
-                        <span className="px-4 py-2 rounded-full text-xl font-bold bg-destructive/20 text-destructive">
+                        <span className="px-2 py-1 rounded-full text-sm font-bold bg-destructive/20 text-destructive">
                           -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-7xl font-black text-primary mb-3">
+                    <div className="text-4xl font-black text-primary mb-1">
                       {item.total.toFixed(2)} €
                     </div>
-                    <div className="text-2xl text-muted-foreground space-y-1">
+                    <div className="text-base text-muted-foreground">
                       <div>TVA {item.vatRate}%: <span className="font-bold">{vat.toFixed(2)}€</span></div>
                     </div>
                   </div>
@@ -296,10 +302,10 @@ const CustomerDisplay = () => {
 
       {/* Footer fixe avec total en bas à droite */}
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary to-accent shadow-2xl z-10">
-        <div className="max-w-7xl mx-auto p-8">
+        <div className="max-w-7xl mx-auto p-6">
           <div className="flex justify-between items-center">
             {/* Infos TVA à gauche */}
-            <div className="space-y-2 text-white">
+            <div className="space-y-1 text-white">
               {(() => {
                 const vatByRate = displayState.items.reduce((acc, item) => {
                   const vat = calculateVAT(item);
@@ -311,8 +317,8 @@ const CustomerDisplay = () => {
                 }, {} as Record<number, number>);
 
                 return Object.entries(vatByRate).map(([rate, amount]) => (
-                  <div key={rate} className="text-2xl font-semibold flex items-center gap-3">
-                    <span className="opacity-90">TVA {parseFloat(rate).toFixed(2)}%:</span>
+                  <div key={rate} className="text-base font-semibold flex items-center gap-2">
+                    <span className="opacity-90">TVA {parseFloat(rate).toFixed(0)}%:</span>
                     <span className="font-bold">{amount.toFixed(2)} €</span>
                   </div>
                 ));
@@ -321,8 +327,8 @@ const CustomerDisplay = () => {
 
             {/* Total TTC à droite - ÉNORME */}
             <div className="text-right">
-              <div className="text-3xl font-bold text-white/90 mb-2">TOTAL À PAYER</div>
-              <div className="text-9xl font-black text-white tracking-tighter leading-none">
+              <div className="text-2xl font-bold text-white/90 mb-1">TOTAL À PAYER</div>
+              <div className="text-6xl font-black text-white tracking-tighter leading-none">
                 {getTotalTTC().toFixed(2)} €
               </div>
             </div>
