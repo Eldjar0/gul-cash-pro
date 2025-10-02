@@ -179,7 +179,7 @@ export type Database = {
       daily_reports: {
         Row: {
           cashier_id: string | null
-          closing_amount: number
+          closing_amount: number | null
           created_at: string | null
           id: string
           opening_amount: number
@@ -192,7 +192,7 @@ export type Database = {
         }
         Insert: {
           cashier_id?: string | null
-          closing_amount?: number
+          closing_amount?: number | null
           created_at?: string | null
           id?: string
           opening_amount?: number
@@ -205,7 +205,7 @@ export type Database = {
         }
         Update: {
           cashier_id?: string | null
-          closing_amount?: number
+          closing_amount?: number | null
           created_at?: string | null
           id?: string
           opening_amount?: number

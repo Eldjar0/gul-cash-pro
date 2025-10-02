@@ -172,7 +172,17 @@ export const useSales = (startDate?: Date, endDate?: Date) => {
     queryFn: async () => {
       let query = supabase
         .from('sales')
-        .select('*, sale_items(*)')
+        .select(`
+          *,
+          sale_items(*),
+          customers(
+            id,
+            name,
+            email,
+            phone,
+            vat_number
+          )
+        `)
         .order('date', { ascending: false });
 
       if (startDate) {

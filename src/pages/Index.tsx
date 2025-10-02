@@ -1392,7 +1392,7 @@ const Index = () => {
             onOpenDrawer={() => toast.info('Tiroir-caisse ouvert')}
             onViewStats={() => navigate('/sales')}
             onViewHistory={() => navigate('/sales')}
-            onManageCustomers={() => toast.info('Gestion clients à venir')}
+            onManageCustomers={() => navigate('/customers')}
             onManageProducts={() => navigate('/products')}
             onSettings={() => navigate('/settings')}
             onOpenDay={() => setOpenDayDialogOpen(true)}
