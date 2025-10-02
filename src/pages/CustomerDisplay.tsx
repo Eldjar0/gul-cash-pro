@@ -28,6 +28,7 @@ const CustomerDisplay = () => {
     const channel = new BroadcastChannel('customer_display');
     
     channel.onmessage = (event) => {
+      console.log('[CustomerDisplay] Message received:', event.data);
       setDisplayState(event.data);
     };
 
@@ -35,14 +36,37 @@ const CustomerDisplay = () => {
     const stored = localStorage.getItem('customer_display_state');
     if (stored) {
       try {
-        setDisplayState(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        console.log('[CustomerDisplay] Initial state loaded:', parsed);
+        setDisplayState(parsed);
       } catch (e) {
         console.error('Error parsing stored state:', e);
       }
     }
 
+    // Vérifier périodiquement localStorage pour synchronisation
+    const interval = setInterval(() => {
+      const stored = localStorage.getItem('customer_display_state');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setDisplayState(prev => {
+            // Ne mettre à jour que si le timestamp est plus récent
+            if (parsed.timestamp > prev.timestamp) {
+              console.log('[CustomerDisplay] State updated from localStorage:', parsed);
+              return parsed;
+            }
+            return prev;
+          });
+        } catch (e) {
+          console.error('Error parsing stored state:', e);
+        }
+      }
+    }, 500);
+
     return () => {
       channel.close();
+      clearInterval(interval);
     };
   }, []);
 
@@ -121,7 +145,7 @@ const CustomerDisplay = () => {
         </div>
 
         {/* Articles */}
-        <Card className="p-6 shadow-lg animate-scale-in">
+        <Card className="p-6 shadow-lg animate-scale-in" key={displayState.timestamp}>
           <div className="space-y-4">
             {/* En-tête du tableau */}
             <div className="grid grid-cols-12 gap-4 pb-4 border-b-2 border-border text-lg font-semibold text-muted-foreground">

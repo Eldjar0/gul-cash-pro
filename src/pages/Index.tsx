@@ -104,8 +104,14 @@ const Index = () => {
         timestamp: Date.now(),
       };
 
+      console.log('[POS] Sending to customer display:', state);
+
       // Envoyer via BroadcastChannel
-      displayChannel.postMessage(state);
+      try {
+        displayChannel.postMessage(state);
+      } catch (e) {
+        console.error('[POS] BroadcastChannel error:', e);
+      }
       
       // Sauvegarder dans localStorage pour persistance
       localStorage.setItem('customer_display_state', JSON.stringify(state));
