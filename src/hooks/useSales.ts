@@ -41,6 +41,30 @@ export const useCreateSale = () => {
 
   return useMutation({
     mutationFn: async (sale: Sale) => {
+      // Verify stock availability BEFORE creating the sale
+      for (const item of sale.items) {
+        if (item.product_id) {
+          const { data: product, error: productError } = await supabase
+            .from('products')
+            .select('stock, name')
+            .eq('id', item.product_id)
+            .single();
+
+          if (productError) {
+            throw new Error(`Erreur lors de la vérification du produit ${item.product_name}`);
+          }
+
+          if (product && product.stock !== null) {
+            const newStock = product.stock - item.quantity;
+            
+            // Check if stock would become negative
+            if (newStock < 0) {
+              throw new Error(`Stock insuffisant pour "${product.name}". Disponible: ${product.stock}, demandé: ${item.quantity}`);
+            }
+          }
+        }
+      }
+
       // Get sale number with correct format (ticket or invoice)
       const { data: saleNumber, error: numberError } = await supabase
         .rpc('generate_sale_number', { is_invoice_param: sale.is_invoice || false });
@@ -84,7 +108,7 @@ export const useCreateSale = () => {
 
       if (itemsError) throw itemsError;
 
-      // Update stock for products
+      // Update stock for products (stock was already verified above)
       for (const item of items) {
         if (item.product_id) {
           const { data: product } = await supabase
@@ -94,10 +118,17 @@ export const useCreateSale = () => {
             .single();
 
           if (product && product.stock !== null) {
-            await supabase
+            const newStock = product.stock - item.quantity;
+
+            const { error: updateError } = await supabase
               .from('products')
-              .update({ stock: product.stock - item.quantity })
+              .update({ stock: newStock })
               .eq('id', item.product_id);
+
+            if (updateError) {
+              console.error('Error updating stock:', updateError);
+              throw updateError;
+            }
           }
         }
       }
@@ -124,11 +155,11 @@ export const useCreateSale = () => {
         description: 'La vente a été enregistrée avec succès.',
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error creating sale:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible d\'enregistrer la vente.',
+        description: error.message || 'Impossible d\'enregistrer la vente.',
         variant: 'destructive',
       });
     },
