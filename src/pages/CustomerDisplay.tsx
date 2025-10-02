@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { ShoppingBag, CheckCircle2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DisplayItem {
   name: string;
@@ -16,6 +17,14 @@ interface DisplayState {
   timestamp: number;
 }
 
+interface DisplaySettings {
+  welcome_text: string;
+  thank_you_text: string;
+  primary_color: string;
+  secondary_color: string;
+  text_color: string;
+}
+
 const CustomerDisplay = () => {
   const [displayState, setDisplayState] = useState<DisplayState>({
     items: [],
@@ -23,14 +32,63 @@ const CustomerDisplay = () => {
     timestamp: Date.now(),
   });
 
+  const [displaySettings, setDisplaySettings] = useState<DisplaySettings>({
+    welcome_text: 'Bienvenue',
+    thank_you_text: 'Merci de votre visite !',
+    primary_color: '#3B82F6',
+    secondary_color: '#10B981',
+    text_color: '#1F2937',
+  });
+
   useEffect(() => {
-    // Écouter les changements via BroadcastChannel
+    // Canal de communication
     const channel = new BroadcastChannel('customer_display');
-    
+
     channel.onmessage = (event) => {
       console.log('[CustomerDisplay] Message received:', event.data);
-      setDisplayState(event.data);
+      // Message de mise à jour des paramètres
+      if (event.data?.type === 'settings' && event.data?.value) {
+        setDisplaySettings(event.data.value);
+        try {
+          localStorage.setItem('display_settings_cache', JSON.stringify(event.data.value));
+        } catch {}
+        return;
+      }
+      // Message d'état d'achat
+      if (event.data?.items) {
+        setDisplayState(event.data);
+      }
     };
+
+    // Charger paramètres depuis le cache
+    try {
+      const cached = localStorage.getItem('display_settings_cache');
+      if (cached) {
+        setDisplaySettings(JSON.parse(cached));
+      }
+    } catch (e) {
+      console.error('Error parsing cached settings:', e);
+    }
+
+    // Charger paramètres depuis Supabase
+    (async () => {
+      const { data } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'display_settings')
+        .maybeSingle();
+      if (data?.value) {
+        const val = data.value as any;
+        setDisplaySettings({
+          welcome_text: val.welcome_text ?? 'Bienvenue',
+          thank_you_text: val.thank_you_text ?? 'Merci de votre visite !',
+          primary_color: val.primary_color ?? '#3B82F6',
+          secondary_color: val.secondary_color ?? '#10B981',
+          text_color: val.text_color ?? '#1F2937',
+        });
+        try { localStorage.setItem('display_settings_cache', JSON.stringify(val)); } catch {}
+      }
+    })();
 
     // Charger l'état initial depuis localStorage
     const stored = localStorage.getItem('customer_display_state');
@@ -51,7 +109,6 @@ const CustomerDisplay = () => {
         try {
           const parsed = JSON.parse(stored);
           setDisplayState(prev => {
-            // Ne mettre à jour que si le timestamp est plus récent
             if (parsed.timestamp > prev.timestamp) {
               console.log('[CustomerDisplay] State updated from localStorage:', parsed);
               return parsed;

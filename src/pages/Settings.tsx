@@ -153,6 +153,13 @@ export default function Settings() {
         if (error) throw error;
       }
 
+      try {
+        localStorage.setItem('display_settings_cache', JSON.stringify(displaySettings));
+        const channel = new BroadcastChannel('customer_display');
+        channel.postMessage({ type: 'settings', value: displaySettings });
+        channel.close();
+      } catch {}
+
       toast.success('Paramètres d\'affichage enregistrés');
     } catch (error) {
       console.error('Error saving display settings:', error);
