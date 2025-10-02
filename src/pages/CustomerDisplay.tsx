@@ -225,7 +225,7 @@ const CustomerDisplay = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col overflow-hidden">
       {/* Header fixe avec logo */}
-      <div className="bg-white border-b-4 border-primary shadow-lg p-6">
+      <div className="fixed top-0 left-0 right-0 bg-white border-b-4 border-primary shadow-lg p-6 z-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <img src={logo} alt="Logo" className="h-20 object-contain" />
           <div className="text-right">
@@ -239,28 +239,28 @@ const CustomerDisplay = () => {
         </div>
       </div>
 
-      {/* Zone scrollable pour les articles */}
-      <div className="flex-1 overflow-y-auto py-8 px-6">
-        <div className="max-w-7xl mx-auto space-y-4">
+      {/* Zone scrollable pour les articles - avec padding top et bottom pour header/footer fixes */}
+      <div className="flex-1 overflow-y-auto pt-32 pb-64 px-6">
+        <div className="max-w-7xl mx-auto space-y-4 flex flex-col-reverse">
           {displayState.items.map((item, index) => {
             const subtotal = calculateSubtotal(item);
             const vat = calculateVAT(item);
+            const unitDisplay = item.unit === 'kg' ? 'kg' : item.unit === 'l' ? 'l' : 'pc';
             
             return (
               <div
-                key={index}
-                className="bg-white rounded-2xl shadow-lg p-8 border-2 border-primary/20 animate-fade-in hover:shadow-xl transition-all"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                key={`${item.name}-${index}`}
+                className="bg-white rounded-2xl shadow-lg p-8 border-2 border-primary/20 hover:shadow-xl transition-all"
               >
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-start gap-8">
                   <div className="flex-1">
-                    <h3 className="text-4xl font-black text-foreground uppercase tracking-tight mb-3">
+                    <h3 className="text-4xl font-black text-foreground uppercase tracking-tight mb-4">
                       {item.name}
                     </h3>
-                    <div className="flex gap-6 items-center flex-wrap">
+                    <div className="flex gap-6 items-center flex-wrap mb-3">
                       <div className="flex items-center gap-3">
                         <span className="text-3xl font-bold text-muted-foreground">
-                          {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)} {item.unit || 'u'}
+                          {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)} {unitDisplay}
                         </span>
                         <span className="text-2xl text-muted-foreground">×</span>
                         <span className="text-3xl font-semibold text-muted-foreground">
@@ -280,11 +280,11 @@ const CustomerDisplay = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-6xl font-black text-primary">
+                    <div className="text-7xl font-black text-primary mb-3">
                       {item.total.toFixed(2)} €
                     </div>
-                    <div className="text-xl text-muted-foreground mt-2">
-                      HT: {subtotal.toFixed(2)}€ + TVA: {vat.toFixed(2)}€
+                    <div className="text-2xl text-muted-foreground space-y-1">
+                      <div>TVA {item.vatRate}%: <span className="font-bold">{vat.toFixed(2)}€</span></div>
                     </div>
                   </div>
                 </div>
@@ -295,7 +295,7 @@ const CustomerDisplay = () => {
       </div>
 
       {/* Footer fixe avec total en bas à droite */}
-      <div className="bg-gradient-to-r from-primary to-accent shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary to-accent shadow-2xl z-10">
         <div className="max-w-7xl mx-auto p-8">
           <div className="flex justify-between items-center">
             {/* Infos TVA à gauche */}
