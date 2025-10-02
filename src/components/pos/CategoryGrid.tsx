@@ -47,32 +47,32 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
     const currentCategory = categories.find(c => c.id === selectedCategoryId);
     
     return (
-      <div className="space-y-3">
+      <div className="space-y-2">
         <Button 
           onClick={handleBack}
-          className="w-full h-12 bg-muted hover:bg-muted/80 text-foreground font-bold border-2 border-border transition-all duration-200 rounded-xl active:scale-95 shadow-sm"
+          className="w-full h-10 bg-muted hover:bg-muted/80 text-foreground font-bold border border-border transition-all duration-200 rounded-xl active:scale-95 shadow-sm text-xs"
         >
-          <ChevronLeft className="h-5 w-5 mr-2" />
+          <ChevronLeft className="h-4 w-4 mr-1" />
           RETOUR
         </Button>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2">
           {products.map((product) => (
             <Button
               key={product.id}
               onClick={() => onProductSelect(product)}
-              className="h-28 flex flex-col justify-center items-center p-3 bg-white hover:shadow-lg text-foreground border-2 hover:scale-[1.03] transition-all duration-200 rounded-xl active:scale-95 shadow-md group"
+              className="h-20 flex flex-col justify-center items-center p-2 bg-white hover:shadow-lg text-foreground border hover:scale-[1.03] transition-all duration-200 rounded-xl active:scale-95 shadow-md group"
               style={{ 
                 borderColor: currentCategory?.color || 'hsl(210, 100%, 50%)',
               }}
             >
-              <div className="p-2 rounded-lg mb-1.5 transition-colors" style={{ backgroundColor: `${currentCategory?.color}20` }}>
-                <Package2 className="h-5 w-5" style={{ color: currentCategory?.color }} />
+              <div className="p-1.5 rounded-lg mb-1 transition-colors" style={{ backgroundColor: `${currentCategory?.color}20` }}>
+                <Package2 className="h-4 w-4" style={{ color: currentCategory?.color }} />
               </div>
-              <span className="font-bold text-xs text-center line-clamp-2 mb-1 leading-tight">
+              <span className="font-bold text-xs text-center line-clamp-2 mb-0.5 leading-tight">
                 {product.name}
               </span>
-              <span className="text-primary text-base font-black">
+              <span className="text-primary text-sm font-black">
                 {product.price.toFixed(2)}€
               </span>
             </Button>

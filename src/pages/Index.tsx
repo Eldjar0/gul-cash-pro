@@ -593,10 +593,10 @@ const Index = () => {
                     key={index}
                     className="bg-white border border-border p-2 rounded-lg hover:border-primary/40 hover:shadow-md transition-all group"
                   >
-                    <div className="flex justify-between items-start mb-2.5">
+                    <div className="flex justify-between items-start mb-1">
                       <div className="flex-1 min-w-0">
-                        <div className="text-foreground font-bold text-sm truncate">{item.product.name}</div>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="text-foreground font-bold text-xs truncate">{item.product.name}</div>
+                        <div className="flex items-center gap-1 mt-0.5">
                           <Input
                             type="number"
                             step="0.01"
@@ -608,34 +608,34 @@ const Index = () => {
                                 handleUpdatePrice(index, newPrice);
                               }
                             }}
-                            className="h-6 w-16 text-xs px-1 text-center bg-background"
+                            className="h-5 w-14 text-xs px-1 text-center bg-background"
                           />
                           <span className="text-muted-foreground text-xs">€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}</span>
                         </div>
                         {item.discount && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <span className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded">
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <span className="text-xs bg-accent/20 text-accent px-1 py-0.5 rounded">
                               -{item.discount.type === 'percentage' ? `${item.discount.value}%` : `${item.discount.value}€`}
                             </span>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleRemoveDiscount(index)}
-                              className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
+                              className="h-4 w-4 p-0 text-muted-foreground hover:text-destructive"
                             >
                               ×
                             </Button>
                           </div>
                         )}
                       </div>
-                      <div className="flex flex-col gap-1 items-end ml-2">
+                      <div className="flex flex-col gap-0.5 items-end ml-1">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => handleRemoveItem(index)}
-                          className="h-8 w-8 hover:bg-destructive/20 text-destructive flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="h-6 w-6 hover:bg-destructive/20 text-destructive flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -644,33 +644,33 @@ const Index = () => {
                             setDiscountTarget({ type: 'item', index });
                             setDiscountDialogOpen(true);
                           }}
-                          className="h-8 w-8 hover:bg-accent/20 text-accent flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="h-6 w-6 hover:bg-accent/20 text-accent flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <Percent className="h-4 w-4" />
+                          <Percent className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <div className="flex gap-1.5 bg-muted/50 p-1 rounded-lg">
+                      <div className="flex gap-1 bg-muted/50 p-0.5 rounded-lg">
                         <Button
                           size="sm"
                           onClick={() => handleUpdateQuantity(index, Math.max(0.1, item.quantity - 1))}
-                          className="h-7 w-7 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary"
+                          className="h-6 w-6 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-xs"
                         >
                           -
                         </Button>
-                        <div className="px-2 flex items-center justify-center min-w-[2rem] font-bold text-sm">
+                        <div className="px-1 flex items-center justify-center min-w-[1.5rem] font-bold text-xs">
                           {item.quantity.toFixed(item.product.type === 'weight' ? 1 : 0)}
                         </div>
                         <Button
                           size="sm"
                           onClick={() => handleUpdateQuantity(index, item.quantity + 1)}
-                          className="h-7 w-7 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary"
+                          className="h-6 w-6 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-xs"
                         >
                           +
                         </Button>
                       </div>
-                      <div className="text-primary text-lg font-bold">
+                      <div className="text-primary text-sm font-bold">
                         {item.total.toFixed(2)}€
                       </div>
                     </div>
@@ -681,29 +681,29 @@ const Index = () => {
           </ScrollArea>
 
           {/* Totals - Modern design */}
-          <div className="bg-white border-t-2 border-border p-4 space-y-3 flex-shrink-0">
+          <div className="bg-white border-t-2 border-border p-2 space-y-2 flex-shrink-0">
             {/* Ticket/Facture toggle */}
-            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border">
-              <div className="flex items-center gap-3">
-                <Label htmlFor="invoice-mode" className="text-sm font-semibold cursor-pointer">
-                  {isInvoiceMode ? 'Mode Facture' : 'Mode Ticket'}
+            <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg border border-border">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="invoice-mode" className="text-xs font-semibold cursor-pointer">
+                  {isInvoiceMode ? 'Facture' : 'Ticket'}
                 </Label>
                 {isInvoiceMode && selectedCustomer && (
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground truncate max-w-[100px]">
                     {selectedCustomer.name}
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 {isInvoiceMode && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setCustomerDialogOpen(true)}
-                    className="h-7 text-xs"
+                    className="h-6 text-xs px-1"
                   >
-                    <Edit className="h-3 w-3 mr-1" />
-                    {selectedCustomer ? 'Modifier' : 'Client'}
+                    <Edit className="h-3 w-3 mr-0.5" />
+                    {selectedCustomer ? 'Modif' : 'Client'}
                   </Button>
                 )}
                 <Switch
@@ -800,45 +800,45 @@ const Index = () => {
                 Aperçu
               </Button>
             </div>
-            <div className="flex justify-between items-center text-primary text-3xl font-bold pt-3 border-t-2 border-border">
+            <div className="flex justify-between items-center text-primary text-xl font-bold pt-2 border-t-2 border-border">
               <span>TOTAL</span>
               <span>{totals.total.toFixed(2)}€</span>
             </div>
           </div>
 
           {/* Payment buttons - Modern SHOPCAISSE style */}
-          <div className="bg-background p-3 md:p-4 space-y-3 border-t-2 border-border flex-shrink-0">
+          <div className="bg-background p-2 space-y-2 border-t-2 border-border flex-shrink-0">
             <Button
               onClick={() => setPaymentDialogOpen(true)}
               disabled={cart.length === 0}
-              className="w-full h-14 md:h-16 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-12 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-base shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Euro className="mr-2 h-6 w-6" />
+              <Euro className="mr-2 h-5 w-5" />
               PAYER {cart.length > 0 && `${totals.total.toFixed(2)}€`}
             </Button>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5">
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-12 text-xs md:text-sm bg-white hover:bg-primary/5 text-primary border-2 border-primary font-semibold shadow-sm"
+                className="h-10 text-xs bg-white hover:bg-primary/5 text-primary border-2 border-primary font-semibold shadow-sm"
               >
-                <CreditCard className="mr-1 h-4 w-4" />
+                <CreditCard className="mr-1 h-3 w-3" />
                 CB
               </Button>
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-12 text-xs md:text-sm bg-white hover:bg-accent/5 text-accent border-2 border-accent font-semibold shadow-sm"
+                className="h-10 text-xs bg-white hover:bg-accent/5 text-accent border-2 border-accent font-semibold shadow-sm"
               >
-                <Banknote className="mr-1 h-4 w-4" />
+                <Banknote className="mr-1 h-3 w-3" />
                 ESP
               </Button>
               <Button
                 onClick={handleClearCart}
                 disabled={cart.length === 0}
-                className="h-12 text-xs md:text-sm bg-white hover:bg-destructive/5 text-destructive border-2 border-destructive font-semibold shadow-sm"
+                className="h-10 text-xs bg-white hover:bg-destructive/5 text-destructive border-2 border-destructive font-semibold shadow-sm"
               >
-                <Trash2 className="mr-1 h-4 w-4" />
+                <Trash2 className="mr-1 h-3 w-3" />
                 ANN
               </Button>
             </div>
@@ -848,12 +848,12 @@ const Index = () => {
         {/* COLONNE CENTRE - Calculatrice & Scan */}
         <div className="col-span-5 bg-background p-2 md:p-4 flex flex-col gap-2 md:gap-4 overflow-y-auto">
           {/* Zone de scan */}
-          <Card className="bg-white border border-border p-3 md:p-6 flex-shrink-0 shadow-sm">
+          <Card className="bg-white border border-border p-2 flex-shrink-0 shadow-sm">
             <form onSubmit={handleScanSubmit}>
-              <div className="flex items-center gap-2 md:gap-3">
-                <Scan className="h-6 w-6 md:h-8 md:w-8 text-primary animate-pulse flex-shrink-0" />
+              <div className="flex items-center gap-2">
+                <Scan className="h-5 w-5 text-primary animate-pulse flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-muted-foreground text-xs md:text-sm font-mono mb-1 md:mb-2 block">Rechercher produit</label>
+                  <label className="text-muted-foreground text-xs font-mono mb-1 block">Rechercher produit</label>
                   <Input
                     ref={scanInputRef}
                     value={scanInput}
@@ -863,34 +863,34 @@ const Index = () => {
                         setSearchResults([]);
                       }
                     }}
-                    placeholder="Code-barres, nom, catégorie..."
-                    className="h-10 md:h-12 bg-background border-input text-foreground text-base md:text-xl font-mono focus:border-primary"
+                    placeholder="Code-barres, nom..."
+                    className="h-9 bg-background border-input text-foreground text-base font-mono focus:border-primary"
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="h-10 md:h-12 px-4 bg-primary hover:bg-primary/90 text-white"
+                  className="h-9 px-3 bg-primary hover:bg-primary/90 text-white"
                 >
-                  <Scan className="h-5 w-5" />
+                  <Scan className="h-4 w-4" />
                 </Button>
               </div>
             </form>
           </Card>
 
           {/* Clavier numérique */}
-          <Card className="bg-white border border-border p-3 xl:p-4 flex-shrink-0 shadow-sm">
-            <div className="text-muted-foreground text-xs md:text-sm font-mono mb-2 md:mb-3">Quantité</div>
-            <div className="bg-muted p-2 md:p-4 rounded mb-2 md:mb-4 border border-border">
-              <div className="text-primary text-2xl md:text-4xl font-mono text-center font-bold">
+          <Card className="bg-white border border-border p-2 flex-shrink-0 shadow-sm">
+            <div className="text-muted-foreground text-xs font-mono mb-1">Quantité</div>
+            <div className="bg-muted p-2 rounded mb-2 border border-border">
+              <div className="text-primary text-2xl font-mono text-center font-bold">
                 {quantityInput}
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-2 md:gap-3">
+            <div className="grid grid-cols-3 gap-1.5">
               {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
                 <Button
                   key={key}
                   onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)}
-                  className="h-12 xl:h-16 text-lg xl:text-2xl font-bold bg-card hover:bg-muted text-foreground border-2 border-border font-mono transition-all active:scale-95 shadow-sm hover:shadow-md"
+                  className="h-10 text-base font-bold bg-card hover:bg-muted text-foreground border border-border font-mono transition-all active:scale-95 shadow-sm hover:shadow-md"
                 >
                   {key}
                 </Button>
