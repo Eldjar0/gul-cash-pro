@@ -24,7 +24,7 @@ import { DiscountDialog } from '@/components/pos/DiscountDialog';
 import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { Receipt } from '@/components/pos/Receipt';
-import { UnknownBarcodeDialog } from '@/components/pos/UnknownBarcodeDialog';
+
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
@@ -82,8 +82,6 @@ const Index = () => {
   const [isInvoiceMode, setIsInvoiceMode] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
-  const [unknownBarcodeDialogOpen, setUnknownBarcodeDialogOpen] = useState(false);
-  const [unknownBarcode, setUnknownBarcode] = useState('');
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
   const [customerDisplayWindow, setCustomerDisplayWindow] = useState<Window | null>(null);
   const [displayChannel] = useState(() => new BroadcastChannel('customer_display'));
@@ -284,11 +282,16 @@ const Index = () => {
       return;
     }
 
-    // Si inconnu, ouvrir le dialogue avec le barcode (priorité aux chiffres si disponibles)
+    // Si inconnu, afficher un toast avec action pour créer
     const barcodeToUse = normalizedDigits.length >= 3 ? normalizedDigits : normalized;
     if (DEBUG_SCAN) console.log('[SCAN] Unknown barcode:', barcodeToUse);
-    setUnknownBarcode(barcodeToUse);
-    setUnknownBarcodeDialogOpen(true);
+    toast.error('Code-barres inconnu', {
+      description: `Aucun produit lié à ${barcodeToUse}`,
+      action: {
+        label: 'Créer produit',
+        onClick: () => navigate(`/products?new=1&barcode=${encodeURIComponent(barcodeToUse)}`),
+      },
+    });
     setScanInput("");
   };
 
@@ -570,9 +573,13 @@ const Index = () => {
 
     // Si aucun résultat et que c'est un scan direct (pas de résultats intermédiaires)
     if (results.length === 0 && searchTerm.length >= 3) {
-      // Ouvrir le dialog pour code-barres inconnu
-      setUnknownBarcode(searchTerm);
-      setUnknownBarcodeDialogOpen(true);
+      toast.error('Aucun produit trouvé', {
+        description: `Code saisi: ${searchTerm}`,
+        action: {
+          label: 'Créer produit',
+          onClick: () => navigate(`/products?new=1&barcode=${encodeURIComponent(searchTerm.replace(/\D+/g, ''))}`),
+        },
+      });
       setScanInput('');
       return;
     }
@@ -1426,12 +1433,6 @@ const Index = () => {
         onSelectCustomer={handleSelectCustomer}
       />
 
-      <UnknownBarcodeDialog
-        open={unknownBarcodeDialogOpen}
-        onClose={() => setUnknownBarcodeDialogOpen(false)}
-        barcode={unknownBarcode}
-        onProductLinked={handleProductLinked}
-      />
 
       {/* Confirmation d'impression */}
       <Dialog open={printConfirmDialogOpen} onOpenChange={setPrintConfirmDialogOpen}>

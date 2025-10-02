@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -43,6 +43,7 @@ import { toast } from 'sonner';
 
 export default function Products() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: products = [], isLoading } = useProducts();
   const { data: categories = [] } = useCategories();
   const createProduct = useCreateProduct();
@@ -125,6 +126,21 @@ export default function Products() {
     }
     setDialogOpen(true);
   };
+
+  // Ouvrir automatiquement le formulaire si on arrive avec ?new=1&barcode=XXX
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const shouldOpen = params.get('new');
+    const bc = params.get('barcode');
+    if (shouldOpen && bc) {
+      const digitsOnly = bc.replace(/\D+/g, '');
+      handleOpenDialog();
+      setFormData((prev) => ({ ...prev, barcode: digitsOnly }));
+      setTimeout(() => barcodeInputRef.current?.focus(), 100);
+      // Nettoyer l'URL pour éviter les réouvertures
+      navigate('/products', { replace: true });
+    }
+  }, [location.search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
