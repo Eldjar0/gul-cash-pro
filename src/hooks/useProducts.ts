@@ -34,6 +34,10 @@ export const useProducts = () => {
       if (error) throw error;
       return data as Product[];
     },
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+    refetchInterval: (data) => (Array.isArray(data) && data.length > 0 ? false : 4000),
   });
 };
 
@@ -55,6 +59,10 @@ export const useProductsByCategory = (categoryId?: string) => {
       return data as Product[];
     },
     enabled: !!categoryId,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+    refetchInterval: (data) => (Array.isArray(data) && data.length > 0 ? false : 4000),
   });
 };
 
