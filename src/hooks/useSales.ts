@@ -216,24 +216,19 @@ export const useSale = (id: string) => {
   });
 };
 
-export const useDeleteSale = () => {
+export const useCancelSale = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (saleId: string) => {
-      // Supprimer d'abord les items de vente
-      const { error: itemsError } = await supabase
-        .from('sale_items')
-        .delete()
-        .eq('sale_id', saleId);
-
-      if (itemsError) throw itemsError;
-
-      // Supprimer la vente
+    mutationFn: async ({ saleId, reason }: { saleId: string; reason: string }) => {
+      // Marquer la vente comme annulée au lieu de la supprimer (conformité légale belge)
       const { error: saleError } = await supabase
         .from('sales')
-        .delete()
+        .update({
+          is_cancelled: true,
+          notes: reason ? `ANNULÉE: ${reason}` : 'ANNULÉE',
+        })
         .eq('id', saleId);
 
       if (saleError) throw saleError;
@@ -241,20 +236,23 @@ export const useDeleteSale = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] });
       toast({
-        title: 'Vente supprimée',
-        description: 'La vente a été supprimée définitivement.',
+        title: 'Vente annulée',
+        description: 'La vente a été marquée comme annulée (conservation légale).',
       });
     },
     onError: (error: Error) => {
-      console.error('Error deleting sale:', error);
+      console.error('Error cancelling sale:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de supprimer la vente.',
+        description: 'Impossible d\'annuler la vente.',
         variant: 'destructive',
       });
     },
   });
 };
+
+// Keep for backwards compatibility but deprecated
+export const useDeleteSale = useCancelSale;
 
 export const useUpdateSale = () => {
   const queryClient = useQueryClient();

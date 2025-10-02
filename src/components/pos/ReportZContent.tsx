@@ -192,12 +192,21 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
 
       <div style={{ borderTop: '3px double #000', margin: '8px 0' }}></div>
 
-      {/* Conformité légale - OBLIGATOIRE */}
-      <div style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#F3F4F6', padding: '6px', border: '1px solid #000', marginBottom: '6px' }}>
-        <div style={{ fontWeight: '900', marginBottom: '2px', textAlign: 'center' }}>⚖️ CONFORMITE LEGALE BE 2026</div>
-        <div style={{ fontWeight: '900', fontSize: '10px' }}>
-          ✓ Système de caisse certifié
+      {/* AVERTISSEMENT NON-FISCAL OBLIGATOIRE */}
+      <div style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#FEE2E2', padding: '8px', border: '2px solid #DC2626', marginBottom: '6px' }}>
+        <div style={{ fontWeight: '900', marginBottom: '4px', textAlign: 'center', fontSize: '13px', color: '#DC2626' }}>
+          ⚠️ RAPPORT NON-FISCAL
         </div>
+        <div style={{ fontWeight: '900', fontSize: '12px', textAlign: 'center', marginBottom: '4px' }}>
+          USAGE INTERNE
+        </div>
+        <div style={{ fontWeight: '900', fontSize: '9px', textAlign: 'center', color: '#666', lineHeight: '1.3' }}>
+          Ce rapport ne remplace pas le carnet de caisse papier exigé par le SPF Finances. Le logiciel n'est pas certifié fiscalement et ne peut servir de preuve officielle.
+        </div>
+      </div>
+
+      {/* Détails techniques */}
+      <div style={{ fontSize: '10px', fontWeight: '900', backgroundColor: '#F3F4F6', padding: '6px', border: '1px solid #000', marginBottom: '6px' }}>
         <div style={{ fontWeight: '900', fontSize: '10px' }}>
           ✓ Rapport Z irréversible
         </div>
@@ -211,7 +220,7 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
           ✓ État de caisse complet
         </div>
         <div style={{ fontWeight: '900', fontSize: '10px' }}>
-          ✓ Archivage 7 ans obligatoire
+          ✓ Archivage 7 ans recommandé
         </div>
       </div>
 
@@ -226,7 +235,7 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
           www.JLprod.be
         </div>
         <div className="text-center" style={{ fontSize: '10px', color: '#999', fontWeight: '900', marginTop: '4px' }}>
-          Document fiscal - Conservation obligatoire
+          Document non-fiscal - Conservation interne recommandée
         </div>
       </div>
     </div>

@@ -18,7 +18,7 @@ import {
   Trash2,
   Edit,
 } from 'lucide-react';
-import { useSales, useDeleteSale } from '@/hooks/useSales';
+import { useSales, useCancelSale } from '@/hooks/useSales';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,9 +54,10 @@ export default function Sales() {
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [saleToDelete, setSaleToDelete] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
 
   const { data: sales = [], isLoading } = useSales();
-  const deleteSale = useDeleteSale();
+  const cancelSale = useCancelSale();
 
   const handleDeleteClick = (saleId: string) => {
     setSaleToDelete(saleId);
@@ -65,9 +66,13 @@ export default function Sales() {
 
   const handleDeleteConfirm = () => {
     if (saleToDelete) {
-      deleteSale.mutate(saleToDelete);
+      cancelSale.mutate({ 
+        saleId: saleToDelete, 
+        reason: cancelReason || 'Aucune raison fournie' 
+      });
       setDeleteDialogOpen(false);
       setSaleToDelete(null);
+      setCancelReason('');
     }
   };
 
@@ -359,23 +364,38 @@ export default function Sales() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => {
+        setDeleteDialogOpen(open);
+        if (!open) setCancelReason('');
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette vente sera définitivement supprimée de la base de données.
-              Cette action est irréversible.
+            <AlertDialogTitle>Annuler cette vente</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                Conformément à la législation belge, cette vente sera marquée comme "ANNULÉE" 
+                mais restera dans l'historique (conservation obligatoire).
+              </p>
+              <div>
+                <label className="text-sm font-medium">Raison de l'annulation (obligatoire) :</label>
+                <Input
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Ex: Erreur d'encodage, produit abîmé..."
+                  className="mt-1"
+                />
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
+              disabled={!cancelReason.trim()}
               className="bg-destructive hover:bg-destructive/90"
             >
-              Supprimer
+              Marquer comme annulée
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

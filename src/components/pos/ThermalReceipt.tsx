@@ -286,6 +286,26 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         <div style={{ fontSize: '10.9px', marginTop: '6px', color: '#666', fontWeight: '900' }}>
           www.JLprod.be
         </div>
+        
+        {/* Mention légale obligatoire */}
+        <div style={{ 
+          marginTop: '8px', 
+          paddingTop: '8px', 
+          borderTop: '2px solid #000',
+          backgroundColor: '#F3F4F6',
+          padding: '6px',
+          margin: '8px -8px 0 -8px'
+        }}>
+          <div style={{ fontSize: '11px', fontWeight: '900', marginBottom: '2px' }}>
+            {isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
+          </div>
+          <div style={{ fontSize: '10px', fontWeight: '900', marginBottom: '2px' }}>
+            POUR INFORMATION UNIQUEMENT
+          </div>
+          <div style={{ fontSize: '8px', fontWeight: '800', color: '#666' }}>
+            Ce document ne remplace pas le carnet de caisse officiel exigé par le SPF Finances.
+          </div>
+        </div>
       </div>
     </div>
   );

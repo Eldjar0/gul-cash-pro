@@ -198,6 +198,19 @@ export function Receipt({ sale }: ReceiptProps) {
             <p className="text-xs font-bold">A BIENTOT</p>
           </div>
         )}
+        
+        {/* Mention légale obligatoire */}
+        <div className="mt-3 pt-3 border-t-2 border-black">
+          <p className="text-[9px] font-black uppercase">
+            {isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
+          </p>
+          <p className="text-[9px] font-bold">
+            POUR INFORMATION UNIQUEMENT
+          </p>
+          <p className="text-[8px] mt-1">
+            Ce document ne remplace pas le carnet de caisse officiel exigé par le SPF Finances.
+          </p>
+        </div>
       </div>
     </div>
   );
