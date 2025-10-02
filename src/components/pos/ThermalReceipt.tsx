@@ -220,6 +220,9 @@ export function printThermalReceipt() {
   const receiptContent = document.getElementById('thermal-receipt');
   if (!receiptContent) return;
 
+  // Commande ESC/POS pour ouvrir le tiroir-caisse: ESC p 0 25 250
+  const cashDrawerCommand = String.fromCharCode(27, 112, 0, 25, 250);
+
   printWindow.document.write(`
     <!DOCTYPE html>
     <html>
@@ -309,6 +312,7 @@ export function printThermalReceipt() {
         </style>
       </head>
       <body>
+        <pre style="font-family:monospace;font-size:1px;margin:0;padding:0;position:absolute;opacity:0;">${cashDrawerCommand}</pre>
         ${receiptContent.innerHTML}
       </body>
     </html>

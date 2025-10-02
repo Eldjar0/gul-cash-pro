@@ -17,7 +17,6 @@ import {
   Eye,
   History,
   Settings as SettingsIcon,
-  DollarSign,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -796,44 +795,6 @@ const Index = () => {
     setAppliedPromoCode({ code, type, value });
   };
 
-  // Fonction pour ouvrir le tiroir-caisse
-  const openCashDrawer = () => {
-    // Créer un contenu HTML avec la commande ESC/POS encodée
-    // Cette méthode utilise l'impression système standard
-    const escCommand = String.fromCharCode(27, 112, 0, 25, 250); // ESC p 0 25 250
-    
-    const printWindow = window.open('', '', 'width=1,height=1');
-    if (!printWindow) {
-      toast.error('Erreur', {
-        description: 'Impossible d\'ouvrir la fenêtre d\'impression. Vérifiez les popups.',
-      });
-      return;
-    }
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Ouverture tiroir-caisse</title>
-        </head>
-        <body style="margin:0;padding:0;">
-          <pre style="font-family:monospace;font-size:1px;margin:0;padding:0;">${escCommand}</pre>
-        </body>
-      </html>
-    `);
-    
-    printWindow.document.close();
-    
-    setTimeout(() => {
-      printWindow.print();
-      setTimeout(() => {
-        printWindow.close();
-      }, 100);
-    }, 250);
-
-    toast.info('Commande d\'impression envoyée', {
-      description: 'Sélectionnez votre imprimante POS pour ouvrir le tiroir',
-    });
-  };
 
   const handleApplyDiscount = (type: DiscountType, value: number) => {
     if (!discountTarget) return;
@@ -956,13 +917,6 @@ const Index = () => {
             >
               <Eye className="h-4 w-4 mr-2" />
               Affichage
-            </Button>
-            <Button
-              onClick={openCashDrawer}
-              className="bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white h-10 px-4 shadow-md"
-            >
-              <DollarSign className="h-4 w-4 mr-2" />
-              Tiroir
             </Button>
           </div>
 
