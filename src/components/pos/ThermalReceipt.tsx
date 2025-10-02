@@ -215,18 +215,6 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
 
       <div style={{ borderTop: '1.4px solid #000', margin: '6px 0' }}></div>
 
-      {/* Détail TVA par taux (comme Lidl) - CENTRÉ */}
-      <div className="text-center" style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900' }}>
-        <div style={{ fontWeight: '900', marginBottom: '2px' }}>DETAIL TVA:</div>
-        {Object.entries(vatByRate).map(([rate, amounts]) => (
-          <div key={rate} style={{ marginBottom: '1px', fontSize: '10.9px' }}>
-            {parseFloat(rate).toFixed(0)}% sur {amounts.totalHT.toFixed(2)}€ = {amounts.totalVAT.toFixed(2)}€
-          </div>
-        ))}
-      </div>
-
-      <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
-
       {/* Totaux */}
       <div style={{ fontSize: '13.7px', marginBottom: '4px', fontWeight: '900', paddingRight: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px', gap: '3px' }}>
