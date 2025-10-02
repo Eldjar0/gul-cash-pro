@@ -222,18 +222,12 @@ const Index = () => {
     // Intentionnellement vide
   }, []);
 
-  // Live search with debounce
+  // Recherche manuelle uniquement (désactivé auto-search)
   useEffect(() => {
+    // Vider les résultats si le champ est vide
     if (!scanInput.trim()) {
       setSearchResults([]);
-      return;
     }
-
-    const timer = setTimeout(() => {
-      handleSearch();
-    }, 300);
-
-    return () => clearTimeout(timer);
   }, [scanInput]);
 
   // Normalisation AZERTY → chiffres pour les codes-barres
@@ -521,10 +515,13 @@ const Index = () => {
       return;
     }
 
+    const normalizedInput = normalizeBarcode(scanInput);
     const searchTerm = scanInput.toLowerCase();
     
-    // Recherche exacte par code-barre d'abord
-    const exactBarcode = products.find(p => p.barcode?.toLowerCase() === searchTerm);
+    // Recherche exacte par code-barre normalisé d'abord
+    const exactBarcode = products.find(p => 
+      p.barcode && normalizeBarcode(p.barcode) === normalizedInput
+    );
     if (exactBarcode) {
       // Ajout direct au panier
       handleProductSelect(exactBarcode);
@@ -533,7 +530,9 @@ const Index = () => {
 
     // Si pas de correspondance exacte, recherche générale
     let results = products.filter((p) => {
+      const normalizedBarcode = p.barcode ? normalizeBarcode(p.barcode) : '';
       return (
+        normalizedBarcode.includes(normalizedInput) ||
         p.barcode?.toLowerCase().includes(searchTerm) ||
         p.name.toLowerCase().includes(searchTerm) ||
         p.id.toLowerCase().includes(searchTerm) ||
@@ -1278,8 +1277,9 @@ const Index = () => {
                       ref={scanInputRef}
                       value={scanInput}
                       onChange={(e) => {
-                        setScanInput(e.target.value);
-                        if (!e.target.value.trim()) {
+                        const normalized = normalizeBarcode(e.target.value);
+                        setScanInput(normalized);
+                        if (!normalized.trim()) {
                           setSearchResults([]);
                         }
                       }}
