@@ -88,6 +88,44 @@ const Index = () => {
   const [customerDisplayWindow, setCustomerDisplayWindow] = useState<Window | null>(null);
   const [displayChannel] = useState(() => new BroadcastChannel('customer_display'));
 
+  // Calculate totals - defined before useEffect to avoid initialization errors
+  const getTotals = () => {
+    const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+    const totalVat = cart.reduce((sum, item) => sum + item.vatAmount, 0);
+    const itemDiscounts = cart.reduce((sum, item) => {
+      if (item.discount) {
+        const discountAmount =
+          item.discount.type === 'percentage'
+            ? (item.subtotal * item.discount.value) / 100
+            : item.discount.value;
+        return sum + discountAmount;
+      }
+      return sum;
+    }, 0);
+    
+    let total = cart.reduce((sum, item) => sum + item.total, 0);
+    let globalDiscountAmount = 0;
+    let promoCodeAmount = 0;
+    
+    if (globalDiscount) {
+      globalDiscountAmount = globalDiscount.type === 'percentage'
+        ? (total * globalDiscount.value) / 100
+        : globalDiscount.value;
+      total -= globalDiscountAmount;
+    }
+    
+    if (appliedPromoCode) {
+      promoCodeAmount = appliedPromoCode.type === 'percentage'
+        ? (total * appliedPromoCode.value) / 100
+        : appliedPromoCode.value;
+      total -= promoCodeAmount;
+    }
+    
+    const totalDiscount = itemDiscounts + globalDiscountAmount + promoCodeAmount;
+    
+    return { subtotal, totalVat, totalDiscount, total };
+  };
+
   // Synchroniser l'affichage client avec le panier
   useEffect(() => {
     const updateCustomerDisplay = () => {
@@ -590,42 +628,6 @@ const Index = () => {
     toast.success('Prix modifié');
   };
 
-  const getTotals = () => {
-    const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
-    const totalVat = cart.reduce((sum, item) => sum + item.vatAmount, 0);
-    const itemDiscounts = cart.reduce((sum, item) => {
-      if (item.discount) {
-        const discountAmount =
-          item.discount.type === 'percentage'
-            ? (item.subtotal * item.discount.value) / 100
-            : item.discount.value;
-        return sum + discountAmount;
-      }
-      return sum;
-    }, 0);
-    
-    let total = cart.reduce((sum, item) => sum + item.total, 0);
-    let globalDiscountAmount = 0;
-    let promoCodeAmount = 0;
-    
-    if (globalDiscount) {
-      globalDiscountAmount = globalDiscount.type === 'percentage'
-        ? (total * globalDiscount.value) / 100
-        : globalDiscount.value;
-      total -= globalDiscountAmount;
-    }
-    
-    if (appliedPromoCode) {
-      promoCodeAmount = appliedPromoCode.type === 'percentage'
-        ? (total * appliedPromoCode.value) / 100
-        : appliedPromoCode.value;
-      total -= promoCodeAmount;
-    }
-    
-    const totalDiscount = itemDiscounts + globalDiscountAmount + promoCodeAmount;
-    
-    return { subtotal, totalVat, totalDiscount, total };
-  };
 
   const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile', amountPaid?: number) => {
     if (!user) {
