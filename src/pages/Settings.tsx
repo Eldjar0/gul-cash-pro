@@ -87,14 +87,33 @@ export default function Settings() {
   const saveCompanySettings = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase
+      // Vérifier si l'entrée existe
+      const { data: existing } = await supabase
         .from('settings')
-        .upsert({
-          key: 'company_info',
-          value: companySettings as any,
-        });
+        .select('id')
+        .eq('key', 'company_info')
+        .single();
 
-      if (error) throw error;
+      if (existing) {
+        // Mettre à jour
+        const { error } = await supabase
+          .from('settings')
+          .update({ value: companySettings as any })
+          .eq('key', 'company_info');
+        
+        if (error) throw error;
+      } else {
+        // Insérer
+        const { error } = await supabase
+          .from('settings')
+          .insert({
+            key: 'company_info',
+            value: companySettings as any,
+          });
+        
+        if (error) throw error;
+      }
+
       toast.success('Paramètres entreprise enregistrés');
     } catch (error) {
       console.error('Error saving company settings:', error);
@@ -107,14 +126,33 @@ export default function Settings() {
   const saveDisplaySettings = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase
+      // Vérifier si l'entrée existe
+      const { data: existing } = await supabase
         .from('settings')
-        .upsert({
-          key: 'display_settings',
-          value: displaySettings as any,
-        });
+        .select('id')
+        .eq('key', 'display_settings')
+        .maybeSingle();
 
-      if (error) throw error;
+      if (existing) {
+        // Mettre à jour
+        const { error } = await supabase
+          .from('settings')
+          .update({ value: displaySettings as any })
+          .eq('key', 'display_settings');
+        
+        if (error) throw error;
+      } else {
+        // Insérer
+        const { error } = await supabase
+          .from('settings')
+          .insert({
+            key: 'display_settings',
+            value: displaySettings as any,
+          });
+        
+        if (error) throw error;
+      }
+
       toast.success('Paramètres d\'affichage enregistrés');
     } catch (error) {
       console.error('Error saving display settings:', error);
