@@ -90,11 +90,11 @@ const Index = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Désactivation de l'auto-focus sur la barre de recherche pour éviter que les scans
+  // écrivent des caractères visibles dans le champ
   useEffect(() => {
-    if (scanInputRef.current) {
-      scanInputRef.current.focus();
-    }
-  }, [cart]);
+    // Intentionnellement vide
+  }, []);
 
   // Live search with debounce
   useEffect(() => {
@@ -235,6 +235,78 @@ const Index = () => {
 
     setSearchResults(results);
   };
+
+  // Capture et traitement des scans de lecteur code-barres (HID)
+  const handleBarcodeScan = (raw: string) => {
+    const term = raw.trim();
+    if (!term) return;
+
+    const searchTerm = term.toLowerCase();
+
+    const exactBarcode = products?.find(
+      (p) => p.barcode?.toLowerCase() === searchTerm
+    );
+
+    // Essai avec version "nettoyée" (chiffres uniquement) si nécessaire
+    const cleaned = term.replace(/\D+/g, "");
+    const exactClean = !exactBarcode && cleaned
+      ? products?.find((p) => p.barcode?.toLowerCase() === cleaned.toLowerCase())
+      : undefined;
+
+    const found = exactBarcode || exactClean;
+
+    if (found) {
+      handleProductSelect(found);
+      setScanInput("");
+      setSearchResults([]);
+      return;
+    }
+
+    // Si inconnu, ouvrir le dialogue dédié
+    if (term.length >= 3) {
+      setUnknownBarcode(term);
+      setUnknownBarcodeDialogOpen(true);
+      setScanInput("");
+    }
+  };
+
+  // Écoute globale du clavier pour détecter un scan rapide terminé par Entrée
+  useEffect(() => {
+    const bufferRef = { value: "" } as { value: string };
+    let lastTime = 0;
+
+    const handler = (e: KeyboardEvent) => {
+      const now = Date.now();
+      const delta = now - lastTime;
+
+      // Si délai trop long entre 2 touches, on considère un nouveau buffer
+      if (delta > 120) bufferRef.value = "";
+      lastTime = now;
+
+      if (e.key === "Enter") {
+        const payload = bufferRef.value;
+        bufferRef.value = "";
+        if (payload.length >= 3) {
+          e.preventDefault();
+          handleBarcodeScan(payload);
+        }
+        return;
+      }
+
+      // On n'empile que les touches "caractère"
+      if (e.key.length === 1) {
+        bufferRef.value += e.key;
+
+        // Optionnel: si beaucoup de caractères très vite sans Enter, on tente quand même
+        if (bufferRef.value.length >= 8 && delta < 30) {
+          // On attend Enter pour être sûr — ne rien faire ici
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handler, { capture: true });
+    return () => window.removeEventListener("keydown", handler, { capture: true } as any);
+  }, [products]);
 
   const handleProductLinked = (productId: string) => {
     const product = products?.find(p => p.id === productId);
