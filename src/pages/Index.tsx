@@ -230,54 +230,37 @@ const Index = () => {
           buffer = "";
           isScanning = false;
           scanStartTime = 0;
+          editableTarget = null;
+          editableInitialValue = '';
+          editableInitialStart = null;
+          editableInitialEnd = null;
         }
 
-        // Première touche: on démarre un candidat scan, même si la cible est éditable (on restaurera si confirmé)
+        // Première touche: démarrer le scan SI PAS dans un champ éditable
         if (buffer.length === 0) {
-          if (isEditableField(e.target) && e.target instanceof HTMLElement) {
-            const el = e.target as HTMLInputElement | HTMLTextAreaElement;
-            if (!el.readOnly && !el.disabled && 'value' in el) {
-              editableTarget = el;
-              // Sauvegarder l'état initial pour annuler le premier caractère si c'est un scan
-              editableInitialValue = (el as any).value ?? '';
-              try {
-                editableInitialStart = (el as any).selectionStart ?? null;
-                editableInitialEnd = (el as any).selectionEnd ?? null;
-              } catch {}
-            }
+          // Si l'utilisateur tape dans un champ éditable, ne PAS intercepter
+          if (isEditableField(e.target)) {
+            return;
           }
+          
+          // Sinon, c'est probablement un scan, bloquer dès maintenant
           scanStartTime = now;
-          // On ne confirme pas encore isScanning, on attend la 2e touche rapide
-          isScanning = false;
-          if (DEBUG_SCAN) console.log('[SCAN] Start candidate');
-        }
-
-        // Deuxième touche: si < 50ms, confirmer que c'est un scan
-        if (buffer.length === 1 && delta < 50) {
           isScanning = true;
-          // Annuler le premier caractère injecté dans un champ éditable
-          if (editableTarget) {
-            try {
-              (editableTarget as any).value = editableInitialValue;
-              if (
-                typeof editableInitialStart === 'number' &&
-                typeof editableInitialEnd === 'number' &&
-                (editableTarget as any).setSelectionRange
-              ) {
-                (editableTarget as any).setSelectionRange(editableInitialStart, editableInitialEnd);
-              }
-            } catch {}
-          }
-          // Éviter que ce 2e caractère s'injecte
           e.preventDefault();
           e.stopPropagation();
-          if (DEBUG_SCAN) console.log('[SCAN] Confirmed (fast typing detected)');
+          if (DEBUG_SCAN) console.log('[SCAN] Start detected');
+        }
+
+        // Deuxième touche: si < 50ms, confirmer à 100% que c'est un scan
+        if (buffer.length === 1 && delta < 50) {
+          isScanning = true;
+          if (DEBUG_SCAN) console.log('[SCAN] Confirmed (fast typing)');
         }
 
         buffer += e.key;
 
-        // En mode scan, empêcher l'écriture dans les champs
-        if (isScanning) {
+        // En mode scan, empêcher l'écriture dans les champs (caractères suivants)
+        if (isScanning && buffer.length > 1) {
           e.preventDefault();
           e.stopPropagation();
         }
