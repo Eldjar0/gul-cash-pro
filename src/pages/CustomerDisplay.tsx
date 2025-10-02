@@ -179,7 +179,6 @@ const CustomerDisplay = () => {
       <div className="min-h-screen bg-white flex items-center justify-center p-8">
         <div className="text-center space-y-8 animate-fade-in">
           <img src={logo} alt="Logo" className="w-64 h-64 mx-auto object-contain animate-scale-in" />
-          <ShoppingBag className="w-32 h-32 mx-auto animate-pulse text-primary/40" />
           <div className="space-y-4">
             <h1 className="text-7xl font-black animate-scale-in text-foreground tracking-tight">
               Bienvenue
