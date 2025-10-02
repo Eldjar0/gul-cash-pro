@@ -185,6 +185,7 @@ export type Database = {
           opening_amount: number
           report_date: string
           sales_count: number
+          serial_number: string | null
           total_card: number
           total_cash: number
           total_mobile: number
@@ -198,6 +199,7 @@ export type Database = {
           opening_amount?: number
           report_date: string
           sales_count?: number
+          serial_number?: string | null
           total_card?: number
           total_cash?: number
           total_mobile?: number
@@ -211,6 +213,7 @@ export type Database = {
           opening_amount?: number
           report_date?: string
           sales_count?: number
+          serial_number?: string | null
           total_card?: number
           total_cash?: number
           total_mobile?: number
@@ -493,6 +496,10 @@ export type Database = {
     Functions: {
       generate_sale_number: {
         Args: { is_invoice_param?: boolean }
+        Returns: string
+      }
+      generate_z_serial_number: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
     }

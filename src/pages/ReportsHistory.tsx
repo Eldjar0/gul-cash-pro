@@ -59,6 +59,7 @@ export default function ReportsHistory() {
       total_mobile: report.total_mobile,
       sales_count: report.sales_count,
       cashier_id: report.cashier_id,
+      serial_number: report.serial_number,
       created_at: report.created_at,
     };
 

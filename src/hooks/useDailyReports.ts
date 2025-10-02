@@ -13,6 +13,7 @@ export interface DailyReport {
   total_mobile: number;
   sales_count: number;
   cashier_id: string | null;
+  serial_number: string | null;
   created_at: string;
 }
 
@@ -117,6 +118,12 @@ export function useCloseDay() {
       closingAmount: number;
       reportData: ReportData;
     }) => {
+      // Générer le numéro de série
+      const { data: serialNumber, error: serialError } = await supabase
+        .rpc('generate_z_serial_number');
+
+      if (serialError) throw serialError;
+
       const { data, error } = await supabase
         .from('daily_reports')
         .update({
@@ -126,6 +133,7 @@ export function useCloseDay() {
           total_card: reportData.totalCard,
           total_mobile: reportData.totalMobile,
           sales_count: reportData.salesCount,
+          serial_number: serialNumber,
         })
         .eq('id', reportId)
         .select()

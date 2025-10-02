@@ -77,7 +77,7 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
       {/* Info légale obligatoire */}
       <div style={{ fontSize: '12px', fontWeight: '900', marginBottom: '6px', backgroundColor: '#F3F4F6', padding: '6px', border: '1px solid #000' }}>
         <div style={{ fontWeight: '900' }}>N° CAISSE: CAISSE-001</div>
-        <div style={{ fontWeight: '900' }}>N° SERIE: {Date.now().toString().slice(-8)}</div>
+        <div style={{ fontWeight: '900' }}>N° SERIE: {todayReport?.serial_number || 'NON ATTRIBUÉ'}</div>
       </div>
 
       <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }}></div>
