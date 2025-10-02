@@ -207,9 +207,6 @@ export function Receipt({ sale }: ReceiptProps) {
           <p className="text-[9px] font-bold">
             POUR INFORMATION UNIQUEMENT
           </p>
-          <p className="text-[8px] mt-1">
-            Ce document ne remplace pas le carnet de caisse officiel exigé par le SPF Finances.
-          </p>
         </div>
       </div>
     </div>
