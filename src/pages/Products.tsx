@@ -381,20 +381,31 @@ export default function Products() {
                   autoComplete="off"
                   value={formData.barcode}
                   onChange={(e) => {
-                    // Utiliser la même normalisation que le système de scan
-                    const azertyMap: Record<string, string> = {
-                      '&': '1', '!': '1', 'é': '2', '@': '2', '"': '3', '#': '3',
-                      "'": '4', '$': '4', '(': '5', '%': '5', '-': '6', '^': '6',
-                      'è': '7', '_': '8', '*': '8', 'ç': '9', 'à': '0', ')': '0',
-                      '§': '6'
-                    };
-                    const normalized = e.target.value.split('').map(c => azertyMap[c] ?? c).join('');
-                    const digitsOnly = normalized.replace(/\D+/g, '');
+                    // Fallback: copier-coller → ne garder que les chiffres
+                    const digitsOnly = e.target.value.replace(/\D+/g, '');
                     setFormData({ ...formData, barcode: digitsOnly });
                   }}
                   onKeyDown={(e) => {
-                    // Empêcher le système de scan global
+                    // Empêcher le système de scan global et capturer les vrais chiffres via code physique
                     e.stopPropagation();
+                    const code = e.code;
+                    let digit = '';
+                    if (code.startsWith('Digit')) {
+                      digit = code.replace('Digit', '');
+                    } else if (code.startsWith('Numpad')) {
+                      digit = code.replace('Numpad', '');
+                    }
+                    if (digit && /^[0-9]$/.test(digit)) {
+                      e.preventDefault();
+                      setFormData({ ...formData, barcode: (formData.barcode || '') + digit });
+                    } else if (e.key === 'Backspace') {
+                      e.preventDefault();
+                      setFormData({ ...formData, barcode: (formData.barcode || '').slice(0, -1) });
+                    } else if (e.key === 'Enter' || e.key === 'Tab') {
+                      return; // laisser passer
+                    } else if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
+                      e.preventDefault(); // bloquer symboles
+                    }
                   }}
                   placeholder="Ex: 3760123456789"
                 />
