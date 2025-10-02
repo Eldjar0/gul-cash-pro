@@ -91,18 +91,44 @@ const Index = () => {
   // Synchroniser l'affichage client avec le panier
   useEffect(() => {
     const updateCustomerDisplay = () => {
+      const totals = getTotals();
       const displayItems = cart.map(item => ({
         name: item.product.name,
         quantity: item.quantity,
         price: item.custom_price ?? item.product.price,
+        originalPrice: item.product.price,
         vatRate: item.product.vat_rate,
         total: item.total,
+        discount: item.discount ? {
+          type: item.discount.type,
+          value: item.discount.value,
+        } : undefined,
+        hasCustomPrice: item.custom_price !== undefined && item.custom_price !== item.product.price,
       }));
 
       const state = {
         items: displayItems,
         status: cart.length > 0 ? 'shopping' : 'idle',
         timestamp: Date.now(),
+        globalDiscount: globalDiscount ? {
+          type: globalDiscount.type,
+          value: globalDiscount.value,
+        } : undefined,
+        promoCode: appliedPromoCode ? {
+          code: appliedPromoCode.code,
+          type: appliedPromoCode.type,
+          value: appliedPromoCode.value,
+        } : undefined,
+        totals: {
+          subtotal: totals.subtotal,
+          totalVat: totals.totalVat,
+          totalDiscount: totals.totalDiscount,
+          total: totals.total,
+        },
+        isInvoice: isInvoiceMode,
+        customer: selectedCustomer ? {
+          name: selectedCustomer.name,
+        } : undefined,
       };
 
       console.log('[POS] Sending to customer display:', state);
@@ -119,7 +145,7 @@ const Index = () => {
     };
 
     updateCustomerDisplay();
-  }, [cart, displayChannel]);
+  }, [cart, displayChannel, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer]);
 
   // Ouvrir l'affichage client dans une nouvelle fenêtre
   const openCustomerDisplay = () => {
