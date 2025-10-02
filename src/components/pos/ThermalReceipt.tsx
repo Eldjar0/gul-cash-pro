@@ -88,7 +88,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         fontSize: '16.4px',
         lineHeight: '1.3',
         padding: '8px',
-        paddingRight: '12px',
+        paddingRight: '24px',
         fontWeight: '900',
         overflow: 'hidden',
         boxSizing: 'border-box'
@@ -123,7 +123,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       {/* Customer info - Only for invoices */}
       {isInvoice && sale.customer && (
         <>
-          <div style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900', paddingRight: '12px' }}>
+          <div style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900', paddingRight: '24px' }}>
             <div style={{ fontWeight: '900', marginBottom: '2px' }}>CLIENT:</div>
             <div style={{ fontWeight: '900', wordWrap: 'break-word' }}>{sale.customer.name}</div>
             {sale.customer.vat_number && <div style={{ wordWrap: 'break-word' }}>TVA: {sale.customer.vat_number}</div>}
@@ -137,7 +137,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       )}
 
       {/* Sale info */}
-      <div style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900', paddingRight: '12px' }}>
+      <div style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900', paddingRight: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900' }}>
           <span>{isInvoice ? 'FACTURE' : 'TICKET'} N°:</span>
           <span style={{ fontSize: '13.7px' }}>{sale.saleNumber || sale.sale_number}</span>
@@ -157,7 +157,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
 
       {/* Items - Style Lidl */}
-      <div style={{ marginBottom: '6px', paddingRight: '12px' }}>
+      <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
         {sale.items.map((item, index) => {
           const unitDisplay = item.product.type === 'weight' ? 'kg' : 'pc';
           const qtyDisplay = item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0);
@@ -228,7 +228,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
 
       {/* Totaux */}
-      <div style={{ fontSize: '13.7px', marginBottom: '4px', fontWeight: '900', paddingRight: '12px' }}>
+      <div style={{ fontSize: '13.7px', marginBottom: '4px', fontWeight: '900', paddingRight: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px', gap: '3px' }}>
           <span>SOUS-TOTAL HT</span>
           <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{sale.subtotal.toFixed(2)}€</span>
@@ -246,7 +246,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       </div>
 
       {/* Total principal - Style Lidl */}
-      <div style={{ borderTop: '2.8px solid #000', borderBottom: '2.8px solid #000', padding: '4px 12px', margin: '6px 0' }}>
+      <div style={{ borderTop: '2.8px solid #000', borderBottom: '2.8px solid #000', padding: '4px 24px', margin: '6px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '900', gap: '8px' }}>
           <span>TOTAL</span>
           <span style={{ whiteSpace: 'nowrap' }}>{sale.total.toFixed(2)}€</span>
@@ -254,7 +254,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       </div>
 
       {/* Payment */}
-      <div style={{ fontSize: '13.7px', marginTop: '6px', marginBottom: '6px', fontWeight: '900', paddingRight: '12px' }}>
+      <div style={{ fontSize: '13.7px', marginTop: '6px', marginBottom: '6px', fontWeight: '900', paddingRight: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', marginBottom: '2px', gap: '3px' }}>
           <span style={{ flex: '1', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
