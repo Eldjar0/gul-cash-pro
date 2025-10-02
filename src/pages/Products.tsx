@@ -349,16 +349,19 @@ export default function Products() {
                 <Label htmlFor="barcode">Code-barres</Label>
                 <Input
                   id="barcode"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="off"
                   value={formData.barcode}
                   onChange={(e) => {
-                    // Normalisation AZERTY → chiffres pour les scans
+                    // Normalisation AZERTY → chiffres + filtrage digits uniquement
                     const azertyMap: Record<string, string> = {
-                      '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
-                      '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0',
-                      '§': '6'
+                      '&': '1', '!': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
+                      '-': '6', '§': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0', ')': '0'
                     };
-                    const normalized = e.target.value.split('').map(c => azertyMap[c] || c).join('');
-                    setFormData({ ...formData, barcode: normalized });
+                    const normalized = e.target.value.split('').map(c => azertyMap[c] ?? c).join('');
+                    const digitsOnly = normalized.replace(/\D+/g, '');
+                    setFormData({ ...formData, barcode: digitsOnly });
                   }}
                   placeholder="Ex: 3760123456789"
                 />
