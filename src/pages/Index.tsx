@@ -169,10 +169,6 @@ const Index = () => {
     let isScanning = false;
     let timeoutId: NodeJS.Timeout | null = null;
     let scanStartTime = 0;
-    let editableTarget: HTMLInputElement | HTMLTextAreaElement | null = null;
-    let editableInitialValue = '';
-    let editableInitialStart: number | null = null;
-    let editableInitialEnd: number | null = null;
 
     const isEditableField = (target: EventTarget | null): boolean => {
       if (!target || !(target instanceof HTMLElement)) return false;
@@ -186,6 +182,34 @@ const Index = () => {
       );
     };
 
+    // Convertit un événement clavier en chiffre fiable, indépendamment du layout (AZERTY/Numpad)
+    const mapEventToDigit = (e: KeyboardEvent): string | null => {
+      const code = (e as KeyboardEvent).code;
+
+      // 1) Rangée de chiffres physique (Digit0..Digit9)
+      if (code && code.startsWith('Digit')) {
+        const d = code.replace('Digit', '');
+        return /^[0-9]$/.test(d) ? d : null;
+      }
+
+      // 2) Pavé numérique (Numpad0..Numpad9)
+      if (code && code.startsWith('Numpad')) {
+        const d = code.replace('Numpad', '');
+        return /^[0-9]$/.test(d) ? d : null;
+      }
+
+      // 3) Si le navigateur fournit déjà un chiffre
+      if (/^[0-9]$/.test(e.key)) return e.key;
+
+      // 4) Fallback AZERTY (symboles → chiffres)
+      const azertyMap: Record<string, string> = {
+        '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
+        '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0',
+        '§': '6'
+      };
+      return azertyMap[e.key] ?? null;
+    };
+
     const processScan = () => {
       if (buffer.length >= 3) {
         const duration = Date.now() - scanStartTime;
@@ -197,10 +221,6 @@ const Index = () => {
       buffer = "";
       isScanning = false;
       scanStartTime = 0;
-      editableTarget = null;
-      editableInitialValue = '';
-      editableInitialStart = null;
-      editableInitialEnd = null;
     };
 
     const handler = (e: KeyboardEvent) => {
@@ -211,8 +231,8 @@ const Index = () => {
       const delta = now - lastKeyTime;
       lastKeyTime = now;
 
-      // Touches de finalisation
-      if (e.key === "Enter" || e.key === "Tab" || e.key === "NumpadEnter") {
+      // Touches de finalisation envoyées par certains lecteurs
+      if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'NumpadEnter') {
         if (isScanning && buffer.length >= 3) {
           e.preventDefault();
           e.stopPropagation();
@@ -222,7 +242,7 @@ const Index = () => {
         return;
       }
 
-      // Caractères uniquement
+      // On ne s'intéresse qu'aux touches imprimables pour les chiffres
       if (e.key.length === 1) {
         // Reset si trop de temps écoulé (>200ms = frappe humaine probable)
         if (delta > 200 && buffer.length > 0) {
@@ -230,39 +250,45 @@ const Index = () => {
           buffer = "";
           isScanning = false;
           scanStartTime = 0;
-          editableTarget = null;
-          editableInitialValue = '';
-          editableInitialStart = null;
-          editableInitialEnd = null;
         }
+
+        const digit = mapEventToDigit(e);
 
         // Première touche: démarrer le scan SI PAS dans un champ éditable
         if (buffer.length === 0) {
-          // Si l'utilisateur tape dans un champ éditable, ne PAS intercepter
           if (isEditableField(e.target)) {
+            // Laisser l'utilisateur taper normalement dans les champs
             return;
           }
-          
-          // Sinon, c'est probablement un scan, bloquer dès maintenant
-          scanStartTime = now;
-          isScanning = true;
-          e.preventDefault();
-          e.stopPropagation();
-          if (DEBUG_SCAN) console.log('[SCAN] Start detected');
-        }
-
-        // Deuxième touche: si < 50ms, confirmer à 100% que c'est un scan
-        if (buffer.length === 1 && delta < 50) {
-          isScanning = true;
-          if (DEBUG_SCAN) console.log('[SCAN] Confirmed (fast typing)');
-        }
-
-        buffer += e.key;
-
-        // En mode scan, empêcher l'écriture dans les champs (caractères suivants)
-        if (isScanning && buffer.length > 1) {
-          e.preventDefault();
-          e.stopPropagation();
+          // Démarre un scan uniquement si on reçoit bien un chiffre
+          if (digit !== null) {
+            scanStartTime = now;
+            isScanning = true;
+            e.preventDefault();
+            e.stopPropagation();
+            if (DEBUG_SCAN) console.log('[SCAN] Start detected');
+            buffer += digit;
+          } else {
+            // Pas un chiffre → ignorer
+            return;
+          }
+        } else {
+          // Déjà en cours de scan
+          if (digit !== null) {
+            // Deuxième touche: si < 50ms, on confirme le scan
+            if (buffer.length === 1 && delta < 50) {
+              isScanning = true;
+              if (DEBUG_SCAN) console.log('[SCAN] Confirmed (fast typing)');
+            }
+            buffer += digit;
+            // Empêcher toute écriture à l'écran pendant le scan
+            e.preventDefault();
+            e.stopPropagation();
+          } else {
+            // Non chiffre au milieu d'un scan → ignorer mais ne pas casser le flux
+            e.preventDefault();
+            e.stopPropagation();
+          }
         }
 
         // Timeout: finaliser si pas de nouvelle touche après 200ms ET longueur >= 8
@@ -282,13 +308,11 @@ const Index = () => {
       }
     };
 
-    // Écouter keydown et keypress pour couvrir tous les lecteurs
-    window.addEventListener("keydown", handler, { capture: true });
-    window.addEventListener("keypress", handler, { capture: true });
-    
+    // Utiliser seulement keydown pour éviter les doublons (keypress est obsolète)
+    window.addEventListener('keydown', handler, { capture: true });
+
     return () => {
-      window.removeEventListener("keydown", handler, { capture: true } as any);
-      window.removeEventListener("keypress", handler, { capture: true } as any);
+      window.removeEventListener('keydown', handler, { capture: true } as any);
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [products]);
