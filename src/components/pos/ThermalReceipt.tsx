@@ -283,7 +283,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
             </div>
           </div>
         )}
-        <div style={{ fontSize: '10.9px', marginTop: '6px', color: '#666', fontWeight: '800' }}>
+        <div style={{ fontSize: '10.9px', marginTop: '6px', color: '#666', fontWeight: '900' }}>
           www.JLprod.be
         </div>
       </div>
