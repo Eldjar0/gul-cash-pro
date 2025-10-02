@@ -876,19 +876,38 @@ const Index = () => {
               <div className="flex items-center gap-2">
                 <Scan className="h-5 w-5 text-primary animate-pulse flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-muted-foreground text-xs font-mono mb-1 block">Rechercher produit</label>
-                  <Input
-                    ref={scanInputRef}
-                    value={scanInput}
-                    onChange={(e) => {
-                      setScanInput(e.target.value);
-                      if (!e.target.value.trim()) {
-                        setSearchResults([]);
-                      }
-                    }}
-                    placeholder="Code-barres, nom..."
-                    className="h-9 bg-background border-input text-foreground text-base font-mono focus:border-primary"
-                  />
+                  <label className="text-muted-foreground text-xs font-mono mb-1 block">
+                    Rechercher produit {scanInput && `(${scanInput.length} car.)`}
+                  </label>
+                  <div className="relative">
+                    <Input
+                      ref={scanInputRef}
+                      value={scanInput}
+                      onChange={(e) => {
+                        setScanInput(e.target.value);
+                        if (!e.target.value.trim()) {
+                          setSearchResults([]);
+                        }
+                      }}
+                      placeholder="Scannez ou tapez..."
+                      className="h-9 bg-background border-input text-foreground text-base font-mono focus:border-primary pr-8"
+                      autoComplete="off"
+                    />
+                    {scanInput && (
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setScanInput('');
+                          setSearchResults([]);
+                          scanInputRef.current?.focus();
+                        }}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 bg-muted hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                        variant="ghost"
+                      >
+                        ×
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <Button
                   type="submit"
