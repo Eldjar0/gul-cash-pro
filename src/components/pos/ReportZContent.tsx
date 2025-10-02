@@ -125,9 +125,11 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
         <div style={{ fontSize: '15px', fontWeight: '900', marginBottom: '4px' }}>
           DETAIL TVA (OBLIGATOIRE BE)
         </div>
-        {Object.entries(reportData.vatByRate).map(([rate, amounts]) => (
+        {Object.entries(reportData.vatByRate)
+          .sort(([a], [b]) => parseFloat(b) - parseFloat(a))
+          .map(([rate, amounts]) => (
           <div key={rate} style={{ marginBottom: '4px', fontSize: '13px', fontWeight: '900' }}>
-            <div style={{ fontWeight: '900', fontSize: '14px' }}>TVA {parseFloat(rate).toFixed(0)}%</div>
+            <div style={{ fontWeight: '900', fontSize: '14px' }}>TVA {parseFloat(rate).toFixed(2)}%</div>
             <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px', fontWeight: '900' }}>
               <span style={{ fontWeight: '900' }}>Base HT:</span>
               <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{amounts.totalHT.toFixed(2)}€</span>

@@ -168,12 +168,13 @@ export async function getTodayReportData(): Promise<ReportData> {
   const totalMobile = sales?.filter(s => s.payment_method === 'mobile').reduce((sum, sale) => sum + sale.total, 0) || 0;
   const salesCount = sales?.length || 0;
 
-  // Calculer TVA par taux
+  // Calculer TVA par taux - normaliser le taux pour éviter les doublons
   const vatByRate: Record<number, { totalHT: number; totalVAT: number }> = {};
   
   sales?.forEach(sale => {
     sale.sale_items?.forEach((item: any) => {
-      const rate = item.vat_rate;
+      // Normaliser le taux (arrondir à 2 décimales)
+      const rate = Math.round(parseFloat(item.vat_rate) * 100) / 100;
       if (!vatByRate[rate]) {
         vatByRate[rate] = { totalHT: 0, totalVAT: 0 };
       }
