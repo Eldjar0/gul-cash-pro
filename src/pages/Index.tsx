@@ -892,12 +892,6 @@ const Index = () => {
                 <h1 className="text-sm font-bold tracking-tight">CAISSE #1</h1>
               </div>
             </div>
-            <div className="flex items-center gap-1 px-3 py-1 bg-white/10 rounded-lg backdrop-blur-sm">
-              <Clock className="h-3 w-3" />
-              <span className="text-xs font-medium">
-                {currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} - {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
             <Button
               variant="ghost"
               size="sm"
@@ -926,38 +920,40 @@ const Index = () => {
               Affichage
             </Button>
           </div>
-          {user ? (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/settings')}
-                className="text-white hover:bg-white/20 text-xs h-7 px-2"
-              >
-                <SettingsIcon className="h-3 w-3 mr-1" />
-                Paramètres
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={signOut}
-                className="text-white hover:bg-white/20 text-xs h-7 px-2"
-              >
-                <LogOut className="h-3 w-3 mr-1" />
-                Déco
-              </Button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 px-3 py-1 bg-white/10 rounded-lg backdrop-blur-sm">
+              <Clock className="h-4 w-4" />
+              <span className="text-xs font-medium">
+                {currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })} - {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+              </span>
             </div>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/auth')}
-              className="text-white hover:bg-white/20 text-xs h-7 px-2"
-            >
-              <LogOut className="h-3 w-3 mr-1" />
-              Connexion
-            </Button>
-          )}
+            {user ? (
+              <>
+                <Button
+                  onClick={() => navigate('/settings')}
+                  className="bg-white/10 hover:bg-white/20 text-white text-xs h-9 px-4 border border-white/20 font-semibold"
+                >
+                  <SettingsIcon className="h-4 w-4 mr-1" />
+                  Paramètres
+                </Button>
+                <Button
+                  onClick={signOut}
+                  className="bg-white/10 hover:bg-white/20 text-white text-xs h-9 px-4 border border-white/20 font-semibold"
+                >
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Déconnexion
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => navigate('/auth')}
+                className="bg-white/10 hover:bg-white/20 text-white text-xs h-9 px-4 border border-white/20 font-semibold"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                Connexion
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
