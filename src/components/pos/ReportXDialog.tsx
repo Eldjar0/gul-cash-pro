@@ -25,114 +25,159 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-white border-2 border-primary p-0">
+      <DialogContent className="max-w-sm bg-white border-2 border-primary p-0">
         <DialogHeader className="p-4 pb-0">
-          <DialogTitle className="text-primary font-bold text-2xl flex items-center gap-2">
-            <FileText className="h-6 w-6" />
-            Rapport X - Intermédiaire
-          </DialogTitle>
+          <DialogTitle className="text-primary font-bold text-center">RAPPORT INTERMEDIAIRE</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[60vh] p-4">
-          <div className="space-y-4 font-mono text-sm">
-            {/* En-tête */}
-            <div className="text-center border-b pb-3">
-              <h3 className="font-bold text-lg">{COMPANY_INFO.name}</h3>
-              <p className="text-xs">{COMPANY_INFO.address}</p>
-              <p className="text-xs">{COMPANY_INFO.postalCode} {COMPANY_INFO.city}</p>
-              <p className="text-xs">TVA: {COMPANY_INFO.vat}</p>
+        <ScrollArea className="max-h-[70vh]">
+          <div 
+            className="font-mono bg-white text-black"
+            style={{ 
+              width: '80mm',
+              maxWidth: '302px',
+              margin: '0 auto',
+              fontFamily: "'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif",
+              fontSize: '16.4px',
+              lineHeight: '1.3',
+              padding: '8px',
+              paddingRight: '24px',
+              fontWeight: '900',
+              overflow: 'hidden',
+              boxSizing: 'border-box'
+            }}
+          >
+            {/* Géant X */}
+            <div className="text-center mb-2">
+              <div style={{ 
+                fontSize: '120px',
+                fontWeight: '900',
+                lineHeight: '1',
+                color: '#3B82F6',
+                textShadow: '4px 4px 0px rgba(0,0,0,0.1)'
+              }}>
+                X
+              </div>
             </div>
+
+            {/* En-tête société */}
+            <div className="text-center" style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900' }}>
+              <div style={{ lineHeight: '1.2' }}>
+                <div>{COMPANY_INFO.name}</div>
+                <div>{COMPANY_INFO.address}</div>
+                <div>{COMPANY_INFO.postalCode} {COMPANY_INFO.city}</div>
+                {COMPANY_INFO.phone && <div>Tel: {COMPANY_INFO.phone}</div>}
+                <div style={{ marginTop: '1px' }}>TVA: {COMPANY_INFO.vat}</div>
+              </div>
+            </div>
+
+            <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
 
             {/* Type de rapport */}
-            <div className="text-center border-b pb-3">
-              <h2 className="font-bold text-xl">RAPPORT X</h2>
-              <p className="text-xs text-muted-foreground">(Rapport intermédiaire non fiscal)</p>
-              <p className="text-sm mt-2">
+            <div className="text-center" style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900' }}>
+              <div style={{ fontSize: '17.8px', fontWeight: '900', letterSpacing: '0.7px', marginBottom: '2px' }}>
+                RAPPORT X
+              </div>
+              <div style={{ fontSize: '10.9px', color: '#666', fontWeight: '800' }}>
+                (Rapport intermédiaire non fiscal)
+              </div>
+              <div style={{ marginTop: '4px', fontSize: '12.3px' }}>
                 Date: {new Date().toLocaleDateString('fr-BE')}
-              </p>
-              <p className="text-sm">
+              </div>
+              <div style={{ fontSize: '12.3px' }}>
                 Heure: {new Date().toLocaleTimeString('fr-BE')}
-              </p>
+              </div>
             </div>
+
+            <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
 
             {/* Ventes */}
-            <div className="space-y-2 border-b pb-3">
-              <h3 className="font-bold text-base flex items-center gap-2">
-                <Receipt className="h-4 w-4" />
-                Récapitulatif des ventes
-              </h3>
-              <div className="flex justify-between">
-                <span>Nombre de transactions:</span>
-                <span className="font-bold">{reportData.salesCount}</span>
+            <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
+              <div style={{ fontSize: '13.7px', fontWeight: '900', marginBottom: '4px' }}>
+                RECAPITULATIF DES VENTES
               </div>
-              <div className="flex justify-between text-lg font-bold text-primary">
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                <span>Nombre de transactions:</span>
+                <span style={{ fontWeight: '900' }}>{reportData.salesCount}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '900', color: '#3B82F6', gap: '8px' }}>
                 <span>TOTAL VENTES:</span>
-                <span>{reportData.totalSales.toFixed(2)}€</span>
+                <span style={{ whiteSpace: 'nowrap' }}>{reportData.totalSales.toFixed(2)}€</span>
               </div>
             </div>
+
+            <div style={{ borderTop: '1.4px solid #000', margin: '6px 0' }}></div>
 
             {/* Moyens de paiement */}
-            <div className="space-y-2 border-b pb-3">
-              <h3 className="font-bold text-base">Moyens de paiement</h3>
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-2">
-                  <Euro className="h-4 w-4" />
-                  Espèces
-                </span>
-                <span className="font-bold">{reportData.totalCash.toFixed(2)}€</span>
+            <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
+              <div style={{ fontSize: '13.7px', fontWeight: '900', marginBottom: '4px' }}>
+                MOYENS DE PAIEMENT
               </div>
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  Carte bancaire
-                </span>
-                <span className="font-bold">{reportData.totalCard.toFixed(2)}€</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12.3px' }}>
+                <span>Espèces</span>
+                <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalCash.toFixed(2)}€</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-2">
-                  <Smartphone className="h-4 w-4" />
-                  Paiement mobile
-                </span>
-                <span className="font-bold">{reportData.totalMobile.toFixed(2)}€</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12.3px' }}>
+                <span>Carte bancaire</span>
+                <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalCard.toFixed(2)}€</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.3px' }}>
+                <span>Paiement mobile</span>
+                <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalMobile.toFixed(2)}€</span>
               </div>
             </div>
 
+            <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
+
             {/* TVA */}
-            <div className="space-y-2 border-b pb-3">
-              <h3 className="font-bold text-base">Détail TVA</h3>
+            <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
+              <div style={{ fontSize: '13.7px', fontWeight: '900', marginBottom: '4px' }}>
+                DETAIL TVA
+              </div>
               {Object.entries(reportData.vatByRate).map(([rate, amounts]) => (
-                <div key={rate} className="space-y-1 text-xs">
-                  <div className="font-semibold">TVA {parseFloat(rate).toFixed(0)}%</div>
-                  <div className="flex justify-between pl-4">
+                <div key={rate} style={{ marginBottom: '4px', fontSize: '11px' }}>
+                  <div style={{ fontWeight: '900' }}>TVA {parseFloat(rate).toFixed(0)}%</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px' }}>
                     <span>Base HT:</span>
-                    <span>{amounts.totalHT.toFixed(2)}€</span>
+                    <span style={{ whiteSpace: 'nowrap' }}>{amounts.totalHT.toFixed(2)}€</span>
                   </div>
-                  <div className="flex justify-between pl-4">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px' }}>
                     <span>Montant TVA:</span>
-                    <span>{amounts.totalVAT.toFixed(2)}€</span>
+                    <span style={{ whiteSpace: 'nowrap' }}>{amounts.totalVAT.toFixed(2)}€</span>
                   </div>
                 </div>
               ))}
             </div>
 
+            <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
+
             {/* Caisse */}
             {todayReport && (
-              <div className="space-y-2">
-                <h3 className="font-bold text-base">État de la caisse</h3>
-                <div className="flex justify-between">
+              <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
+                <div style={{ fontSize: '13.7px', fontWeight: '900', marginBottom: '4px' }}>
+                  ETAT DE LA CAISSE
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12.3px' }}>
                   <span>Ouverture:</span>
-                  <span className="font-bold">{todayReport.opening_amount.toFixed(2)}€</span>
+                  <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{todayReport.opening_amount.toFixed(2)}€</span>
                 </div>
-                <div className="flex justify-between">
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12.3px' }}>
                   <span>Espèces du jour:</span>
-                  <span className="font-bold">{reportData.totalCash.toFixed(2)}€</span>
+                  <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalCash.toFixed(2)}€</span>
                 </div>
-                <div className="flex justify-between text-lg font-bold text-primary">
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: '900', color: '#3B82F6', gap: '8px', borderTop: '1.4px solid #000', paddingTop: '4px', marginTop: '4px' }}>
                   <span>Espèces attendues:</span>
-                  <span>{(todayReport.opening_amount + reportData.totalCash).toFixed(2)}€</span>
+                  <span style={{ whiteSpace: 'nowrap' }}>{(todayReport.opening_amount + reportData.totalCash).toFixed(2)}€</span>
                 </div>
               </div>
             )}
+
+            {/* Footer */}
+            <div style={{ borderTop: '1.4px dashed #000', marginTop: '8px', paddingTop: '8px' }}>
+              <div className="text-center" style={{ fontSize: '10.9px', color: '#666', fontWeight: '900' }}>
+                www.JLprod.be
+              </div>
+            </div>
           </div>
         </ScrollArea>
 
