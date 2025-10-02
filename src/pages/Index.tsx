@@ -244,9 +244,9 @@ const Index = () => {
 
       // On ne s'intéresse qu'aux touches imprimables pour les chiffres
       if (e.key.length === 1) {
-        // Reset si trop de temps écoulé (>200ms = frappe humaine probable)
-        if (delta > 200 && buffer.length > 0) {
-          if (DEBUG_SCAN) console.log('[SCAN] Reset: delta trop grand', delta);
+        // Pas de reset en cours de scan; on laisse le timeout finaliser
+        if (!isScanning && delta > 400 && buffer.length > 0) {
+          if (DEBUG_SCAN) console.log('[SCAN] Reset: delta trop grand hors scan', delta);
           buffer = "";
           isScanning = false;
           scanStartTime = 0;
@@ -291,7 +291,7 @@ const Index = () => {
           }
         }
 
-        // Timeout: finaliser si pas de nouvelle touche après 200ms ET longueur >= 8
+        // Timeout: finaliser si pas de nouvelle touche après 500ms
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
           if (buffer.length >= 8) {
@@ -304,7 +304,7 @@ const Index = () => {
             isScanning = false;
             scanStartTime = 0;
           }
-        }, 200);
+        }, 500);
       }
     };
 
