@@ -225,10 +225,72 @@ export function printThermalReceipt() {
     <html>
       <head>
         <title>Ticket de caisse</title>
+        <meta charset="UTF-8">
         <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
           @page {
             size: 80mm auto;
             margin: 0;
+          }
+          
+          body {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            width: 80mm;
+            max-width: 302px;
+            background: white;
+            color: black;
+          }
+          
+          #thermal-receipt {
+            width: 100%;
+            padding: 8px;
+            background: white;
+            color: black;
+          }
+          
+          .border-dashed {
+            border-style: dashed !important;
+          }
+          
+          .border-double {
+            border-style: double !important;
+          }
+          
+          .border-black {
+            border-color: black !important;
+          }
+          
+          .font-black {
+            font-weight: 900 !important;
+          }
+          
+          .font-bold {
+            font-weight: 700 !important;
+          }
+          
+          .font-semibold {
+            font-weight: 600 !important;
+          }
+          
+          .uppercase {
+            text-transform: uppercase !important;
+          }
+          
+          .tracking-wider {
+            letter-spacing: 0.05em !important;
+          }
+          
+          .tracking-wide {
+            letter-spacing: 0.025em !important;
           }
           
           @media print {
@@ -236,16 +298,13 @@ export function printThermalReceipt() {
               width: 80mm;
               margin: 0;
               padding: 0;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
-          }
-          
-          body {
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            line-height: 1.4;
-            margin: 0;
-            padding: 0;
-            width: 80mm;
+            
+            #thermal-receipt {
+              page-break-inside: avoid;
+            }
           }
         </style>
       </head>
