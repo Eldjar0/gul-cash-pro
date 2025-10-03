@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { ShoppingBag, CheckCircle2, Calendar, Clock, Sparkles, TrendingUp } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ShoppingBag, CheckCircle2, Calendar, Clock, Sparkles, CreditCard, Banknote, Tag, Percent } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import logoMarket from '@/assets/logo-market.png';
 
@@ -20,7 +20,7 @@ interface DisplayItem {
 
 interface DisplayState {
   items: DisplayItem[];
-  status: 'idle' | 'shopping' | 'completed';
+  status: 'idle' | 'shopping' | 'completed' | 'payment';
   timestamp: number;
   cashierName?: string;
   saleNumber?: string;
@@ -42,6 +42,11 @@ interface DisplayState {
   isInvoice?: boolean;
   customer?: {
     name: string;
+  };
+  payment?: {
+    method: 'cash' | 'card' | 'mobile';
+    amountPaid?: number;
+    change?: number;
   };
 }
 
@@ -69,6 +74,7 @@ const CustomerDisplay = () => {
   });
 
   const [currentTime, setCurrentTime] = useState(new Date());
+  const itemsContainerRef = useRef<HTMLDivElement>(null);
 
   // Mise à jour de l'heure toutes les secondes
   useEffect(() => {
@@ -95,7 +101,21 @@ const CustomerDisplay = () => {
       }
       // Message d'état d'achat
       if (event.data?.items) {
-        setDisplayState(event.data);
+        setDisplayState(prev => {
+          const newState = event.data;
+          // Auto-scroll si un nouvel item est ajouté
+          if (newState.items.length > prev.items.length && newState.status === 'shopping') {
+            setTimeout(() => {
+              if (itemsContainerRef.current) {
+                itemsContainerRef.current.scrollTo({
+                  top: itemsContainerRef.current.scrollHeight,
+                  behavior: 'smooth'
+                });
+              }
+            }, 100);
+          }
+          return newState;
+        });
       }
     };
 
@@ -312,6 +332,94 @@ const CustomerDisplay = () => {
     );
   }
 
+  // État paiement - selon le mode
+  if (displayState.status === 'payment' && displayState.payment) {
+    const { method, amountPaid, change } = displayState.payment;
+    const total = displayState.totals?.total || getTotalTTC();
+
+    if (method === 'card' || method === 'mobile') {
+      return (
+        <div className="h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 flex items-center justify-center p-8 relative overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/10 rounded-full blur-3xl animate-pulse-soft"></div>
+          </div>
+
+          <div className="relative z-10 text-center space-y-12 max-w-4xl mx-auto animate-scale-in">
+            <div className="relative inline-block">
+              <div className="absolute inset-0 bg-white/30 blur-3xl rounded-full scale-150 animate-pulse"></div>
+              <CreditCard className="relative w-48 h-48 mx-auto text-white drop-shadow-2xl" />
+            </div>
+
+            <div className="space-y-6">
+              <h1 className="text-9xl font-black text-white drop-shadow-2xl">
+                {total.toFixed(2)} €
+              </h1>
+              <p className="text-4xl font-bold text-white/90">
+                {method === 'card' ? 'Veuillez insérer votre carte dans le Bancontact' : 'Approchez votre téléphone du terminal'}
+              </p>
+            </div>
+
+            <div className="inline-flex items-center gap-3 px-8 py-4 bg-white/20 backdrop-blur-xl rounded-full border border-white/30">
+              <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+              <span className="text-xl font-semibold text-white">En attente du paiement...</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Mode espèces
+    return (
+      <div className="h-screen bg-gradient-to-br from-green-600 via-emerald-700 to-teal-800 flex items-center justify-center p-8 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/10 rounded-full blur-3xl animate-pulse-soft"></div>
+        </div>
+
+        <div className="relative z-10 w-full max-w-5xl mx-auto space-y-8 animate-scale-in">
+          <div className="text-center mb-12">
+            <div className="relative inline-block mb-6">
+              <div className="absolute inset-0 bg-white/30 blur-3xl rounded-full scale-150"></div>
+              <Banknote className="relative w-32 h-32 mx-auto text-white drop-shadow-2xl" />
+            </div>
+            <h1 className="text-6xl font-black text-white drop-shadow-xl">PAIEMENT EN ESPÈCES</h1>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8">
+            <div className="bg-white/20 backdrop-blur-xl rounded-3xl p-10 border-4 border-white/30">
+              <p className="text-white/90 text-3xl font-bold mb-4">MONTANT À PAYER</p>
+              <div className="text-white text-8xl font-black drop-shadow-lg">
+                {total.toFixed(2)} €
+              </div>
+            </div>
+
+            {amountPaid !== undefined && (
+              <div className="bg-white/30 backdrop-blur-xl rounded-3xl p-10 border-4 border-white/50 animate-scale-in">
+                <p className="text-white/90 text-3xl font-bold mb-4">MONTANT REÇU</p>
+                <div className="text-white text-8xl font-black drop-shadow-lg">
+                  {amountPaid.toFixed(2)} €
+                </div>
+              </div>
+            )}
+          </div>
+
+          {change !== undefined && change > 0 && (
+            <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl p-12 border-4 border-white shadow-2xl animate-scale-in">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white text-4xl font-bold mb-2">MONNAIE À RENDRE</p>
+                  <p className="text-white/90 text-xl">Au client</p>
+                </div>
+                <div className="text-white text-9xl font-black drop-shadow-2xl animate-pulse">
+                  {change.toFixed(2)} €
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // État shopping - design moderne et épuré
   return (
     <div className="h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950 flex flex-col overflow-hidden">
@@ -350,8 +458,36 @@ const CustomerDisplay = () => {
         </div>
       </div>
 
+      {/* Promos banner */}
+      {(displayState.globalDiscount || displayState.promoCode) && (
+        <div className="bg-gradient-to-r from-orange-500 to-pink-600 px-6 py-4 animate-fade-in">
+          <div className="max-w-7xl mx-auto flex items-center justify-center gap-4">
+            <Tag className="w-8 h-8 text-white" />
+            <div className="text-center">
+              {displayState.promoCode && (
+                <p className="text-white text-2xl font-black">
+                  CODE PROMO: {displayState.promoCode.code} • 
+                  {displayState.promoCode.type === 'percentage' 
+                    ? ` -${displayState.promoCode.value}%` 
+                    : ` -${displayState.promoCode.value.toFixed(2)}€`}
+                </p>
+              )}
+              {displayState.globalDiscount && !displayState.promoCode && (
+                <p className="text-white text-2xl font-black">
+                  REMISE: 
+                  {displayState.globalDiscount.type === 'percentage' 
+                    ? ` -${displayState.globalDiscount.value}%` 
+                    : ` -${displayState.globalDiscount.value.toFixed(2)}€`}
+                </p>
+              )}
+            </div>
+            <Percent className="w-8 h-8 text-white" />
+          </div>
+        </div>
+      )}
+
       {/* Zone des articles - scrollable */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+      <div ref={itemsContainerRef} className="flex-1 overflow-y-auto px-6 py-4 scroll-smooth">
         <div className="max-w-7xl mx-auto space-y-3">
           {displayState.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">

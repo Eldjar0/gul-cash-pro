@@ -663,6 +663,79 @@ const Index = () => {
   };
 
 
+  const handlePaymentStateChange = (state: { method: 'cash' | 'card' | 'mobile' | null; amountPaid: string }) => {
+    const totals = getTotals();
+    
+    if (!state.method) {
+      // Retour au mode shopping quand pas de méthode sélectionnée
+      const shoppingState = {
+        items: cart.map((item) => ({
+          name: item.product.name,
+          quantity: item.quantity,
+          price: item.custom_price ?? item.product.price,
+          originalPrice: item.product.price,
+          vatRate: item.product.vat_rate,
+          unit: item.product.type === 'weight' ? 'kg' : item.product.unit,
+          total: item.total,
+          discount: item.discount,
+          hasCustomPrice: !!item.custom_price,
+        })),
+        status: 'shopping',
+        timestamp: Date.now(),
+        cashierName: user?.email?.split('@')[0] || 'Caisse',
+        saleNumber: 'EN COURS',
+        totals: {
+          subtotal: totals.subtotal,
+          totalVat: totals.totalVat,
+          totalDiscount: totals.totalDiscount,
+          total: totals.total,
+        },
+        globalDiscount,
+        promoCode: appliedPromoCode,
+      };
+      displayChannel.postMessage(shoppingState);
+      localStorage.setItem('customer_display_state', JSON.stringify(shoppingState));
+      return;
+    }
+
+    const amountPaidNum = parseFloat(state.amountPaid) || 0;
+    const change = state.method === 'cash' && amountPaidNum >= totals.total ? amountPaidNum - totals.total : undefined;
+
+    // Envoyer l'état de paiement à l'écran client
+    const paymentState = {
+      items: cart.map((item) => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.custom_price ?? item.product.price,
+        originalPrice: item.product.price,
+        vatRate: item.product.vat_rate,
+        unit: item.product.type === 'weight' ? 'kg' : item.product.unit,
+        total: item.total,
+        discount: item.discount,
+        hasCustomPrice: !!item.custom_price,
+      })),
+      status: 'payment',
+      timestamp: Date.now(),
+      cashierName: user?.email?.split('@')[0] || 'Caisse',
+      totals: {
+        subtotal: totals.subtotal,
+        totalVat: totals.totalVat,
+        totalDiscount: totals.totalDiscount,
+        total: totals.total,
+      },
+      globalDiscount,
+      promoCode: appliedPromoCode,
+      payment: {
+        method: state.method,
+        amountPaid: state.method === 'cash' && amountPaidNum > 0 ? amountPaidNum : undefined,
+        change: change,
+      },
+    };
+
+    displayChannel.postMessage(paymentState);
+    localStorage.setItem('customer_display_state', JSON.stringify(paymentState));
+  };
+
   const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile', amountPaid?: number) => {
     if (!user) {
       toast.error('Connectez-vous pour encaisser', {
@@ -1525,6 +1598,7 @@ const Index = () => {
         onOpenChange={setPaymentDialogOpen}
         total={totals.total}
         onConfirmPayment={handleConfirmPayment}
+        onPaymentStateChange={handlePaymentStateChange}
       />
 
       <CustomerDialog
