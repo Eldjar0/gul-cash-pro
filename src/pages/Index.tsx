@@ -18,6 +18,7 @@ import {
   Calendar,
   CalendarX,
   FileText,
+  CloudSun,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -39,6 +40,7 @@ import { useCreateSale } from '@/hooks/useSales';
 import { useCategories } from '@/hooks/useCategories';
 import { Customer } from '@/hooks/useCustomers';
 import { useTodayReport, useOpenDay, useCloseDay, getTodayReportData, ReportData } from '@/hooks/useDailyReports';
+import { useWeather } from '@/hooks/useWeather';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -73,6 +75,7 @@ const Index = () => {
   const { data: categories } = useCategories();
   const createSale = useCreateSale();
   const scanInputRef = useRef<HTMLInputElement>(null);
+  const { temperature, loading: weatherLoading } = useWeather();
   
   // Lock system
   const [isLocked, setIsLocked] = useState(false);
@@ -944,16 +947,63 @@ const Index = () => {
         onUnlock={() => setIsLocked(false)} 
       />
       
-      {/* Info bar avec affichage client et gestion journée */}
-      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border border-border">
-          <Clock className="h-4 w-4 text-primary" />
-          <div className="text-xs">
-            <span className="font-bold">{currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
-            <span className="text-muted-foreground ml-2">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+      {/* Info bar avec date, météo, recherche et boutons */}
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-4 py-2 flex items-center justify-between gap-4">
+        {/* Gauche: Date/Heure + Météo */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border border-border">
+            <Clock className="h-4 w-4 text-primary" />
+            <div className="text-xs">
+              <span className="font-bold">{currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
+              <span className="text-muted-foreground ml-2">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border border-border">
+            <CloudSun className="h-4 w-4 text-primary" />
+            <div className="text-xs font-bold">
+              {weatherLoading ? '...' : `${temperature}°C`}
+            </div>
           </div>
         </div>
+
+        {/* Centre: Barre de recherche */}
+        <div className="flex-1 max-w-md">
+          <form onSubmit={handleScanSubmit}>
+            <div className="relative">
+              <Scan className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
+              <Input
+                ref={scanInputRef}
+                value={scanInput}
+                onChange={(e) => {
+                  setScanInput(e.target.value);
+                  if (!e.target.value.trim()) {
+                    setSearchResults([]);
+                  }
+                }}
+                placeholder="Rechercher un produit..."
+                autoComplete="off"
+                className="h-9 pl-10 pr-8 bg-background border-input text-foreground"
+              />
+              {scanInput && (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setScanInput('');
+                    setSearchResults([]);
+                    scanInputRef.current?.focus();
+                  }}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 bg-transparent hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                  variant="ghost"
+                >
+                  ×
+                </Button>
+              )}
+            </div>
+          </form>
+        </div>
         
+        {/* Droite: Boutons */}
         <div className="flex items-center gap-2">
           {/* Boutons gestion de journée */}
           {!isDayOpenEffective ? (
@@ -1311,56 +1361,8 @@ const Index = () => {
           </div>
         </div>
 
-        {/* COLONNE CENTRE - Calculatrice & Scan */}
-        <div className="col-span-4 bg-background p-2 flex flex-col gap-2 overflow-y-auto">
-          {/* Zone de scan */}
-          <Card className="bg-white border border-border p-2 flex-shrink-0 shadow-sm">
-            <form onSubmit={handleScanSubmit}>
-              <div className="flex items-center gap-2">
-                <Scan className="h-5 w-5 text-primary animate-pulse flex-shrink-0" />
-                <div className="flex-1">
-                  <label className="text-muted-foreground text-xs font-mono mb-1 block">
-                    Rechercher produit {scanInput && `(${scanInput.length} car.)`}
-                  </label>
-                  <div className="relative">
-                    <Input
-                      ref={scanInputRef}
-                      value={scanInput}
-                      onChange={(e) => {
-                        setScanInput(e.target.value);
-                        if (!e.target.value.trim()) {
-                          setSearchResults([]);
-                        }
-                      }}
-                      placeholder="Scannez ou tapez..."
-                      autoComplete="off"
-                      className="h-9 bg-background border-input text-foreground text-base font-mono focus:border-primary pr-8"
-                    />
-                    {scanInput && (
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          setScanInput('');
-                          setSearchResults([]);
-                          scanInputRef.current?.focus();
-                        }}
-                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 bg-muted hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                        variant="ghost"
-                      >
-                        ×
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <Button
-                  type="submit"
-                  className="h-9 px-3 bg-primary hover:bg-primary/90 text-white"
-                >
-                  <Scan className="h-4 w-4" />
-                </Button>
-              </div>
-            </form>
-          </Card>
+        {/* COLONNE CENTRE - Calculatrice */}
+        <div className="col-span-4 bg-background p-2 flex flex-col gap-2 overflow-y-auto justify-center">
 
           {/* Calculatrice moderne */}
           <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-3 flex-shrink-0 shadow-lg">
