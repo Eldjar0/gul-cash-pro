@@ -215,45 +215,41 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'idle') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex flex-col items-center justify-between p-8">
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex flex-col items-center justify-between p-6">
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center space-y-8 animate-fade-in">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse-soft"></div>
-              <img src={logoMarket} alt="Logo" className="relative w-72 h-72 mx-auto object-contain animate-bounce-in drop-shadow-2xl" />
-            </div>
-            <div className="space-y-6">
-              <h1 className="text-8xl font-black animate-scale-in gradient-text tracking-tight">
+          <div className="text-center space-y-4 animate-fade-in">
+            <div className="space-y-3">
+              <h1 className="text-6xl font-black animate-scale-in text-primary tracking-tight">
                 Bienvenue
               </h1>
-              <p className="text-5xl animate-fade-in text-foreground font-bold" style={{ animationDelay: '0.2s' }}>
+              <p className="text-3xl animate-fade-in text-foreground font-bold" style={{ animationDelay: '0.2s' }}>
                 Veuillez patienter
               </p>
-              <p className="text-3xl animate-fade-in text-muted-foreground" style={{ animationDelay: '0.4s' }}>
+              <p className="text-xl animate-fade-in text-muted-foreground" style={{ animationDelay: '0.4s' }}>
                 Un collaborateur arrive
               </p>
             </div>
-            <div className="flex justify-center gap-4 mt-8">
-              <div className="w-5 h-5 rounded-full animate-bounce bg-primary shadow-glow" style={{ animationDelay: '0s' }}></div>
-              <div className="w-5 h-5 rounded-full animate-bounce bg-accent shadow-glow" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-5 h-5 rounded-full animate-bounce bg-primary shadow-glow" style={{ animationDelay: '0.4s' }}></div>
+            <div className="flex justify-center gap-3 mt-6">
+              <div className="w-4 h-4 rounded-full animate-bounce bg-primary shadow-glow" style={{ animationDelay: '0s' }}></div>
+              <div className="w-4 h-4 rounded-full animate-bounce bg-accent shadow-glow" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-4 h-4 rounded-full animate-bounce bg-primary shadow-glow" style={{ animationDelay: '0.4s' }}></div>
             </div>
           </div>
         </div>
 
         {/* Section heure, date et température */}
-        <div className="w-full max-w-7xl grid grid-cols-3 gap-8 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+        <div className="w-full max-w-5xl grid grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
           {/* Date */}
-          <div className="relative overflow-hidden bg-card rounded-3xl p-8 border-2 border-primary/30 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16"></div>
+          <div className="relative overflow-hidden bg-card rounded-2xl p-4 border-2 border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full -mr-10 -mt-10"></div>
             <div className="relative z-10">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 bg-primary/10 rounded-xl">
-                  <Calendar className="h-12 w-12 text-primary" />
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Calendar className="h-8 w-8 text-primary" />
                 </div>
-                <p className="text-xl font-bold text-primary uppercase tracking-wide">Date</p>
+                <p className="text-base font-bold text-primary uppercase tracking-wide">Date</p>
               </div>
-              <p className="text-3xl font-black text-foreground leading-tight">
+              <p className="text-xl font-black text-foreground leading-tight">
                 {currentTime.toLocaleDateString('fr-BE', { 
                   weekday: 'long', 
                   day: '2-digit', 
@@ -265,16 +261,16 @@ const CustomerDisplay = () => {
           </div>
 
           {/* Heure */}
-          <div className="relative overflow-hidden bg-card rounded-3xl p-8 border-2 border-accent/30 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full -mr-16 -mt-16"></div>
+          <div className="relative overflow-hidden bg-card rounded-2xl p-4 border-2 border-accent/30 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-accent/10 rounded-full -mr-10 -mt-10"></div>
             <div className="relative z-10">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 bg-accent/10 rounded-xl">
-                  <Clock className="h-12 w-12 text-accent animate-pulse-soft" />
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-accent/10 rounded-lg">
+                  <Clock className="h-8 w-8 text-accent" />
                 </div>
-                <p className="text-xl font-bold text-accent uppercase tracking-wide">Heure</p>
+                <p className="text-base font-bold text-accent uppercase tracking-wide">Heure</p>
               </div>
-              <p className="text-6xl font-black text-foreground font-mono tabular-nums">
+              <p className="text-4xl font-black text-foreground font-mono tabular-nums">
                 {currentTime.toLocaleTimeString('fr-BE', { 
                   hour: '2-digit', 
                   minute: '2-digit',
@@ -285,24 +281,24 @@ const CustomerDisplay = () => {
           </div>
 
           {/* Température */}
-          <div className="relative overflow-hidden bg-card rounded-3xl p-8 border-2 border-category-orange/30 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-category-orange/10 rounded-full -mr-16 -mt-16"></div>
+          <div className="relative overflow-hidden bg-card rounded-2xl p-4 border-2 border-category-orange/30 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-category-orange/10 rounded-full -mr-10 -mt-10"></div>
             <div className="relative z-10">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 bg-category-orange/10 rounded-xl">
-                  <Thermometer className="h-12 w-12 text-category-orange" />
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-category-orange/10 rounded-lg">
+                  <Thermometer className="h-8 w-8 text-category-orange" />
                 </div>
-                <p className="text-xl font-bold text-category-orange uppercase tracking-wide">Jumet</p>
+                <p className="text-base font-bold text-category-orange uppercase tracking-wide">Jumet</p>
               </div>
-              <p className="text-6xl font-black text-foreground tabular-nums">
+              <p className="text-4xl font-black text-foreground tabular-nums">
                 {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 px-6 py-3 bg-card/80 backdrop-blur-sm rounded-full border border-border shadow-lg">
-          <p className="text-lg text-muted-foreground font-medium">
+        <div className="mt-6 px-5 py-2 bg-card/80 backdrop-blur-sm rounded-full border border-border shadow-md">
+          <p className="text-sm text-muted-foreground font-medium">
             Système de caisse développé par <span className="text-primary font-bold">Jlprod.be</span>
           </p>
         </div>
