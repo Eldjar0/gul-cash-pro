@@ -80,6 +80,12 @@ const Index = () => {
   const openDay = useOpenDay();
   const closeDay = useCloseDay();
 
+  // Debug: Log todayReport state
+  useEffect(() => {
+    console.log('[DEBUG] Today Report:', todayReport);
+    console.log('[DEBUG] isDayOpen:', !!todayReport && todayReport.closing_amount === null);
+  }, [todayReport]);
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
@@ -1417,7 +1423,7 @@ const Index = () => {
             onOpenDay={() => setOpenDayDialogOpen(true)}
             onCloseDay={() => setCloseDayDialogOpen(true)}
             onReportX={handleReportX}
-            isDayOpen={!!todayReport && !todayReport.closing_amount}
+            isDayOpen={!!todayReport && todayReport.closing_amount === null}
           />
         </div>
 
