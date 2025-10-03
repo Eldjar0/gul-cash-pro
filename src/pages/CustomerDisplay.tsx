@@ -311,7 +311,7 @@ const CustomerDisplay = () => {
           </div>
 
           {/* Messages */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <h1 className="text-9xl font-black tracking-tight">
               <span className="bg-gradient-to-r from-accent via-accent/80 to-primary bg-clip-text text-transparent">
                 Merci !
@@ -319,6 +319,9 @@ const CustomerDisplay = () => {
             </h1>
             <p className="text-5xl font-semibold text-foreground">
               {displaySettings.thank_you_text}
+            </p>
+            <p className="text-6xl font-bold text-primary">
+              À bientôt !
             </p>
           </div>
 
