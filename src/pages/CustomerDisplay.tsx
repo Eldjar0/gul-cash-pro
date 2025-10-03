@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBag, CheckCircle2, Thermometer, Calendar, Clock } from 'lucide-react';
+import { ShoppingBag, CheckCircle2, Thermometer, Calendar, Clock, CreditCard, Banknote } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import logoMarket from '@/assets/logo-market.png';
 
@@ -217,18 +217,41 @@ const CustomerDisplay = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex flex-col items-center justify-between p-6">
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center space-y-4 animate-fade-in">
+          <div className="text-center space-y-6 animate-fade-in">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full animate-pulse-soft"></div>
+              <img src={logoMarket} alt="Logo" className="relative w-48 h-48 mx-auto object-contain animate-scale-in drop-shadow-xl" />
+            </div>
             <div className="space-y-3">
-              <h1 className="text-6xl font-black animate-scale-in text-primary tracking-tight">
+              <h1 className="text-6xl font-black animate-scale-in text-primary tracking-tight" style={{ animationDelay: '0.1s' }}>
                 Bienvenue
               </h1>
               <p className="text-3xl animate-fade-in text-foreground font-bold" style={{ animationDelay: '0.2s' }}>
                 Veuillez patienter
               </p>
-              <p className="text-xl animate-fade-in text-muted-foreground" style={{ animationDelay: '0.4s' }}>
+              <p className="text-xl animate-fade-in text-muted-foreground" style={{ animationDelay: '0.3s' }}>
                 Un collaborateur arrive
               </p>
             </div>
+            
+            {/* Moyens de paiement acceptés */}
+            <div className="flex justify-center gap-6 pt-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <div className="flex items-center gap-3 bg-card rounded-2xl px-6 py-3 border-2 border-accent/30 shadow-lg">
+                <CreditCard className="h-10 w-10 text-accent" />
+                <div className="text-left">
+                  <p className="text-xs text-muted-foreground uppercase font-semibold">Carte</p>
+                  <p className="text-sm font-black text-foreground">Acceptée</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 bg-card rounded-2xl px-6 py-3 border-2 border-accent/30 shadow-lg">
+                <Banknote className="h-10 w-10 text-accent" />
+                <div className="text-left">
+                  <p className="text-xs text-muted-foreground uppercase font-semibold">Espèces</p>
+                  <p className="text-sm font-black text-foreground">Acceptées</p>
+                </div>
+              </div>
+            </div>
+            
             <div className="flex justify-center gap-3 mt-6">
               <div className="w-4 h-4 rounded-full animate-bounce bg-primary shadow-glow" style={{ animationDelay: '0s' }}></div>
               <div className="w-4 h-4 rounded-full animate-bounce bg-accent shadow-glow" style={{ animationDelay: '0.2s' }}></div>
