@@ -99,12 +99,12 @@ const CustomerDisplay = () => {
         } catch {}
         return;
       }
-      // Message d'état d'achat
-      if (event.data?.items) {
+      // Message d'état d'achat - accepter même si items est vide ou undefined
+      if (event.data?.status) {
         setDisplayState(prev => {
           const newState = event.data;
           // Auto-scroll si un nouvel item est ajouté
-          if (newState.items.length > prev.items.length && newState.status === 'shopping') {
+          if (newState.items && newState.items.length > prev.items.length && newState.status === 'shopping') {
             setTimeout(() => {
               if (itemsContainerRef.current) {
                 itemsContainerRef.current.scrollTo({

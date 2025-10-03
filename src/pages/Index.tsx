@@ -156,6 +156,28 @@ const Index = () => {
   useEffect(() => {
     const updateCustomerDisplay = () => {
       const totals = getTotals();
+      
+      // Si le panier est vide, envoyer l'état 'idle'
+      if (cart.length === 0) {
+        const idleState = {
+          items: [],
+          status: 'idle',
+          timestamp: Date.now(),
+        };
+        
+        console.log('[POS] Sending idle state to customer display');
+        
+        try {
+          displayChannel.postMessage(idleState);
+        } catch (e) {
+          console.error('[POS] BroadcastChannel error:', e);
+        }
+        
+        localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+        return;
+      }
+      
+      // Sinon, envoyer l'état 'shopping' avec les items
       const displayItems = cart.map(item => ({
         name: item.product.name,
         quantity: item.quantity,
@@ -173,7 +195,7 @@ const Index = () => {
 
       const state = {
         items: displayItems,
-        status: cart.length > 0 ? 'shopping' : 'idle',
+        status: 'shopping',
         timestamp: Date.now(),
         cashierName: user?.email?.split('@')[0] || 'Caisse',
         saleNumber: 'EN COURS',
@@ -212,7 +234,7 @@ const Index = () => {
     };
 
     updateCustomerDisplay();
-  }, [cart, displayChannel, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer]);
+  }, [cart, displayChannel, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer, user]);
 
   // Ouvrir l'affichage client dans une nouvelle fenêtre
   const openCustomerDisplay = () => {
