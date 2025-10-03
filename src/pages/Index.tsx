@@ -1441,13 +1441,6 @@ const Index = () => {
         {/* COLONNE CENTRE - Calculatrice */}
         <div className="col-span-4 bg-background p-2 flex flex-col gap-2 overflow-y-auto justify-center">
 
-          {/* Affichage */}
-          <div className="bg-gradient-to-br from-primary to-primary-glow p-3 rounded-xl border-2 border-primary shadow-inner">
-            <div className="text-white text-3xl font-bold text-center font-mono tracking-wider drop-shadow-lg">
-              {quantityInput}
-            </div>
-          </div>
-
           {/* Calculatrice moderne */}
           <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-3 flex-shrink-0 shadow-lg">
             <div className="flex items-center justify-between mb-2">
@@ -1472,6 +1465,13 @@ const Index = () => {
                 >
                   <Calculator className="h-3 w-3" />
                 </Button>
+              </div>
+            </div>
+            
+            {/* Affichage */}
+            <div className="bg-gradient-to-br from-primary to-primary-glow p-3 rounded-xl mb-3 border-2 border-primary shadow-inner">
+              <div className="text-white text-3xl font-bold text-center font-mono tracking-wider drop-shadow-lg">
+                {quantityInput}
               </div>
             </div>
             
