@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calculator, Search, Plus, Divide, Minus, Percent, X } from 'lucide-react';
+import { Calculator, Search, Plus, Divide, Minus, Percent, X, Scale, Package, Euro } from 'lucide-react';
 import { NumericKeypad } from './NumericKeypad';
 
 interface QuickCalculatorProps {
@@ -9,9 +9,12 @@ interface QuickCalculatorProps {
   onCreateProduct: () => void;
 }
 
+type CalcMode = 'math' | 'weight' | 'quantity' | 'price';
+
 export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalculatorProps) {
   const [display, setDisplay] = useState('');
   const [mode, setMode] = useState<'search' | 'calc'>('search');
+  const [calcMode, setCalcMode] = useState<CalcMode>('math');
   const [currentValue, setCurrentValue] = useState<number | null>(null);
   const [operation, setOperation] = useState<string | null>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
@@ -87,6 +90,16 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
     }
   };
 
+  const getModeLabel = () => {
+    if (mode === 'search') return '🔍 Code produit';
+    switch (calcMode) {
+      case 'math': return '🧮 Calculatrice';
+      case 'weight': return '⚖️ Poids (kg)';
+      case 'quantity': return '📦 Quantité';
+      case 'price': return '💰 Prix (€)';
+    }
+  };
+
   return (
     <Card className="p-4 shadow-xl border-2 border-primary/30">
       <div className="flex gap-2 mb-3">
@@ -108,9 +121,46 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
         </Button>
       </div>
 
+      {mode === 'calc' && (
+        <div className="grid grid-cols-4 gap-1 mb-3">
+          <Button
+            variant={calcMode === 'math' ? 'default' : 'outline'}
+            onClick={() => setCalcMode('math')}
+            className="h-8 text-xs px-1"
+            size="sm"
+          >
+            <Calculator className="h-3 w-3" />
+          </Button>
+          <Button
+            variant={calcMode === 'weight' ? 'default' : 'outline'}
+            onClick={() => setCalcMode('weight')}
+            className="h-8 text-xs px-1"
+            size="sm"
+          >
+            <Scale className="h-3 w-3" />
+          </Button>
+          <Button
+            variant={calcMode === 'quantity' ? 'default' : 'outline'}
+            onClick={() => setCalcMode('quantity')}
+            className="h-8 text-xs px-1"
+            size="sm"
+          >
+            <Package className="h-3 w-3" />
+          </Button>
+          <Button
+            variant={calcMode === 'price' ? 'default' : 'outline'}
+            onClick={() => setCalcMode('price')}
+            className="h-8 text-xs px-1"
+            size="sm"
+          >
+            <Euro className="h-3 w-3" />
+          </Button>
+        </div>
+      )}
+
       <div className="bg-gradient-to-br from-pos-display to-secondary p-4 rounded-xl mb-3 shadow-inner">
         <div className="text-xs text-white/70 mb-1 font-medium">
-          {mode === 'search' ? '🔍 Code produit' : '🧮 Calculatrice'}
+          {getModeLabel()}
         </div>
         <div className="text-4xl font-black text-white tracking-tight min-h-12 flex items-center">
           {display || '0'}
@@ -123,7 +173,7 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
         onBackspace={handleBackspace}
       />
 
-      {mode === 'calc' && (
+      {mode === 'calc' && calcMode === 'math' && (
         <div className="grid grid-cols-4 gap-2 mt-3">
           <Button
             onClick={() => handleOperation('+')}
@@ -162,6 +212,19 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
             className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:scale-105 transition-all text-xl col-span-2"
           >
             =
+          </Button>
+        </div>
+      )}
+
+      {mode === 'calc' && calcMode !== 'math' && (
+        <div className="mt-3">
+          <Button
+            onClick={handleSearch}
+            disabled={!display}
+            className="h-12 w-full bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:scale-105 transition-all"
+          >
+            <Search className="h-4 w-4 mr-2" />
+            Valider {calcMode === 'weight' ? 'le poids' : calcMode === 'quantity' ? 'la quantité' : 'le prix'}
           </Button>
         </div>
       )}
