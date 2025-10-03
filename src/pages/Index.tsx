@@ -23,6 +23,8 @@ import {
   Divide,
   Minus,
   X,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -87,6 +89,20 @@ const Index = () => {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   const { data: todaySales } = useSales(today, tomorrow);
+  
+  // Get yesterday's sales for comparison
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const { data: yesterdaySales } = useSales(yesterday, today);
+  
+  // Calculate statistics
+  const todayTotal = todaySales?.filter(s => !s.is_cancelled).reduce((sum, s) => sum + s.total, 0) || 0;
+  const yesterdayTotal = yesterdaySales?.filter(s => !s.is_cancelled).reduce((sum, s) => sum + s.total, 0) || 0;
+  const todayCount = todaySales?.filter(s => !s.is_cancelled).length || 0;
+  const yesterdayCount = yesterdaySales?.filter(s => !s.is_cancelled).length || 0;
+  
+  const totalPercentChange = yesterdayTotal > 0 ? ((todayTotal - yesterdayTotal) / yesterdayTotal) * 100 : 0;
+  const countPercentChange = yesterdayCount > 0 ? ((todayCount - yesterdayCount) / yesterdayCount) * 100 : 0;
   
   // Lock system
   const [isLocked, setIsLocked] = useState(false);
@@ -1448,6 +1464,33 @@ const Index = () => {
         {/* COLONNE CENTRE - Calculatrice */}
         <div className="col-span-4 bg-background p-2 flex flex-col gap-2 overflow-y-auto">
 
+          {/* Statistiques rapides */}
+          <Card className="bg-gradient-to-br from-background to-muted/20 border-2 border-border/50 p-4 flex-shrink-0 shadow-md">
+            <h3 className="text-xs font-bold text-primary uppercase tracking-wide mb-3">Statistiques du jour</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
+                <div className="text-xs text-muted-foreground mb-1">Total ventes</div>
+                <div className="text-2xl font-bold text-primary mb-1">
+                  {todayTotal.toFixed(2)}€
+                </div>
+                <div className={`flex items-center gap-1 text-xs font-semibold ${totalPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {totalPercentChange >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {totalPercentChange >= 0 ? '+' : ''}{totalPercentChange.toFixed(1)}%
+                </div>
+              </div>
+              <div className="bg-secondary/5 rounded-lg p-3 border border-secondary/10">
+                <div className="text-xs text-muted-foreground mb-1">Nb tickets</div>
+                <div className="text-2xl font-bold text-secondary mb-1">
+                  {todayCount}
+                </div>
+                <div className={`flex items-center gap-1 text-xs font-semibold ${countPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {countPercentChange >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {countPercentChange >= 0 ? '+' : ''}{countPercentChange.toFixed(1)}%
+                </div>
+              </div>
+            </div>
+          </Card>
+
           {/* Calculatrice moderne */}
           <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-3 flex-shrink-0 shadow-lg">
             <div className="flex items-center justify-between mb-2">
@@ -1518,25 +1561,6 @@ const Index = () => {
                 </div>
               </div>
             )}
-          </Card>
-
-          {/* Statistiques rapides */}
-          <Card className="bg-gradient-to-br from-background to-muted/20 border-2 border-border/50 p-4 flex-shrink-0 shadow-md">
-            <h3 className="text-xs font-bold text-primary uppercase tracking-wide mb-3">Statistiques du jour</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
-                <div className="text-xs text-muted-foreground mb-1">Total ventes</div>
-                <div className="text-2xl font-bold text-primary">
-                  {(todaySales?.filter(s => !s.is_cancelled).reduce((sum, s) => sum + s.total, 0) || 0).toFixed(2)}€
-                </div>
-              </div>
-              <div className="bg-secondary/5 rounded-lg p-3 border border-secondary/10">
-                <div className="text-xs text-muted-foreground mb-1">Nb tickets</div>
-                <div className="text-2xl font-bold text-secondary">
-                  {todaySales?.filter(s => !s.is_cancelled).length || 0}
-                </div>
-              </div>
-            </div>
           </Card>
         </div>
 
