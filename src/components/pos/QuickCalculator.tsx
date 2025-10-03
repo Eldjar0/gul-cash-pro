@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calculator, Search, Plus } from 'lucide-react';
+import { Calculator, Search, Plus, Divide, Minus, Percent, X } from 'lucide-react';
 import { NumericKeypad } from './NumericKeypad';
 
 interface QuickCalculatorProps {
@@ -12,17 +12,72 @@ interface QuickCalculatorProps {
 export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalculatorProps) {
   const [display, setDisplay] = useState('');
   const [mode, setMode] = useState<'search' | 'calc'>('search');
+  const [currentValue, setCurrentValue] = useState<number | null>(null);
+  const [operation, setOperation] = useState<string | null>(null);
+  const [waitingForOperand, setWaitingForOperand] = useState(false);
 
   const handleNumberClick = (num: string) => {
-    setDisplay((prev) => prev + num);
+    if (mode === 'calc' && waitingForOperand) {
+      setDisplay(num);
+      setWaitingForOperand(false);
+    } else {
+      setDisplay((prev) => prev + num);
+    }
   };
 
   const handleClear = () => {
     setDisplay('');
+    setCurrentValue(null);
+    setOperation(null);
+    setWaitingForOperand(false);
   };
 
   const handleBackspace = () => {
     setDisplay((prev) => prev.slice(0, -1));
+  };
+
+  const handleOperation = (op: string) => {
+    const inputValue = parseFloat(display);
+    
+    if (currentValue === null) {
+      setCurrentValue(inputValue);
+    } else if (operation) {
+      const newValue = performCalculation(currentValue, inputValue, operation);
+      setDisplay(String(newValue));
+      setCurrentValue(newValue);
+    }
+    
+    setWaitingForOperand(true);
+    setOperation(op);
+  };
+
+  const performCalculation = (firstValue: number, secondValue: number, op: string): number => {
+    switch (op) {
+      case '+':
+        return firstValue + secondValue;
+      case '-':
+        return firstValue - secondValue;
+      case '*':
+        return firstValue * secondValue;
+      case '/':
+        return secondValue !== 0 ? firstValue / secondValue : 0;
+      case '%':
+        return firstValue * (secondValue / 100);
+      default:
+        return secondValue;
+    }
+  };
+
+  const handleEquals = () => {
+    const inputValue = parseFloat(display);
+    
+    if (currentValue !== null && operation) {
+      const result = performCalculation(currentValue, inputValue, operation);
+      setDisplay(String(result));
+      setCurrentValue(null);
+      setOperation(null);
+      setWaitingForOperand(true);
+    }
   };
 
   const handleSearch = () => {
@@ -68,23 +123,68 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
         onBackspace={handleBackspace}
       />
 
-      <div className="grid grid-cols-2 gap-2 mt-3">
-        <Button
-          onClick={handleSearch}
-          disabled={!display}
-          className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:scale-105 transition-all text-sm"
-        >
-          <Search className="h-4 w-4 mr-1" />
-          Chercher
-        </Button>
-        <Button
-          onClick={onCreateProduct}
-          className="h-12 bg-gradient-to-br from-primary to-primary-glow text-white font-bold shadow-lg hover:scale-105 transition-all text-sm"
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Nouveau
-        </Button>
-      </div>
+      {mode === 'calc' && (
+        <div className="grid grid-cols-4 gap-2 mt-3">
+          <Button
+            onClick={() => handleOperation('+')}
+            className="h-12 bg-primary/20 hover:bg-primary/30 font-bold text-lg"
+          >
+            +
+          </Button>
+          <Button
+            onClick={() => handleOperation('-')}
+            className="h-12 bg-primary/20 hover:bg-primary/30 font-bold text-lg"
+          >
+            <Minus className="h-5 w-5" />
+          </Button>
+          <Button
+            onClick={() => handleOperation('*')}
+            className="h-12 bg-primary/20 hover:bg-primary/30 font-bold text-lg"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+          <Button
+            onClick={() => handleOperation('/')}
+            className="h-12 bg-primary/20 hover:bg-primary/30 font-bold text-lg"
+          >
+            <Divide className="h-5 w-5" />
+          </Button>
+          <Button
+            onClick={() => handleOperation('%')}
+            className="h-12 bg-primary/20 hover:bg-primary/30 font-bold text-lg col-span-2"
+          >
+            <Percent className="h-5 w-5 mr-1" />
+            %
+          </Button>
+          <Button
+            onClick={handleEquals}
+            disabled={!display}
+            className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:scale-105 transition-all text-xl col-span-2"
+          >
+            =
+          </Button>
+        </div>
+      )}
+
+      {mode === 'search' && (
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          <Button
+            onClick={handleSearch}
+            disabled={!display}
+            className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:scale-105 transition-all text-sm"
+          >
+            <Search className="h-4 w-4 mr-1" />
+            Chercher
+          </Button>
+          <Button
+            onClick={onCreateProduct}
+            className="h-12 bg-gradient-to-br from-primary to-primary-glow text-white font-bold shadow-lg hover:scale-105 transition-all text-sm"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Nouveau
+          </Button>
+        </div>
+      )}
     </Card>
   );
 }
