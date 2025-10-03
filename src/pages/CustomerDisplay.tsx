@@ -250,20 +250,19 @@ const CustomerDisplay = () => {
             </div>
           </div>
 
-          {/* Section infos (date, heure, température) */}
-          <div className="grid grid-cols-3 gap-6 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          {/* Section infos (date, heure, température) - version compacte */}
+          <div className="grid grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
             {/* Date */}
-            <div className="group relative overflow-hidden bg-card/80 backdrop-blur-md rounded-3xl p-6 border-2 border-primary/30 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:border-primary/50">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
-              <div className="relative z-10 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-primary/15 rounded-2xl group-hover:bg-primary/25 transition-colors duration-300">
-                    <Calendar className="h-10 w-10 text-primary" />
+            <div className="group relative overflow-hidden bg-card/80 backdrop-blur-md rounded-2xl p-4 border border-primary/20 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-primary/10 rounded-xl">
+                    <Calendar className="h-6 w-6 text-primary" />
                   </div>
-                  <p className="text-lg font-bold text-primary uppercase tracking-wider">Date</p>
+                  <p className="text-xs font-bold text-primary uppercase tracking-wider">Date</p>
                 </div>
-                <p className="text-2xl font-black text-foreground leading-snug pl-1">
+                <p className="text-base font-bold text-foreground leading-snug">
                   {currentTime.toLocaleDateString('fr-BE', { 
                     weekday: 'long', 
                     day: '2-digit', 
@@ -275,17 +274,16 @@ const CustomerDisplay = () => {
             </div>
 
             {/* Heure */}
-            <div className="group relative overflow-hidden bg-card/80 backdrop-blur-md rounded-3xl p-6 border-2 border-accent/30 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:border-accent/50">
-              <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
-              <div className="relative z-10 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-accent/15 rounded-2xl group-hover:bg-accent/25 transition-colors duration-300">
-                    <Clock className="h-10 w-10 text-accent" />
+            <div className="group relative overflow-hidden bg-card/80 backdrop-blur-md rounded-2xl p-4 border border-accent/20 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105">
+              <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-accent/10 rounded-xl">
+                    <Clock className="h-6 w-6 text-accent" />
                   </div>
-                  <p className="text-lg font-bold text-accent uppercase tracking-wider">Heure</p>
+                  <p className="text-xs font-bold text-accent uppercase tracking-wider">Heure</p>
                 </div>
-                <p className="text-6xl font-black text-foreground font-mono tabular-nums pl-1">
+                <p className="text-3xl font-black text-foreground font-mono tabular-nums">
                   {currentTime.toLocaleTimeString('fr-BE', { 
                     hour: '2-digit', 
                     minute: '2-digit',
@@ -296,42 +294,72 @@ const CustomerDisplay = () => {
             </div>
 
             {/* Température */}
-            <div className="group relative overflow-hidden bg-card/80 backdrop-blur-md rounded-3xl p-6 border-2 border-category-orange/30 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:border-category-orange/50">
-              <div className="absolute inset-0 bg-gradient-to-br from-category-orange/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-category-orange/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
-              <div className="relative z-10 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-category-orange/15 rounded-2xl group-hover:bg-category-orange/25 transition-colors duration-300">
-                    <Thermometer className="h-10 w-10 text-category-orange" />
+            <div className="group relative overflow-hidden bg-card/80 backdrop-blur-md rounded-2xl p-4 border border-category-orange/20 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105">
+              <div className="absolute inset-0 bg-gradient-to-br from-category-orange/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-category-orange/10 rounded-xl">
+                    <Thermometer className="h-6 w-6 text-category-orange" />
                   </div>
-                  <p className="text-lg font-bold text-category-orange uppercase tracking-wider">Jumet</p>
+                  <p className="text-xs font-bold text-category-orange uppercase tracking-wider">Jumet</p>
                 </div>
-                <p className="text-6xl font-black text-foreground tabular-nums pl-1">
+                <p className="text-3xl font-black text-foreground tabular-nums">
                   {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Moyens de paiement */}
-          <div className="flex justify-center gap-8 animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <div className="group flex items-center gap-4 bg-card/80 backdrop-blur-md rounded-3xl px-10 py-5 border-2 border-accent/30 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:border-accent/50">
-              <div className="p-3 bg-gradient-to-br from-accent/20 to-accent/10 rounded-2xl group-hover:from-accent/30 group-hover:to-accent/20 transition-all duration-300">
-                <CreditCard className="h-12 w-12 text-accent" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm text-muted-foreground uppercase font-semibold tracking-wide">Paiement</p>
-                <p className="text-2xl font-black text-foreground">Carte bancaire</p>
-              </div>
-            </div>
-            
-            <div className="group flex items-center gap-4 bg-card/80 backdrop-blur-md rounded-3xl px-10 py-5 border-2 border-accent/30 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:border-accent/50">
-              <div className="p-3 bg-gradient-to-br from-accent/20 to-accent/10 rounded-2xl group-hover:from-accent/30 group-hover:to-accent/20 transition-all duration-300">
-                <Banknote className="h-12 w-12 text-accent" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm text-muted-foreground uppercase font-semibold tracking-wide">Paiement</p>
-                <p className="text-2xl font-black text-foreground">Espèces</p>
+          {/* Moyens de paiement avec logos */}
+          <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
+            <div className="bg-card/80 backdrop-blur-md rounded-3xl p-8 border-2 border-accent/30 shadow-xl">
+              <h3 className="text-2xl font-black text-center text-foreground mb-6 uppercase tracking-wide">
+                Moyens de paiement acceptés
+              </h3>
+              <div className="grid grid-cols-4 gap-6">
+                {/* Visa */}
+                <div className="group relative overflow-hidden bg-gradient-to-br from-card to-primary/5 rounded-2xl p-6 border-2 border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-primary/40">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative z-10 text-center space-y-3">
+                    <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
+                      <CreditCard className="h-10 w-10 text-primary" />
+                    </div>
+                    <p className="text-2xl font-black text-primary">VISA</p>
+                  </div>
+                </div>
+
+                {/* Mastercard/Maestro */}
+                <div className="group relative overflow-hidden bg-gradient-to-br from-card to-destructive/5 rounded-2xl p-6 border-2 border-destructive/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-destructive/40">
+                  <div className="absolute inset-0 bg-gradient-to-br from-destructive/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative z-10 text-center space-y-3">
+                    <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-2xl flex items-center justify-center group-hover:bg-destructive/20 transition-colors duration-300">
+                      <CreditCard className="h-10 w-10 text-destructive" />
+                    </div>
+                    <p className="text-xl font-black text-destructive">MAESTRO</p>
+                  </div>
+                </div>
+
+                {/* Bancontact */}
+                <div className="group relative overflow-hidden bg-gradient-to-br from-card to-category-blue/5 rounded-2xl p-6 border-2 border-category-blue/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-category-blue/40">
+                  <div className="absolute inset-0 bg-gradient-to-br from-category-blue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative z-10 text-center space-y-3">
+                    <div className="mx-auto w-16 h-16 bg-category-blue/10 rounded-2xl flex items-center justify-center group-hover:bg-category-blue/20 transition-colors duration-300">
+                      <CreditCard className="h-10 w-10 text-category-blue" />
+                    </div>
+                    <p className="text-lg font-black text-category-blue">BANCONTACT</p>
+                  </div>
+                </div>
+
+                {/* Cash */}
+                <div className="group relative overflow-hidden bg-gradient-to-br from-card to-accent/5 rounded-2xl p-6 border-2 border-accent/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-accent/40">
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative z-10 text-center space-y-3">
+                    <div className="mx-auto w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center group-hover:bg-accent/20 transition-colors duration-300">
+                      <Banknote className="h-10 w-10 text-accent" />
+                    </div>
+                    <p className="text-2xl font-black text-accent">CASH</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
