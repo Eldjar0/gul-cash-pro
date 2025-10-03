@@ -35,60 +35,88 @@ interface InvoiceData {
   notes?: string;
 }
 
+// SHOPCAISSE Blue Color (HSL: 210 100% 50%)
+const PRIMARY_COLOR = { r: 0, g: 128, b: 255 };
+const PRIMARY_LIGHT = { r: 230, g: 242, b: 255 };
+const PRIMARY_DARK = { r: 0, g: 102, b: 204 };
+
 export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
-  let yPos = 20;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  let yPos = 25;
 
-  // Company Info
-  doc.setFontSize(18);
+  // ============ HEADER WITH BLUE BAND ============
+  doc.setFillColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
+  doc.rect(0, 0, pageWidth, 45, 'F');
+
+  // Logo (placeholder - will be replaced with actual logo)
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(15, 12, 30, 20, 2, 2, 'F');
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text(invoice.company.name, 20, yPos);
-  yPos += 8;
+  doc.setTextColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
+  doc.text('SHOP', 20, 22);
+  doc.text('CAISSE', 18, 28);
 
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(invoice.company.address, 20, yPos);
-  yPos += 5;
-  doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, 20, yPos);
-  yPos += 5;
-  doc.text(`TVA: ${invoice.company.vatNumber}`, 20, yPos);
-  if (invoice.company.phone) {
-    yPos += 5;
-    doc.text(`Tél: ${invoice.company.phone}`, 20, yPos);
-  }
-
-  // Invoice Title & Number
-  yPos = 20;
-  doc.setFontSize(24);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(41, 128, 185); // Primary color
-  doc.text('FACTURE', pageWidth - 20, yPos, { align: 'right' });
-  yPos += 10;
-
+  // Company Info in Header
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 0, 0);
-  doc.text(invoice.saleNumber, pageWidth - 20, yPos, { align: 'right' });
-  yPos += 6;
-
+  doc.setTextColor(255, 255, 255);
+  doc.text(invoice.company.name, 50, 18);
+  
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text(format(new Date(invoice.date), 'dd/MM/yyyy', { locale: fr }), pageWidth - 20, yPos, { align: 'right' });
+  doc.text(invoice.company.address, 50, 24);
+  doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, 50, 28);
+  doc.text(`TVA: ${invoice.company.vatNumber}`, 50, 32);
+  if (invoice.company.phone) {
+    doc.text(`Tél: ${invoice.company.phone}`, 50, 36);
+  }
 
-  // Customer Info
-  yPos = 70;
+  // Invoice Title & Info (Right side)
+  doc.setFontSize(28);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('FACTURE', pageWidth - 15, 22, { align: 'right' });
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text(invoice.saleNumber, pageWidth - 15, 30, { align: 'right' });
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(format(new Date(invoice.date), 'dd MMMM yyyy', { locale: fr }), pageWidth - 15, 36, { align: 'right' });
+
+  // Reset text color
+  doc.setTextColor(0, 0, 0);
+
+  // ============ CUSTOMER INFO SECTION ============
+  yPos = 60;
+  
   if (invoice.customer) {
-    doc.setFontSize(11);
+    // Blue accent bar for customer section
+    doc.setFillColor(PRIMARY_LIGHT.r, PRIMARY_LIGHT.g, PRIMARY_LIGHT.b);
+    doc.roundedRect(15, yPos - 5, 90, 40, 3, 3, 'F');
+    
+    // Border
+    doc.setDrawColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(15, yPos - 5, 90, 40, 3, 3, 'S');
+    
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
+    doc.setTextColor(PRIMARY_DARK.r, PRIMARY_DARK.g, PRIMARY_DARK.b);
     doc.text('FACTURÉ À', 20, yPos);
     yPos += 7;
 
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
     doc.text(invoice.customer.name, 20, yPos);
-    yPos += 5;
+    yPos += 6;
 
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     if (invoice.customer.vatNumber) {
       doc.text(`N° TVA: ${invoice.customer.vatNumber}`, 20, yPos);
@@ -100,63 +128,71 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
     }
     if (invoice.customer.city) {
       doc.text(`${invoice.customer.postalCode || ''} ${invoice.customer.city}`, 20, yPos);
-      yPos += 5;
     }
   }
 
-  // Items Table
-  yPos = 115;
+  // ============ ITEMS TABLE ============
+  yPos = 110;
   
-  // Table Header Background
-  doc.setFillColor(240, 240, 240);
-  doc.rect(20, yPos - 5, 170, 8, 'F');
+  // Table Header with blue background
+  doc.setFillColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
+  doc.roundedRect(15, yPos - 6, pageWidth - 30, 10, 2, 2, 'F');
   
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text('Description', 22, yPos);
-  doc.text('Qté', 115, yPos, { align: 'right' });
-  doc.text('PU HT', 135, yPos, { align: 'right' });
-  doc.text('TVA', 155, yPos, { align: 'right' });
-  doc.text('Total TTC', 185, yPos, { align: 'right' });
+  doc.setTextColor(255, 255, 255);
+  doc.text('DESCRIPTION', 20, yPos);
+  doc.text('QTÉ', 120, yPos, { align: 'center' });
+  doc.text('PU HT', 145, yPos, { align: 'right' });
+  doc.text('TVA', 165, yPos, { align: 'right' });
+  doc.text('TOTAL TTC', pageWidth - 20, yPos, { align: 'right' });
   
-  yPos += 3;
-  doc.setLineWidth(0.5);
-  doc.line(20, yPos, 190, yPos);
-  yPos += 7;
+  yPos += 8;
+  doc.setTextColor(0, 0, 0);
 
-  // Table Rows
+  // Table Rows with alternating colors
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   
   invoice.items.forEach((item, index) => {
     // Alternate row background
-    if (index % 2 === 1) {
-      doc.setFillColor(250, 250, 250);
-      doc.rect(20, yPos - 5, 170, 7, 'F');
+    if (index % 2 === 0) {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(15, yPos - 5, pageWidth - 30, 8, 'F');
     }
 
-    const description = item.description.substring(0, 50);
-    doc.text(description, 22, yPos);
-    doc.text(item.quantity.toString(), 115, yPos, { align: 'right' });
-    doc.text(`${item.unitPrice.toFixed(2)}€`, 135, yPos, { align: 'right' });
-    doc.text(`${item.vatRate}%`, 155, yPos, { align: 'right' });
-    doc.text(`${item.total.toFixed(2)}€`, 185, yPos, { align: 'right' });
-    yPos += 7;
+    const description = item.description.length > 45 
+      ? item.description.substring(0, 42) + '...'
+      : item.description;
+    
+    doc.text(description, 20, yPos);
+    doc.text(item.quantity.toString(), 120, yPos, { align: 'center' });
+    doc.text(`${item.unitPrice.toFixed(2)}€`, 145, yPos, { align: 'right' });
+    doc.text(`${item.vatRate}%`, 165, yPos, { align: 'right' });
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${item.total.toFixed(2)}€`, pageWidth - 20, yPos, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    
+    yPos += 8;
 
     // Add new page if needed
-    if (yPos > 260) {
+    if (yPos > 250) {
       doc.addPage();
-      yPos = 20;
+      yPos = 30;
     }
   });
 
-  // Totals Section
+  // ============ TOTALS SECTION ============
   yPos += 5;
+  
+  // Separator line
+  doc.setDrawColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
   doc.setLineWidth(0.5);
-  doc.line(20, yPos, 190, yPos);
+  doc.line(15, yPos, pageWidth - 15, yPos);
   yPos += 10;
 
-  const totalsX = 135;
+  const totalsX = pageWidth - 80;
 
   // Calculate VAT by rate
   const vatByRate: Record<number, number> = {};
@@ -164,49 +200,66 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
     vatByRate[item.vatRate] = (vatByRate[item.vatRate] || 0) + item.vatAmount;
   });
 
+  // Subtotal
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.text('Total HT:', totalsX, yPos);
-  doc.text(`${invoice.subtotal.toFixed(2)}€`, 185, yPos, { align: 'right' });
-  yPos += 6;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`${invoice.subtotal.toFixed(2)}€`, pageWidth - 20, yPos, { align: 'right' });
+  yPos += 7;
 
+  // VAT breakdown
+  doc.setFont('helvetica', 'normal');
   Object.entries(vatByRate).forEach(([rate, amount]) => {
     doc.text(`TVA ${rate}%:`, totalsX, yPos);
-    doc.text(`${amount.toFixed(2)}€`, 185, yPos, { align: 'right' });
-    yPos += 6;
+    doc.text(`${amount.toFixed(2)}€`, pageWidth - 20, yPos, { align: 'right' });
+    yPos += 7;
   });
 
-  // Total TTC
-  yPos += 2;
-  doc.setFillColor(41, 128, 185);
-  doc.rect(totalsX - 5, yPos - 6, 60, 10, 'F');
+  // Total TTC with blue highlight
+  yPos += 3;
+  doc.setFillColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
+  doc.roundedRect(totalsX - 5, yPos - 7, 80, 12, 2, 2, 'F');
   
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
+  doc.setFontSize(13);
   doc.setTextColor(255, 255, 255);
-  doc.text('Total TTC:', totalsX, yPos);
-  doc.text(`${invoice.total.toFixed(2)}€`, 185, yPos, { align: 'right' });
+  doc.text('TOTAL TTC:', totalsX, yPos);
+  doc.text(`${invoice.total.toFixed(2)}€`, pageWidth - 20, yPos, { align: 'right' });
   doc.setTextColor(0, 0, 0);
 
-  // Notes
+  // ============ NOTES SECTION ============
   if (invoice.notes) {
     yPos += 20;
+    doc.setFillColor(PRIMARY_LIGHT.r, PRIMARY_LIGHT.g, PRIMARY_LIGHT.b);
+    doc.roundedRect(15, yPos - 5, pageWidth - 30, 20, 2, 2, 'F');
+    
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('Notes:', 20, yPos);
+    doc.setTextColor(PRIMARY_DARK.r, PRIMARY_DARK.g, PRIMARY_DARK.b);
+    doc.text('NOTES:', 20, yPos);
     yPos += 5;
+    
     doc.setFont('helvetica', 'normal');
-    const splitNotes = doc.splitTextToSize(invoice.notes, 170);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(8);
+    const splitNotes = doc.splitTextToSize(invoice.notes, pageWidth - 40);
     doc.text(splitNotes, 20, yPos);
   }
 
-  // Footer
-  const footerY = doc.internal.pageSize.getHeight() - 20;
+  // ============ FOOTER ============
+  const footerY = pageHeight - 15;
+  
+  // Blue line above footer
+  doc.setDrawColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
+  doc.setLineWidth(1);
+  doc.line(15, footerY - 5, pageWidth - 15, footerY - 5);
+  
   doc.setFontSize(8);
-  doc.setTextColor(128, 128, 128);
+  doc.setTextColor(100, 100, 100);
   doc.setFont('helvetica', 'italic');
   doc.text(
-    'Facture générée automatiquement - Merci de votre confiance',
+    'Facture générée automatiquement par SHOPCAISSE - Merci de votre confiance',
     pageWidth / 2,
     footerY,
     { align: 'center' }
