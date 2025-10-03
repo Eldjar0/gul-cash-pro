@@ -1,9 +1,6 @@
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Trash2, Percent, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Receipt, X, Tag } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Product } from '@/hooks/useProducts';
-import logoMarket from '@/assets/logo-market.png';
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -48,138 +45,140 @@ export function CartDisplay({ items, onRemoveItem, onUpdateQuantity, onApplyDisc
   const totals = calculateTotals();
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden glass border-2 border-primary/20 shadow-xl">
-      {/* Header with gradient */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[var(--gradient-primary)]"></div>
-        <div className="relative p-4 flex items-center justify-between gap-3">
-          <img src={logoMarket} alt="Logo" className="h-12 object-contain" />
+    <div className="h-full flex flex-col backdrop-blur-xl bg-card/60 rounded-2xl overflow-hidden border border-primary/20 shadow-2xl hover:shadow-3xl hover:shadow-primary/10 transition-all">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-5 border-b border-primary/20 backdrop-blur-sm relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer"></div>
+        <div className="flex items-center justify-between relative z-10">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-              <ShoppingBag className="h-5 w-5 text-white" />
+            <div className="p-2 rounded-lg bg-primary/20 border border-primary/30">
+              <Receipt className="h-5 w-5 text-primary" />
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Panier</h2>
-              <p className="text-xs text-white/80">{items.length} article{items.length > 1 ? 's' : ''}</p>
-            </div>
+            <h2 className="text-xl font-bold text-foreground">Ticket de caisse</h2>
+          </div>
+          <div className="text-right px-3 py-1 rounded-lg bg-primary/10 border border-primary/20">
+            <div className="text-xs text-muted-foreground font-medium">Articles</div>
+            <div className="text-lg font-bold text-primary">{items.length}</div>
           </div>
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4">
+      {/* Items List */}
+      <ScrollArea className="flex-1 px-4 py-3">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="p-4 bg-muted/50 rounded-full mb-4">
-              <ShoppingBag className="h-12 w-12 text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground animate-fade-in">
+            <div className="p-6 rounded-full bg-primary/5 border border-primary/20 mb-4">
+              <ShoppingCart className="h-12 w-12 text-primary/40" />
             </div>
-            <p className="text-muted-foreground font-medium">Panier vide</p>
-            <p className="text-sm text-muted-foreground/70 mt-1">Ajoutez des articles pour commencer</p>
+            <p className="text-base font-medium">Panier vide</p>
           </div>
         ) : (
           <div className="space-y-3">
             {items.map((item, index) => (
-              <Card key={index} className="p-3 bg-card hover:shadow-md transition-all duration-300 border border-border/50 group animate-scale-in">
-                <div className="flex gap-3">
-                  {/* Product info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm text-foreground truncate">{item.product.name}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {item.product.price.toFixed(2)}€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}
-                          {item.product.type === 'weight' && ' kg'}
-                        </p>
-                      </div>
-                      
-                      {/* Actions */}
-                      <div className="flex gap-1 ml-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onApplyDiscount(index)}
-                          className="h-8 w-8 hover:bg-accent/10 hover:text-accent"
-                        >
-                          <Percent className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onRemoveItem(index)}
-                          className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
+              <div
+                key={index}
+                className="backdrop-blur-sm bg-background/60 rounded-xl p-4 border border-border/50 hover:border-primary/40 hover:bg-primary/5 transition-all group shadow-sm hover:shadow-md animate-scale-in"
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <div className="font-semibold text-foreground group-hover:text-primary transition-colors">{item.product.name}</div>
+                      {item.product.barcode && (
+                        <div className="text-xs text-muted-foreground mt-1">{item.product.barcode}</div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => onRemoveItem(index)}
+                      className="text-destructive hover:text-destructive/80 opacity-0 group-hover:opacity-100 transition-all p-1 rounded-lg hover:bg-destructive/10"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => onUpdateQuantity(index, Math.max(0.001, item.quantity - 1))}
+                        className="bg-primary/10 hover:bg-primary/20 text-primary rounded-lg px-2 py-1 transition-all border border-primary/20 hover:border-primary/40 hover:shadow-md"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <span className="text-foreground min-w-[70px] text-center font-semibold text-sm">
+                        {item.quantity} {item.product.unit}
+                      </span>
+                      <button
+                        onClick={() => onUpdateQuantity(index, item.quantity + 1)}
+                        className="bg-primary/10 hover:bg-primary/20 text-primary rounded-lg px-2 py-1 transition-all border border-primary/20 hover:border-primary/40 hover:shadow-md"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
                     </div>
 
-                    {/* Quantity controls */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onUpdateQuantity(index, Math.max(0.001, item.quantity - (item.product.type === 'weight' ? 0.1 : 1)))}
-                          className="h-7 w-7 hover:bg-background"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="text-sm font-semibold min-w-10 text-center">
-                          {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onUpdateQuantity(index, item.quantity + (item.product.type === 'weight' ? 0.1 : 1))}
-                          className="h-7 w-7 hover:bg-background"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => onApplyDiscount(index)}
+                        className="bg-accent/10 hover:bg-accent/20 text-accent rounded-lg p-1.5 transition-all border border-accent/20 hover:border-accent/40 hover:shadow-md"
+                      >
+                        <Tag className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-border/30 pt-3 mt-1">
+                    <div className="space-y-1">
+                      <div className="text-xs text-muted-foreground">
+                        {item.product.price.toFixed(2)}€ × {item.quantity}
                       </div>
-                      
-                      {/* Price */}
-                      <div className="text-right">
-                        {item.discount && (
-                          <div className="text-xs text-muted-foreground line-through">
-                            {item.subtotal.toFixed(2)}€
-                          </div>
-                        )}
-                        <div className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                          {item.total.toFixed(2)}€
+                      {item.discount && (
+                        <div className="flex items-center gap-1.5 text-accent">
+                          <Tag className="h-3 w-3" />
+                          <span className="text-xs font-medium">
+                            -{item.discount.type === 'percentage' 
+                              ? `${item.discount.value}%` 
+                              : `${item.discount.value.toFixed(2)}€`}
+                          </span>
                         </div>
-                      </div>
+                      )}
+                      <div className="text-xs text-muted-foreground">TVA: {item.vatAmount.toFixed(2)}€</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-primary">{item.total.toFixed(2)}€</div>
                     </div>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}
       </ScrollArea>
 
-      {/* Totals */}
-      <div className="relative overflow-hidden mt-auto">
-        <div className="absolute inset-0 bg-[var(--gradient-display)]"></div>
-        <div className="relative p-4 space-y-2">
-          <div className="flex justify-between text-sm text-white/70">
-            <span>Sous-total HT</span>
-            <span className="font-medium text-white">{totals.subtotal.toFixed(2)}€</span>
+      {/* Footer - Totals */}
+      <div className="bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 p-5 border-t border-primary/20 backdrop-blur-sm space-y-3 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer"></div>
+        <div className="space-y-2 text-sm relative z-10">
+          <div className="flex justify-between text-foreground/80">
+            <span className="font-medium">Sous-total HT:</span>
+            <span className="font-semibold">{totals.subtotal.toFixed(2)}€</span>
           </div>
-          <div className="flex justify-between text-sm text-white/70">
-            <span>TVA</span>
-            <span className="font-medium text-white">{totals.totalVat.toFixed(2)}€</span>
+          <div className="flex justify-between text-foreground/80">
+            <span className="font-medium">TVA:</span>
+            <span className="font-semibold">{totals.totalVat.toFixed(2)}€</span>
           </div>
           {totals.totalDiscount > 0 && (
-            <div className="flex justify-between text-sm bg-accent/20 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-              <span className="text-white font-medium">Remise</span>
-              <span className="text-white font-bold">-{totals.totalDiscount.toFixed(2)}€</span>
+            <div className="flex justify-between text-accent animate-pulse">
+              <span className="font-medium">Remise:</span>
+              <span className="font-semibold">-{totals.totalDiscount.toFixed(2)}€</span>
             </div>
           )}
-          <div className="flex justify-between text-2xl font-bold text-white pt-3 border-t border-white/20 mt-3">
-            <span>TOTAL</span>
-            <span className="text-pos-success">{totals.total.toFixed(2)}€</span>
-          </div>
+        </div>
+        <div className="flex justify-between items-center pt-3 border-t-2 border-primary/30 relative z-10">
+          <span className="text-xl font-bold text-foreground">TOTAL:</span>
+          <span className="text-4xl font-black bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent drop-shadow-lg animate-pulse">
+            {totals.total.toFixed(2)}€
+          </span>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
