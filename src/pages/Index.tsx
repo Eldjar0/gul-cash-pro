@@ -19,6 +19,7 @@ import {
   Settings as SettingsIcon,
   FileText,
   Scale,
+  Users,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -962,6 +963,13 @@ const Index = () => {
             >
               <ShoppingBag className="h-4 w-4 mr-2" />
               Produits
+            </Button>
+            <Button
+              onClick={() => navigate('/customers')}
+              className="bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white h-10 px-4 shadow-md"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Clients
             </Button>
             <Button
               onClick={openCustomerDisplay}
