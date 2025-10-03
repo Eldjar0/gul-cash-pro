@@ -230,23 +230,34 @@ const CustomerDisplay = () => {
         </div>
         
         <div className="w-full max-w-6xl space-y-6 relative z-10">
-          {/* Logo et messages centrés */}
-          <div className="text-center space-y-4 animate-fade-in">
+          {/* Logo centré */}
+          <div className="text-center animate-fade-in">
             <div className="relative inline-block">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 blur-3xl rounded-full animate-pulse-soft"></div>
               <img src={logoMarket} alt="Logo" className="relative w-56 h-56 mx-auto object-contain animate-scale-in drop-shadow-2xl" />
             </div>
             
-            <div className="space-y-4">
+            <div className="mt-4">
               <h1 className="text-8xl font-black tracking-tight animate-scale-in drop-shadow-lg bg-gradient-to-r from-accent via-accent/60 to-accent bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s' }}>
                 Bienvenue
               </h1>
-              <p className="text-5xl font-bold text-foreground animate-fade-in drop-shadow-md" style={{ animationDelay: '0.2s' }}>
-                Veuillez patienter
-              </p>
-              <p className="text-3xl text-muted-foreground animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            </div>
+          </div>
+
+          {/* Textes centrés entre logo et infos */}
+          <div className="text-center space-y-3 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <p className="text-5xl font-bold text-foreground drop-shadow-md">
+              Veuillez patienter
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-3xl text-muted-foreground">
                 Un collaborateur va prendre votre commande
               </p>
+              <div className="flex gap-1">
+                <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0s' }}></span>
+                <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+              </div>
             </div>
           </div>
 
