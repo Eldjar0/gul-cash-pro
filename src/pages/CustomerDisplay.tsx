@@ -215,7 +215,7 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'idle') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex items-center justify-center p-6 relative overflow-hidden">
+      <div className="h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex items-center justify-center p-6 relative overflow-hidden">
         {/* Animation de bulles flottantes en arrière-plan */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Bulles flottantes */}
@@ -229,12 +229,12 @@ const CustomerDisplay = () => {
           <div className="absolute top-1/4 left-1/2 w-30 h-30 bg-accent/15 rounded-full blur-xl animate-float" style={{ animationDuration: '6.5s', animationDelay: '3.5s' }}></div>
         </div>
         
-        <div className="w-full max-w-6xl space-y-10 relative z-10">
+        <div className="w-full max-w-6xl space-y-6 relative z-10">
           {/* Logo et messages centrés */}
-          <div className="text-center space-y-6 animate-fade-in">
+          <div className="text-center space-y-4 animate-fade-in">
             <div className="relative inline-block">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 blur-3xl rounded-full animate-pulse-soft"></div>
-              <img src={logoMarket} alt="Logo" className="relative w-64 h-64 mx-auto object-contain animate-scale-in drop-shadow-2xl" />
+              <img src={logoMarket} alt="Logo" className="relative w-56 h-56 mx-auto object-contain animate-scale-in drop-shadow-2xl" />
             </div>
             
             <div className="space-y-4">
