@@ -40,7 +40,7 @@ import { ReportXDialog } from '@/components/pos/ReportXDialog';
 import { CloseDayDialog } from '@/components/pos/CloseDayDialog';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
-import { useCreateSale } from '@/hooks/useSales';
+import { useCreateSale, useSales } from '@/hooks/useSales';
 import { useCategories } from '@/hooks/useCategories';
 import { Customer } from '@/hooks/useCustomers';
 import { useTodayReport, useOpenDay, useCloseDay, getTodayReportData, ReportData } from '@/hooks/useDailyReports';
@@ -80,6 +80,13 @@ const Index = () => {
   const createSale = useCreateSale();
   const scanInputRef = useRef<HTMLInputElement>(null);
   const { temperature, loading: weatherLoading } = useWeather();
+  
+  // Get today's sales for statistics
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const { data: todaySales } = useSales(today, tomorrow);
   
   // Lock system
   const [isLocked, setIsLocked] = useState(false);
@@ -1511,6 +1518,58 @@ const Index = () => {
                 </div>
               </div>
             )}
+          </Card>
+
+          {/* Statistiques rapides */}
+          <Card className="bg-gradient-to-br from-background to-muted/20 border-2 border-border/50 p-4 flex-shrink-0 shadow-md">
+            <h3 className="text-xs font-bold text-primary uppercase tracking-wide mb-3">Statistiques du jour</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
+                <div className="text-xs text-muted-foreground mb-1">Total ventes</div>
+                <div className="text-2xl font-bold text-primary">
+                  {(todaySales?.filter(s => !s.is_cancelled).reduce((sum, s) => sum + s.total, 0) || 0).toFixed(2)}€
+                </div>
+              </div>
+              <div className="bg-secondary/5 rounded-lg p-3 border border-secondary/10">
+                <div className="text-xs text-muted-foreground mb-1">Nb tickets</div>
+                <div className="text-2xl font-bold text-secondary">
+                  {todaySales?.filter(s => !s.is_cancelled).length || 0}
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Dernières transactions */}
+          <Card className="bg-gradient-to-br from-background to-muted/20 border-2 border-border/50 p-4 flex-shrink-0 shadow-md">
+            <h3 className="text-xs font-bold text-primary uppercase tracking-wide mb-3">Derniers tickets</h3>
+            <ScrollArea className="h-[200px]">
+              <div className="space-y-2">
+                {todaySales?.filter(s => !s.is_cancelled).slice(0, 5).map((sale) => (
+                  <div 
+                    key={sale.id} 
+                    className="bg-muted/30 rounded-lg p-2 border border-border/50 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="text-xs font-semibold text-foreground">{sale.sale_number}</div>
+                      <div className="text-xs font-bold text-primary">{sale.total.toFixed(2)}€</div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="text-[10px] text-muted-foreground">
+                        {new Date(sale.date || '').toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground capitalize">
+                        {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : sale.payment_method}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {(!todaySales || todaySales.filter(s => !s.is_cancelled).length === 0) && (
+                  <div className="text-center py-8 text-xs text-muted-foreground">
+                    Aucune vente aujourd'hui
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           </Card>
         </div>
 
