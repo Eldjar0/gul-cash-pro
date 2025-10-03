@@ -26,6 +26,9 @@ import { ReportData, DailyReport } from '@/hooks/useDailyReports';
 import { ReportZContent } from './ReportZContent';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import JSZip from 'jszip';
+import { COMPANY_INFO } from '@/data/company';
+import logoMarket from '@/assets/logo-market.png';
 
 interface CloseDayDialogProps {
   open: boolean;
@@ -33,6 +36,203 @@ interface CloseDayDialogProps {
   onConfirm: (closingAmount: number, archiveAndDelete?: boolean) => void;
   reportData: ReportData;
   todayReport: DailyReport | null;
+}
+
+function generateTicketHTML(sale: any): string {
+  const isInvoice = sale.is_invoice || false;
+  const saleDate = new Date(sale.date);
+  
+  // Récupérer les produits depuis sale_items
+  const items = (sale.sale_items || []).map((item: any) => ({
+    product: {
+      name: item.product_name || 'Produit',
+      price: parseFloat(item.unit_price),
+      type: 'unit' as const,
+      vat_rate: parseFloat(item.vat_rate)
+    },
+    quantity: parseFloat(item.quantity),
+    discount: item.discount_type ? {
+      type: item.discount_type as 'percentage' | 'amount',
+      value: parseFloat(item.discount_value || 0)
+    } : undefined,
+    total: parseFloat(item.total)
+  }));
+
+  const itemsHTML = items.map((item: any) => {
+    const unitDisplay = item.product.type === 'weight' ? 'kg' : 'pc';
+    const qtyDisplay = item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0);
+    const pricePerUnit = item.product.price.toFixed(2);
+    
+    return `
+      <div style="margin-bottom: 3px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 900; gap: 6px; margin-bottom: 1px;">
+          <span style="font-weight: 900; text-transform: uppercase; font-size: 16px; letter-spacing: 0.3px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px;">
+            ${item.product.name}
+          </span>
+          <span style="font-weight: 900; white-space: nowrap; font-size: 13px;">
+            ${item.total.toFixed(2)}€
+          </span>
+        </div>
+        <div style="font-size: 11px; font-weight: 800;">
+          ${qtyDisplay} ${unitDisplay} x ${pricePerUnit}€
+          ${item.discount ? `<span style="font-style: italic; margin-left: 5px;">REM -${item.discount.value}${item.discount.type === 'percentage' ? '%' : '€'}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const customerHTML = isInvoice && sale.customers ? `
+    <div style="font-size: 12.3px; margin-bottom: 6px; font-weight: 900; padding-right: 24px;">
+      <div style="font-weight: 900; margin-bottom: 2px;">CLIENT:</div>
+      <div style="font-weight: 900; word-wrap: break-word;">${sale.customers.name}</div>
+      ${sale.customers.vat_number ? `<div style="word-wrap: break-word;">TVA: ${sale.customers.vat_number}</div>` : ''}
+      ${sale.customers.address ? `<div style="word-wrap: break-word;">${sale.customers.address}</div>` : ''}
+      ${sale.customers.postal_code || sale.customers.city ? `<div>${sale.customers.postal_code || ''} ${sale.customers.city || ''}</div>` : ''}
+    </div>
+    <div style="border-top: 1.4px dashed #000; margin: 6px 0;"></div>
+  ` : '';
+
+  const paymentHTML = sale.payment_method === 'cash' && sale.amount_paid ? `
+    <div style="display: flex; justify-content: space-between; font-size: 12.3px; gap: 3px;">
+      <span>Reçu</span>
+      <span style="white-space: nowrap;">${parseFloat(sale.amount_paid).toFixed(2)}€</span>
+    </div>
+    <div style="display: flex; justify-content: space-between; font-size: 12.3px; font-weight: 900; gap: 3px;">
+      <span>Rendu</span>
+      <span style="white-space: nowrap;">${parseFloat(sale.change_amount || 0).toFixed(2)}€</span>
+    </div>
+  ` : '';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>${isInvoice ? 'Facture' : 'Ticket'} ${sale.sale_number}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body {
+            font-family: 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif;
+            background: white;
+            color: black;
+            width: 80mm;
+            max-width: 302px;
+            margin: 0 auto;
+            padding: 8px;
+            padding-right: 24px;
+            font-size: 16.4px;
+            line-height: 1.3;
+            font-weight: 900;
+          }
+          @media print {
+            @page { size: 80mm auto; margin: 0; }
+            body { width: 80mm; margin: 0; padding: 8px; }
+          }
+        </style>
+      </head>
+      <body>
+        <div style="text-align: center; margin-bottom: 8px;">
+          <img src="${logoMarket}" alt="Logo" style="width: 180px; height: auto; margin: 0 auto; display: block;" />
+        </div>
+
+        <div style="text-align: center; margin-bottom: 8px; font-weight: 900; font-size: 12.3px; line-height: 1.2;">
+          <div>${COMPANY_INFO.address}</div>
+          <div>${COMPANY_INFO.postalCode} ${COMPANY_INFO.city}</div>
+          ${COMPANY_INFO.phone ? `<div>Tel: ${COMPANY_INFO.phone}</div>` : ''}
+          <div style="margin-top: 1px;">TVA: ${COMPANY_INFO.vat}</div>
+        </div>
+
+        <div style="border-top: 1.4px dashed #000; margin: 6px 0;"></div>
+
+        ${customerHTML}
+
+        <div style="font-size: 12.3px; margin-bottom: 6px; font-weight: 900; padding-right: 24px;">
+          <div style="display: flex; justify-content: space-between; font-weight: 900;">
+            <span>${isInvoice ? 'FACTURE' : 'TICKET'} N°:</span>
+            <span style="font-size: 13.7px;">${sale.sale_number}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 1px;">
+            <span>DATE:</span>
+            <span style="font-size: 10.9px;">${saleDate.toLocaleString('fr-BE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        </div>
+
+        <div style="border-top: 1.4px dashed #000; margin: 6px 0;"></div>
+
+        <div style="margin-bottom: 6px; padding-right: 24px;">
+          ${itemsHTML}
+        </div>
+
+        <div style="border-top: 1.4px solid #000; margin: 6px 0;"></div>
+
+        <div style="font-size: 13.7px; margin-bottom: 4px; font-weight: 900; padding-right: 24px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1px; gap: 3px;">
+            <span>SOUS-TOTAL HT</span>
+            <span style="font-weight: 900; white-space: nowrap;">${parseFloat(sale.subtotal).toFixed(2)}€</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1px; gap: 3px;">
+            <span>TVA TOTALE</span>
+            <span style="font-weight: 900; white-space: nowrap;">${parseFloat(sale.total_vat).toFixed(2)}€</span>
+          </div>
+          ${parseFloat(sale.total_discount || 0) > 0 ? `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1px; gap: 3px;">
+            <span>REMISE</span>
+            <span style="font-weight: 900; white-space: nowrap;">-${parseFloat(sale.total_discount).toFixed(2)}€</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <div style="border-top: 2.8px solid #000; border-bottom: 2.8px solid #000; padding: 4px 24px; margin: 6px 0;">
+          <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 900; gap: 8px;">
+            <span>TOTAL</span>
+            <span style="white-space: nowrap;">${parseFloat(sale.total).toFixed(2)}€</span>
+          </div>
+        </div>
+
+        <div style="font-size: 13.7px; margin-top: 6px; margin-bottom: 6px; font-weight: 900; padding-right: 24px;">
+          <div style="display: flex; justify-content: space-between; font-weight: 900; margin-bottom: 2px; gap: 3px;">
+            <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">
+              ${sale.payment_method === 'cash' ? 'ESPECES' : sale.payment_method === 'card' ? 'CARTE' : 'PAIEMENT'}
+            </span>
+            <span style="white-space: nowrap;">${parseFloat(sale.total).toFixed(2)}€</span>
+          </div>
+          ${paymentHTML}
+        </div>
+
+        <div style="border-top: 1.4px dashed #000; margin: 7px 0;"></div>
+
+        <div style="text-align: center; margin-top: 7px; font-weight: 900;">
+          ${isInvoice ? `
+          <div style="font-size: 12.3px;">
+            <div style="font-weight: 900; margin-bottom: 2px;">FACTURE</div>
+            <div>Payable sous 30 jours</div>
+          </div>
+          ` : `
+          <div>
+            <div style="font-size: 17.8px; font-weight: 900; letter-spacing: 0.7px; margin-bottom: 2px;">
+              MERCI DE VOTRE VISITE
+            </div>
+            <div style="font-size: 15px; font-weight: 900;">
+              A BIENTOT !
+            </div>
+          </div>
+          `}
+          <div style="font-size: 10.9px; margin-top: 6px; color: #666; font-weight: 900;">
+            www.JLprod.be
+          </div>
+          
+          <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid #000; background-color: #F3F4F6; padding: 6px; margin: 8px -8px 0 -8px;">
+            <div style="font-size: 11px; font-weight: 900; margin-bottom: 2px;">
+              ${isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
+            </div>
+            <div style="font-size: 10px; font-weight: 900;">
+              POUR INFORMATION UNIQUEMENT
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
 }
 
 async function exportAndArchiveSales() {
@@ -53,7 +253,10 @@ async function exportAndArchiveSales() {
 
     const date = new Date().toISOString().split('T')[0];
     
-    // 1. Créer l'archive JSON complète
+    // Créer un fichier ZIP avec JSZip
+    const zip = new JSZip();
+    
+    // 1. Ajouter l'archive JSON complète
     const archive = {
       export_date: new Date().toISOString(),
       total_sales: sales?.length || 0,
@@ -62,18 +265,9 @@ async function exportAndArchiveSales() {
       sales: sales || [],
     };
 
-    // Télécharger le fichier JSON
-    const blobJSON = new Blob([JSON.stringify(archive, null, 2)], { type: 'application/json' });
-    const urlJSON = URL.createObjectURL(blobJSON);
-    const linkJSON = document.createElement('a');
-    linkJSON.href = urlJSON;
-    linkJSON.download = `archive-ventes-${date}.json`;
-    document.body.appendChild(linkJSON);
-    linkJSON.click();
-    document.body.removeChild(linkJSON);
-    URL.revokeObjectURL(urlJSON);
+    zip.file('donnees-ventes.json', JSON.stringify(archive, null, 2));
 
-    // 2. Créer un fichier CSV pour Excel
+    // 2. Ajouter le fichier CSV pour Excel
     const csvRows: string[] = [];
     csvRows.push('# ARCHIVE VENTES - CONSERVATION OBLIGATOIRE 7 ANS (LOI BELGE)');
     csvRows.push('# Export du: ' + new Date().toISOString());
@@ -91,18 +285,63 @@ async function exportAndArchiveSales() {
       );
     });
 
-    const csvContent = csvRows.join('\n');
-    const blobCSV = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM pour Excel
-    const urlCSV = URL.createObjectURL(blobCSV);
-    const linkCSV = document.createElement('a');
-    linkCSV.href = urlCSV;
-    linkCSV.download = `archive-ventes-${date}.csv`;
-    document.body.appendChild(linkCSV);
-    linkCSV.click();
-    document.body.removeChild(linkCSV);
-    URL.revokeObjectURL(urlCSV);
+    zip.file('resume-ventes.csv', '\ufeff' + csvRows.join('\n'));
 
-    toast.success('Archives téléchargées (JSON + CSV)');
+    // 3. Créer un dossier "tickets" et ajouter chaque ticket en HTML
+    const ticketsFolder = zip.folder('tickets');
+    
+    if (ticketsFolder && sales) {
+      for (const sale of sales) {
+        const ticketHTML = generateTicketHTML(sale);
+        const filename = `${sale.sale_number.replace(/[/\\]/g, '-')}.html`;
+        ticketsFolder.file(filename, ticketHTML);
+      }
+    }
+
+    // 4. Ajouter un fichier README
+    const readme = `ARCHIVE DES VENTES
+==================
+
+Date d'export: ${new Date().toLocaleString('fr-BE')}
+Nombre de ventes: ${sales?.length || 0}
+
+⚖️ OBLIGATION LÉGALE BELGE
+---------------------------
+Ces données doivent être conservées pendant 7 ans minimum conformément à la législation fiscale belge.
+En cas de contrôle du SPF Finances, vous devrez présenter ces archives.
+
+CONTENU DE L'ARCHIVE
+---------------------
+1. donnees-ventes.json : Données complètes au format JSON
+2. resume-ventes.csv : Résumé des ventes au format CSV (pour Excel)
+3. tickets/ : Tous les tickets de caisse au format HTML
+
+Pour consulter un ticket, ouvrez le fichier HTML correspondant dans un navigateur web.
+
+IMPORTANT: Ne pas modifier ces fichiers.
+`;
+
+    zip.file('LISEZMOI.txt', readme);
+
+    // Générer le ZIP et télécharger
+    toast.info('Génération de l\'archive ZIP...');
+    
+    const zipBlob = await zip.generateAsync({ 
+      type: 'blob',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 9 }
+    });
+
+    const url = URL.createObjectURL(zipBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `archive-ventes-${date}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success(`Archive ZIP téléchargée avec ${sales?.length || 0} tickets`);
     
     // Supprimer les ventes (sauf celles de la journée en cours)
     const today = new Date();
