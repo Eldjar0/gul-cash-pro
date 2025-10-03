@@ -1048,30 +1048,30 @@ const Index = () => {
       />
       
       {/* Info bar avec date, météo, recherche et boutons */}
-      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-4 py-2 flex items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-2 py-1.5 flex items-center justify-between gap-2 flex-shrink-0">
         {/* Gauche: Date/Heure + Météo */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border border-border">
-            <Clock className="h-4 w-4 text-primary" />
-            <div className="text-xs">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-background rounded-lg border border-border">
+            <Clock className="h-3 w-3 text-primary" />
+            <div className="text-[10px]">
               <span className="font-bold">{currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
-              <span className="text-muted-foreground ml-2">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+              <span className="text-muted-foreground ml-1">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border border-border">
-            <CloudSun className="h-4 w-4 text-primary" />
-            <div className="text-xs font-bold">
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-background rounded-lg border border-border">
+            <CloudSun className="h-3 w-3 text-primary" />
+            <div className="text-[10px] font-bold">
               {weatherLoading ? '...' : `${temperature}°C`}
             </div>
           </div>
         </div>
 
         {/* Centre: Barre de recherche */}
-        <div className="flex-1 max-w-md">
+        <div className="flex-1 max-w-sm">
           <form onSubmit={handleScanSubmit}>
             <div className="relative">
-              <Scan className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
+              <Scan className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-primary" />
               <Input
                 ref={scanInputRef}
                 value={scanInput}
@@ -1081,9 +1081,9 @@ const Index = () => {
                     setSearchResults([]);
                   }
                 }}
-                placeholder="Rechercher par nom, code-barres, ID ou prix..."
+                placeholder="Rechercher..."
                 autoComplete="off"
-                className="h-9 pl-10 pr-8 bg-background border-input text-foreground"
+                className="h-7 pl-8 pr-7 text-xs bg-background border-input text-foreground"
               />
               {scanInput && (
                 <Button
@@ -1093,7 +1093,7 @@ const Index = () => {
                     setSearchResults([]);
                     scanInputRef.current?.focus();
                   }}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 bg-transparent hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 p-0 bg-transparent hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
                   variant="ghost"
                 >
                   ×
@@ -1104,41 +1104,45 @@ const Index = () => {
         </div>
         
         {/* Droite: Boutons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {/* Boutons gestion de journée */}
           {!isDayOpenEffective ? (
             <Button
               onClick={() => setOpenDayDialogOpen(true)}
-              className="bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md"
+              size="sm"
+              className="h-7 text-xs bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md"
             >
-              <Calendar className="h-4 w-4 mr-2" />
-              Ouvrir Journée
+              <Calendar className="h-3 w-3 mr-1" />
+              Ouvrir
             </Button>
           ) : (
             <>
               <Button
                 onClick={handleReportX}
-                className="bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md"
+                size="sm"
+                className="h-7 text-xs bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md"
               >
-                <FileText className="h-4 w-4 mr-2" />
+                <FileText className="h-3 w-3 mr-1" />
                 Rapport X
               </Button>
               <Button
                 onClick={() => setCloseDayDialogOpen(true)}
-                className="bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md"
+                size="sm"
+                className="h-7 text-xs bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md"
               >
-                <CalendarX className="h-4 w-4 mr-2" />
-                Fermer Journée
+                <CalendarX className="h-3 w-3 mr-1" />
+                Fermer
               </Button>
             </>
           )}
           
           <Button
             onClick={openCustomerDisplay}
-            className="bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md"
+            size="sm"
+            className="h-7 text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md"
           >
-            <Eye className="h-4 w-4 mr-2" />
-            Affichage Client
+            <Eye className="h-3 w-3 mr-1" />
+            Affichage
           </Button>
         </div>
       </div>
@@ -1176,26 +1180,25 @@ const Index = () => {
           </div>
 
           {/* Items list - Modern cards */}
-          <ScrollArea className="flex-1 p-2 bg-background/50 max-h-[calc(100vh-400px)]">
+          <ScrollArea className="flex-1 p-1.5 bg-background/50 h-[calc(100vh-370px)]">
             {cart.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="p-4 bg-muted/50 rounded-full w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-                  <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+              <div className="text-center py-6">
+                <div className="p-3 bg-muted/50 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
+                  <ShoppingBag className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <p className="text-muted-foreground font-medium text-sm">Panier vide</p>
-                <p className="text-xs text-muted-foreground/70 mt-1">Scannez un produit</p>
+                <p className="text-muted-foreground font-medium text-[10px]">Panier vide</p>
               </div>
             ) : (
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {cart.map((item, index) => (
                   <div
                     key={index}
-                    className="bg-white border border-border p-2 rounded-lg hover:border-primary/40 hover:shadow-md transition-all group"
+                    className="bg-white border border-border p-1.5 rounded-lg hover:border-primary/40 transition-all group"
                   >
-                    <div className="flex justify-between items-start mb-1">
+                    <div className="flex justify-between items-start mb-0.5">
                       <div className="flex-1 min-w-0">
-                        <div className="text-foreground font-bold text-xs truncate">{item.product.name}</div>
-                        <div className="flex items-center gap-1 mt-0.5">
+                        <div className="text-foreground font-bold text-[10px] truncate">{item.product.name}</div>
+                        <div className="flex items-center gap-0.5 mt-0.5">
                           <Input
                             data-scan-ignore="true"
                             type="text"
@@ -1210,20 +1213,20 @@ const Index = () => {
                                 e.target.value = (item.custom_price ?? item.product.price).toString();
                               }
                             }}
-                            className="h-5 w-14 text-xs px-1 text-center bg-background"
+                            className="h-4 w-10 text-[9px] px-0.5 text-center bg-background"
                           />
-                          <span className="text-muted-foreground text-xs">€/{item.product.unit || 'u'} × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}</span>
+                          <span className="text-muted-foreground text-[9px]">€/{item.product.unit || 'u'} × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}</span>
                         </div>
                         {item.discount && (
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <span className="text-xs bg-accent/20 text-accent px-1 py-0.5 rounded">
+                          <div className="flex items-center gap-0.5 mt-0.5">
+                            <span className="text-[9px] bg-accent/20 text-accent px-1 py-0.5 rounded">
                               -{item.discount.type === 'percentage' ? `${item.discount.value}%` : `${item.discount.value}€`}
                             </span>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleRemoveDiscount(index)}
-                              className="h-4 w-4 p-0 text-muted-foreground hover:text-destructive"
+                              className="h-3 w-3 p-0 text-muted-foreground hover:text-destructive"
                             >
                               ×
                             </Button>
@@ -1235,9 +1238,9 @@ const Index = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleRemoveItem(index)}
-                          className="h-6 w-6 hover:bg-destructive/20 text-destructive flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="h-4 w-4 hover:bg-destructive/20 text-destructive flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-2.5 w-2.5" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -1246,18 +1249,18 @@ const Index = () => {
                             setDiscountTarget({ type: 'item', index });
                             setDiscountDialogOpen(true);
                           }}
-                          className="h-6 w-6 hover:bg-accent/20 text-accent flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="h-4 w-4 hover:bg-accent/20 text-accent flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <Percent className="h-3 w-3" />
+                          <Percent className="h-2.5 w-2.5" />
                         </Button>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <div className="flex gap-1 bg-muted/50 p-0.5 rounded-lg">
+                      <div className="flex gap-0.5 bg-muted/50 p-0.5 rounded-lg">
                         <Button
                           size="sm"
                           onClick={() => handleUpdateQuantity(index, Math.max(0.1, item.quantity - 1))}
-                          className="h-6 w-6 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-xs"
+                          className="h-5 w-5 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-[10px]"
                         >
                           -
                         </Button>
@@ -1275,18 +1278,18 @@ const Index = () => {
                               e.target.value = item.quantity.toFixed(3);
                             }
                           }}
-                          className="h-6 w-16 text-xs px-1 text-center bg-white font-bold"
+                          className="h-5 w-12 text-[10px] px-0.5 text-center bg-white font-bold"
                         />
-                        <span className="text-xs text-muted-foreground self-center">{item.product.unit || 'u'}</span>
+                        <span className="text-[10px] text-muted-foreground self-center">{item.product.unit || 'u'}</span>
                         <Button
                           size="sm"
                           onClick={() => handleUpdateQuantity(index, item.quantity + 1)}
-                          className="h-6 w-6 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-xs"
+                          className="h-5 w-5 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-[10px]"
                         >
                           +
                         </Button>
                       </div>
-                      <div className="text-primary text-sm font-bold">
+                      <div className="text-primary text-xs font-bold">
                         {item.total.toFixed(2)}€
                       </div>
                     </div>
@@ -1297,15 +1300,15 @@ const Index = () => {
           </ScrollArea>
 
           {/* Totals - Modern design */}
-          <div className="bg-white border-t-2 border-border p-2 space-y-2 flex-shrink-0">
+          <div className="bg-white border-t-2 border-border p-1.5 space-y-1 flex-shrink-0">
             {/* Ticket/Facture toggle */}
-            <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg border border-border">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="invoice-mode" className="text-xs font-semibold cursor-pointer">
+            <div className="flex items-center justify-between p-1.5 bg-muted/50 rounded-lg border border-border">
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="invoice-mode" className="text-[10px] font-semibold cursor-pointer">
                   {isInvoiceMode ? 'Facture' : 'Ticket'}
                 </Label>
                 {isInvoiceMode && selectedCustomer && (
-                  <div className="text-xs text-muted-foreground truncate max-w-[100px]">
+                  <div className="text-[9px] text-muted-foreground truncate max-w-[80px]">
                     {selectedCustomer.name}
                   </div>
                 )}
@@ -1316,9 +1319,9 @@ const Index = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => setCustomerDialogOpen(true)}
-                    className="h-6 text-xs px-1"
+                    className="h-5 text-[9px] px-1"
                   >
-                    <Edit className="h-3 w-3 mr-0.5" />
+                    <Edit className="h-2.5 w-2.5 mr-0.5" />
                     {selectedCustomer ? 'Modif' : 'Client'}
                   </Button>
                 )}
@@ -1336,22 +1339,22 @@ const Index = () => {
                 />
               </div>
             </div>
-            <div className="flex justify-between text-muted-foreground text-sm">
+            <div className="flex justify-between text-muted-foreground text-[10px]">
               <span>Sous-total HT</span>
               <span className="font-medium">{totals.subtotal.toFixed(2)}€</span>
             </div>
-            <div className="flex justify-between text-muted-foreground text-sm">
+            <div className="flex justify-between text-muted-foreground text-[10px]">
               <span>TVA</span>
               <span className="font-medium">{totals.totalVat.toFixed(2)}€</span>
             </div>
             {totals.totalDiscount > 0 && (
-              <div className="flex justify-between text-accent text-sm">
+              <div className="flex justify-between text-accent text-[10px]">
                 <span>Remise totale</span>
                 <span className="font-medium">-{totals.totalDiscount.toFixed(2)}€</span>
               </div>
             )}
             {globalDiscount && (
-              <div className="flex items-center justify-between text-xs bg-accent/10 px-2 py-1 rounded">
+              <div className="flex items-center justify-between text-[9px] bg-accent/10 px-1.5 py-0.5 rounded">
                 <span className="text-accent">
                   Remise globale: {globalDiscount.type === 'percentage' ? `${globalDiscount.value}%` : `${globalDiscount.value}€`}
                 </span>
@@ -1359,29 +1362,29 @@ const Index = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setGlobalDiscount(null)}
-                  className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
+                  className="h-4 w-4 p-0 text-muted-foreground hover:text-destructive"
                 >
                   ×
                 </Button>
               </div>
             )}
             {appliedPromoCode && (
-              <div className="flex items-center justify-between text-xs bg-primary/10 px-2 py-1 rounded">
-                <span className="text-primary flex items-center gap-1">
-                  <Ticket className="h-3 w-3" />
+              <div className="flex items-center justify-between text-[9px] bg-primary/10 px-1.5 py-0.5 rounded">
+                <span className="text-primary flex items-center gap-0.5">
+                  <Ticket className="h-2.5 w-2.5" />
                   Code {appliedPromoCode.code}: {appliedPromoCode.type === 'percentage' ? `${appliedPromoCode.value}%` : `${appliedPromoCode.value}€`}
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setAppliedPromoCode(null)}
-                  className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
+                  className="h-4 w-4 p-0 text-muted-foreground hover:text-destructive"
                 >
                   ×
                 </Button>
               </div>
             )}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1">
               <Button
                 variant="outline"
                 size="sm"
@@ -1390,9 +1393,9 @@ const Index = () => {
                   setDiscountDialogOpen(true);
                 }}
                 disabled={cart.length === 0}
-                className="h-8 text-xs border-accent text-accent hover:bg-accent/10"
+                className="h-6 text-[9px] border-accent text-accent hover:bg-accent/10"
               >
-                <Percent className="mr-1 h-3 w-3" />
+                <Percent className="mr-0.5 h-2.5 w-2.5" />
                 Remise
               </Button>
               <Button
@@ -1400,61 +1403,61 @@ const Index = () => {
                 size="sm"
                 onClick={() => setPromoDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-8 text-xs border-primary text-primary hover:bg-primary/10"
+                className="h-6 text-[9px] border-primary text-primary hover:bg-primary/10"
               >
-                <Ticket className="mr-1 h-3 w-3" />
-                Code promo
+                <Ticket className="mr-0.5 h-2.5 w-2.5" />
+                Code
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handlePreviewReceipt}
                 disabled={cart.length === 0}
-                className="h-8 text-xs border-muted-foreground text-muted-foreground hover:bg-muted/50"
+                className="h-6 text-[9px] border-muted-foreground text-muted-foreground hover:bg-muted/50"
               >
-                <Eye className="mr-1 h-3 w-3" />
+                <Eye className="mr-0.5 h-2.5 w-2.5" />
                 Aperçu
               </Button>
             </div>
-            <div className="flex justify-between items-center text-primary text-xl font-bold pt-2 border-t-2 border-border">
+            <div className="flex justify-between items-center text-primary text-base font-bold pt-1 border-t-2 border-border">
               <span>TOTAL</span>
               <span>{totals.total.toFixed(2)}€</span>
             </div>
           </div>
 
           {/* Payment buttons - Modern JL Prod style */}
-          <div className="bg-background p-2 space-y-2 border-t-2 border-border flex-shrink-0">
+          <div className="bg-background p-1.5 space-y-1.5 border-t-2 border-border flex-shrink-0">
             <Button
               onClick={() => setPaymentDialogOpen(true)}
               disabled={cart.length === 0}
-              className="w-full h-12 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-base shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-10 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Euro className="mr-2 h-5 w-5" />
+              <Euro className="mr-1.5 h-4 w-4" />
               PAYER {cart.length > 0 && `${totals.total.toFixed(2)}€`}
             </Button>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1">
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-10 text-xs bg-white hover:bg-primary/5 text-primary border-2 border-primary font-semibold shadow-sm"
+                className="h-8 text-[10px] bg-white hover:bg-primary/5 text-primary border-2 border-primary font-semibold shadow-sm"
               >
-                <CreditCard className="mr-1 h-3 w-3" />
+                <CreditCard className="mr-0.5 h-2.5 w-2.5" />
                 CB
               </Button>
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-10 text-xs bg-white hover:bg-accent/5 text-accent border-2 border-accent font-semibold shadow-sm"
+                className="h-8 text-[10px] bg-white hover:bg-accent/5 text-accent border-2 border-accent font-semibold shadow-sm"
               >
-                <Banknote className="mr-1 h-3 w-3" />
+                <Banknote className="mr-0.5 h-2.5 w-2.5" />
                 ESP
               </Button>
               <Button
                 onClick={handleClearCart}
                 disabled={cart.length === 0}
-                className="h-10 text-xs bg-white hover:bg-destructive/5 text-destructive border-2 border-destructive font-semibold shadow-sm"
+                className="h-8 text-[10px] bg-white hover:bg-destructive/5 text-destructive border-2 border-destructive font-semibold shadow-sm"
               >
-                <Trash2 className="mr-1 h-3 w-3" />
+                <Trash2 className="mr-0.5 h-2.5 w-2.5" />
                 ANN
               </Button>
             </div>
@@ -1462,29 +1465,29 @@ const Index = () => {
         </div>
 
         {/* COLONNE CENTRE - Calculatrice */}
-        <div className="col-span-4 bg-background p-2 flex flex-col gap-2 overflow-y-auto">
+        <div className="col-span-4 bg-background p-1 flex flex-col gap-1 overflow-hidden h-full">
 
           {/* Statistiques rapides */}
-          <Card className="bg-gradient-to-br from-background to-muted/20 border-2 border-border/50 p-4 flex-shrink-0 shadow-md">
-            <h3 className="text-xs font-bold text-primary uppercase tracking-wide mb-3">Statistiques du jour</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
-                <div className="text-xs text-muted-foreground mb-1">Total ventes</div>
-                <div className="text-2xl font-bold text-primary mb-1">
+          <Card className="bg-gradient-to-br from-background to-muted/20 border-2 border-border/50 p-2 flex-shrink-0 shadow-md">
+            <h3 className="text-[9px] font-bold text-primary uppercase tracking-wide mb-2">Statistiques du jour</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-primary/5 rounded-lg p-2 border border-primary/10">
+                <div className="text-[9px] text-muted-foreground mb-0.5">Total ventes</div>
+                <div className="text-lg font-bold text-primary mb-0.5">
                   {todayTotal.toFixed(2)}€
                 </div>
-                <div className={`flex items-center gap-1 text-xs font-semibold ${totalPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {totalPercentChange >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                <div className={`flex items-center gap-0.5 text-[9px] font-semibold ${totalPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {totalPercentChange >= 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
                   {totalPercentChange >= 0 ? '+' : ''}{totalPercentChange.toFixed(1)}%
                 </div>
               </div>
-              <div className="bg-secondary/5 rounded-lg p-3 border border-secondary/10">
-                <div className="text-xs text-muted-foreground mb-1">Nb tickets</div>
-                <div className="text-2xl font-bold text-secondary mb-1">
+              <div className="bg-secondary/5 rounded-lg p-2 border border-secondary/10">
+                <div className="text-[9px] text-muted-foreground mb-0.5">Nb tickets</div>
+                <div className="text-lg font-bold text-secondary mb-0.5">
                   {todayCount}
                 </div>
-                <div className={`flex items-center gap-1 text-xs font-semibold ${countPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {countPercentChange >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                <div className={`flex items-center gap-0.5 text-[9px] font-semibold ${countPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {countPercentChange >= 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
                   {countPercentChange >= 0 ? '+' : ''}{countPercentChange.toFixed(1)}%
                 </div>
               </div>
@@ -1492,46 +1495,46 @@ const Index = () => {
           </Card>
 
           {/* Calculatrice moderne */}
-          <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-3 flex-shrink-0 shadow-lg">
-            <div className="flex items-center justify-between mb-2">
+          <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-2 flex-shrink-0 shadow-lg">
+            <div className="flex items-center justify-between mb-1.5">
               <div className="text-center flex-1">
-                <div className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Calculette</div>
-                <div className="text-xs text-muted-foreground">{calcMode === 'input' ? 'Poids / Quantité / Prix' : 'Calcul pour compter'}</div>
+                <div className="text-[9px] font-semibold text-primary uppercase tracking-wide mb-0.5">Calculette</div>
+                <div className="text-[9px] text-muted-foreground">{calcMode === 'input' ? 'Poids / Quantité / Prix' : 'Calcul'}</div>
               </div>
-              <div className="flex gap-1">
+              <div className="flex gap-0.5">
                 <Button
                   variant={calcMode === 'input' ? 'default' : 'outline'}
                   size="sm"
-                  className="h-8"
+                  className="h-6 w-6 p-0"
                   onClick={() => setCalcMode('input')}
                 >
-                  <Scale className="h-3 w-3" />
+                  <Scale className="h-2.5 w-2.5" />
                 </Button>
                 <Button
                   variant={calcMode === 'math' ? 'default' : 'outline'}
                   size="sm"
-                  className="h-8"
+                  className="h-6 w-6 p-0"
                   onClick={() => setCalcMode('math')}
                 >
-                  <Calculator className="h-3 w-3" />
+                  <Calculator className="h-2.5 w-2.5" />
                 </Button>
               </div>
             </div>
             
             {/* Affichage */}
-            <div className="bg-gradient-to-br from-primary to-primary-glow p-3 rounded-xl mb-3 border-2 border-primary shadow-inner">
-              <div className="text-white text-3xl font-bold text-center font-mono tracking-wider drop-shadow-lg">
+            <div className="bg-gradient-to-br from-primary to-primary-glow p-2 rounded-xl mb-2 border-2 border-primary shadow-inner">
+              <div className="text-white text-xl font-bold text-center font-mono tracking-wider drop-shadow-lg">
                 {quantityInput}
               </div>
             </div>
             
             {/* Clavier */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1">
               {['7', '8', '9', '4', '5', '6', '1', '2', '3', '.', '0', 'C'].map((key) => (
                 <Button
                   key={key}
                   onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)}
-                  className={`h-12 text-xl font-bold transition-all active:scale-95 shadow-md hover:shadow-xl ${
+                  className={`h-8 text-sm font-bold transition-all active:scale-95 shadow-sm ${
                     key === 'C' 
                       ? 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0' 
                       : key === '.' 
@@ -1544,19 +1547,19 @@ const Index = () => {
               ))}
             </div>
             {calcMode === 'math' ? (
-              <div className="mt-3">
-                <div className="grid grid-cols-4 gap-2">
-                  <Button onClick={() => handleOperation('+')} className="h-12 bg-primary/10 font-bold">+</Button>
-                  <Button onClick={() => handleOperation('-')} className="h-12 bg-primary/10 font-bold"><Minus className="h-5 w-5" /></Button>
-                  <Button onClick={() => handleOperation('*')} className="h-12 bg-primary/10 font-bold"><X className="h-5 w-5" /></Button>
-                  <Button onClick={() => handleOperation('/')} className="h-12 bg-primary/10 font-bold"><Divide className="h-5 w-5" /></Button>
-                  <Button onClick={() => handleOperation('%')} className="h-12 bg-primary/10 font-bold col-span-2"><Percent className="h-5 w-5 mr-1" />%</Button>
-                  <Button onClick={handleEqualsCalc} disabled={!quantityInput} className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg col-span-2">=</Button>
+              <div className="mt-2">
+                <div className="grid grid-cols-4 gap-1">
+                  <Button onClick={() => handleOperation('+')} className="h-8 text-sm bg-primary/10 font-bold">+</Button>
+                  <Button onClick={() => handleOperation('-')} className="h-8 text-sm bg-primary/10 font-bold"><Minus className="h-3.5 w-3.5" /></Button>
+                  <Button onClick={() => handleOperation('*')} className="h-8 text-sm bg-primary/10 font-bold"><X className="h-3.5 w-3.5" /></Button>
+                  <Button onClick={() => handleOperation('/')} className="h-8 text-sm bg-primary/10 font-bold"><Divide className="h-3.5 w-3.5" /></Button>
+                  <Button onClick={() => handleOperation('%')} className="h-8 text-sm bg-primary/10 font-bold col-span-2"><Percent className="h-3.5 w-3.5 mr-0.5" />%</Button>
+                  <Button onClick={handleEqualsCalc} disabled={!quantityInput} className="h-8 text-sm bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-md col-span-2">=</Button>
                 </div>
               </div>
             ) : (
-              <div className="mt-3 pt-3 border-t border-border">
-                <div className="text-xs text-center text-muted-foreground">
+              <div className="mt-2 pt-2 border-t border-border">
+                <div className="text-[9px] text-center text-muted-foreground">
                   Tapez la quantité avant d'ajouter un article
                 </div>
               </div>
@@ -1565,20 +1568,19 @@ const Index = () => {
         </div>
 
         {/* RIGHT PANEL - Articles/Catégories/Résultats */}
-        <div className="col-span-3 bg-white border-l border-border overflow-y-auto max-h-[calc(100vh-60px)]">
-          <div className="p-2">
+        <div className="col-span-3 bg-white border-l border-border overflow-hidden h-full">
+          <div className="p-1 h-full overflow-y-auto">
             {scanInput.trim() && searchResults.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="p-6 bg-muted/50 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-                  <Scan className="h-12 w-12 text-muted-foreground" />
+              <div className="text-center py-8">
+                <div className="p-4 bg-muted/50 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                  <Scan className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <p className="text-muted-foreground font-medium">Aucun résultat</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">Essayez un autre terme de recherche</p>
+                <p className="text-muted-foreground font-medium text-[10px]">Aucun résultat</p>
               </div>
             ) : searchResults.length > 0 ? (
               <>
-                <div className="flex items-center justify-between mb-4 px-2">
-                  <h2 className="text-foreground font-bold text-sm flex items-center gap-2">
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <h2 className="text-foreground font-bold text-[10px] flex items-center gap-1">
                     <div className="h-1 w-1 rounded-full bg-primary"></div>
                     RÉSULTATS ({searchResults.length})
                   </h2>
@@ -1589,12 +1591,12 @@ const Index = () => {
                       setScanInput('');
                       setSearchResults([]);
                     }}
-                    className="h-7 text-xs"
+                    className="h-5 text-[9px] px-1"
                   >
                     Effacer
                   </Button>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {searchResults.map((product) => (
                     <button
                       key={product.id}
