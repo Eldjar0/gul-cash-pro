@@ -78,3 +78,25 @@ export const useUpdateCategory = () => {
     },
   });
 };
+
+export const useDeleteCategory = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast({
+        title: 'Catégorie supprimée',
+      });
+    },
+  });
+};

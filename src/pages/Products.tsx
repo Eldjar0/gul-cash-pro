@@ -36,10 +36,12 @@ import {
   Search,
   Package,
   AlertTriangle,
+  FolderKanban,
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { toast } from 'sonner';
+import { CategoryDialog } from '@/components/products/CategoryDialog';
 
 export default function Products() {
   const navigate = useNavigate();
@@ -52,6 +54,7 @@ export default function Products() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const barcodeInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
@@ -223,13 +226,23 @@ export default function Products() {
               <p className="text-xs md:text-sm text-white/80">{products.length} produits</p>
             </div>
           </div>
-          <Button
-            onClick={() => handleOpenDialog()}
-            className="bg-white text-primary hover:bg-white/90"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nouveau
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setCategoryDialogOpen(true)}
+              variant="outline"
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+            >
+              <FolderKanban className="h-4 w-4 mr-2" />
+              Catégories
+            </Button>
+            <Button
+              onClick={() => handleOpenDialog()}
+              className="bg-white text-primary hover:bg-white/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nouveau
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -566,6 +579,12 @@ export default function Products() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Category Dialog */}
+      <CategoryDialog 
+        open={categoryDialogOpen} 
+        onOpenChange={setCategoryDialogOpen}
+      />
     </div>
   );
 }

@@ -193,7 +193,7 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
 
       <div style={{ borderTop: '3px double #000', margin: '8px 0' }}></div>
 
-      {/* AVERTISSEMENT NON-FISCAL OBLIGATOIRE - RENFORCÉ */}
+      {/* AVERTISSEMENT NON-FISCAL */}
       <div style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#FEE2E2', padding: '8px', border: '2px solid #DC2626', marginBottom: '6px' }}>
         <div style={{ fontWeight: '900', marginBottom: '4px', textAlign: 'center', fontSize: '13px', color: '#DC2626' }}>
           ⚠️ RAPPORT NON-FISCAL
@@ -201,11 +201,8 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
         <div style={{ fontWeight: '900', fontSize: '12px', textAlign: 'center', marginBottom: '4px' }}>
           USAGE INTERNE UNIQUEMENT
         </div>
-        <div style={{ fontWeight: '900', fontSize: '9px', textAlign: 'center', color: '#666', lineHeight: '1.3', marginBottom: '3px' }}>
-          Ce rapport ne remplace pas le carnet de caisse papier exigé par le SPF Finances. Le logiciel n'est pas certifié fiscalement et ne peut servir de preuve officielle.
-        </div>
         <div style={{ fontWeight: '900', fontSize: '9px', textAlign: 'center', color: '#991B1B' }}>
-          Logiciel non certifié SPF Finances • JLprod v1.0
+          JLprod v1.0
         </div>
       </div>
 

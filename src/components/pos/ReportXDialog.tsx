@@ -261,8 +261,8 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
               <div style={{ fontWeight: '900', fontSize: '12px', textAlign: 'center', marginBottom: '4px' }}>
                 USAGE INTERNE
               </div>
-              <div style={{ fontWeight: '900', fontSize: '9px', textAlign: 'center', color: '#666', lineHeight: '1.3' }}>
-                Ce rapport ne remplace pas le carnet de caisse papier exigé par le SPF Finances. Document informatif uniquement.
+              <div style={{ fontWeight: '900', fontSize: '9px', textAlign: 'center', color: '#2563EB' }}>
+                JLprod v1.0
               </div>
             </div>
 

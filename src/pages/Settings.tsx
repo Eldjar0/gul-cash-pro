@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Building, Save, Shield, Scale } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ComplianceChecklist } from '@/components/pos/ComplianceChecklist';
+
 
 interface CompanySettings {
   name: string;
@@ -228,8 +228,6 @@ export default function Settings() {
           {/* Compliance Settings */}
           <TabsContent value="compliance">
             <div className="space-y-6">
-              <ComplianceChecklist />
-              
               <Card className="p-6">
                 <h2 className="text-xl font-semibold mb-4">Ressources Utiles</h2>
                 <div className="space-y-3">
