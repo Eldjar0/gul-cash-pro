@@ -15,6 +15,9 @@ import {
   Ticket,
   Eye,
   Scale,
+  Calendar,
+  CalendarX,
+  FileText,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -30,7 +33,6 @@ import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalRec
 import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
 import { ReportXDialog } from '@/components/pos/ReportXDialog';
 import { CloseDayDialog } from '@/components/pos/CloseDayDialog';
-import { CashDrawerActions } from '@/components/pos/CashDrawerActions';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateSale } from '@/hooks/useSales';
@@ -942,6 +944,55 @@ const Index = () => {
         onUnlock={() => setIsLocked(false)} 
       />
       
+      {/* Info bar avec affichage client et gestion journée */}
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border border-border">
+          <Clock className="h-4 w-4 text-primary" />
+          <div className="text-xs">
+            <span className="font-bold">{currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
+            <span className="text-muted-foreground ml-2">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {/* Boutons gestion de journée */}
+          {!isDayOpenEffective ? (
+            <Button
+              onClick={() => setOpenDayDialogOpen(true)}
+              className="bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md"
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Ouvrir Journée
+            </Button>
+          ) : (
+            <>
+              <Button
+                onClick={handleReportX}
+                className="bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Rapport X
+              </Button>
+              <Button
+                onClick={() => setCloseDayDialogOpen(true)}
+                className="bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md"
+              >
+                <CalendarX className="h-4 w-4 mr-2" />
+                Fermer Journée
+              </Button>
+            </>
+          )}
+          
+          <Button
+            onClick={openCustomerDisplay}
+            className="bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Affichage Client
+          </Button>
+        </div>
+      </div>
+      
       {/* Hidden input to capture scanner input without stealing focus */}
       <input
         type="text"
@@ -1311,34 +1362,45 @@ const Index = () => {
             </form>
           </Card>
 
-          {/* Clavier numérique */}
-          <Card className="bg-white border border-border p-1.5 flex-shrink-0 shadow-sm">
-            <div className="text-muted-foreground text-xs font-mono mb-1">Quantité</div>
-            <div className="bg-muted p-1.5 rounded mb-1.5 border border-border">
-              <div className="text-primary text-xl font-mono text-center font-bold">
+          {/* Calculatrice moderne */}
+          <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-3 flex-shrink-0 shadow-lg">
+            <div className="text-center mb-2">
+              <div className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Calculette</div>
+              <div className="text-xs text-muted-foreground">Poids / Quantité / Prix</div>
+            </div>
+            
+            {/* Affichage */}
+            <div className="bg-gradient-to-br from-primary to-primary-glow p-3 rounded-xl mb-3 border-2 border-primary shadow-inner">
+              <div className="text-white text-3xl font-bold text-center font-mono tracking-wider drop-shadow-lg">
                 {quantityInput}
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-1">
-              {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
+            
+            {/* Clavier */}
+            <div className="grid grid-cols-3 gap-2">
+              {['7', '8', '9', '4', '5', '6', '1', '2', '3', '.', '0', 'C'].map((key) => (
                 <Button
                   key={key}
                   onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)}
-                  className="h-9 text-sm font-bold bg-card hover:bg-muted text-foreground border border-border font-mono transition-all active:scale-95 shadow-sm hover:shadow-md"
+                  className={`h-12 text-xl font-bold transition-all active:scale-95 shadow-md hover:shadow-xl ${
+                    key === 'C' 
+                      ? 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0' 
+                      : key === '.' 
+                      ? 'bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white border-0'
+                      : 'bg-gradient-to-br from-white to-gray-50 hover:from-primary/10 hover:to-primary/5 text-foreground border-2 border-border'
+                  }`}
                 >
                   {key}
                 </Button>
               ))}
             </div>
+            
+            <div className="mt-3 pt-3 border-t border-border">
+              <div className="text-xs text-center text-muted-foreground">
+                Tapez la quantité avant d'ajouter un article
+              </div>
+            </div>
           </Card>
-          
-          {/* Actions de caisse et gestion de journée */}
-          <CashDrawerActions
-            onOpenDay={() => setOpenDayDialogOpen(true)}
-            onCloseDay={() => setCloseDayDialogOpen(true)}
-            onReportX={handleReportX}
-            isDayOpen={isDayOpenEffective}
-          />
         </div>
 
         {/* RIGHT PANEL - Articles/Catégories/Résultats */}
