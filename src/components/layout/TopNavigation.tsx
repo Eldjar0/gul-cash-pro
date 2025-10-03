@@ -3,22 +3,22 @@ import { Button } from '@/components/ui/button';
 import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import logoJLProd from '@/assets/logo-jlprod.png';
-
 interface TopNavigationProps {
   onLockScreen: () => void;
 }
-
-export function TopNavigation({ onLockScreen }: TopNavigationProps) {
-  const { user, signOut } = useAuth();
+export function TopNavigation({
+  onLockScreen
+}: TopNavigationProps) {
+  const {
+    user,
+    signOut
+  } = useAuth();
   const navigate = useNavigate();
-
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
   };
-
-  return (
-    <nav className="bg-primary shadow-lg border-b border-primary-foreground/20">
+  return <nav className="bg-primary shadow-lg border-b border-primary-foreground/20">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -70,22 +70,10 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           {/* Actions */}
           <div className="flex items-center gap-2">
             {/* Date/Heure */}
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg border border-white/20 mr-2">
-              <Clock className="h-4 w-4 text-white" />
-              <div className="text-xs text-white">
-                <span className="font-bold">{new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
-                <span className="ml-2">{new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-              </div>
-            </div>
+            
             
             {/* Lock Button */}
-            <Button
-              onClick={onLockScreen}
-              variant="outline"
-              size="icon"
-              className="bg-white/10 text-white border-white/30 hover:bg-white/20 hover:text-white"
-              title="Verrouiller la caisse"
-            >
+            <Button onClick={onLockScreen} variant="outline" size="icon" className="bg-white/10 text-white border-white/30 hover:bg-white/20 hover:text-white" title="Verrouiller la caisse">
               <Lock className="h-5 w-5" />
             </Button>
 
@@ -95,30 +83,17 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               <span className="text-sm font-medium text-white">
                 {user?.email?.split('@')[0] || 'Admin'}
               </span>
-              <Button
-                onClick={handleSignOut}
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20"
-                title="Se déconnecter"
-              >
+              <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-white hover:bg-white/20" title="Se déconnecter">
                 <LogOut className="h-5 w-5" />
               </Button>
             </div>
 
             {/* Mobile Logout */}
-            <Button
-              onClick={handleSignOut}
-              variant="ghost"
-              size="icon"
-              className="sm:hidden text-white hover:bg-white/20"
-              title="Se déconnecter"
-            >
+            <Button onClick={handleSignOut} variant="ghost" size="icon" className="sm:hidden text-white hover:bg-white/20" title="Se déconnecter">
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </div>
       </div>
-    </nav>
-  );
+    </nav>;
 }
