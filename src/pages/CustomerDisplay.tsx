@@ -90,7 +90,7 @@ const CustomerDisplay = () => {
     const channel = new BroadcastChannel('customer_display');
 
     channel.onmessage = (event) => {
-      console.debug('[CustomerDisplay] Message received:', event.data);
+      console.log('[CustomerDisplay] Message received:', event.data);
       // Message de mise à jour des paramètres
       if (event.data?.type === 'settings' && event.data?.value) {
         setDisplaySettings(event.data.value);
@@ -99,22 +99,12 @@ const CustomerDisplay = () => {
         } catch {}
         return;
       }
-      // Message d'état d'achat - accepter même si items est vide ou undefined
-      if (event.data?.status) {
+      // Message d'état d'achat
+      if (event.data?.items) {
         setDisplayState(prev => {
           const newState = event.data;
-          
-          // Ne mettre à jour que si le timestamp est plus récent
-          if (newState.timestamp <= prev.timestamp) {
-            console.debug('[CustomerDisplay] Ignoring outdated/duplicate message', {
-              new: newState.timestamp,
-              prev: prev.timestamp
-            });
-            return prev;
-          }
-          
           // Auto-scroll si un nouvel item est ajouté
-          if (newState.items && newState.items.length > prev.items.length && newState.status === 'shopping') {
+          if (newState.items.length > prev.items.length && newState.status === 'shopping') {
             setTimeout(() => {
               if (itemsContainerRef.current) {
                 itemsContainerRef.current.scrollTo({
@@ -124,8 +114,6 @@ const CustomerDisplay = () => {
               }
             }, 100);
           }
-          
-          console.debug('[CustomerDisplay] State updated via channel', newState);
           return newState;
         });
       }
@@ -173,7 +161,7 @@ const CustomerDisplay = () => {
       }
     }
 
-    // Vérifier périodiquement localStorage pour synchronisation (réduit à 1500ms pour éviter la boucle)
+    // Vérifier périodiquement localStorage pour synchronisation
     const interval = setInterval(() => {
       const stored = localStorage.getItem('customer_display_state');
       if (stored) {
@@ -181,7 +169,7 @@ const CustomerDisplay = () => {
           const parsed = JSON.parse(stored);
           setDisplayState(prev => {
             if (parsed.timestamp > prev.timestamp) {
-              console.debug('[CustomerDisplay] State updated from localStorage:', parsed);
+              console.log('[CustomerDisplay] State updated from localStorage:', parsed);
               return parsed;
             }
             return prev;
@@ -190,7 +178,7 @@ const CustomerDisplay = () => {
           console.error('Error parsing stored state:', e);
         }
       }
-    }, 1500);
+    }, 500);
 
     return () => {
       channel.close();
@@ -323,7 +311,7 @@ const CustomerDisplay = () => {
           </div>
 
           {/* Messages */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             <h1 className="text-9xl font-black tracking-tight">
               <span className="bg-gradient-to-r from-accent via-accent/80 to-primary bg-clip-text text-transparent">
                 Merci !
@@ -331,9 +319,6 @@ const CustomerDisplay = () => {
             </h1>
             <p className="text-5xl font-semibold text-foreground">
               {displaySettings.thank_you_text}
-            </p>
-            <p className="text-6xl font-bold text-primary">
-              À bientôt !
             </p>
           </div>
 
@@ -430,93 +415,6 @@ const CustomerDisplay = () => {
               </div>
             </div>
           )}
-        </div>
-      </div>
-    );
-  }
-
-  // Si aucun produit, afficher l'état idle
-  if (displayState.status === 'shopping' && displayState.items.length === 0) {
-    return (
-      <div className="h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-8 relative overflow-hidden">
-        {/* Effets de fond minimalistes */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-soft"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }}></div>
-        </div>
-        
-        <div className="relative z-10 text-center space-y-12 max-w-4xl mx-auto">
-          {/* Logo avec effet de glow */}
-          <div className="animate-scale-in">
-            <div className="relative inline-block">
-              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150"></div>
-              <img 
-                src={logoMarket} 
-                alt="Logo" 
-                className="relative w-48 h-48 mx-auto object-contain drop-shadow-2xl"
-              />
-            </div>
-          </div>
-
-          {/* Titre principal */}
-          <div className="space-y-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <h1 className="text-8xl font-black tracking-tight">
-              <span className="bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">
-                {displaySettings.welcome_text}
-              </span>
-            </h1>
-            <p className="text-4xl font-medium text-muted-foreground">
-              Nous sommes là pour vous servir
-            </p>
-          </div>
-
-          {/* Infos en temps réel - design moderne */}
-          <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            {/* Date & Heure */}
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all"></div>
-              <div className="relative bg-card/80 backdrop-blur-xl rounded-2xl p-6 border border-border/50 shadow-xl">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Calendar className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-sm font-semibold text-primary uppercase tracking-wider">Date</span>
-                </div>
-                <p className="text-lg font-bold text-foreground">
-                  {currentTime.toLocaleDateString('fr-BE', { 
-                    weekday: 'long', 
-                    day: 'numeric', 
-                    month: 'long'
-                  })}
-                </p>
-              </div>
-            </div>
-
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all"></div>
-              <div className="relative bg-card/80 backdrop-blur-xl rounded-2xl p-6 border border-border/50 shadow-xl">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-accent/10 rounded-lg">
-                    <Clock className="w-5 h-5 text-accent" />
-                  </div>
-                  <span className="text-sm font-semibold text-accent uppercase tracking-wider">Heure</span>
-                </div>
-                <p className="text-3xl font-black text-foreground font-mono tabular-nums">
-                  {currentTime.toLocaleTimeString('fr-BE', { 
-                    hour: '2-digit', 
-                    minute: '2-digit'
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer minimaliste */}
-          <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
-            <p className="text-sm text-muted-foreground">
-              Système de caisse • <span className="text-primary font-semibold">Jlprod.be</span>
-            </p>
-          </div>
         </div>
       </div>
     );

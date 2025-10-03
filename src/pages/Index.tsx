@@ -107,7 +107,6 @@ const Index = () => {
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
   const [customerDisplayWindow, setCustomerDisplayWindow] = useState<Window | null>(null);
   const [displayChannel] = useState(() => new BroadcastChannel('customer_display'));
-  const lastSentPayloadRef = useRef<string>('');
   
   // Daily reports states
   const [openDayDialogOpen, setOpenDayDialogOpen] = useState(false);
@@ -157,36 +156,6 @@ const Index = () => {
   useEffect(() => {
     const updateCustomerDisplay = () => {
       const totals = getTotals();
-      
-      // Si le panier est vide, envoyer l'état 'idle'
-      if (cart.length === 0) {
-        const idleState = {
-          items: [],
-          status: 'idle',
-          timestamp: Date.now(),
-        };
-        
-        const payload = JSON.stringify(idleState);
-        
-        // Ne rien envoyer si identique au dernier
-        if (payload === lastSentPayloadRef.current) {
-          return;
-        }
-        
-        console.debug('[POS] Sending idle state to customer display');
-        lastSentPayloadRef.current = payload;
-        
-        try {
-          displayChannel.postMessage(idleState);
-        } catch (e) {
-          console.error('[POS] BroadcastChannel error:', e);
-        }
-        
-        localStorage.setItem('customer_display_state', payload);
-        return;
-      }
-      
-      // Sinon, envoyer l'état 'shopping' avec les items
       const displayItems = cart.map(item => ({
         name: item.product.name,
         quantity: item.quantity,
@@ -204,7 +173,7 @@ const Index = () => {
 
       const state = {
         items: displayItems,
-        status: 'shopping',
+        status: cart.length > 0 ? 'shopping' : 'idle',
         timestamp: Date.now(),
         cashierName: user?.email?.split('@')[0] || 'Caisse',
         saleNumber: 'EN COURS',
@@ -229,15 +198,7 @@ const Index = () => {
         } : undefined,
       };
 
-      const payload = JSON.stringify(state);
-      
-      // Ne rien envoyer si identique au dernier
-      if (payload === lastSentPayloadRef.current) {
-        return;
-      }
-
-      console.debug('[POS] Sending to customer display:', state);
-      lastSentPayloadRef.current = payload;
+      console.log('[POS] Sending to customer display:', state);
 
       // Envoyer via BroadcastChannel
       try {
@@ -247,11 +208,11 @@ const Index = () => {
       }
       
       // Sauvegarder dans localStorage pour persistance
-      localStorage.setItem('customer_display_state', payload);
+      localStorage.setItem('customer_display_state', JSON.stringify(state));
     };
 
     updateCustomerDisplay();
-  }, [cart, displayChannel, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer, user]);
+  }, [cart, displayChannel, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer]);
 
   // Ouvrir l'affichage client dans une nouvelle fenêtre
   const openCustomerDisplay = () => {
