@@ -33,7 +33,6 @@ import { DiscountDialog } from '@/components/pos/DiscountDialog';
 import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { Receipt } from '@/components/pos/Receipt';
-import { TopNavigation } from '@/components/layout/TopNavigation';
 import { PinLockDialog } from '@/components/pos/PinLockDialog';
 
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
@@ -1038,9 +1037,6 @@ const Index = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {/* Top Navigation */}
-      <TopNavigation onLockScreen={() => setIsLocked(true)} />
-      
       {/* Pin Lock Dialog */}
       <PinLockDialog 
         open={isLocked} 

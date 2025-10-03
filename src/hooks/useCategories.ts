@@ -22,10 +22,8 @@ export const useCategories = () => {
       if (error) throw error;
       return data as Category[];
     },
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 0,
-    refetchInterval: (data) => (Array.isArray(data) && data.length > 0 ? false : 4000),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
