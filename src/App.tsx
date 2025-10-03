@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { ProtectedLayout } from "./components/layout/ProtectedLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Sales from "./pages/Sales";
@@ -31,17 +32,17 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/customer-display" element={<CustomerDisplay />} />
           
-          {/* Protected routes */}
-          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-          <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
-          <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
-          <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
-          <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
-          <Route path="/invoices/create" element={<ProtectedRoute><InvoiceCreate /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/reports-history" element={<ProtectedRoute><ReportsHistory /></ProtectedRoute>} />
-          <Route path="/legal-info" element={<ProtectedRoute><LegalInfo /></ProtectedRoute>} />
-          <Route path="/getting-started" element={<ProtectedRoute><GettingStarted /></ProtectedRoute>} />
+          {/* Protected routes with navigation */}
+          <Route path="/" element={<ProtectedRoute><ProtectedLayout><Index /></ProtectedLayout></ProtectedRoute>} />
+          <Route path="/sales" element={<ProtectedRoute><ProtectedLayout><Sales /></ProtectedLayout></ProtectedRoute>} />
+          <Route path="/products" element={<ProtectedRoute><ProtectedLayout><Products /></ProtectedLayout></ProtectedRoute>} />
+          <Route path="/customers" element={<ProtectedRoute><ProtectedLayout><Customers /></ProtectedLayout></ProtectedRoute>} />
+          <Route path="/invoices" element={<ProtectedRoute><ProtectedLayout><Invoices /></ProtectedLayout></ProtectedRoute>} />
+          <Route path="/invoices/create" element={<ProtectedRoute><ProtectedLayout><InvoiceCreate /></ProtectedLayout></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><ProtectedLayout><Settings /></ProtectedLayout></ProtectedRoute>} />
+          <Route path="/reports-history" element={<ProtectedRoute><ProtectedLayout><ReportsHistory /></ProtectedLayout></ProtectedRoute>} />
+          <Route path="/legal-info" element={<ProtectedRoute><ProtectedLayout><LegalInfo /></ProtectedLayout></ProtectedRoute>} />
+          <Route path="/getting-started" element={<ProtectedRoute><ProtectedLayout><GettingStarted /></ProtectedLayout></ProtectedRoute>} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

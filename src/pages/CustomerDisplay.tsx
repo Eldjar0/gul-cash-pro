@@ -167,14 +167,15 @@ const CustomerDisplay = () => {
       }
     }
 
-    // Vérifier périodiquement localStorage pour synchronisation
+    // Vérifier périodiquement localStorage pour synchronisation (optimisé)
     const interval = setInterval(() => {
       const stored = localStorage.getItem('customer_display_state');
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
+          // Ne déclencher setDisplayState que si le timestamp est vraiment différent
           setDisplayState(prev => {
-            if (parsed.timestamp > prev.timestamp) {
+            if (parsed.timestamp !== prev.timestamp) {
               console.log('[CustomerDisplay] State updated from localStorage:', parsed);
               return parsed;
             }
