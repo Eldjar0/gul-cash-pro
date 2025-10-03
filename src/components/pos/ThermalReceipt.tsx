@@ -302,9 +302,6 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           <div style={{ fontSize: '12px', fontWeight: '900', marginBottom: '3px', color: '#DC2626' }}>
             {isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
           </div>
-          <div style={{ fontSize: '10px', fontWeight: '900', marginBottom: '2px' }}>
-            OUTIL DE GESTION INTERNE
-          </div>
         </div>
       </div>
     </div>
