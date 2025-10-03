@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBag, CheckCircle2, Thermometer, Calendar, Clock, CreditCard, Banknote } from 'lucide-react';
+import { ShoppingBag, CheckCircle2, Calendar, Clock, Sparkles, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import logoMarket from '@/assets/logo-market.png';
 
@@ -69,7 +69,6 @@ const CustomerDisplay = () => {
   });
 
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [temperature, setTemperature] = useState<number | null>(null);
 
   // Mise à jour de l'heure toutes les secondes
   useEffect(() => {
@@ -78,31 +77,6 @@ const CustomerDisplay = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
-
-  // Récupération de la température pour Jumet
-  useEffect(() => {
-    const fetchTemperature = async () => {
-      try {
-        const response = await fetch(
-          'https://api.open-meteo.com/v1/forecast?latitude=50.4497&longitude=4.4344&current=temperature_2m&timezone=Europe/Brussels'
-        );
-        const data = await response.json();
-        if (data?.current?.temperature_2m !== undefined) {
-          setTemperature(data.current.temperature_2m);
-        }
-      } catch (error) {
-        console.error('Error fetching temperature:', error);
-      }
-    };
-
-    // Récupérer immédiatement
-    fetchTemperature();
-
-    // Mettre à jour toutes les 10 minutes
-    const interval = setInterval(fetchTemperature, 10 * 60 * 1000);
-
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -213,348 +187,286 @@ const CustomerDisplay = () => {
     return displayState.items.reduce((sum, item) => sum + item.total, 0);
   };
 
+  // État d'attente - ultra épuré
   if (displayState.status === 'idle') {
     return (
-      <div className="h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex items-center justify-center p-6 relative overflow-hidden">
-        {/* Animation de bulles flottantes en arrière-plan */}
+      <div className="h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-8 relative overflow-hidden">
+        {/* Effets de fond minimalistes */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Bulles flottantes */}
-          <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '6s', animationDelay: '0s' }}></div>
-          <div className="absolute top-40 right-20 w-40 h-40 bg-accent/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
-          <div className="absolute bottom-32 left-1/4 w-36 h-36 bg-category-purple/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7s', animationDelay: '2s' }}></div>
-          <div className="absolute top-1/3 right-1/3 w-28 h-28 bg-category-orange/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '9s', animationDelay: '3s' }}></div>
-          <div className="absolute bottom-20 right-10 w-44 h-44 bg-category-teal/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '10s', animationDelay: '1.5s' }}></div>
-          <div className="absolute top-1/2 left-16 w-24 h-24 bg-category-pink/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8.5s', animationDelay: '2.5s' }}></div>
-          <div className="absolute bottom-1/4 right-1/4 w-38 h-38 bg-primary-glow/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7.5s', animationDelay: '0.5s' }}></div>
-          <div className="absolute top-1/4 left-1/2 w-30 h-30 bg-accent/15 rounded-full blur-xl animate-float" style={{ animationDuration: '6.5s', animationDelay: '3.5s' }}></div>
-          
-          {/* Grands cercles style DVD bouncing */}
-          <div className="absolute w-32 h-32 bg-primary/40 rounded-full blur-xl animate-dvd-bounce" style={{ animationDuration: '12s' }}></div>
-          <div className="absolute w-40 h-40 bg-accent/40 rounded-full blur-xl animate-dvd-bounce-2" style={{ animationDuration: '15s', animationDelay: '2s' }}></div>
-          <div className="absolute w-36 h-36 bg-category-purple/40 rounded-full blur-xl animate-dvd-bounce-3" style={{ animationDuration: '18s', animationDelay: '4s' }}></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-soft"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }}></div>
         </div>
         
-        <div className="w-full max-w-6xl space-y-6 relative z-10">
-          {/* Logo centré */}
-          <div className="text-center animate-fade-in">
+        <div className="relative z-10 text-center space-y-12 max-w-4xl mx-auto">
+          {/* Logo avec effet de glow */}
+          <div className="animate-scale-in">
             <div className="relative inline-block">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 blur-3xl rounded-full animate-pulse-soft"></div>
-              <img src={logoMarket} alt="Logo" className="relative w-56 h-56 mx-auto object-contain animate-scale-in drop-shadow-2xl" />
+              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150"></div>
+              <img 
+                src={logoMarket} 
+                alt="Logo" 
+                className="relative w-48 h-48 mx-auto object-contain drop-shadow-2xl"
+              />
             </div>
-            
-            <div className="mt-4">
-              <h1 className="text-8xl font-black tracking-tight animate-scale-in drop-shadow-lg bg-gradient-to-r from-accent via-accent/60 to-accent bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s' }}>
+          </div>
+
+          {/* Titre principal */}
+          <div className="space-y-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <h1 className="text-8xl font-black tracking-tight">
+              <span className="bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">
                 Bienvenue
-              </h1>
-            </div>
-          </div>
-
-          {/* Textes centrés entre logo et infos */}
-          <div className="text-center space-y-3 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <p className="text-5xl font-bold text-foreground drop-shadow-md">
-              Veuillez patienter
-            </p>
-            <p className="text-3xl text-muted-foreground">
-              Un collaborateur va prendre votre commande
+              </span>
+            </h1>
+            <p className="text-4xl font-medium text-muted-foreground">
+              Nous sommes là pour vous servir
             </p>
           </div>
 
-          {/* Section infos (date, heure, température) - carrousel infini */}
-          <div className="relative overflow-hidden animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <div className="flex gap-4 animate-scroll-left">
-              {/* Premier set de cartes */}
-              {/* Date */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-primary/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
+          {/* Infos en temps réel - design moderne */}
+          <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            {/* Date & Heure */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all"></div>
+              <div className="relative bg-card/80 backdrop-blur-xl rounded-2xl p-6 border border-border/50 shadow-xl">
+                <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
-                    <Calendar className="h-5 w-5 text-primary" />
+                    <Calendar className="w-5 h-5 text-primary" />
                   </div>
-                  <p className="text-sm font-bold text-primary uppercase tracking-wide">Date</p>
+                  <span className="text-sm font-semibold text-primary uppercase tracking-wider">Date</span>
                 </div>
-                <p className="text-base font-bold text-foreground leading-tight">
+                <p className="text-lg font-bold text-foreground">
                   {currentTime.toLocaleDateString('fr-BE', { 
                     weekday: 'long', 
-                    day: '2-digit', 
-                    month: 'long', 
-                    year: 'numeric' 
+                    day: 'numeric', 
+                    month: 'long'
                   })}
                 </p>
               </div>
+            </div>
 
-              {/* Heure */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-accent/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all"></div>
+              <div className="relative bg-card/80 backdrop-blur-xl rounded-2xl p-6 border border-border/50 shadow-xl">
+                <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-accent/10 rounded-lg">
-                    <Clock className="h-5 w-5 text-accent" />
+                    <Clock className="w-5 h-5 text-accent" />
                   </div>
-                  <p className="text-sm font-bold text-accent uppercase tracking-wide">Heure</p>
+                  <span className="text-sm font-semibold text-accent uppercase tracking-wider">Heure</span>
                 </div>
                 <p className="text-3xl font-black text-foreground font-mono tabular-nums">
                   {currentTime.toLocaleTimeString('fr-BE', { 
                     hour: '2-digit', 
-                    minute: '2-digit',
-                    second: '2-digit'
+                    minute: '2-digit'
                   })}
-                </p>
-              </div>
-
-              {/* Température */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-category-orange/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-category-orange/10 rounded-lg">
-                    <Thermometer className="h-5 w-5 text-category-orange" />
-                  </div>
-                  <p className="text-sm font-bold text-category-orange uppercase tracking-wide">Jumet</p>
-                </div>
-                <p className="text-3xl font-black text-foreground tabular-nums">
-                  {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
-                </p>
-              </div>
-
-              {/* Deuxième set de cartes (copie pour effet infini) */}
-              {/* Date */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-primary/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Calendar className="h-5 w-5 text-primary" />
-                  </div>
-                  <p className="text-sm font-bold text-primary uppercase tracking-wide">Date</p>
-                </div>
-                <p className="text-base font-bold text-foreground leading-tight">
-                  {currentTime.toLocaleDateString('fr-BE', { 
-                    weekday: 'long', 
-                    day: '2-digit', 
-                    month: 'long', 
-                    year: 'numeric' 
-                  })}
-                </p>
-              </div>
-
-              {/* Heure */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-accent/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-accent/10 rounded-lg">
-                    <Clock className="h-5 w-5 text-accent" />
-                  </div>
-                  <p className="text-sm font-bold text-accent uppercase tracking-wide">Heure</p>
-                </div>
-                <p className="text-3xl font-black text-foreground font-mono tabular-nums">
-                  {currentTime.toLocaleTimeString('fr-BE', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    second: '2-digit'
-                  })}
-                </p>
-              </div>
-
-              {/* Température */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-category-orange/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-category-orange/10 rounded-lg">
-                    <Thermometer className="h-5 w-5 text-category-orange" />
-                  </div>
-                  <p className="text-sm font-bold text-category-orange uppercase tracking-wide">Jumet</p>
-                </div>
-                <p className="text-3xl font-black text-foreground tabular-nums">
-                  {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-center animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <div className="px-8 py-3 bg-card/80 backdrop-blur-sm rounded-full border border-border/50 shadow-lg">
-              <p className="text-base text-muted-foreground font-medium">
-                Système de caisse développé par <span className="text-primary font-bold">Jlprod.be</span>
-              </p>
-            </div>
+          {/* Footer minimaliste */}
+          <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <p className="text-sm text-muted-foreground">
+              Système de caisse • <span className="text-primary font-semibold">Jlprod.be</span>
+            </p>
           </div>
         </div>
       </div>
     );
   }
 
+  // État de remerciement - élégant
   if (displayState.status === 'completed') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-accent/10 via-background to-primary/10 flex items-center justify-center p-8">
-        <div className="text-center space-y-12 animate-bounce-in">
-          <div className="relative">
-            <div className="absolute inset-0 bg-accent/20 blur-3xl rounded-full animate-pulse-soft"></div>
-            <img src={logoMarket} alt="Logo" className="relative w-80 h-80 mx-auto object-contain drop-shadow-2xl" />
+      <div className="h-screen bg-gradient-to-br from-accent/10 via-background to-primary/10 flex items-center justify-center p-8 relative overflow-hidden">
+        {/* Effet de fond */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/20 rounded-full blur-3xl animate-pulse-soft"></div>
+        </div>
+
+        <div className="relative z-10 text-center space-y-12 animate-bounce-in">
+          {/* Icône de succès */}
+          <div className="relative inline-block">
+            <div className="absolute inset-0 bg-accent/30 blur-3xl rounded-full scale-150"></div>
+            <CheckCircle2 className="relative w-40 h-40 mx-auto text-accent drop-shadow-2xl" />
           </div>
-          <div className="relative">
-            <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full"></div>
-            <CheckCircle2 className="relative w-48 h-48 mx-auto text-accent animate-bounce-in drop-shadow-2xl" style={{ animationDelay: '0.2s' }} />
-          </div>
-          <div className="space-y-8">
-            <h1 className="text-9xl font-black animate-fade-in gradient-text tracking-tight" style={{ animationDelay: '0.3s' }}>
-              Merci !
+
+          {/* Messages */}
+          <div className="space-y-4">
+            <h1 className="text-9xl font-black tracking-tight">
+              <span className="bg-gradient-to-r from-accent via-accent/80 to-primary bg-clip-text text-transparent">
+                Merci !
+              </span>
             </h1>
-            <p className="text-6xl animate-fade-in text-foreground font-bold" style={{ animationDelay: '0.5s' }}>
-              À bientôt !
+            <p className="text-5xl font-semibold text-foreground">
+              À très bientôt
             </p>
-            <div className="inline-block px-8 py-4 bg-card rounded-full border-2 border-accent shadow-glow-lg animate-fade-in" style={{ animationDelay: '0.7s' }}>
-              <p className="text-2xl text-accent font-bold">Passez une excellente journée !</p>
-            </div>
+          </div>
+
+          {/* Badge décoratif */}
+          <div className="inline-flex items-center gap-2 px-8 py-4 bg-card/80 backdrop-blur-xl rounded-full border border-accent/30 shadow-glow-lg">
+            <Sparkles className="w-6 h-6 text-accent" />
+            <span className="text-xl font-semibold text-accent">Excellente journée !</span>
           </div>
         </div>
       </div>
     );
   }
 
+  // État shopping - design moderne et épuré
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex flex-col overflow-hidden relative">
-      {/* Animation de bulles flottantes en arrière-plan */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Bulles flottantes */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '6s', animationDelay: '0s' }}></div>
-        <div className="absolute top-40 right-20 w-40 h-40 bg-accent/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
-        <div className="absolute bottom-32 left-1/4 w-36 h-36 bg-category-purple/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7s', animationDelay: '2s' }}></div>
-        <div className="absolute top-1/3 right-1/3 w-28 h-28 bg-category-orange/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '9s', animationDelay: '3s' }}></div>
-        <div className="absolute bottom-20 right-10 w-44 h-44 bg-category-teal/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '10s', animationDelay: '1.5s' }}></div>
-        <div className="absolute top-1/2 left-16 w-24 h-24 bg-category-pink/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8.5s', animationDelay: '2.5s' }}></div>
-        
-        {/* Grands cercles style DVD bouncing */}
-        <div className="absolute w-32 h-32 bg-primary/40 rounded-full blur-xl animate-dvd-bounce" style={{ animationDuration: '12s' }}></div>
-        <div className="absolute w-40 h-40 bg-accent/40 rounded-full blur-xl animate-dvd-bounce-2" style={{ animationDuration: '15s', animationDelay: '2s' }}></div>
-        <div className="absolute w-36 h-36 bg-category-purple/40 rounded-full blur-xl animate-dvd-bounce-3" style={{ animationDuration: '18s', animationDelay: '4s' }}></div>
-      </div>
+    <div className="h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex flex-col overflow-hidden">
+      {/* Header fixe - ultra moderne */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 blur-xl"></div>
+        <div className="relative bg-card/80 backdrop-blur-xl border-b border-border/50 shadow-lg">
+          <div className="max-w-7xl mx-auto px-8 py-6">
+            <div className="flex items-center justify-between">
+              {/* Logo et info */}
+              <div className="flex items-center gap-6">
+                <img src={logoMarket} alt="Logo" className="w-16 h-16 object-contain drop-shadow-lg" />
+                <div className="space-y-1">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-bold text-foreground">Vente en cours</h2>
+                    {displayState.saleNumber && (
+                      <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-semibold rounded-full">
+                        #{displayState.saleNumber}
+                      </span>
+                    )}
+                  </div>
+                  {displayState.cashierName && (
+                    <p className="text-sm text-muted-foreground">
+                      Caissier: <span className="font-semibold text-foreground">{displayState.cashierName}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
 
-      {/* Header fixe avec effets visuels */}
-      <div className="fixed top-0 left-0 right-0 bg-card/70 backdrop-blur-md border-b-2 border-primary/30 shadow-xl p-3 z-10 relative">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="relative">
-            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
-            <img src={logoMarket} alt="Logo" className="relative h-14 object-contain drop-shadow-lg animate-scale-in" />
-          </div>
-          <div className="text-center flex-1">
-            <div className="inline-block px-4 py-1.5 bg-primary/10 backdrop-blur-sm rounded-xl border-2 border-primary/30 shadow-lg animate-fade-in">
-              <h1 className="text-2xl font-black bg-gradient-to-r from-primary via-primary-glow to-primary bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text tracking-tight">
-                {displayState.isInvoice ? 'FACTURE' : 'TICKET'} {displayState.saleNumber || 'EN COURS'}
-              </h1>
+              {/* Heure */}
+              <div className="text-right">
+                <p className="text-4xl font-black font-mono tabular-nums text-foreground">
+                  {currentTime.toLocaleTimeString('fr-BE', { 
+                    hour: '2-digit', 
+                    minute: '2-digit'
+                  })}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {currentTime.toLocaleDateString('fr-BE', { 
+                    day: 'numeric', 
+                    month: 'long'
+                  })}
+                </p>
+              </div>
             </div>
-            {displayState.isInvoice && displayState.customer && (
-              <p className="text-sm text-accent font-bold mt-1 animate-fade-in" style={{ animationDelay: '0.1s' }}>{displayState.customer.name}</p>
-            )}
-            <div className="text-xs text-muted-foreground mt-1 font-medium animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              {currentTime.toLocaleDateString('fr-BE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-              {' • '}
-              {currentTime.toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit' })}
-            </div>
-          </div>
-          <div className="text-right bg-primary/10 backdrop-blur-sm rounded-xl px-4 py-2 border-2 border-primary/30 shadow-lg animate-fade-in">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">Caisse</p>
-            <p className="text-xl font-black text-primary">{displayState.cashierName || 'N/A'}</p>
           </div>
         </div>
       </div>
 
-      {/* Zone scrollable pour les articles - avec effets */}
-      <div className="flex-1 overflow-y-auto pt-24 pb-36 px-4 relative z-10">
-        <div className="max-w-7xl mx-auto space-y-2 flex flex-col-reverse">
-          {displayState.items.map((item, index) => {
-            const subtotal = calculateSubtotal(item);
-            const vat = calculateVAT(item);
-            const unitDisplay = item.unit === 'kg' ? 'kg' : item.unit === 'l' ? 'l' : 'pc';
-            
-            return (
+      {/* Zone des articles - scrollable */}
+      <div className="flex-1 overflow-y-auto px-8 py-6">
+        <div className="max-w-7xl mx-auto space-y-4">
+          {displayState.items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"></div>
+                <ShoppingBag className="relative w-32 h-32 text-primary/30 mb-6" />
+              </div>
+              <p className="text-3xl font-semibold text-muted-foreground">
+                Panier vide
+              </p>
+            </div>
+          ) : (
+            displayState.items.map((item, index) => (
               <div
-                key={`${item.name}-${index}`}
-                className="bg-card/70 backdrop-blur-md rounded-xl shadow-lg p-3 border-2 border-primary/20 hover:shadow-2xl hover:border-primary/40 hover:bg-card/90 transition-all duration-300 animate-fade-in relative overflow-hidden"
-                style={{ animationDelay: `${index * 0.03}s` }}
+                key={index}
+                className="group relative animate-scale-in"
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
-                {/* Effet de brillance */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -translate-x-full animate-shimmer"></div>
-                
-                <div className="flex justify-between items-center gap-4 relative">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-bold text-foreground uppercase tracking-tight mb-2 flex items-center gap-2 truncate">
-                      <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-glow rounded-full flex-shrink-0"></div>
-                      <span className="truncate">{item.name}</span>
-                    </h3>
-                    <div className="flex gap-2 items-center flex-wrap">
-                      <div className="flex items-center gap-2 bg-muted/50 backdrop-blur-sm rounded-lg px-2 py-1 border border-primary/10">
-                        <span className="text-base font-black text-foreground">
-                          {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)} {unitDisplay}
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative bg-card/80 backdrop-blur-xl rounded-2xl p-6 border border-border/50 shadow-lg hover:shadow-xl transition-all">
+                  <div className="flex items-center justify-between gap-6">
+                    {/* Info produit */}
+                    <div className="flex-1 space-y-2">
+                      <h3 className="text-2xl font-bold text-foreground leading-tight">
+                        {item.name}
+                      </h3>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="font-medium">
+                          Quantité: <span className="text-foreground font-bold">{item.quantity}</span>
+                          {item.unit && ` ${item.unit}`}
                         </span>
-                        <span className="text-sm text-muted-foreground">×</span>
-                        <span className="text-base font-bold text-primary">
-                          {item.price.toFixed(2)}€
+                        <span className="w-1 h-1 bg-muted-foreground rounded-full"></span>
+                        <span className="font-medium">
+                          Prix unitaire: <span className="text-foreground font-bold">{item.price.toFixed(2)}€</span>
                         </span>
+                        {item.discount && (
+                          <>
+                            <span className="w-1 h-1 bg-muted-foreground rounded-full"></span>
+                            <span className="text-destructive font-semibold">
+                              -{item.discount.type === 'percentage' 
+                                ? `${item.discount.value}%` 
+                                : `${item.discount.value.toFixed(2)}€`}
+                            </span>
+                          </>
+                        )}
                       </div>
-                      {item.hasCustomPrice && (
-                        <span className="px-2 py-1 rounded-lg text-xs font-bold bg-accent/20 text-accent border border-accent/30 backdrop-blur-sm">
-                          Prix modifié
-                        </span>
-                      )}
-                      {item.discount && (
-                        <span className="px-2 py-1 rounded-lg text-xs font-bold bg-destructive/20 text-destructive border border-destructive/30 backdrop-blur-sm">
-                          -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
-                        </span>
-                      )}
                     </div>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="bg-primary/10 backdrop-blur-sm rounded-xl px-4 py-2 border-2 border-primary/30 shadow-lg">
-                      <div className="text-3xl font-black bg-gradient-to-r from-primary to-primary-glow text-transparent bg-clip-text tabular-nums leading-none">
+
+                    {/* Prix total */}
+                    <div className="text-right">
+                      <div className="text-5xl font-black text-foreground">
                         {item.total.toFixed(2)}€
                       </div>
-                      <div className="text-xs text-muted-foreground font-semibold mt-1">
-                        TVA {item.vatRate}%: <span className="text-foreground font-bold">{vat.toFixed(2)}€</span>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        TVA {item.vatRate}%
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            );
-          })}
+            ))
+          )}
         </div>
       </div>
 
-      {/* Footer fixe avec effets visuels */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary via-primary-glow to-accent shadow-2xl z-10 border-t-4 border-primary-foreground/20 relative">
-        {/* Effet de brillance sur le footer */}
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-transparent animate-pulse-soft"></div>
-        
-        <div className="max-w-7xl mx-auto p-4 relative">
-          <div className="flex justify-between items-center gap-6">
-            {/* Infos TVA à gauche - style amélioré */}
-            <div className="flex gap-2 flex-wrap">
-              {(() => {
-                const vatByRate = displayState.items.reduce((acc, item) => {
-                  const vat = calculateVAT(item);
-                  if (!acc[item.vatRate]) {
-                    acc[item.vatRate] = 0;
-                  }
-                  acc[item.vatRate] += vat;
-                  return acc;
-                }, {} as Record<number, number>);
+      {/* Footer fixe - Total */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-accent/20 via-primary/20 to-accent/20 blur-2xl"></div>
+        <div className="relative bg-card/90 backdrop-blur-xl border-t border-border/50 shadow-2xl">
+          <div className="max-w-7xl mx-auto px-8 py-8">
+            {/* Détails TVA */}
+            {displayState.items.length > 0 && (
+              <div className="grid grid-cols-3 gap-6 mb-6">
+                <div className="text-center p-4 bg-background/50 rounded-xl border border-border/30">
+                  <p className="text-sm text-muted-foreground mb-1">Total HT</p>
+                  <p className="text-2xl font-bold text-foreground">{getTotalHT().toFixed(2)}€</p>
+                </div>
+                <div className="text-center p-4 bg-background/50 rounded-xl border border-border/30">
+                  <p className="text-sm text-muted-foreground mb-1">TVA</p>
+                  <p className="text-2xl font-bold text-foreground">{getTotalVAT().toFixed(2)}€</p>
+                </div>
+                <div className="text-center p-4 bg-background/50 rounded-xl border border-border/30">
+                  <p className="text-sm text-muted-foreground mb-1">Articles</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {displayState.items.reduce((sum, item) => sum + item.quantity, 0)}
+                  </p>
+                </div>
+              </div>
+            )}
 
-                return Object.entries(vatByRate).map(([rate, amount], idx) => (
-                  <div 
-                    key={rate} 
-                    className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-md rounded-xl px-4 py-2 border-2 border-primary-foreground/30 shadow-lg animate-fade-in"
-                    style={{ animationDelay: `${idx * 0.1}s` }}
-                  >
-                    <span className="text-sm font-bold text-primary-foreground uppercase tracking-wide">TVA {parseFloat(rate).toFixed(0)}%:</span>
-                    <span className="text-lg font-black text-primary-foreground tabular-nums drop-shadow-md">{amount.toFixed(2)}€</span>
+            {/* Total à payer */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+              <div className="relative flex items-center justify-between px-12 py-8 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-2xl border-2 border-primary/30">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/20 rounded-xl">
+                    <TrendingUp className="w-8 h-8 text-primary" />
                   </div>
-                ));
-              })()}
-            </div>
-
-            {/* Total TTC à droite - style spectaculaire */}
-            <div className="text-right animate-bounce-in">
-              <div className="bg-primary-foreground/10 backdrop-blur-md rounded-2xl px-8 py-4 border-4 border-primary-foreground/30 shadow-glow-lg relative overflow-hidden">
-                {/* Effet de brillance animé */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer"></div>
-                
-                <div className="relative">
-                  <div className="text-lg font-bold text-primary-foreground uppercase tracking-widest drop-shadow-md">TOTAL À PAYER</div>
-                  <div className="text-6xl font-black text-primary-foreground tracking-tight leading-none tabular-nums drop-shadow-2xl animate-pulse-soft mt-2">
+                  <span className="text-3xl font-bold text-foreground">Total à payer</span>
+                </div>
+                <div className="text-7xl font-black">
+                  <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
                     {getTotalTTC().toFixed(2)}€
-                  </div>
+                  </span>
                 </div>
               </div>
             </div>
