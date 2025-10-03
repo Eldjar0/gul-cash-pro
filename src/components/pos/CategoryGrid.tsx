@@ -50,7 +50,7 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
       <div className="space-y-1.5">
         <Button 
           onClick={handleBack}
-          className="w-full h-8 bg-muted hover:bg-muted/80 text-foreground font-bold border border-border transition-all duration-200 rounded-lg active:scale-95 shadow-sm text-xs"
+          className="w-full h-8 bg-muted hover:brightness-110 text-foreground font-bold border border-border transition-all duration-100 rounded-lg active:brightness-90 shadow-sm text-xs cursor-pointer touch-action-manipulation"
         >
           <ChevronLeft className="h-3 w-3 mr-1" />
           RETOUR
@@ -61,8 +61,8 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
             <Button
               key={product.id}
               onClick={() => onProductSelect(product)}
-              className="h-16 flex flex-col justify-center items-center p-2 hover:shadow-lg border-2 hover:scale-[1.03] transition-all duration-200 rounded-lg active:scale-95 shadow-sm"
-              style={{ 
+              className="h-16 flex flex-col justify-center items-center p-2 hover:shadow-lg border-2 hover:brightness-110 transition-all duration-100 rounded-lg active:brightness-90 shadow-sm cursor-pointer touch-action-manipulation"
+              style={{
                 backgroundColor: `${currentCategory?.color}15`,
                 borderColor: currentCategory?.color || 'hsl(210, 100%, 50%)',
               }}
@@ -93,7 +93,7 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="w-full h-12 flex items-center justify-start gap-2 px-3 text-white font-bold transition-all duration-200 rounded-lg hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg"
+          className="w-full h-12 flex items-center justify-start gap-2 px-3 text-white font-bold transition-all duration-100 rounded-lg hover:brightness-110 active:brightness-90 shadow-md hover:shadow-lg cursor-pointer touch-action-manipulation"
           style={{ backgroundColor: category.color }}
         >
           {category.icon && (
