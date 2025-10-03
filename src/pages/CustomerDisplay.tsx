@@ -250,54 +250,106 @@ const CustomerDisplay = () => {
             </div>
           </div>
 
-          {/* Section infos (date, heure, température) - version professionnelle */}
-          <div className="grid grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            {/* Date */}
-            <div className="bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-primary/20 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Calendar className="h-5 w-5 text-primary" />
+          {/* Section infos (date, heure, température) - carrousel infini */}
+          <div className="relative overflow-hidden animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <div className="flex gap-4 animate-scroll-left">
+              {/* Premier set de cartes */}
+              {/* Date */}
+              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-primary/20 shadow-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Calendar className="h-5 w-5 text-primary" />
+                  </div>
+                  <p className="text-sm font-bold text-primary uppercase tracking-wide">Date</p>
                 </div>
-                <p className="text-sm font-bold text-primary uppercase tracking-wide">Date</p>
+                <p className="text-base font-bold text-foreground leading-tight">
+                  {currentTime.toLocaleDateString('fr-BE', { 
+                    weekday: 'long', 
+                    day: '2-digit', 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}
+                </p>
               </div>
-              <p className="text-base font-bold text-foreground leading-tight">
-                {currentTime.toLocaleDateString('fr-BE', { 
-                  weekday: 'long', 
-                  day: '2-digit', 
-                  month: 'long', 
-                  year: 'numeric' 
-                })}
-              </p>
-            </div>
 
-            {/* Heure */}
-            <div className="bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-accent/20 shadow-lg hover:shadow-xl hover:border-accent/30 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-accent/10 rounded-lg">
-                  <Clock className="h-5 w-5 text-accent" />
+              {/* Heure */}
+              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-accent/20 shadow-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 bg-accent/10 rounded-lg">
+                    <Clock className="h-5 w-5 text-accent" />
+                  </div>
+                  <p className="text-sm font-bold text-accent uppercase tracking-wide">Heure</p>
                 </div>
-                <p className="text-sm font-bold text-accent uppercase tracking-wide">Heure</p>
+                <p className="text-3xl font-black text-foreground font-mono tabular-nums">
+                  {currentTime.toLocaleTimeString('fr-BE', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                  })}
+                </p>
               </div>
-              <p className="text-3xl font-black text-foreground font-mono tabular-nums">
-                {currentTime.toLocaleTimeString('fr-BE', { 
-                  hour: '2-digit', 
-                  minute: '2-digit',
-                  second: '2-digit'
-                })}
-              </p>
-            </div>
 
-            {/* Température */}
-            <div className="bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-category-orange/20 shadow-lg hover:shadow-xl hover:border-category-orange/30 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-category-orange/10 rounded-lg">
-                  <Thermometer className="h-5 w-5 text-category-orange" />
+              {/* Température */}
+              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-category-orange/20 shadow-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 bg-category-orange/10 rounded-lg">
+                    <Thermometer className="h-5 w-5 text-category-orange" />
+                  </div>
+                  <p className="text-sm font-bold text-category-orange uppercase tracking-wide">Jumet</p>
                 </div>
-                <p className="text-sm font-bold text-category-orange uppercase tracking-wide">Jumet</p>
+                <p className="text-3xl font-black text-foreground tabular-nums">
+                  {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
+                </p>
               </div>
-              <p className="text-3xl font-black text-foreground tabular-nums">
-                {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
-              </p>
+
+              {/* Deuxième set de cartes (copie pour effet infini) */}
+              {/* Date */}
+              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-primary/20 shadow-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Calendar className="h-5 w-5 text-primary" />
+                  </div>
+                  <p className="text-sm font-bold text-primary uppercase tracking-wide">Date</p>
+                </div>
+                <p className="text-base font-bold text-foreground leading-tight">
+                  {currentTime.toLocaleDateString('fr-BE', { 
+                    weekday: 'long', 
+                    day: '2-digit', 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}
+                </p>
+              </div>
+
+              {/* Heure */}
+              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-accent/20 shadow-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 bg-accent/10 rounded-lg">
+                    <Clock className="h-5 w-5 text-accent" />
+                  </div>
+                  <p className="text-sm font-bold text-accent uppercase tracking-wide">Heure</p>
+                </div>
+                <p className="text-3xl font-black text-foreground font-mono tabular-nums">
+                  {currentTime.toLocaleTimeString('fr-BE', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                  })}
+                </p>
+              </div>
+
+              {/* Température */}
+              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-category-orange/20 shadow-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 bg-category-orange/10 rounded-lg">
+                    <Thermometer className="h-5 w-5 text-category-orange" />
+                  </div>
+                  <p className="text-sm font-bold text-category-orange uppercase tracking-wide">Jumet</p>
+                </div>
+                <p className="text-3xl font-black text-foreground tabular-nums">
+                  {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
+                </p>
+              </div>
             </div>
           </div>
 

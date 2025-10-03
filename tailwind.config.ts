@@ -164,6 +164,10 @@ export default {
           "0%": { backgroundPosition: "0 0" },
           "100%": { backgroundPosition: "200px 0" },
         },
+        "scroll-left": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -182,6 +186,7 @@ export default {
         "gradient-slide": "gradient-slide 3s linear infinite",
         "slide-infinite": "slide-infinite 2s linear infinite",
         "scroll-right": "scroll-right 3s linear infinite",
+        "scroll-left": "scroll-left 20s linear infinite",
       },
       boxShadow: {
         "glow-sm": "0 0 10px hsl(217 91% 60% / 0.3)",
