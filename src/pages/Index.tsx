@@ -107,6 +107,7 @@ const Index = () => {
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
   const [customerDisplayWindow, setCustomerDisplayWindow] = useState<Window | null>(null);
   const [displayChannel] = useState(() => new BroadcastChannel('customer_display'));
+  const lastSentPayloadRef = useRef<string>('');
   
   // Daily reports states
   const [openDayDialogOpen, setOpenDayDialogOpen] = useState(false);
@@ -165,7 +166,15 @@ const Index = () => {
           timestamp: Date.now(),
         };
         
-        console.log('[POS] Sending idle state to customer display');
+        const payload = JSON.stringify(idleState);
+        
+        // Ne rien envoyer si identique au dernier
+        if (payload === lastSentPayloadRef.current) {
+          return;
+        }
+        
+        console.debug('[POS] Sending idle state to customer display');
+        lastSentPayloadRef.current = payload;
         
         try {
           displayChannel.postMessage(idleState);
@@ -173,7 +182,7 @@ const Index = () => {
           console.error('[POS] BroadcastChannel error:', e);
         }
         
-        localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+        localStorage.setItem('customer_display_state', payload);
         return;
       }
       
@@ -220,7 +229,15 @@ const Index = () => {
         } : undefined,
       };
 
-      console.log('[POS] Sending to customer display:', state);
+      const payload = JSON.stringify(state);
+      
+      // Ne rien envoyer si identique au dernier
+      if (payload === lastSentPayloadRef.current) {
+        return;
+      }
+
+      console.debug('[POS] Sending to customer display:', state);
+      lastSentPayloadRef.current = payload;
 
       // Envoyer via BroadcastChannel
       try {
@@ -230,7 +247,7 @@ const Index = () => {
       }
       
       // Sauvegarder dans localStorage pour persistance
-      localStorage.setItem('customer_display_state', JSON.stringify(state));
+      localStorage.setItem('customer_display_state', payload);
     };
 
     updateCustomerDisplay();

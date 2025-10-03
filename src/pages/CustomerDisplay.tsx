@@ -90,7 +90,7 @@ const CustomerDisplay = () => {
     const channel = new BroadcastChannel('customer_display');
 
     channel.onmessage = (event) => {
-      console.log('[CustomerDisplay] Message received:', event.data);
+      console.debug('[CustomerDisplay] Message received:', event.data);
       // Message de mise à jour des paramètres
       if (event.data?.type === 'settings' && event.data?.value) {
         setDisplaySettings(event.data.value);
@@ -103,6 +103,16 @@ const CustomerDisplay = () => {
       if (event.data?.status) {
         setDisplayState(prev => {
           const newState = event.data;
+          
+          // Ne mettre à jour que si le timestamp est plus récent
+          if (newState.timestamp <= prev.timestamp) {
+            console.debug('[CustomerDisplay] Ignoring outdated/duplicate message', {
+              new: newState.timestamp,
+              prev: prev.timestamp
+            });
+            return prev;
+          }
+          
           // Auto-scroll si un nouvel item est ajouté
           if (newState.items && newState.items.length > prev.items.length && newState.status === 'shopping') {
             setTimeout(() => {
@@ -114,6 +124,8 @@ const CustomerDisplay = () => {
               }
             }, 100);
           }
+          
+          console.debug('[CustomerDisplay] State updated via channel', newState);
           return newState;
         });
       }
@@ -161,7 +173,7 @@ const CustomerDisplay = () => {
       }
     }
 
-    // Vérifier périodiquement localStorage pour synchronisation
+    // Vérifier périodiquement localStorage pour synchronisation (réduit à 1500ms pour éviter la boucle)
     const interval = setInterval(() => {
       const stored = localStorage.getItem('customer_display_state');
       if (stored) {
@@ -169,7 +181,7 @@ const CustomerDisplay = () => {
           const parsed = JSON.parse(stored);
           setDisplayState(prev => {
             if (parsed.timestamp > prev.timestamp) {
-              console.log('[CustomerDisplay] State updated from localStorage:', parsed);
+              console.debug('[CustomerDisplay] State updated from localStorage:', parsed);
               return parsed;
             }
             return prev;
@@ -178,7 +190,7 @@ const CustomerDisplay = () => {
           console.error('Error parsing stored state:', e);
         }
       }
-    }, 500);
+    }, 1500);
 
     return () => {
       channel.close();
