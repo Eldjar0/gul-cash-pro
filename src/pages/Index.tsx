@@ -1476,42 +1476,42 @@ const Index = () => {
           </Card>
 
           {/* Payment buttons - Modern JL Prod style */}
-          <div className="bg-background p-2 space-y-2 border-t-2 border-border flex-shrink-0">
+          <Card className="bg-gradient-to-br from-background to-muted/20 border-2 border-primary/30 p-4 flex-shrink-0 shadow-xl">
             <Button
               onClick={() => setPaymentDialogOpen(true)}
               disabled={cart.length === 0}
-              className="w-full h-12 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-base shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
             >
-              <Euro className="mr-2 h-5 w-5" />
+              <Euro className="mr-2 h-6 w-6" />
               PAYER {cart.length > 0 && `${totals.total.toFixed(2)}€`}
             </Button>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-3 mt-3">
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-10 text-xs bg-white hover:bg-primary/5 text-primary border-2 border-primary font-semibold shadow-sm"
+                className="h-14 text-sm bg-gradient-to-br from-white to-primary/5 hover:from-primary/10 hover:to-primary/20 text-primary border-2 border-primary font-bold shadow-md hover:shadow-lg transition-all active:scale-95 rounded-xl"
               >
-                <CreditCard className="mr-1 h-3 w-3" />
-                CB
+                <CreditCard className="mr-2 h-5 w-5" />
+                Carte
               </Button>
               <Button
                 onClick={() => setPaymentDialogOpen(true)}
                 disabled={cart.length === 0}
-                className="h-10 text-xs bg-white hover:bg-accent/5 text-accent border-2 border-accent font-semibold shadow-sm"
+                className="h-14 text-sm bg-gradient-to-br from-white to-accent/5 hover:from-accent/10 hover:to-accent/20 text-accent border-2 border-accent font-bold shadow-md hover:shadow-lg transition-all active:scale-95 rounded-xl"
               >
-                <Banknote className="mr-1 h-3 w-3" />
-                ESP
+                <Banknote className="mr-2 h-5 w-5" />
+                Cash
               </Button>
               <Button
                 onClick={handleClearCart}
                 disabled={cart.length === 0}
-                className="h-10 text-xs bg-white hover:bg-destructive/5 text-destructive border-2 border-destructive font-semibold shadow-sm"
+                className="h-14 text-sm bg-gradient-to-br from-white to-destructive/5 hover:from-destructive/10 hover:to-destructive/20 text-destructive border-2 border-destructive font-bold shadow-md hover:shadow-lg transition-all active:scale-95 rounded-xl"
               >
-                <Trash2 className="mr-1 h-3 w-3" />
-                ANN
+                <Trash2 className="mr-2 h-5 w-5" />
+                Annuler
               </Button>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* RIGHT PANEL - Articles/Catégories/Résultats */}
