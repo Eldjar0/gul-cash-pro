@@ -1312,7 +1312,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Payment buttons - Modern SHOPCAISSE style */}
+          {/* Payment buttons - Modern JL Prod style */}
           <div className="bg-background p-2 space-y-2 border-t-2 border-border flex-shrink-0">
             <Button
               onClick={() => setPaymentDialogOpen(true)}

@@ -35,10 +35,13 @@ interface InvoiceData {
   notes?: string;
 }
 
-// SHOPCAISSE Blue Color (HSL: 210 100% 50%)
+// JL Prod Blue Color (HSL: 210 100% 50%)
 const PRIMARY_COLOR = { r: 0, g: 128, b: 255 };
 const PRIMARY_LIGHT = { r: 230, g: 242, b: 255 };
 const PRIMARY_DARK = { r: 0, g: 102, b: 204 };
+
+// Import logo for PDF
+import logoJLProd from '../assets/logo-jlprod.png';
 
 export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   const doc = new jsPDF();
@@ -50,14 +53,22 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   doc.setFillColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
   doc.rect(0, 0, pageWidth, 45, 'F');
 
-  // Logo (placeholder - will be replaced with actual logo)
+  // Logo - JL Prod
+  // Add logo image - create white background for logo
   doc.setFillColor(255, 255, 255);
-  doc.roundedRect(15, 12, 30, 20, 2, 2, 'F');
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
-  doc.text('SHOP', 20, 22);
-  doc.text('CAISSE', 18, 28);
+  doc.roundedRect(15, 10, 35, 25, 3, 3, 'F');
+  
+  // Add the logo image (converted from imported PNG)
+  try {
+    doc.addImage(logoJLProd, 'PNG', 16, 11, 33, 23);
+  } catch (error) {
+    // Fallback if image fails to load
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
+    doc.text('JL', 22, 20);
+    doc.text('PROD', 19, 27);
+  }
 
   // Company Info in Header
   doc.setFontSize(11);
@@ -259,7 +270,7 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   doc.setTextColor(100, 100, 100);
   doc.setFont('helvetica', 'italic');
   doc.text(
-    'Facture générée automatiquement par SHOPCAISSE - Merci de votre confiance',
+    'Facture générée automatiquement par JL Prod - Merci de votre confiance',
     pageWidth / 2,
     footerY,
     { align: 'center' }

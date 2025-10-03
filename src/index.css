@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 15%;
 
-    /* Primary - SHOPCAISSE Blue */
+    /* Primary - JL Prod Blue */
     --primary: 210 100% 50%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 210 100% 60%;
@@ -54,7 +54,7 @@
     --pos-error: 0 85% 55%;
     --pos-info: 210 100% 50%;
     
-    /* Category colors - SHOPCAISSE inspired vibrant palette */
+    /* Category colors - JL Prod inspired vibrant palette */
     --category-blue: 210 100% 50%;
     --category-green: 145 65% 50%;
     --category-orange: 25 100% 55%;

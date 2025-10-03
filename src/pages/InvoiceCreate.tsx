@@ -427,8 +427,8 @@ export default function InvoiceCreate() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="0">0% - Exonéré</SelectItem>
-                                <SelectItem value="5.5">5.5% - Taux réduit</SelectItem>
-                                <SelectItem value="10">10% - Taux intermédiaire</SelectItem>
+                                <SelectItem value="6">6% - Taux réduit</SelectItem>
+                                <SelectItem value="12">12% - Taux parking</SelectItem>
                                 <SelectItem value="21">21% - Taux normal</SelectItem>
                               </SelectContent>
                             </Select>
