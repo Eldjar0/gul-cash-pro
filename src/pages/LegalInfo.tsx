@@ -99,7 +99,7 @@ export default function LegalInfo() {
               <p className="text-sm text-muted-foreground">Logiciel développé sur mesure - Licence d'utilisation personnelle</p>
               <div className="flex gap-2 mt-3">
                 <Badge variant="outline">Version 1.0.0</Badge>
-                <Badge variant="outline">Année 2024</Badge>
+                <Badge variant="outline">Année 2025</Badge>
               </div>
             </div>
           </CardContent>
@@ -855,14 +855,14 @@ export default function LegalInfo() {
         <div className="border-t pt-6 mt-8">
           <div className="text-center space-y-2">
             <p className="text-sm font-semibold">
-              © 2024 JL Prod - Jordan Lallemand | TVA BE0784435238
+              © 2025 JL Prod - Jordan Lallemand | TVA BE0784435238
             </p>
             <p className="text-xs text-muted-foreground">
               Tous droits réservés | Logiciel sur mesure développé pour GUL REYHAN
             </p>
             <div className="flex justify-center gap-2 pt-2">
               <Badge variant="outline">Version 1.0.0</Badge>
-              <Badge variant="outline">Dernière mise à jour : 2024</Badge>
+              <Badge variant="outline">Dernière mise à jour : 2025</Badge>
             </div>
           </div>
         </div>
