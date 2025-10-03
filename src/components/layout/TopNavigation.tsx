@@ -18,7 +18,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
   };
 
   return (
-    <nav className="bg-gradient-to-r from-primary via-secondary to-accent shadow-lg border-b border-border/50">
+    <nav className="bg-primary shadow-lg border-b border-primary-foreground/20">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
