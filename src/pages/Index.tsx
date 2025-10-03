@@ -1398,44 +1398,6 @@ const Index = () => {
               <span>{totals.total.toFixed(2)}€</span>
             </div>
           </div>
-
-          {/* Payment buttons - Modern JL Prod style */}
-          <div className="bg-background p-2 space-y-2 border-t-2 border-border flex-shrink-0">
-            <Button
-              onClick={() => setPaymentDialogOpen(true)}
-              disabled={cart.length === 0}
-              className="w-full h-12 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-base shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Euro className="mr-2 h-5 w-5" />
-              PAYER {cart.length > 0 && `${totals.total.toFixed(2)}€`}
-            </Button>
-            <div className="grid grid-cols-3 gap-1.5">
-              <Button
-                onClick={() => setPaymentDialogOpen(true)}
-                disabled={cart.length === 0}
-                className="h-10 text-xs bg-white hover:bg-primary/5 text-primary border-2 border-primary font-semibold shadow-sm"
-              >
-                <CreditCard className="mr-1 h-3 w-3" />
-                CB
-              </Button>
-              <Button
-                onClick={() => setPaymentDialogOpen(true)}
-                disabled={cart.length === 0}
-                className="h-10 text-xs bg-white hover:bg-accent/5 text-accent border-2 border-accent font-semibold shadow-sm"
-              >
-                <Banknote className="mr-1 h-3 w-3" />
-                ESP
-              </Button>
-              <Button
-                onClick={handleClearCart}
-                disabled={cart.length === 0}
-                className="h-10 text-xs bg-white hover:bg-destructive/5 text-destructive border-2 border-destructive font-semibold shadow-sm"
-              >
-                <Trash2 className="mr-1 h-3 w-3" />
-                ANN
-              </Button>
-            </div>
-          </div>
         </div>
 
         {/* COLONNE CENTRE - Calculatrice */}
@@ -1512,6 +1474,44 @@ const Index = () => {
               </div>
             )}
           </Card>
+
+          {/* Payment buttons - Modern JL Prod style */}
+          <div className="bg-background p-2 space-y-2 border-t-2 border-border flex-shrink-0">
+            <Button
+              onClick={() => setPaymentDialogOpen(true)}
+              disabled={cart.length === 0}
+              className="w-full h-12 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-base shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Euro className="mr-2 h-5 w-5" />
+              PAYER {cart.length > 0 && `${totals.total.toFixed(2)}€`}
+            </Button>
+            <div className="grid grid-cols-3 gap-1.5">
+              <Button
+                onClick={() => setPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-10 text-xs bg-white hover:bg-primary/5 text-primary border-2 border-primary font-semibold shadow-sm"
+              >
+                <CreditCard className="mr-1 h-3 w-3" />
+                CB
+              </Button>
+              <Button
+                onClick={() => setPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-10 text-xs bg-white hover:bg-accent/5 text-accent border-2 border-accent font-semibold shadow-sm"
+              >
+                <Banknote className="mr-1 h-3 w-3" />
+                ESP
+              </Button>
+              <Button
+                onClick={handleClearCart}
+                disabled={cart.length === 0}
+                className="h-10 text-xs bg-white hover:bg-destructive/5 text-destructive border-2 border-destructive font-semibold shadow-sm"
+              >
+                <Trash2 className="mr-1 h-3 w-3" />
+                ANN
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* RIGHT PANEL - Articles/Catégories/Résultats */}
