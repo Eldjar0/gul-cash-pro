@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -17,19 +17,11 @@ interface PaymentDialogProps {
   onOpenChange: (open: boolean) => void;
   total: number;
   onConfirmPayment: (method: PaymentMethod, amountPaid?: number) => void;
-  onPaymentStateChange?: (state: { method: PaymentMethod | null; amountPaid: string }) => void;
 }
 
-export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment, onPaymentStateChange }: PaymentDialogProps) {
+export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment }: PaymentDialogProps) {
   const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [amountPaid, setAmountPaid] = useState('');
-
-  // Notify parent of state changes
-  useEffect(() => {
-    if (onPaymentStateChange) {
-      onPaymentStateChange({ method, amountPaid });
-    }
-  }, [method, amountPaid, onPaymentStateChange]);
 
   const handleNumberClick = (num: string) => {
     if (num === 'C') {
