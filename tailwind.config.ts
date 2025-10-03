@@ -143,6 +143,11 @@ export default {
             opacity: "0.6"
           },
         },
+        "gradient": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -156,6 +161,7 @@ export default {
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
         "glow": "glow 2s ease-in-out infinite",
         "float": "float 6s ease-in-out infinite",
+        "gradient": "gradient 4s ease infinite",
       },
       boxShadow: {
         "glow-sm": "0 0 10px hsl(217 91% 60% / 0.3)",

@@ -238,7 +238,7 @@ const CustomerDisplay = () => {
             </div>
             
             <div className="space-y-4">
-              <h1 className="text-8xl font-black bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent tracking-tight animate-scale-in drop-shadow-lg" style={{ animationDelay: '0.1s' }}>
+              <h1 className="text-8xl font-black tracking-tight animate-scale-in drop-shadow-lg bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient text-transparent bg-clip-text" style={{ animationDelay: '0.1s' }}>
                 Bienvenue
               </h1>
               <p className="text-5xl font-bold text-foreground animate-fade-in drop-shadow-md" style={{ animationDelay: '0.2s' }}>
@@ -250,15 +250,17 @@ const CustomerDisplay = () => {
             </div>
           </div>
 
-          {/* Section infos (date, heure, température) - version discrète */}
-          <div className="grid grid-cols-3 gap-3 animate-fade-in opacity-60" style={{ animationDelay: '0.4s' }}>
+          {/* Section infos (date, heure, température) - version professionnelle */}
+          <div className="grid grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
             {/* Date */}
-            <div className="bg-card/40 backdrop-blur-sm rounded-xl p-3 border border-border/30 shadow-sm">
-              <div className="flex items-center gap-2 mb-1">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <p className="text-xs font-medium text-muted-foreground uppercase">Date</p>
+            <div className="bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-primary/20 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all duration-300">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Calendar className="h-5 w-5 text-primary" />
+                </div>
+                <p className="text-sm font-bold text-primary uppercase tracking-wide">Date</p>
               </div>
-              <p className="text-xs font-semibold text-foreground">
+              <p className="text-base font-bold text-foreground leading-tight">
                 {currentTime.toLocaleDateString('fr-BE', { 
                   weekday: 'long', 
                   day: '2-digit', 
@@ -269,12 +271,14 @@ const CustomerDisplay = () => {
             </div>
 
             {/* Heure */}
-            <div className="bg-card/40 backdrop-blur-sm rounded-xl p-3 border border-border/30 shadow-sm">
-              <div className="flex items-center gap-2 mb-1">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <p className="text-xs font-medium text-muted-foreground uppercase">Heure</p>
+            <div className="bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-accent/20 shadow-lg hover:shadow-xl hover:border-accent/30 transition-all duration-300">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-accent/10 rounded-lg">
+                  <Clock className="h-5 w-5 text-accent" />
+                </div>
+                <p className="text-sm font-bold text-accent uppercase tracking-wide">Heure</p>
               </div>
-              <p className="text-xl font-bold text-foreground font-mono tabular-nums">
+              <p className="text-3xl font-black text-foreground font-mono tabular-nums">
                 {currentTime.toLocaleTimeString('fr-BE', { 
                   hour: '2-digit', 
                   minute: '2-digit',
@@ -284,12 +288,14 @@ const CustomerDisplay = () => {
             </div>
 
             {/* Température */}
-            <div className="bg-card/40 backdrop-blur-sm rounded-xl p-3 border border-border/30 shadow-sm">
-              <div className="flex items-center gap-2 mb-1">
-                <Thermometer className="h-4 w-4 text-muted-foreground" />
-                <p className="text-xs font-medium text-muted-foreground uppercase">Jumet</p>
+            <div className="bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-category-orange/20 shadow-lg hover:shadow-xl hover:border-category-orange/30 transition-all duration-300">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-category-orange/10 rounded-lg">
+                  <Thermometer className="h-5 w-5 text-category-orange" />
+                </div>
+                <p className="text-sm font-bold text-category-orange uppercase tracking-wide">Jumet</p>
               </div>
-              <p className="text-xl font-bold text-foreground tabular-nums">
+              <p className="text-3xl font-black text-foreground tabular-nums">
                 {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
               </p>
             </div>
