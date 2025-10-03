@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Palette, Save, Shield } from 'lucide-react';
+import { ArrowLeft, Building, Palette, Save, Shield, Scale } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ComplianceChecklist } from '@/components/pos/ComplianceChecklist';
@@ -423,10 +423,13 @@ export default function Settings() {
                 <div className="space-y-3">
                   <Button 
                     onClick={() => navigate('/legal-info')} 
-                    variant="outline" 
-                    className="w-full justify-start"
+                    className="w-full justify-start bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md relative"
                   >
-                    📄 Informations légales complètes
+                    <Scale className="h-5 w-5 mr-2" />
+                    Informations légales complètes
+                    <span className="absolute top-1 right-2 bg-red-500 text-white text-[9px] font-bold px-1 rounded-full animate-pulse">
+                      i
+                    </span>
                   </Button>
                   <Button 
                     onClick={() => navigate('/getting-started')} 

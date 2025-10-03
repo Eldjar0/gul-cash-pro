@@ -989,17 +989,6 @@ const Index = () => {
             {user ? (
               <>
                 <Button
-                  onClick={() => navigate('/legal-info')}
-                  size="icon"
-                  className="bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white h-10 w-10 shadow-md relative"
-                  title="Infos Légales"
-                >
-                  <Scale className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1 rounded-full animate-pulse">
-                    i
-                  </span>
-                </Button>
-                <Button
                   onClick={() => navigate('/reports-history')}
                   size="icon"
                   className="bg-gradient-to-br from-destructive to-destructive/80 hover:from-destructive/90 hover:to-destructive/70 text-white h-10 w-10 shadow-md"
