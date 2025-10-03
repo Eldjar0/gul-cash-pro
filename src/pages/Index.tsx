@@ -19,6 +19,10 @@ import {
   CalendarX,
   FileText,
   CloudSun,
+  Calculator,
+  Divide,
+  Minus,
+  X,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -100,6 +104,10 @@ const Index = () => {
   const [scanInput, setScanInput] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [quantityInput, setQuantityInput] = useState('1');
+  const [calcMode, setCalcMode] = useState<'input' | 'math'>('input');
+  const [currentValue, setCurrentValue] = useState<number | null>(null);
+  const [operation, setOperation] = useState<string | null>(null);
+  const [waitingForOperand, setWaitingForOperand] = useState(false);
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [globalDiscount, setGlobalDiscount] = useState<{ type: DiscountType; value: number } | null>(null);
   const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
@@ -911,13 +919,61 @@ const Index = () => {
   };
 
   const handleNumberClick = (num: string) => {
-    setQuantityInput(prev => prev === '1' ? num : prev + num);
+    if (calcMode === 'math' && waitingForOperand) {
+      setQuantityInput(num);
+      setWaitingForOperand(false);
+    } else {
+      setQuantityInput(prev => prev === '1' ? num : prev + num);
+    }
   };
 
   const handleClearQuantity = () => {
     setQuantityInput('1');
+    setCurrentValue(null);
+    setOperation(null);
+    setWaitingForOperand(false);
   };
 
+  const handleOperation = (op: string) => {
+    const inputValue = parseFloat(quantityInput || '0');
+    if (currentValue === null) {
+      setCurrentValue(inputValue);
+    } else if (operation) {
+      const newValue = performCalculation(currentValue, inputValue, operation);
+      setQuantityInput(String(newValue));
+      setCurrentValue(newValue);
+    }
+    setWaitingForOperand(true);
+    setOperation(op);
+  };
+
+  const performCalculation = (first: number, second: number, op: string): number => {
+    switch (op) {
+      case '+':
+        return first + second;
+      case '-':
+        return first - second;
+      case '*':
+        return first * second;
+      case '/':
+        return second !== 0 ? first / second : 0;
+      case '%':
+        return first * (second / 100);
+      default:
+        return second;
+    }
+  };
+
+  const handleEqualsCalc = () => {
+    const inputValue = parseFloat(quantityInput || '0');
+    if (currentValue !== null && operation) {
+      const result = performCalculation(currentValue, inputValue, operation);
+      setQuantityInput(String(result));
+      setCurrentValue(null);
+      setOperation(null);
+      setWaitingForOperand(true);
+    }
+  };
   const handleOpenDay = (openingAmount: number) => {
     openDay.mutate(openingAmount, {
       onSuccess: () => {
@@ -1387,9 +1443,29 @@ const Index = () => {
 
           {/* Calculatrice moderne */}
           <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-3 flex-shrink-0 shadow-lg">
-            <div className="text-center mb-2">
-              <div className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Calculette</div>
-              <div className="text-xs text-muted-foreground">Poids / Quantité / Prix</div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-center flex-1">
+                <div className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Calculette</div>
+                <div className="text-xs text-muted-foreground">{calcMode === 'input' ? 'Poids / Quantité / Prix' : 'Calcul pour compter'}</div>
+              </div>
+              <div className="flex gap-1">
+                <Button
+                  variant={calcMode === 'input' ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setCalcMode('input')}
+                >
+                  <Scale className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant={calcMode === 'math' ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-8"
+                  onClick={() => setCalcMode('math')}
+                >
+                  <Calculator className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
             
             {/* Affichage */}
@@ -1417,12 +1493,24 @@ const Index = () => {
                 </Button>
               ))}
             </div>
-            
-            <div className="mt-3 pt-3 border-t border-border">
-              <div className="text-xs text-center text-muted-foreground">
-                Tapez la quantité avant d'ajouter un article
+            {calcMode === 'math' ? (
+              <div className="mt-3">
+                <div className="grid grid-cols-4 gap-2">
+                  <Button onClick={() => handleOperation('+')} className="h-12 bg-primary/10 font-bold">+</Button>
+                  <Button onClick={() => handleOperation('-')} className="h-12 bg-primary/10 font-bold"><Minus className="h-5 w-5" /></Button>
+                  <Button onClick={() => handleOperation('*')} className="h-12 bg-primary/10 font-bold"><X className="h-5 w-5" /></Button>
+                  <Button onClick={() => handleOperation('/')} className="h-12 bg-primary/10 font-bold"><Divide className="h-5 w-5" /></Button>
+                  <Button onClick={() => handleOperation('%')} className="h-12 bg-primary/10 font-bold col-span-2"><Percent className="h-5 w-5 mr-1" />%</Button>
+                  <Button onClick={handleEqualsCalc} disabled={!quantityInput} className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg col-span-2">=</Button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="mt-3 pt-3 border-t border-border">
+                <div className="text-xs text-center text-muted-foreground">
+                  Tapez la quantité avant d'ajouter un article
+                </div>
+              </div>
+            )}
           </Card>
         </div>
 
