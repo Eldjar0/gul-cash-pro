@@ -250,63 +250,48 @@ const CustomerDisplay = () => {
             </div>
           </div>
 
-          {/* Section infos (date, heure, température) - version compacte */}
-          <div className="grid grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          {/* Section infos (date, heure, température) - version discrète */}
+          <div className="grid grid-cols-3 gap-3 animate-fade-in opacity-60" style={{ animationDelay: '0.4s' }}>
             {/* Date */}
-            <div className="group relative overflow-hidden bg-card/80 backdrop-blur-md rounded-2xl p-4 border border-primary/20 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-primary/10 rounded-xl">
-                    <Calendar className="h-6 w-6 text-primary" />
-                  </div>
-                  <p className="text-xs font-bold text-primary uppercase tracking-wider">Date</p>
-                </div>
-                <p className="text-base font-bold text-foreground leading-snug">
-                  {currentTime.toLocaleDateString('fr-BE', { 
-                    weekday: 'long', 
-                    day: '2-digit', 
-                    month: 'long', 
-                    year: 'numeric' 
-                  })}
-                </p>
+            <div className="bg-card/40 backdrop-blur-sm rounded-xl p-3 border border-border/30 shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <p className="text-xs font-medium text-muted-foreground uppercase">Date</p>
               </div>
+              <p className="text-xs font-semibold text-foreground">
+                {currentTime.toLocaleDateString('fr-BE', { 
+                  weekday: 'long', 
+                  day: '2-digit', 
+                  month: 'long', 
+                  year: 'numeric' 
+                })}
+              </p>
             </div>
 
             {/* Heure */}
-            <div className="group relative overflow-hidden bg-card/80 backdrop-blur-md rounded-2xl p-4 border border-accent/20 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105">
-              <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-accent/10 rounded-xl">
-                    <Clock className="h-6 w-6 text-accent" />
-                  </div>
-                  <p className="text-xs font-bold text-accent uppercase tracking-wider">Heure</p>
-                </div>
-                <p className="text-3xl font-black text-foreground font-mono tabular-nums">
-                  {currentTime.toLocaleTimeString('fr-BE', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    second: '2-digit'
-                  })}
-                </p>
+            <div className="bg-card/40 backdrop-blur-sm rounded-xl p-3 border border-border/30 shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <p className="text-xs font-medium text-muted-foreground uppercase">Heure</p>
               </div>
+              <p className="text-xl font-bold text-foreground font-mono tabular-nums">
+                {currentTime.toLocaleTimeString('fr-BE', { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  second: '2-digit'
+                })}
+              </p>
             </div>
 
             {/* Température */}
-            <div className="group relative overflow-hidden bg-card/80 backdrop-blur-md rounded-2xl p-4 border border-category-orange/20 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105">
-              <div className="absolute inset-0 bg-gradient-to-br from-category-orange/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-category-orange/10 rounded-xl">
-                    <Thermometer className="h-6 w-6 text-category-orange" />
-                  </div>
-                  <p className="text-xs font-bold text-category-orange uppercase tracking-wider">Jumet</p>
-                </div>
-                <p className="text-3xl font-black text-foreground tabular-nums">
-                  {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
-                </p>
+            <div className="bg-card/40 backdrop-blur-sm rounded-xl p-3 border border-border/30 shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <Thermometer className="h-4 w-4 text-muted-foreground" />
+                <p className="text-xs font-medium text-muted-foreground uppercase">Jumet</p>
               </div>
+              <p className="text-xl font-bold text-foreground tabular-nums">
+                {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
+              </p>
             </div>
           </div>
 
