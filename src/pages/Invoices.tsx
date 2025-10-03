@@ -13,6 +13,7 @@ import {
   User,
   Eye,
   Download,
+  Plus,
 } from 'lucide-react';
 import { useSales } from '@/hooks/useSales';
 import { format } from 'date-fns';
@@ -116,19 +117,30 @@ export default function Invoices() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-3">
-        <div className="flex items-center gap-2 md:gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/')}
-            className="text-white hover:bg-white/20 shrink-0"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="min-w-0">
-            <h1 className="text-lg md:text-2xl font-bold text-white truncate">Factures</h1>
-            <p className="text-xs md:text-sm text-white/80">Gestion des factures clients</p>
+        <div className="flex items-center justify-between gap-2 md:gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/')}
+              className="text-white hover:bg-white/20 shrink-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold text-white truncate">Factures</h1>
+              <p className="text-xs md:text-sm text-white/80">Gestion des factures clients</p>
+            </div>
           </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate('/invoices/create')}
+            className="shrink-0"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Créer
+          </Button>
         </div>
       </div>
 

@@ -15,6 +15,7 @@ import ReportsHistory from "./pages/ReportsHistory";
 import LegalInfo from "./pages/LegalInfo";
 import GettingStarted from "./pages/GettingStarted";
 import NotFound from "./pages/NotFound";
+import InvoiceCreate from "./pages/InvoiceCreate";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/products" element={<Products />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/invoices" element={<Invoices />} />
+          <Route path="/invoices/create" element={<InvoiceCreate />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/customer-display" element={<CustomerDisplay />} />
           <Route path="/reports-history" element={<ReportsHistory />} />
