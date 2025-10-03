@@ -564,6 +564,11 @@ const Index = () => {
     const strip = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const normalizedInput = normalizeBarcode(scanInput);
     const searchTerm = strip(scanInput);
+    const trimmedSearch = scanInput.trim();
+    
+    // Détection du type de recherche
+    const isNumber = !isNaN(Number(trimmedSearch)) && trimmedSearch !== '';
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedSearch);
     
     // Recherche exacte par code-barres normalisé d'abord
     const exactBarcode = products.find(p => 
@@ -575,19 +580,34 @@ const Index = () => {
       return;
     }
 
-    // Si pas de correspondance exacte, recherche générale accent-insensible
+    // Si pas de correspondance exacte, recherche générale multi-critères
     let results = products.filter((p) => {
       const normalizedBarcode = p.barcode ? normalizeBarcode(p.barcode) : '';
       const name = strip(p.name);
       const desc = p.description ? strip(p.description) : '';
       const idStr = strip(p.id);
-      return (
+      
+      // Recherche de base (nom, code-barres, description)
+      let matches = (
         normalizedBarcode.includes(normalizedInput) ||
         (p.barcode && strip(p.barcode).includes(searchTerm)) ||
         name.includes(searchTerm) ||
         idStr.includes(searchTerm) ||
         desc.includes(searchTerm)
       );
+      
+      // Recherche par prix si c'est un nombre
+      if (isNumber && !matches) {
+        const numValue = Number(trimmedSearch);
+        matches = Math.abs(p.price - numValue) < 0.01; // Comparaison avec tolérance
+      }
+      
+      // Recherche par UUID si c'est un UUID
+      if (isUUID && !matches) {
+        matches = p.id === trimmedSearch;
+      }
+      
+      return matches;
     });
 
     // Recherche par catégorie (accent-insensible)
@@ -981,7 +1001,7 @@ const Index = () => {
                     setSearchResults([]);
                   }
                 }}
-                placeholder="Rechercher un produit..."
+                placeholder="Rechercher par nom, code-barres, ID ou prix..."
                 autoComplete="off"
                 className="h-9 pl-10 pr-8 bg-background border-input text-foreground"
               />

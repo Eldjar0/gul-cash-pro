@@ -83,12 +83,39 @@ export default function Products() {
   }, [dialogOpen]);
 
   const filteredProducts = products.filter((product) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      product.name.toLowerCase().includes(searchLower) ||
-      product.barcode?.toLowerCase().includes(searchLower) ||
-      product.description?.toLowerCase().includes(searchLower)
-    );
+    const trimmedSearch = searchTerm.trim();
+    if (!trimmedSearch) return true;
+    
+    const searchLower = trimmedSearch.toLowerCase();
+    const isNumber = !isNaN(Number(trimmedSearch)) && trimmedSearch !== '';
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedSearch);
+    
+    // Recherche dans le nom
+    if (product.name.toLowerCase().includes(searchLower)) return true;
+    
+    // Recherche dans le code-barres (normalisé)
+    if (product.barcode) {
+      const normalizedBarcode = product.barcode.replace(/[^0-9]/g, '');
+      const normalizedSearch = trimmedSearch.replace(/[^0-9]/g, '');
+      if (normalizedBarcode.toLowerCase().includes(searchLower)) return true;
+      if (normalizedBarcode.includes(normalizedSearch)) return true;
+    }
+    
+    // Recherche dans la description
+    if (product.description?.toLowerCase().includes(searchLower)) return true;
+    
+    // Recherche par ID
+    if (isUUID && product.id === trimmedSearch) return true;
+    if (product.id.toLowerCase().includes(searchLower)) return true;
+    
+    // Recherche par prix
+    if (isNumber) {
+      const numValue = Number(trimmedSearch);
+      if (Math.abs(product.price - numValue) < 0.01) return true;
+      if (product.price.toString().includes(trimmedSearch)) return true;
+    }
+    
+    return false;
   });
 
   const handleOpenDialog = (product?: any) => {
@@ -267,7 +294,7 @@ export default function Products() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Rechercher par nom, code-barres..."
+              placeholder="Rechercher par nom, code-barres, ID ou prix..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"

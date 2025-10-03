@@ -29,9 +29,36 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
   const createProduct = useCreateProduct();
   const { toast } = useToast();
 
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products.filter(p => {
+    const trimmedSearch = searchTerm.trim();
+    if (!trimmedSearch) return true;
+    
+    const searchLower = trimmedSearch.toLowerCase();
+    const isNumber = !isNaN(Number(trimmedSearch)) && trimmedSearch !== '';
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedSearch);
+    
+    // Recherche dans le nom
+    if (p.name.toLowerCase().includes(searchLower)) return true;
+    
+    // Recherche dans le code-barres (normalisé)
+    if (p.barcode) {
+      const normalizedBarcode = p.barcode.replace(/[^0-9]/g, '');
+      const normalizedSearch = trimmedSearch.replace(/[^0-9]/g, '');
+      if (normalizedBarcode.includes(normalizedSearch)) return true;
+    }
+    
+    // Recherche par ID
+    if (isUUID && p.id === trimmedSearch) return true;
+    if (p.id.toLowerCase().includes(searchLower)) return true;
+    
+    // Recherche par prix
+    if (isNumber) {
+      const numValue = Number(trimmedSearch);
+      if (Math.abs(p.price - numValue) < 0.01) return true;
+    }
+    
+    return false;
+  });
 
   const handleLinkExisting = (productId: string) => {
     onProductLinked(productId);
@@ -108,7 +135,7 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher un produit..."
+                  placeholder="Rechercher par nom, code-barres, ID ou prix..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) => e.stopPropagation()}
