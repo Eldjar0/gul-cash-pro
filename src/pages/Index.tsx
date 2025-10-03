@@ -951,15 +951,9 @@ const Index = () => {
       {/* Header redesigné */}
       <div className="bg-white border-b-2 border-border px-4 py-3 flex-shrink-0 shadow-md">
         <div className="flex items-center justify-between">
-          {/* Logo et titre */}
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl flex items-center justify-center p-1.5 border-2 border-primary/20">
-              <img src={logoMarket} alt="Logo" className="h-full w-full object-contain" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-foreground">GÜL REYHAN</h1>
-              <p className="text-xs text-muted-foreground">Caisse #1</p>
-            </div>
+          {/* Logo */}
+          <div className="flex items-center">
+            <img src={logoMarket} alt="Logo" className="h-14 w-auto object-contain" />
           </div>
 
           {/* Boutons de navigation centraux */}
