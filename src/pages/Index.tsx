@@ -1439,7 +1439,7 @@ const Index = () => {
         </div>
 
         {/* COLONNE CENTRE - Calculatrice */}
-        <div className="col-span-4 bg-background p-2 flex flex-col gap-2 overflow-y-auto justify-center">
+        <div className="col-span-4 bg-background p-2 flex flex-col gap-2 overflow-y-auto">
 
           {/* Calculatrice moderne */}
           <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-3 flex-shrink-0 shadow-lg">
