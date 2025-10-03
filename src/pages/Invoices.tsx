@@ -25,7 +25,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import {
   Table,
   TableBody,
@@ -34,14 +33,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { downloadInvoicePDF, previewInvoicePDF } from '@/utils/generateInvoicePDF';
+import { useCompanySettings } from '@/hooks/useCompanySettings';
 
 export default function Invoices() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSale, setSelectedSale] = useState<any>(null);
-  const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
 
   const { data: sales = [], isLoading } = useSales();
+  const { settings: companySettings } = useCompanySettings();
 
   // Filtrer uniquement les factures
   const invoices = sales.filter(sale => sale.is_invoice);
@@ -55,43 +55,77 @@ export default function Invoices() {
   });
 
   const handleViewInvoice = (sale: any) => {
-    const saleForReceipt = {
-      ...sale,
+    const invoiceData = {
       saleNumber: sale.sale_number,
+      date: new Date(sale.date),
+      company: {
+        name: companySettings.name,
+        address: companySettings.address,
+        city: companySettings.city,
+        postalCode: companySettings.postal_code,
+        vatNumber: companySettings.vat_number,
+        phone: companySettings.phone,
+      },
+      customer: sale.customers ? {
+        name: sale.customers.name,
+        vatNumber: sale.customers.vat_number,
+        address: sale.customers.address,
+        city: sale.customers.city,
+        postalCode: sale.customers.postal_code,
+      } : undefined,
       items: sale.sale_items?.map((item: any) => ({
-        product: {
-          name: item.product_name,
-          price: item.unit_price,
-          vat_rate: item.vat_rate,
-          type: 'unit' as const,
-        },
+        description: item.product_name,
         quantity: item.quantity,
-        discount: item.discount_type ? {
-          type: item.discount_type as 'percentage' | 'amount',
-          value: item.discount_value || 0,
-        } : undefined,
+        unitPrice: item.unit_price,
+        vatRate: item.vat_rate,
         subtotal: item.subtotal,
         vatAmount: item.vat_amount,
         total: item.total,
       })) || [],
       subtotal: sale.subtotal,
       totalVat: sale.total_vat,
-      totalDiscount: sale.total_discount,
       total: sale.total,
-      paymentMethod: sale.payment_method,
-      amountPaid: sale.amount_paid,
-      change: sale.change_amount,
-      is_invoice: sale.is_invoice,
-      customer: sale.customers ? {
-        name: sale.customers.name,
-        email: sale.customers.email,
-        phone: sale.customers.phone,
-        vat_number: sale.customers.vat_number,
-      } : undefined,
+      notes: sale.notes,
     };
 
-    setSelectedSale(saleForReceipt);
-    setReceiptDialogOpen(true);
+    previewInvoicePDF(invoiceData);
+  };
+
+  const handleDownloadInvoice = (sale: any) => {
+    const invoiceData = {
+      saleNumber: sale.sale_number,
+      date: new Date(sale.date),
+      company: {
+        name: companySettings.name,
+        address: companySettings.address,
+        city: companySettings.city,
+        postalCode: companySettings.postal_code,
+        vatNumber: companySettings.vat_number,
+        phone: companySettings.phone,
+      },
+      customer: sale.customers ? {
+        name: sale.customers.name,
+        vatNumber: sale.customers.vat_number,
+        address: sale.customers.address,
+        city: sale.customers.city,
+        postalCode: sale.customers.postal_code,
+      } : undefined,
+      items: sale.sale_items?.map((item: any) => ({
+        description: item.product_name,
+        quantity: item.quantity,
+        unitPrice: item.unit_price,
+        vatRate: item.vat_rate,
+        subtotal: item.subtotal,
+        vatAmount: item.vat_amount,
+        total: item.total,
+      })) || [],
+      subtotal: sale.subtotal,
+      totalVat: sale.total_vat,
+      total: sale.total,
+      notes: sale.notes,
+    };
+
+    downloadInvoicePDF(invoiceData);
   };
 
   const getTotals = () => {
@@ -249,7 +283,12 @@ export default function Invoices() {
                             <Eye className="h-4 w-4 mr-1" />
                             Voir
                           </Button>
-                          <Button variant="ghost" size="sm" className="h-8">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8"
+                            onClick={() => handleDownloadInvoice(invoice)}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -270,41 +309,6 @@ export default function Invoices() {
         </Card>
       </div>
 
-      {/* Invoice Dialog */}
-      <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
-        <DialogContent className="max-w-sm bg-white border-2 border-primary p-0">
-          <DialogHeader className="p-4 pb-0">
-            <DialogTitle className="text-primary font-bold text-center">FACTURE</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[70vh] overflow-y-auto">
-            {selectedSale && <ThermalReceipt sale={selectedSale} />}
-          </div>
-          <div className="p-4 border-t bg-muted/30 flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setReceiptDialogOpen(false);
-                setSelectedSale(null);
-              }}
-              className="flex-1 h-12 font-semibold"
-            >
-              Fermer
-            </Button>
-            <Button
-              onClick={() => {
-                printThermalReceipt();
-                setTimeout(() => {
-                  setReceiptDialogOpen(false);
-                  setSelectedSale(null);
-                }, 500);
-              }}
-              className="flex-1 h-12 bg-accent hover:bg-accent/90 text-white font-bold"
-            >
-              IMPRIMER
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
