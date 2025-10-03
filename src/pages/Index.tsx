@@ -1353,9 +1353,8 @@ const Index = () => {
                       ref={scanInputRef}
                       value={scanInput}
                       onChange={(e) => {
-                        const normalized = normalizeBarcode(e.target.value);
-                        setScanInput(normalized);
-                        if (!normalized.trim()) {
+                        setScanInput(e.target.value);
+                        if (!e.target.value.trim()) {
                           setSearchResults([]);
                         }
                       }}
