@@ -35,10 +35,10 @@ interface InvoiceData {
   notes?: string;
 }
 
-// JL Prod Blue Color (HSL: 210 100% 50%)
-const PRIMARY_COLOR = { r: 0, g: 128, b: 255 };
-const PRIMARY_LIGHT = { r: 230, g: 242, b: 255 };
-const PRIMARY_DARK = { r: 0, g: 102, b: 204 };
+// Black & White Professional Colors
+const PRIMARY_COLOR = { r: 0, g: 0, b: 0 }; // Black
+const PRIMARY_LIGHT = { r: 245, g: 245, b: 245 }; // Light Gray
+const PRIMARY_DARK = { r: 60, g: 60, b: 60 }; // Dark Gray
 
 // Import logo for PDF
 import logoJLProd from '../assets/logo-jlprod.png';
@@ -49,23 +49,23 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   const pageHeight = doc.internal.pageSize.getHeight();
   let yPos = 25;
 
-  // ============ HEADER WITH BLUE BAND ============
-  doc.setFillColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
+  // ============ HEADER WITH ELEGANT BAND ============
+  doc.setFillColor(PRIMARY_DARK.r, PRIMARY_DARK.g, PRIMARY_DARK.b);
   doc.rect(0, 0, pageWidth, 45, 'F');
 
-  // Logo - JL Prod
-  // Add logo image - create white background for logo
+  // Logo - JL Prod (EN COULEUR)
+  // Add logo image with white background
   doc.setFillColor(255, 255, 255);
   doc.roundedRect(15, 10, 35, 25, 3, 3, 'F');
   
-  // Add the logo image (converted from imported PNG)
+  // Add the COLORED logo image
   try {
     doc.addImage(logoJLProd, 'PNG', 16, 11, 33, 23);
   } catch (error) {
     // Fallback if image fails to load
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
+    doc.setTextColor(0, 0, 0);
     doc.text('JL', 22, 20);
     doc.text('PROD', 19, 27);
   }
@@ -106,13 +106,13 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   yPos = 60;
   
   if (invoice.customer) {
-    // Blue accent bar for customer section
+    // Light gray accent for customer section
     doc.setFillColor(PRIMARY_LIGHT.r, PRIMARY_LIGHT.g, PRIMARY_LIGHT.b);
     doc.roundedRect(15, yPos - 5, 90, 40, 3, 3, 'F');
     
-    // Border
+    // Black border
     doc.setDrawColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
-    doc.setLineWidth(0.5);
+    doc.setLineWidth(0.8);
     doc.roundedRect(15, yPos - 5, 90, 40, 3, 3, 'S');
     
     doc.setFontSize(9);
@@ -145,7 +145,7 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   // ============ ITEMS TABLE ============
   yPos = 110;
   
-  // Table Header with blue background
+  // Table Header with black background
   doc.setFillColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
   doc.roundedRect(15, yPos - 6, pageWidth - 30, 10, 2, 2, 'F');
   
@@ -197,9 +197,9 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   // ============ TOTALS SECTION ============
   yPos += 5;
   
-  // Separator line
+  // Separator line (bold black)
   doc.setDrawColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
-  doc.setLineWidth(0.5);
+  doc.setLineWidth(1);
   doc.line(15, yPos, pageWidth - 15, yPos);
   yPos += 10;
 
@@ -227,13 +227,13 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
     yPos += 7;
   });
 
-  // Total TTC with blue highlight
+  // Total TTC with black highlight
   yPos += 3;
   doc.setFillColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
   doc.roundedRect(totalsX - 5, yPos - 7, 80, 12, 2, 2, 'F');
   
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
+  doc.setFontSize(14);
   doc.setTextColor(255, 255, 255);
   doc.text('TOTAL TTC:', totalsX, yPos);
   doc.text(`${invoice.total.toFixed(2)}€`, pageWidth - 20, yPos, { align: 'right' });
@@ -261,9 +261,9 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   // ============ FOOTER ============
   const footerY = pageHeight - 15;
   
-  // Blue line above footer
+  // Black line above footer
   doc.setDrawColor(PRIMARY_COLOR.r, PRIMARY_COLOR.g, PRIMARY_COLOR.b);
-  doc.setLineWidth(1);
+  doc.setLineWidth(1.5);
   doc.line(15, footerY - 5, pageWidth - 15, footerY - 5);
   
   doc.setFontSize(8);
