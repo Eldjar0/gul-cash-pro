@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBag, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, CheckCircle2, Thermometer, Calendar, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import logoMarket from '@/assets/logo-market.png';
 
@@ -69,6 +69,7 @@ const CustomerDisplay = () => {
   });
 
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [temperature, setTemperature] = useState<number | null>(null);
 
   // Mise à jour de l'heure toutes les secondes
   useEffect(() => {
@@ -77,6 +78,31 @@ const CustomerDisplay = () => {
     }, 1000);
 
     return () => clearInterval(timer);
+  }, []);
+
+  // Récupération de la température pour Jumet
+  useEffect(() => {
+    const fetchTemperature = async () => {
+      try {
+        const response = await fetch(
+          'https://api.open-meteo.com/v1/forecast?latitude=50.4497&longitude=4.4344&current=temperature_2m&timezone=Europe/Brussels'
+        );
+        const data = await response.json();
+        if (data?.current?.temperature_2m !== undefined) {
+          setTemperature(data.current.temperature_2m);
+        }
+      } catch (error) {
+        console.error('Error fetching temperature:', error);
+      }
+    };
+
+    // Récupérer immédiatement
+    fetchTemperature();
+
+    // Mettre à jour toutes les 10 minutes
+    const interval = setInterval(fetchTemperature, 10 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -189,29 +215,77 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'idle') {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-8">
-        <div className="text-center space-y-8 animate-fade-in">
-          <img src={logoMarket} alt="Logo" className="w-64 h-64 mx-auto object-contain animate-scale-in" />
-          <div className="space-y-4">
-            <h1 className="text-7xl font-black animate-scale-in text-foreground tracking-tight">
-              Bienvenue
-            </h1>
-            <p className="text-4xl animate-fade-in text-muted-foreground" style={{ animationDelay: '0.2s' }}>
-              Veuillez patienter
-            </p>
-            <p className="text-3xl animate-fade-in text-muted-foreground/70" style={{ animationDelay: '0.4s' }}>
-              Un collaborateur arrive
-            </p>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-between p-8">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-8 animate-fade-in">
+            <img src={logoMarket} alt="Logo" className="w-64 h-64 mx-auto object-contain animate-scale-in" />
+            <div className="space-y-4">
+              <h1 className="text-7xl font-black animate-scale-in text-foreground tracking-tight">
+                Bienvenue
+              </h1>
+              <p className="text-4xl animate-fade-in text-muted-foreground" style={{ animationDelay: '0.2s' }}>
+                Veuillez patienter
+              </p>
+              <p className="text-3xl animate-fade-in text-muted-foreground/70" style={{ animationDelay: '0.4s' }}>
+                Un collaborateur arrive
+              </p>
+            </div>
+            <div className="flex justify-center gap-3 mt-8">
+              <div className="w-4 h-4 rounded-full animate-bounce bg-primary" style={{ animationDelay: '0s' }}></div>
+              <div className="w-4 h-4 rounded-full animate-bounce bg-primary" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-4 h-4 rounded-full animate-bounce bg-primary" style={{ animationDelay: '0.4s' }}></div>
+            </div>
           </div>
-          <div className="flex justify-center gap-3 mt-8">
-            <div className="w-4 h-4 rounded-full animate-bounce bg-primary" style={{ animationDelay: '0s' }}></div>
-            <div className="w-4 h-4 rounded-full animate-bounce bg-primary" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-4 h-4 rounded-full animate-bounce bg-primary" style={{ animationDelay: '0.4s' }}></div>
-          </div>
-          <p className="text-xl text-muted-foreground/60 mt-6">
-            Système de caisse développé par Jlprod.be
-          </p>
         </div>
+
+        {/* Section heure, date et température */}
+        <div className="w-full max-w-6xl grid grid-cols-3 gap-6 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          {/* Date */}
+          <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-6 border-2 border-primary/20 shadow-lg">
+            <div className="flex items-center gap-3 mb-3">
+              <Calendar className="h-10 w-10 text-primary" />
+              <p className="text-lg font-semibold text-muted-foreground uppercase">Date</p>
+            </div>
+            <p className="text-2xl font-bold text-foreground text-center">
+              {currentTime.toLocaleDateString('fr-BE', { 
+                weekday: 'long', 
+                day: '2-digit', 
+                month: 'long', 
+                year: 'numeric' 
+              })}
+            </p>
+          </div>
+
+          {/* Heure */}
+          <div className="bg-gradient-to-br from-accent/10 to-accent/5 rounded-2xl p-6 border-2 border-accent/20 shadow-lg">
+            <div className="flex items-center gap-3 mb-3">
+              <Clock className="h-10 w-10 text-accent" />
+              <p className="text-lg font-semibold text-muted-foreground uppercase">Heure</p>
+            </div>
+            <p className="text-5xl font-black text-foreground text-center font-mono">
+              {currentTime.toLocaleTimeString('fr-BE', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+              })}
+            </p>
+          </div>
+
+          {/* Température */}
+          <div className="bg-gradient-to-br from-secondary/10 to-secondary/5 rounded-2xl p-6 border-2 border-secondary/20 shadow-lg">
+            <div className="flex items-center gap-3 mb-3">
+              <Thermometer className="h-10 w-10 text-secondary" />
+              <p className="text-lg font-semibold text-muted-foreground uppercase">Jumet</p>
+            </div>
+            <p className="text-5xl font-black text-foreground text-center">
+              {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
+            </p>
+          </div>
+        </div>
+
+        <p className="text-xl text-muted-foreground/60 mt-6">
+          Système de caisse développé par Jlprod.be
+        </p>
       </div>
     );
   }

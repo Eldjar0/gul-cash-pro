@@ -7,7 +7,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet } from 'lucide-react';
 
 type PaymentMethod = 'cash' | 'card' | 'mobile';
 
@@ -93,24 +94,51 @@ export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment }: P
             </Card>
           </div>
         ) : method === 'cash' ? (
-          <div className="space-y-4">
-            <Card className="bg-[#1a1a1a] border-2 border-pos-success/30 p-6">
-              <p className="text-gray-400 text-sm mb-2 font-mono">MONTANT REÇU</p>
-              <div className="text-pos-success text-5xl font-bold font-mono mb-4">
-                {amountPaid || '0.00'}€
+          <div className="space-y-6">
+            {/* MONTANT À PAYER */}
+            <Card className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] border-4 border-white/20 p-6">
+              <div className="flex items-center gap-4 mb-3">
+                <Wallet className="h-10 w-10 text-white" />
+                <p className="text-white/80 text-2xl font-bold font-mono">MONTANT À PAYER</p>
               </div>
-              {amountPaid && parseFloat(amountPaid) >= total && (
-                <Card className="bg-pos-success/20 border-pos-success p-4">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="h-10 w-10 text-pos-success" />
+              <div className="text-white text-7xl font-black font-mono text-center py-4">
+                {total.toFixed(2)}€
+              </div>
+            </Card>
+
+            {/* MONTANT REÇU DU CLIENT */}
+            <Card className="bg-gradient-to-br from-pos-success/30 to-pos-success/10 border-4 border-pos-success p-8 relative overflow-hidden">
+              <div className="absolute inset-0 bg-pos-success/5 animate-pulse"></div>
+              <div className="relative">
+                <div className="flex items-center gap-4 mb-4">
+                  <HandCoins className="h-12 w-12 text-pos-success animate-bounce" />
+                  <p className="text-white text-3xl font-bold font-mono">MONTANT REÇU</p>
+                </div>
+                <div className="text-pos-success text-8xl font-black font-mono text-center py-6 drop-shadow-lg">
+                  {amountPaid || '0.00'}€
+                </div>
+              </div>
+            </Card>
+
+            {/* RENDU DE MONNAIE */}
+            {amountPaid && parseFloat(amountPaid) >= total && (
+              <Card className="bg-gradient-to-br from-category-green/30 to-category-green/10 border-4 border-category-green p-8 animate-scale-in">
+                <div className="flex items-center justify-between gap-6">
+                  <div className="flex items-center gap-4">
+                    <CheckCircle className="h-16 w-16 text-category-green animate-pulse" />
                     <div>
-                      <p className="text-white font-bold text-lg font-mono">RENDU DE MONNAIE</p>
-                      <p className="text-pos-success text-4xl font-bold font-mono">{getChange().toFixed(2)}€</p>
+                      <p className="text-white font-bold text-3xl font-mono mb-2">RENDU DE MONNAIE</p>
+                      <Badge className="bg-category-green text-black text-xl px-4 py-2 font-mono font-black">
+                        À REMETTRE AU CLIENT
+                      </Badge>
                     </div>
                   </div>
-                </Card>
-              )}
-            </Card>
+                  <div className="text-category-green text-7xl font-black font-mono animate-pulse">
+                    {getChange().toFixed(2)}€
+                  </div>
+                </div>
+              </Card>
+            )}
 
             {suggestedAmounts.length > 0 && (
               <div className="grid grid-cols-6 gap-2">
