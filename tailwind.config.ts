@@ -168,6 +168,60 @@ export default {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        "dvd-bounce": {
+          "0%, 100%": { 
+            top: "10%", 
+            left: "10%",
+          },
+          "25%": { 
+            top: "80%", 
+            left: "80%",
+          },
+          "50%": { 
+            top: "20%", 
+            left: "70%",
+          },
+          "75%": { 
+            top: "70%", 
+            left: "20%",
+          },
+        },
+        "dvd-bounce-2": {
+          "0%, 100%": { 
+            top: "80%", 
+            left: "80%",
+          },
+          "25%": { 
+            top: "15%", 
+            left: "20%",
+          },
+          "50%": { 
+            top: "75%", 
+            left: "15%",
+          },
+          "75%": { 
+            top: "25%", 
+            left: "85%",
+          },
+        },
+        "dvd-bounce-3": {
+          "0%, 100%": { 
+            top: "50%", 
+            left: "50%",
+          },
+          "25%": { 
+            top: "10%", 
+            left: "85%",
+          },
+          "50%": { 
+            top: "85%", 
+            left: "50%",
+          },
+          "75%": { 
+            top: "30%", 
+            left: "10%",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -187,6 +241,9 @@ export default {
         "slide-infinite": "slide-infinite 2s linear infinite",
         "scroll-right": "scroll-right 3s linear infinite",
         "scroll-left": "scroll-left 20s linear infinite",
+        "dvd-bounce": "dvd-bounce 12s ease-in-out infinite",
+        "dvd-bounce-2": "dvd-bounce-2 15s ease-in-out infinite",
+        "dvd-bounce-3": "dvd-bounce-3 18s ease-in-out infinite",
       },
       boxShadow: {
         "glow-sm": "0 0 10px hsl(217 91% 60% / 0.3)",

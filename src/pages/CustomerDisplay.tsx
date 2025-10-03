@@ -227,6 +227,11 @@ const CustomerDisplay = () => {
           <div className="absolute top-1/2 left-16 w-24 h-24 bg-category-pink/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8.5s', animationDelay: '2.5s' }}></div>
           <div className="absolute bottom-1/4 right-1/4 w-38 h-38 bg-primary-glow/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7.5s', animationDelay: '0.5s' }}></div>
           <div className="absolute top-1/4 left-1/2 w-30 h-30 bg-accent/15 rounded-full blur-xl animate-float" style={{ animationDuration: '6.5s', animationDelay: '3.5s' }}></div>
+          
+          {/* Grands cercles style DVD bouncing */}
+          <div className="absolute w-32 h-32 bg-primary/40 rounded-full blur-xl animate-dvd-bounce" style={{ animationDuration: '12s' }}></div>
+          <div className="absolute w-40 h-40 bg-accent/40 rounded-full blur-xl animate-dvd-bounce-2" style={{ animationDuration: '15s', animationDelay: '2s' }}></div>
+          <div className="absolute w-36 h-36 bg-category-purple/40 rounded-full blur-xl animate-dvd-bounce-3" style={{ animationDuration: '18s', animationDelay: '4s' }}></div>
         </div>
         
         <div className="w-full max-w-6xl space-y-6 relative z-10">
@@ -249,16 +254,9 @@ const CustomerDisplay = () => {
             <p className="text-5xl font-bold text-foreground drop-shadow-md">
               Veuillez patienter
             </p>
-            <div className="flex items-center justify-center gap-2">
-              <p className="text-3xl text-muted-foreground">
-                Un collaborateur va prendre votre commande
-              </p>
-              <div className="flex gap-1">
-                <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0s' }}></span>
-                <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-                <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0.4s' }}></span>
-              </div>
-            </div>
+            <p className="text-3xl text-muted-foreground">
+              Un collaborateur va prendre votre commande
+            </p>
           </div>
 
           {/* Section infos (date, heure, température) - carrousel infini */}
