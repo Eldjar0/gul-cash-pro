@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function LegalInfo() {
   const navigate = useNavigate();
@@ -32,7 +33,21 @@ export default function LegalInfo() {
           </AlertDescription>
         </Alert>
 
-        {/* Developer Info */}
+        {/* Tabs Navigation */}
+        <Tabs defaultValue="editor" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7">
+            <TabsTrigger value="editor">Éditeur</TabsTrigger>
+            <TabsTrigger value="features">Fonctionnalités</TabsTrigger>
+            <TabsTrigger value="ownership">Propriété</TabsTrigger>
+            <TabsTrigger value="liability">Responsabilité</TabsTrigger>
+            <TabsTrigger value="terms">Conditions</TabsTrigger>
+            <TabsTrigger value="gdpr">RGPD</TabsTrigger>
+            <TabsTrigger value="contact">Contact</TabsTrigger>
+          </TabsList>
+
+          {/* Tab: Éditeur */}
+          <TabsContent value="editor" className="space-y-6">
+            {/* Developer Info */}
         <Card className="border-primary">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -84,28 +99,245 @@ export default function LegalInfo() {
           </CardContent>
         </Card>
 
-        {/* Client Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Client du Logiciel
-            </CardTitle>
-            <CardDescription>Logiciel sur mesure développé spécifiquement pour</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-              <p className="text-2xl font-bold">GUL REYHAN</p>
-              <p className="text-sm text-muted-foreground">Logiciel développé sur mesure - Licence d'utilisation personnelle</p>
-              <div className="flex gap-2 mt-3">
-                <Badge variant="outline">Version 1.0.0</Badge>
-                <Badge variant="outline">Année 2025</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Client Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Propriétaire du Logiciel
+                </CardTitle>
+                <CardDescription>Logiciel acheté et détenu par</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-primary/10 rounded-lg p-4 space-y-2 border-2 border-primary">
+                  <p className="text-2xl font-bold">GUL REYHAN</p>
+                  <p className="text-sm font-semibold">Propriétaire légal du logiciel suite à achat complet</p>
+                  <p className="text-xs text-muted-foreground">Tous les droits d'utilisation et de modification appartiennent au propriétaire</p>
+                  <div className="flex gap-2 mt-3">
+                    <Badge variant="outline">Version 1.0.0</Badge>
+                    <Badge variant="outline">Année 2025</Badge>
+                    <Badge className="bg-primary">Achat Définitif</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Complete Functionality List */}
+            {/* Status Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Scale className="h-5 w-5" />
+                  Statut Fiscal du Logiciel
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3">
+                  <div className="flex items-start gap-3">
+                    <XCircle className="h-5 w-5 text-destructive mt-0.5" />
+                    <div>
+                      <p className="font-semibold">NON certifié par le SPF Finances</p>
+                      <p className="text-sm text-muted-foreground">Le logiciel ne possède pas la certification SCE (Système de Caisse Enregistreuse)</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <XCircle className="h-5 w-5 text-destructive mt-0.5" />
+                    <div>
+                      <p className="font-semibold">Pas de Module FDM (Black Box)</p>
+                      <p className="text-sm text-muted-foreground">Obligatoire pour le secteur HORECA depuis juillet 2016</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div>
+                      <p className="font-semibold">Outil de gestion interne</p>
+                      <p className="text-sm text-muted-foreground">Parfait pour accélérer les encaissements et suivre votre activité</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Usage recommandé */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  Usage Recommandé
+                </CardTitle>
+                <CardDescription>Comment utiliser ce logiciel en toute légalité</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <div className="border-l-4 border-primary pl-4">
+                    <h3 className="font-semibold mb-2">1. Encaissement rapide pendant la journée</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Utilisez le POS pour scanner les produits, calculer les totaux, imprimer des tickets clients et gérer votre stock en temps réel.
+                    </p>
+                  </div>
+                  
+                  <div className="border-l-4 border-primary pl-4">
+                    <h3 className="font-semibold mb-2">2. Transfert vers le carnet officiel le soir</h3>
+                    <p className="text-sm text-muted-foreground">
+                      À la fin de la journée, générez le Rapport Z et reportez manuellement les données dans votre <strong>carnet de caisse papier officiel</strong> ou système certifié.
+                    </p>
+                  </div>
+                  
+                  <div className="border-l-4 border-primary pl-4">
+                    <h3 className="font-semibold mb-2">3. Archivage régulier</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Archivez vos ventes mensuellement via la fonction d'export ZIP et conservez ces archives pendant <strong>7 ans minimum</strong>.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Obligations légales belges */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Obligations Légales Belges
+                </CardTitle>
+                <CardDescription>Ce que vous devez respecter en tant que commerçant</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <Archive className="h-4 w-4" />
+                      Conservation des documents (7-10 ans)
+                    </h4>
+                    <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 ml-6">
+                      <li>Documents comptables : 7 ans minimum</li>
+                      <li>Comptabilité officielle : 10 ans</li>
+                      <li>Factures et tickets : 7 ans</li>
+                    </ul>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Carnet de caisse papier obligatoire
+                    </h4>
+                    <p className="text-sm text-muted-foreground ml-6">
+                      Vous devez tenir un carnet de caisse papier avec les entrées/sorties journalières, même si vous utilisez un système informatique.
+                    </p>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Déclaration TVA trimestrielle
+                    </h4>
+                    <p className="text-sm text-muted-foreground ml-6">
+                      Déclaration obligatoire tous les 3 mois auprès du SPF Finances avec les détails TVA par taux.
+                    </p>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-orange-600" />
+                      Module FDM pour HORECA
+                    </h4>
+                    <p className="text-sm text-muted-foreground ml-6">
+                      Si vous êtes dans le secteur HORECA (restauration, café), un module FDM certifié est <strong>obligatoire depuis juillet 2016</strong>.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Workflow recommandé */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Info className="h-5 w-5" />
+                  Workflow Quotidien Recommandé
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ol className="space-y-3 list-decimal list-inside">
+                  <li className="text-sm">
+                    <strong>Matin :</strong> Ouvrir la journée dans le POS avec le fond de caisse
+                  </li>
+                  <li className="text-sm">
+                    <strong>Journée :</strong> Utiliser le POS pour tous les encaissements rapides
+                  </li>
+                  <li className="text-sm">
+                    <strong>Soir :</strong> Générer le Rapport Z et compter la caisse
+                  </li>
+                  <li className="text-sm">
+                    <strong>Soir :</strong> Reporter les données du Rapport Z dans le carnet de caisse officiel
+                  </li>
+                  <li className="text-sm">
+                    <strong>Mensuel :</strong> Archiver les ventes en ZIP et sauvegarder sur disque externe
+                  </li>
+                  <li className="text-sm">
+                    <strong>Trimestriel :</strong> Préparer et soumettre la déclaration TVA au SPF Finances
+                  </li>
+                </ol>
+              </CardContent>
+            </Card>
+
+            {/* Liens utiles */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ExternalLink className="h-5 w-5" />
+                  Liens Utiles
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <a 
+                  href="https://finances.belgium.be" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-primary hover:underline"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  SPF Finances Belgique
+                </a>
+                <a 
+                  href="https://finances.belgium.be/fr/entreprises/tva" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-primary hover:underline"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Guide TVA pour commerçants
+                </a>
+                <a 
+                  href="https://finances.belgium.be/fr/entreprises/tva/caisses-enregistreuses" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-primary hover:underline"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Réglementation caisses enregistreuses
+                </a>
+                <a 
+                  href="https://www.jlprod.be" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-primary hover:underline"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Site officiel JLprod
+                </a>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab: Fonctionnalités */}
+          <TabsContent value="features" className="space-y-6">
+            {/* Complete Functionality List */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -363,7 +595,85 @@ export default function LegalInfo() {
           </CardContent>
         </Card>
 
-        {/* CRITICAL LIABILITY DISCLAIMER */}
+          </TabsContent>
+
+          {/* Tab: Propriété et Licence */}
+          <TabsContent value="ownership" className="space-y-6">
+            <Card className="border-primary">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Propriété du Logiciel - Achat Définitif
+                </CardTitle>
+                <CardDescription>Droits complets transférés au propriétaire</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Alert>
+                  <CheckCircle2 className="h-4 w-4" />
+                  <AlertTitle className="font-bold">✅ ACHAT COMPLET - Propriété Transférée</AlertTitle>
+                  <AlertDescription className="text-sm space-y-3 mt-2">
+                    <p>
+                      Ce logiciel a été <strong>ACHETÉ</strong> (pas loué) par <strong>GUL REYHAN</strong> en 2025.
+                    </p>
+                    <p className="font-semibold">
+                      Tous les droits d'utilisation et de propriété ont été transférés au propriétaire.
+                    </p>
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-4">
+                  <div className="bg-primary/10 p-4 rounded-lg border-2 border-primary">
+                    <h4 className="font-bold mb-3 text-lg">🏆 Droits du Propriétaire (GUL REYHAN)</h4>
+                    <ul className="list-disc list-inside space-y-2 text-sm ml-4">
+                      <li><strong>Propriété complète</strong> du logiciel et de tous ses composants</li>
+                      <li><strong>Utilisation illimitée</strong> sans restriction de durée</li>
+                      <li><strong>Droit de modification</strong> du code source pour usage personnel</li>
+                      <li><strong>Droit de personnalisation</strong> selon les besoins de l'entreprise</li>
+                      <li><strong>Aucun frais de licence</strong> ou d'abonnement récurrent</li>
+                      <li><strong>Accès complet</strong> au code source et à la base de données</li>
+                      <li><strong>Droit de sauvegarder</strong> et archiver toutes les données</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <h4 className="font-bold mb-3">📋 Restrictions Légales Standards</h4>
+                    <ul className="list-disc list-inside space-y-2 text-sm ml-4">
+                      <li>Interdiction de <strong>revente commerciale</strong> du logiciel à des tiers</li>
+                      <li>Interdiction de <strong>redistribution publique</strong> du code source</li>
+                      <li>Interdiction de <strong>revendiquer la paternité</strong> du développement original</li>
+                      <li>Le propriétaire peut faire des modifications mais ne peut pas vendre le logiciel comme produit commercial</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <h4 className="font-bold mb-3">👨‍💻 Rôle du Développeur (JL Prod)</h4>
+                    <p className="text-sm mb-2">
+                      <strong>JL Prod - Jordan Lallemand</strong> reste le développeur original du logiciel mais :
+                    </p>
+                    <ul className="list-disc list-inside space-y-2 text-sm ml-4 text-muted-foreground">
+                      <li>N'a <strong>AUCUN droit de propriété</strong> sur cette instance vendue</li>
+                      <li>N'a <strong>AUCUN accès</strong> aux données de GUL REYHAN</li>
+                      <li>Ne peut <strong>PAS révoquer</strong> la licence ou l'accès au logiciel</li>
+                      <li>Peut fournir du <strong>support technique</strong> sur demande (payant ou gratuit selon accord)</li>
+                      <li>Conserve le droit de créer des versions similaires pour d'autres clients</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-600">
+                    <h4 className="font-bold mb-2 text-green-700 dark:text-green-400">✅ Résumé : Propriété Complète</h4>
+                    <p className="text-sm">
+                      <strong>GUL REYHAN</strong> est le propriétaire légal et définitif de ce logiciel suite à un achat complet en 2025. 
+                      Le propriétaire a tous les droits d'utilisation, de modification et de personnalisation pour son usage professionnel.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab: Limitation de Responsabilité */}
+          <TabsContent value="liability" className="space-y-6">
+            {/* CRITICAL LIABILITY DISCLAIMER */}
         <Alert variant="destructive" className="border-2 border-destructive">
           <ShieldAlert className="h-5 w-5" />
           <AlertTitle className="text-lg font-bold">🔴 LIMITATION DE RESPONSABILITÉ JURIDIQUE - IMPORTANT</AlertTitle>
@@ -462,7 +772,11 @@ export default function LegalInfo() {
           </AlertDescription>
         </Alert>
 
-        {/* Terms of Use */}
+          </TabsContent>
+
+          {/* Tab: Conditions d'Utilisation */}
+          <TabsContent value="terms" className="space-y-6">
+            {/* Terms of Use */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -473,38 +787,44 @@ export default function LegalInfo() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-4">
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <h4 className="font-bold mb-2">📜 Licence personnelle non-transférable</h4>
+              <div className="bg-primary/10 p-4 rounded-lg border-2 border-primary">
+                <h4 className="font-bold mb-2">📜 Achat Définitif - Propriété Complète</h4>
                 <ul className="list-disc list-inside space-y-1 text-sm ml-4">
-                  <li>Logiciel développé spécifiquement pour <strong>GUL REYHAN</strong></li>
-                  <li>Licence d'utilisation personnelle <strong>non-transférable</strong></li>
-                  <li><strong>Interdiction stricte</strong> de revente, redistribution, ou location</li>
-                  <li><strong>Interdiction stricte</strong> de modification sans accord écrit de JL Prod</li>
+                  <li>Logiciel <strong>ACHETÉ</strong> par <strong>GUL REYHAN</strong> en 2025</li>
+                  <li>Propriété <strong>COMPLÈTE et DÉFINITIVE</strong> transférée au propriétaire</li>
+                  <li>Utilisation <strong>ILLIMITÉE</strong> sans frais récurrents</li>
+                  <li>Droit de <strong>MODIFICATION</strong> pour usage personnel</li>
+                  <li>Interdiction de revente commerciale à des tiers</li>
                 </ul>
               </div>
 
               <div className="bg-muted/50 p-4 rounded-lg">
-                <h4 className="font-bold mb-2">© Propriété intellectuelle</h4>
+                <h4 className="font-bold mb-2">© Droits d'Auteur</h4>
                 <p className="text-sm">
-                  Le code source, la conception, les fonctionnalités et tous les éléments de ce logiciel sont la 
-                  <strong> propriété intellectuelle exclusive de JL Prod - Jordan Lallemand</strong> et sont protégés 
-                  par le droit d'auteur belge et international.
+                  Le développement original de ce logiciel a été réalisé par <strong>JL Prod - Jordan Lallemand</strong> en 2025.
+                  Suite à l'achat complet, <strong>GUL REYHAN</strong> détient tous les droits d'utilisation et de modification.
+                  JL Prod conserve uniquement la paternité du développement original.
                 </p>
               </div>
 
               <div className="bg-muted/50 p-4 rounded-lg">
-                <h4 className="font-bold mb-2">⏱️ Durée et résiliation</h4>
+                <h4 className="font-bold mb-2">⏱️ Durée</h4>
                 <ul className="list-disc list-inside space-y-1 text-sm ml-4">
-                  <li>La licence est accordée pour une <strong>durée indéterminée</strong></li>
-                  <li>JL Prod peut résilier la licence en cas de <strong>violation des conditions</strong></li>
-                  <li>En cas de résiliation, l'utilisateur s'engage à <strong>cesser immédiatement</strong> toute utilisation</li>
+                  <li>Propriété acquise de manière <strong>PERMANENTE et DÉFINITIVE</strong></li>
+                  <li><strong>Aucune expiration</strong> de licence</li>
+                  <li><strong>Aucun paiement récurrent</strong> requis</li>
+                  <li>Le propriétaire peut utiliser le logiciel sans limitation de durée</li>
                 </ul>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* GDPR */}
+          </TabsContent>
+
+          {/* Tab: RGPD */}
+          <TabsContent value="gdpr" className="space-y-6">
+            {/* GDPR */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -541,7 +861,11 @@ export default function LegalInfo() {
           </CardContent>
         </Card>
 
-        {/* Contact and Support */}
+          </TabsContent>
+
+          {/* Tab: Contact */}
+          <TabsContent value="contact" className="space-y-6">
+            {/* Contact and Support */}
         <Card className="border-primary">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -837,6 +1161,9 @@ export default function LegalInfo() {
             </a>
           </CardContent>
         </Card>
+
+          </TabsContent>
+        </Tabs>
 
         {/* Actions rapides */}
         <div className="flex flex-wrap gap-3">
