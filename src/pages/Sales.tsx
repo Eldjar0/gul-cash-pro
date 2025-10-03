@@ -17,8 +17,9 @@ import {
   Receipt,
   Trash2,
   Edit,
+  AlertTriangle,
 } from 'lucide-react';
-import { useSales, useCancelSale } from '@/hooks/useSales';
+import { useSales, useDeleteSalePermanently } from '@/hooks/useSales';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,7 +58,7 @@ export default function Sales() {
   const [cancelReason, setCancelReason] = useState('');
 
   const { data: sales = [], isLoading } = useSales();
-  const cancelSale = useCancelSale();
+  const deleteSale = useDeleteSalePermanently();
 
   const handleDeleteClick = (saleId: string) => {
     setSaleToDelete(saleId);
@@ -66,7 +67,7 @@ export default function Sales() {
 
   const handleDeleteConfirm = () => {
     if (saleToDelete) {
-      cancelSale.mutate({ 
+      deleteSale.mutate({ 
         saleId: saleToDelete, 
         reason: cancelReason || 'Aucune raison fournie' 
       });
@@ -392,38 +393,85 @@ export default function Sales() {
         </DialogContent>
       </Dialog>
 
-      {/* Cancel Confirmation Dialog */}
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => {
         setDeleteDialogOpen(open);
         if (!open) setCancelReason('');
       }}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Annuler cette vente</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3">
-              <p>
-                Conformément à la législation belge, cette vente sera marquée comme "ANNULÉE" 
-                mais restera dans l'historique (conservation obligatoire).
-              </p>
-              <div>
-                <label className="text-sm font-medium">Raison de l'annulation (obligatoire) :</label>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive text-xl">
+              <Trash2 className="h-6 w-6" />
+              Supprimer définitivement cette vente
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4 pt-4">
+              <div className="bg-amber-50 border-2 border-amber-500 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-2">
+                    <p className="text-sm font-bold text-amber-900">
+                      ⚠️ AVERTISSEMENT IMPORTANT - RESPONSABILITÉ LÉGALE
+                    </p>
+                    <p className="text-xs text-amber-800">
+                      Cette vente sera <strong>définitivement supprimée</strong> de la base de données et ne pourra pas être récupérée.
+                    </p>
+                    <p className="text-xs text-amber-800 font-semibold">
+                      Cette action ne doit être effectuée que dans les cas suivants :
+                    </p>
+                    <ul className="text-xs text-amber-800 list-disc list-inside space-y-1 ml-2">
+                      <li>Annulation par le client avec remboursement</li>
+                      <li>Erreur de saisie majeure nécessitant une suppression</li>
+                      <li>Produit retourné et remboursé intégralement</li>
+                      <li>Autre raison légalement justifiable</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-6 w-6 text-red-600 shrink-0 mt-0.5" />
+                  <div className="space-y-2">
+                    <p className="text-sm font-bold text-red-900">
+                      ⚖️ CLAUSE DE RESPONSABILITÉ
+                    </p>
+                    <p className="text-xs text-red-800 font-semibold">
+                      En supprimant cette vente, vous confirmez que cette action est justifiée et conforme à la législation en vigueur.
+                    </p>
+                    <p className="text-xs text-red-800">
+                      <strong>JLprod décline toute responsabilité</strong> concernant l'utilisation abusive de cette fonction de suppression. L'utilisateur est seul responsable du respect des obligations fiscales et comptables, notamment la conservation des documents pendant 7 ans conformément à la loi belge.
+                    </p>
+                    <p className="text-xs text-red-800 italic">
+                      Note : La suppression volontaire de ventes pour dissimuler des revenus constitue une fraude fiscale passible de sanctions pénales.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <label className="text-sm font-medium text-foreground">
+                  Raison de la suppression (obligatoire pour traçabilité) :
+                </label>
                 <Input
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
-                  placeholder="Ex: Erreur d'encodage, produit abîmé..."
-                  className="mt-1"
+                  placeholder="Ex: Remboursement client après retour produit, erreur de caisse..."
+                  className="mt-2"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Cette raison sera enregistrée dans les logs système pour audit.
+                </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="gap-2">
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               disabled={!cancelReason.trim()}
               className="bg-destructive hover:bg-destructive/90"
             >
-              Marquer comme annulée
+              Je comprends et je supprime définitivement
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

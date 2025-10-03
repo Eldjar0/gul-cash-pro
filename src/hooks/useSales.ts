@@ -251,6 +251,40 @@ export const useCancelSale = () => {
   });
 };
 
+// Hook pour supprimer définitivement une vente
+export const useDeleteSalePermanently = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ saleId, reason }: { saleId: string; reason: string }) => {
+      // Supprimer définitivement la vente de la base de données
+      // Les sale_items seront supprimés automatiquement grâce à la cascade
+      const { error: deleteError } = await supabase
+        .from('sales')
+        .delete()
+        .eq('id', saleId);
+
+      if (deleteError) throw deleteError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      toast({
+        title: 'Vente supprimée',
+        description: 'La vente a été définitivement supprimée de la base de données.',
+      });
+    },
+    onError: (error: Error) => {
+      console.error('Error deleting sale:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer la vente.',
+        variant: 'destructive',
+      });
+    },
+  });
+};
+
 // Keep for backwards compatibility but deprecated
 export const useDeleteSale = useCancelSale;
 
