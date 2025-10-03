@@ -238,14 +238,14 @@ const CustomerDisplay = () => {
             </div>
             
             <div className="space-y-4">
-              <h1 className="text-8xl font-black tracking-tight animate-scale-in drop-shadow-lg bg-gradient-to-r from-primary via-accent via-category-purple to-primary-glow bg-[length:300%_auto] animate-gradient-flow text-transparent bg-clip-text" style={{ animationDelay: '0.1s' }}>
+              <h1 className="text-8xl font-black tracking-tight animate-scale-in drop-shadow-lg bg-gradient-to-r from-accent via-accent/60 to-accent bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s' }}>
                 Bienvenue
               </h1>
               <p className="text-5xl font-bold text-foreground animate-fade-in drop-shadow-md" style={{ animationDelay: '0.2s' }}>
                 Veuillez patienter
               </p>
               <p className="text-3xl text-muted-foreground animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                Un collaborateur arrive
+                Un collaborateur va prendre votre commande
               </p>
             </div>
           </div>
