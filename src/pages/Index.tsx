@@ -1135,7 +1135,7 @@ const Index = () => {
         }}
         autoFocus={false}
       />
-      {/* Main content - 3 colonnes: TICKET (5) | CALCULATRICE (4) | ARTICLES (3) */}
+      {/* Main content - 3 colonnes: TICKET (5) | CALCULATRICE (2) | ARTICLES (5) */}
       <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
         {/* LEFT PANEL - Ticket à gauche */}
         <div className="col-span-5 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
@@ -1401,7 +1401,7 @@ const Index = () => {
         </div>
 
         {/* COLONNE CENTRE - Calculatrice */}
-        <div className="col-span-4 bg-background p-2 flex flex-col gap-2 overflow-y-auto">
+        <div className="col-span-2 bg-background p-2 flex flex-col gap-2 overflow-y-auto">
 
           {/* Calculatrice moderne */}
           <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-3 flex-shrink-0 shadow-lg">
@@ -1515,7 +1515,7 @@ const Index = () => {
         </div>
 
         {/* RIGHT PANEL - Articles/Catégories/Résultats */}
-        <div className="col-span-3 bg-white border-l border-border overflow-y-auto max-h-[calc(100vh-60px)]">
+        <div className="col-span-5 bg-white border-l border-border overflow-y-auto max-h-[calc(100vh-60px)]">
           <div className="p-2">
             {scanInput.trim() && searchResults.length === 0 ? (
               <div className="text-center py-16">
