@@ -44,7 +44,7 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
     if (p.barcode) {
       const normalizedBarcode = p.barcode.replace(/[^0-9]/g, '');
       const normalizedSearch = trimmedSearch.replace(/[^0-9]/g, '');
-      if (normalizedBarcode.includes(normalizedSearch)) return true;
+      if (normalizedSearch.length > 0 && normalizedBarcode.includes(normalizedSearch)) return true;
     }
     
     // Recherche par ID

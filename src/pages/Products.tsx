@@ -97,8 +97,8 @@ export default function Products() {
     if (product.barcode) {
       const normalizedBarcode = product.barcode.replace(/[^0-9]/g, '');
       const normalizedSearch = trimmedSearch.replace(/[^0-9]/g, '');
-      if (normalizedBarcode.toLowerCase().includes(searchLower)) return true;
-      if (normalizedBarcode.includes(normalizedSearch)) return true;
+      if (searchLower && normalizedBarcode.toLowerCase().includes(searchLower)) return true;
+      if (normalizedSearch.length > 0 && normalizedBarcode.includes(normalizedSearch)) return true;
     }
     
     // Recherche dans la description

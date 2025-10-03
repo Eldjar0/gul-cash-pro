@@ -565,6 +565,7 @@ const Index = () => {
     const normalizedInput = normalizeBarcode(scanInput);
     const searchTerm = strip(scanInput);
     const trimmedSearch = scanInput.trim();
+    const hasDigits = normalizedInput.length > 0;
     
     // Détection du type de recherche
     const isNumber = !isNaN(Number(trimmedSearch)) && trimmedSearch !== '';
@@ -589,7 +590,7 @@ const Index = () => {
       
       // Recherche de base (nom, code-barres, description)
       let matches = (
-        normalizedBarcode.includes(normalizedInput) ||
+        (hasDigits && normalizedBarcode.includes(normalizedInput)) ||
         (p.barcode && strip(p.barcode).includes(searchTerm)) ||
         name.includes(searchTerm) ||
         idStr.includes(searchTerm) ||
