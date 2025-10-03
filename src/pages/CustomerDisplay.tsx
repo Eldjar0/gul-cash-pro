@@ -404,37 +404,54 @@ const CustomerDisplay = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex flex-col overflow-hidden">
-      {/* Header fixe compact */}
-      <div className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-md border-b-2 border-primary shadow-lg p-2 z-10">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex flex-col overflow-hidden relative">
+      {/* Animation de bulles flottantes en arrière-plan */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Bulles flottantes */}
+        <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '6s', animationDelay: '0s' }}></div>
+        <div className="absolute top-40 right-20 w-40 h-40 bg-accent/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
+        <div className="absolute bottom-32 left-1/4 w-36 h-36 bg-category-purple/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7s', animationDelay: '2s' }}></div>
+        <div className="absolute top-1/3 right-1/3 w-28 h-28 bg-category-orange/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '9s', animationDelay: '3s' }}></div>
+        <div className="absolute bottom-20 right-10 w-44 h-44 bg-category-teal/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '10s', animationDelay: '1.5s' }}></div>
+        <div className="absolute top-1/2 left-16 w-24 h-24 bg-category-pink/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8.5s', animationDelay: '2.5s' }}></div>
+        
+        {/* Grands cercles style DVD bouncing */}
+        <div className="absolute w-32 h-32 bg-primary/40 rounded-full blur-xl animate-dvd-bounce" style={{ animationDuration: '12s' }}></div>
+        <div className="absolute w-40 h-40 bg-accent/40 rounded-full blur-xl animate-dvd-bounce-2" style={{ animationDuration: '15s', animationDelay: '2s' }}></div>
+        <div className="absolute w-36 h-36 bg-category-purple/40 rounded-full blur-xl animate-dvd-bounce-3" style={{ animationDuration: '18s', animationDelay: '4s' }}></div>
+      </div>
+
+      {/* Header fixe avec effets visuels */}
+      <div className="fixed top-0 left-0 right-0 bg-card/70 backdrop-blur-md border-b-2 border-primary/30 shadow-xl p-3 z-10 relative">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="relative">
-            <img src={logoMarket} alt="Logo" className="relative h-12 object-contain drop-shadow-md" />
+            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
+            <img src={logoMarket} alt="Logo" className="relative h-14 object-contain drop-shadow-lg animate-scale-in" />
           </div>
           <div className="text-center flex-1">
-            <div className="inline-block px-3 py-1 bg-primary/10 rounded-lg border border-primary/30">
-              <h1 className="text-2xl font-black text-primary tracking-tight">
+            <div className="inline-block px-4 py-1.5 bg-primary/10 backdrop-blur-sm rounded-xl border-2 border-primary/30 shadow-lg animate-fade-in">
+              <h1 className="text-2xl font-black bg-gradient-to-r from-primary via-primary-glow to-primary bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text tracking-tight">
                 {displayState.isInvoice ? 'FACTURE' : 'TICKET'} {displayState.saleNumber || 'EN COURS'}
               </h1>
             </div>
             {displayState.isInvoice && displayState.customer && (
-              <p className="text-sm text-accent font-bold mt-1">{displayState.customer.name}</p>
+              <p className="text-sm text-accent font-bold mt-1 animate-fade-in" style={{ animationDelay: '0.1s' }}>{displayState.customer.name}</p>
             )}
-            <div className="text-xs text-muted-foreground mt-1 font-medium">
+            <div className="text-xs text-muted-foreground mt-1 font-medium animate-fade-in" style={{ animationDelay: '0.2s' }}>
               {currentTime.toLocaleDateString('fr-BE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
               {' • '}
               {currentTime.toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit' })}
             </div>
           </div>
-          <div className="text-right bg-primary/10 rounded-lg px-3 py-1.5 border border-primary/30">
+          <div className="text-right bg-primary/10 backdrop-blur-sm rounded-xl px-4 py-2 border-2 border-primary/30 shadow-lg animate-fade-in">
             <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">Caisse</p>
-            <p className="text-lg font-black text-primary">{displayState.cashierName || 'N/A'}</p>
+            <p className="text-xl font-black text-primary">{displayState.cashierName || 'N/A'}</p>
           </div>
         </div>
       </div>
 
-      {/* Zone scrollable pour les articles - compact */}
-      <div className="flex-1 overflow-y-auto pt-20 pb-32 px-4">
+      {/* Zone scrollable pour les articles - avec effets */}
+      <div className="flex-1 overflow-y-auto pt-24 pb-36 px-4 relative z-10">
         <div className="max-w-7xl mx-auto space-y-2 flex flex-col-reverse">
           {displayState.items.map((item, index) => {
             const subtotal = calculateSubtotal(item);
@@ -444,17 +461,20 @@ const CustomerDisplay = () => {
             return (
               <div
                 key={`${item.name}-${index}`}
-                className="bg-card rounded-lg shadow-md p-3 border border-primary/20 hover:shadow-lg hover:border-primary/40 transition-all duration-200 animate-fade-in"
+                className="bg-card/70 backdrop-blur-md rounded-xl shadow-lg p-3 border-2 border-primary/20 hover:shadow-2xl hover:border-primary/40 hover:bg-card/90 transition-all duration-300 animate-fade-in relative overflow-hidden"
                 style={{ animationDelay: `${index * 0.03}s` }}
               >
-                <div className="flex justify-between items-center gap-4">
+                {/* Effet de brillance */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -translate-x-full animate-shimmer"></div>
+                
+                <div className="flex justify-between items-center gap-4 relative">
                   <div className="flex-1 min-w-0">
                     <h3 className="text-xl font-bold text-foreground uppercase tracking-tight mb-2 flex items-center gap-2 truncate">
-                      <div className="w-1 h-5 bg-primary rounded-full flex-shrink-0"></div>
+                      <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary-glow rounded-full flex-shrink-0"></div>
                       <span className="truncate">{item.name}</span>
                     </h3>
                     <div className="flex gap-2 items-center flex-wrap">
-                      <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-2 py-1">
+                      <div className="flex items-center gap-2 bg-muted/50 backdrop-blur-sm rounded-lg px-2 py-1 border border-primary/10">
                         <span className="text-base font-black text-foreground">
                           {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)} {unitDisplay}
                         </span>
@@ -464,20 +484,20 @@ const CustomerDisplay = () => {
                         </span>
                       </div>
                       {item.hasCustomPrice && (
-                        <span className="px-2 py-1 rounded-lg text-xs font-bold bg-accent/20 text-accent border border-accent/30">
+                        <span className="px-2 py-1 rounded-lg text-xs font-bold bg-accent/20 text-accent border border-accent/30 backdrop-blur-sm">
                           Prix modifié
                         </span>
                       )}
                       {item.discount && (
-                        <span className="px-2 py-1 rounded-lg text-xs font-bold bg-destructive/20 text-destructive border border-destructive/30">
+                        <span className="px-2 py-1 rounded-lg text-xs font-bold bg-destructive/20 text-destructive border border-destructive/30 backdrop-blur-sm">
                           -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <div className="bg-primary/10 rounded-lg px-3 py-2 border border-primary/30">
-                      <div className="text-3xl font-black text-primary tabular-nums leading-none">
+                    <div className="bg-primary/10 backdrop-blur-sm rounded-xl px-4 py-2 border-2 border-primary/30 shadow-lg">
+                      <div className="text-3xl font-black bg-gradient-to-r from-primary to-primary-glow text-transparent bg-clip-text tabular-nums leading-none">
                         {item.total.toFixed(2)}€
                       </div>
                       <div className="text-xs text-muted-foreground font-semibold mt-1">
@@ -492,11 +512,14 @@ const CustomerDisplay = () => {
         </div>
       </div>
 
-      {/* Footer fixe compact */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary via-primary-glow to-accent shadow-xl z-10 border-t-2 border-primary-foreground/20">
-        <div className="max-w-7xl mx-auto p-4">
+      {/* Footer fixe avec effets visuels */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary via-primary-glow to-accent shadow-2xl z-10 border-t-4 border-primary-foreground/20 relative">
+        {/* Effet de brillance sur le footer */}
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-transparent animate-pulse-soft"></div>
+        
+        <div className="max-w-7xl mx-auto p-4 relative">
           <div className="flex justify-between items-center gap-6">
-            {/* Infos TVA à gauche - compact */}
+            {/* Infos TVA à gauche - style amélioré */}
             <div className="flex gap-2 flex-wrap">
               {(() => {
                 const vatByRate = displayState.items.reduce((acc, item) => {
@@ -508,21 +531,30 @@ const CustomerDisplay = () => {
                   return acc;
                 }, {} as Record<number, number>);
 
-                return Object.entries(vatByRate).map(([rate, amount]) => (
-                  <div key={rate} className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-primary-foreground/20">
+                return Object.entries(vatByRate).map(([rate, amount], idx) => (
+                  <div 
+                    key={rate} 
+                    className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-md rounded-xl px-4 py-2 border-2 border-primary-foreground/30 shadow-lg animate-fade-in"
+                    style={{ animationDelay: `${idx * 0.1}s` }}
+                  >
                     <span className="text-sm font-bold text-primary-foreground uppercase tracking-wide">TVA {parseFloat(rate).toFixed(0)}%:</span>
-                    <span className="text-base font-black text-primary-foreground tabular-nums">{amount.toFixed(2)}€</span>
+                    <span className="text-lg font-black text-primary-foreground tabular-nums drop-shadow-md">{amount.toFixed(2)}€</span>
                   </div>
                 ));
               })()}
             </div>
 
-            {/* Total TTC à droite - compact mais visible */}
-            <div className="text-right">
-              <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-xl px-6 py-3 border-2 border-primary-foreground/30 shadow-lg">
-                <div className="text-lg font-bold text-primary-foreground uppercase tracking-wide">TOTAL À PAYER</div>
-                <div className="text-5xl font-black text-primary-foreground tracking-tight leading-none tabular-nums drop-shadow-lg animate-pulse-soft mt-1">
-                  {getTotalTTC().toFixed(2)}€
+            {/* Total TTC à droite - style spectaculaire */}
+            <div className="text-right animate-bounce-in">
+              <div className="bg-primary-foreground/10 backdrop-blur-md rounded-2xl px-8 py-4 border-4 border-primary-foreground/30 shadow-glow-lg relative overflow-hidden">
+                {/* Effet de brillance animé */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer"></div>
+                
+                <div className="relative">
+                  <div className="text-lg font-bold text-primary-foreground uppercase tracking-widest drop-shadow-md">TOTAL À PAYER</div>
+                  <div className="text-6xl font-black text-primary-foreground tracking-tight leading-none tabular-nums drop-shadow-2xl animate-pulse-soft mt-2">
+                    {getTotalTTC().toFixed(2)}€
+                  </div>
                 </div>
               </div>
             </div>
