@@ -215,115 +215,125 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'idle') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex flex-col items-center justify-between p-6">
-        <div className="flex-1 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex items-center justify-center p-6">
+        <div className="w-full max-w-6xl space-y-8">
+          {/* Logo et messages centrés */}
           <div className="text-center space-y-6 animate-fade-in">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full animate-pulse-soft"></div>
-              <img src={logoMarket} alt="Logo" className="relative w-48 h-48 mx-auto object-contain animate-scale-in drop-shadow-xl" />
+            <div className="relative inline-block">
+              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse-soft"></div>
+              <img src={logoMarket} alt="Logo" className="relative w-56 h-56 mx-auto object-contain animate-scale-in drop-shadow-2xl" />
             </div>
+            
             <div className="space-y-3">
-              <h1 className="text-6xl font-black animate-scale-in text-primary tracking-tight" style={{ animationDelay: '0.1s' }}>
+              <h1 className="text-7xl font-black text-primary tracking-tight animate-scale-in" style={{ animationDelay: '0.1s' }}>
                 Bienvenue
               </h1>
-              <p className="text-3xl animate-fade-in text-foreground font-bold" style={{ animationDelay: '0.2s' }}>
+              <p className="text-4xl font-bold text-foreground animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 Veuillez patienter
               </p>
-              <p className="text-xl animate-fade-in text-muted-foreground" style={{ animationDelay: '0.3s' }}>
+              <p className="text-2xl text-muted-foreground animate-fade-in" style={{ animationDelay: '0.3s' }}>
                 Un collaborateur arrive
               </p>
             </div>
             
-            {/* Moyens de paiement acceptés */}
-            <div className="flex justify-center gap-6 pt-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <div className="flex items-center gap-3 bg-card rounded-2xl px-6 py-3 border-2 border-accent/30 shadow-lg">
-                <CreditCard className="h-10 w-10 text-accent" />
-                <div className="text-left">
-                  <p className="text-xs text-muted-foreground uppercase font-semibold">Carte</p>
-                  <p className="text-sm font-black text-foreground">Acceptée</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 bg-card rounded-2xl px-6 py-3 border-2 border-accent/30 shadow-lg">
-                <Banknote className="h-10 w-10 text-accent" />
-                <div className="text-left">
-                  <p className="text-xs text-muted-foreground uppercase font-semibold">Espèces</p>
-                  <p className="text-sm font-black text-foreground">Acceptées</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-center gap-3 mt-6">
+            <div className="flex justify-center gap-3 pt-2">
               <div className="w-4 h-4 rounded-full animate-bounce bg-primary shadow-glow" style={{ animationDelay: '0s' }}></div>
               <div className="w-4 h-4 rounded-full animate-bounce bg-accent shadow-glow" style={{ animationDelay: '0.2s' }}></div>
               <div className="w-4 h-4 rounded-full animate-bounce bg-primary shadow-glow" style={{ animationDelay: '0.4s' }}></div>
             </div>
           </div>
-        </div>
 
-        {/* Section heure, date et température */}
-        <div className="w-full max-w-5xl grid grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-          {/* Date */}
-          <div className="relative overflow-hidden bg-card rounded-2xl p-4 border-2 border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full -mr-10 -mt-10"></div>
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Calendar className="h-8 w-8 text-primary" />
+          {/* Section infos (date, heure, température) */}
+          <div className="grid grid-cols-3 gap-6 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+            {/* Date */}
+            <div className="relative overflow-hidden bg-card rounded-2xl p-5 border-2 border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
+              <div className="relative z-10 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-primary/10 rounded-xl">
+                    <Calendar className="h-9 w-9 text-primary" />
+                  </div>
+                  <p className="text-base font-bold text-primary uppercase tracking-wider">Date</p>
                 </div>
-                <p className="text-base font-bold text-primary uppercase tracking-wide">Date</p>
+                <p className="text-xl font-black text-foreground leading-snug pl-1">
+                  {currentTime.toLocaleDateString('fr-BE', { 
+                    weekday: 'long', 
+                    day: '2-digit', 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}
+                </p>
               </div>
-              <p className="text-xl font-black text-foreground leading-tight">
-                {currentTime.toLocaleDateString('fr-BE', { 
-                  weekday: 'long', 
-                  day: '2-digit', 
-                  month: 'long', 
-                  year: 'numeric' 
-                })}
-              </p>
+            </div>
+
+            {/* Heure */}
+            <div className="relative overflow-hidden bg-card rounded-2xl p-5 border-2 border-accent/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 rounded-full -mr-12 -mt-12"></div>
+              <div className="relative z-10 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-accent/10 rounded-xl">
+                    <Clock className="h-9 w-9 text-accent animate-pulse-soft" />
+                  </div>
+                  <p className="text-base font-bold text-accent uppercase tracking-wider">Heure</p>
+                </div>
+                <p className="text-5xl font-black text-foreground font-mono tabular-nums pl-1">
+                  {currentTime.toLocaleTimeString('fr-BE', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                  })}
+                </p>
+              </div>
+            </div>
+
+            {/* Température */}
+            <div className="relative overflow-hidden bg-card rounded-2xl p-5 border-2 border-category-orange/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-category-orange/5 rounded-full -mr-12 -mt-12"></div>
+              <div className="relative z-10 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-category-orange/10 rounded-xl">
+                    <Thermometer className="h-9 w-9 text-category-orange" />
+                  </div>
+                  <p className="text-base font-bold text-category-orange uppercase tracking-wider">Jumet</p>
+                </div>
+                <p className="text-5xl font-black text-foreground tabular-nums pl-1">
+                  {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Heure */}
-          <div className="relative overflow-hidden bg-card rounded-2xl p-4 border-2 border-accent/30 shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-accent/10 rounded-full -mr-10 -mt-10"></div>
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-accent/10 rounded-lg">
-                  <Clock className="h-8 w-8 text-accent" />
-                </div>
-                <p className="text-base font-bold text-accent uppercase tracking-wide">Heure</p>
+          {/* Moyens de paiement */}
+          <div className="flex justify-center gap-6 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <div className="flex items-center gap-4 bg-card rounded-2xl px-8 py-4 border-2 border-accent/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <div className="p-3 bg-accent/10 rounded-xl">
+                <CreditCard className="h-10 w-10 text-accent" />
               </div>
-              <p className="text-4xl font-black text-foreground font-mono tabular-nums">
-                {currentTime.toLocaleTimeString('fr-BE', { 
-                  hour: '2-digit', 
-                  minute: '2-digit',
-                  second: '2-digit'
-                })}
-              </p>
+              <div className="text-left">
+                <p className="text-sm text-muted-foreground uppercase font-semibold tracking-wide">Paiement</p>
+                <p className="text-xl font-black text-foreground">Carte bancaire</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 bg-card rounded-2xl px-8 py-4 border-2 border-accent/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <div className="p-3 bg-accent/10 rounded-xl">
+                <Banknote className="h-10 w-10 text-accent" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm text-muted-foreground uppercase font-semibold tracking-wide">Paiement</p>
+                <p className="text-xl font-black text-foreground">Espèces</p>
+              </div>
             </div>
           </div>
 
-          {/* Température */}
-          <div className="relative overflow-hidden bg-card rounded-2xl p-4 border-2 border-category-orange/30 shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-category-orange/10 rounded-full -mr-10 -mt-10"></div>
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-category-orange/10 rounded-lg">
-                  <Thermometer className="h-8 w-8 text-category-orange" />
-                </div>
-                <p className="text-base font-bold text-category-orange uppercase tracking-wide">Jumet</p>
-              </div>
-              <p className="text-4xl font-black text-foreground tabular-nums">
-                {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
+          {/* Footer */}
+          <div className="flex justify-center animate-fade-in" style={{ animationDelay: '0.7s' }}>
+            <div className="px-6 py-3 bg-card/80 backdrop-blur-sm rounded-full border border-border shadow-md hover:shadow-lg transition-all duration-300">
+              <p className="text-sm text-muted-foreground font-medium">
+                Système de caisse développé par <span className="text-primary font-bold">Jlprod.be</span>
               </p>
             </div>
           </div>
-        </div>
-
-        <div className="mt-6 px-5 py-2 bg-card/80 backdrop-blur-sm rounded-full border border-border shadow-md">
-          <p className="text-sm text-muted-foreground font-medium">
-            Système de caisse développé par <span className="text-primary font-bold">Jlprod.be</span>
-          </p>
         </div>
       </div>
     );
