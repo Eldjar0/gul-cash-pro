@@ -304,11 +304,17 @@ const CustomerDisplay = () => {
           {/* Footer */}
           <div className="flex justify-center animate-fade-in" style={{ animationDelay: '0.5s' }}>
             <div className="relative px-8 py-3 rounded-full border border-border/50 shadow-lg overflow-hidden">
-              {/* Fond animé avec bande bleue glissante */}
+              {/* Fond animé avec défilement infini de rayures */}
               <div className="absolute inset-0 bg-white">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary to-transparent opacity-30 animate-slide-infinite" style={{ width: '200%' }}></div>
+                <div 
+                  className="absolute inset-0 animate-scroll-right"
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, transparent 0%, transparent 70%, hsl(var(--primary)) 70%, hsl(var(--primary)) 100%)',
+                    backgroundSize: '200px 100%',
+                  }}
+                ></div>
               </div>
-              <p className="relative z-10 text-base text-muted-foreground font-medium">
+              <p className="relative z-10 text-base text-foreground font-medium">
                 Système de caisse développé par <span className="text-primary font-bold">Jlprod.be</span>
               </p>
             </div>
