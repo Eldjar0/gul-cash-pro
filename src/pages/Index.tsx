@@ -79,12 +79,20 @@ const Index = () => {
   const { data: todayReport } = useTodayReport();
   const openDay = useOpenDay();
   const closeDay = useCloseDay();
+  // UI override so buttons update instantly after actions
+  const [isDayOpenLocal, setIsDayOpenLocal] = useState<boolean | null>(null);
+  const isDayOpenEffective = isDayOpenLocal ?? (!!todayReport && todayReport.closing_amount === null);
 
   // Debug: Log todayReport state
   useEffect(() => {
     console.log('[DEBUG] Today Report:', todayReport);
     console.log('[DEBUG] isDayOpen:', !!todayReport && todayReport.closing_amount === null);
   }, [todayReport]);
+
+  // Reset local override when server data changes
+  useEffect(() => {
+    setIsDayOpenLocal(null);
+  }, [todayReport?.id, todayReport?.closing_amount]);
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
@@ -890,9 +898,13 @@ const Index = () => {
     setQuantityInput('1');
   };
 
-  // Daily reports handlers
   const handleOpenDay = (openingAmount: number) => {
-    openDay.mutate(openingAmount);
+    openDay.mutate(openingAmount, {
+      onSuccess: () => {
+        setIsDayOpenLocal(true);
+        setOpenDayDialogOpen(false);
+      },
+    });
   };
 
   const handleCloseDay = async (closingAmount: number, archiveAndDelete?: boolean) => {
@@ -903,6 +915,11 @@ const Index = () => {
       reportId: todayReport.id,
       closingAmount,
       reportData: data,
+    }, {
+      onSuccess: () => {
+        setIsDayOpenLocal(false);
+        setCloseDayDialogOpen(false);
+      },
     });
     
     // L'archivage et la suppression sont déjà gérés dans CloseDayDialog
@@ -1423,7 +1440,7 @@ const Index = () => {
             onOpenDay={() => setOpenDayDialogOpen(true)}
             onCloseDay={() => setCloseDayDialogOpen(true)}
             onReportX={handleReportX}
-            isDayOpen={!!todayReport && todayReport.closing_amount === null}
+            isDayOpen={isDayOpenEffective}
           />
         </div>
 
