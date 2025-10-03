@@ -55,52 +55,52 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
     const currentCategory = categories.find(c => c.id === selectedCategoryId);
     
     return (
-      <div className="space-y-3 animate-fade-in">
+      <div className="space-y-2 animate-fade-in">
         {/* Header avec bouton retour */}
-        <div className="flex items-center gap-2 p-2 bg-gradient-to-r from-card to-muted/30 rounded-lg border border-border shadow-sm">
+        <div className="flex items-center gap-2 p-1.5 bg-gradient-to-r from-card to-muted/30 rounded-lg border border-border shadow-sm">
           <Button 
             onClick={handleBack}
-            className="h-8 px-3 bg-card hover:bg-muted text-foreground font-bold border border-border transition-all duration-200 rounded-lg hover:scale-105 active:scale-95 shadow-sm text-xs"
+            className="h-7 px-2 bg-card hover:bg-muted text-foreground font-bold border border-border transition-all duration-200 rounded-md hover:scale-105 active:scale-95 shadow-sm text-xs"
           >
             <ChevronLeft className="h-3 w-3 mr-1" />
             Retour
           </Button>
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-1.5 flex-1">
             {currentCategory?.icon && (
               <div 
-                className="p-2 rounded-lg shadow-sm"
+                className="p-1.5 rounded-md shadow-sm"
                 style={{ backgroundColor: `${currentCategory.color}20`, borderColor: currentCategory.color }}
               >
-                <DynamicIcon name={currentCategory.icon} size={18} style={{ color: currentCategory.color }} />
+                <DynamicIcon name={currentCategory.icon} size={14} style={{ color: currentCategory.color }} />
               </div>
             )}
             <div>
-              <h2 className="text-sm font-black text-foreground uppercase tracking-tight">
+              <h2 className="text-xs font-black text-foreground uppercase tracking-tight leading-none">
                 {currentCategory?.name}
               </h2>
-              <p className="text-xs text-muted-foreground">{products.length} produit{products.length > 1 ? 's' : ''}</p>
+              <p className="text-xs text-muted-foreground leading-none mt-0.5">{products.length} produit{products.length > 1 ? 's' : ''}</p>
             </div>
           </div>
         </div>
 
         {/* Grille de produits modernisée */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-1.5">
           {products.map((product, index) => (
             <button
               key={product.id}
               onClick={() => onProductSelect(product)}
-              className="group relative overflow-hidden bg-card hover:bg-gradient-to-br hover:from-card hover:to-muted/30 border border-border hover:border-primary/50 rounded-lg p-3 transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 animate-fade-in"
+              className="group relative overflow-hidden bg-card hover:bg-gradient-to-br hover:from-card hover:to-muted/30 border border-border hover:border-primary/50 rounded-lg p-2 transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 animate-fade-in"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
               {/* Badge prix */}
               <div 
-                className="absolute top-1.5 right-1.5 px-2 py-1 rounded-lg shadow-md backdrop-blur-sm border"
+                className="absolute top-1 right-1 px-1.5 py-0.5 rounded-md shadow-md backdrop-blur-sm border"
                 style={{ 
                   backgroundColor: `${currentCategory?.color}20`,
                   borderColor: `${currentCategory?.color}40`,
                 }}
               >
-                <div className="text-sm font-black leading-none" style={{ color: currentCategory?.color }}>
+                <div className="text-xs font-black leading-none" style={{ color: currentCategory?.color }}>
                   {product.price.toFixed(2)}€
                 </div>
                 <div className="text-xs font-medium text-muted-foreground leading-none mt-0.5">
@@ -109,26 +109,26 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
               </div>
 
               {/* Icône produit */}
-              <div className="mb-2">
+              <div className="mb-1.5">
                 <div 
-                  className="inline-flex items-center justify-center w-10 h-10 rounded-lg shadow-sm transition-transform group-hover:scale-110"
+                  className="inline-flex items-center justify-center w-8 h-8 rounded-md shadow-sm transition-transform group-hover:scale-110"
                   style={{ backgroundColor: `${currentCategory?.color}15` }}
                 >
-                  <Package2 className="h-5 w-5" style={{ color: currentCategory?.color }} />
+                  <Package2 className="h-4 w-4" style={{ color: currentCategory?.color }} />
                 </div>
               </div>
 
               {/* Nom du produit */}
-              <h3 className="text-xs font-bold text-foreground leading-tight line-clamp-2 mb-1.5 min-h-[2rem]">
+              <h3 className="text-xs font-bold text-foreground leading-tight line-clamp-2 min-h-[1.75rem]">
                 {product.name}
               </h3>
 
               {/* Stock indicator (si disponible) */}
               {product.stock !== undefined && (
-                <div className="flex items-center gap-1 mt-1.5">
-                  <div className={`w-1.5 h-1.5 rounded-full ${product.stock > (product.min_stock || 0) ? 'bg-accent' : 'bg-destructive'}`}></div>
+                <div className="flex items-center gap-1 mt-1">
+                  <div className={`w-1 h-1 rounded-full ${product.stock > (product.min_stock || 0) ? 'bg-accent' : 'bg-destructive'}`}></div>
                   <span className="text-xs text-muted-foreground font-medium">
-                    {product.stock > 0 ? `Stock: ${product.stock}` : 'Rupture'}
+                    {product.stock > 0 ? `${product.stock}` : 'Rupture'}
                   </span>
                 </div>
               )}
@@ -140,11 +140,11 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
         </div>
 
         {products.length === 0 && (
-          <div className="text-center py-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-muted/50 rounded-lg mb-3">
-              <Package2 className="h-8 w-8 text-muted-foreground" />
+          <div className="text-center py-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-muted/50 rounded-lg mb-2">
+              <Package2 className="h-6 w-6 text-muted-foreground" />
             </div>
-            <h3 className="text-sm font-bold text-foreground mb-1">Aucun produit</h3>
+            <h3 className="text-xs font-bold text-foreground mb-1">Aucun produit</h3>
             <p className="text-xs text-muted-foreground">Cette catégorie ne contient pas encore de produits</p>
           </div>
         )}
@@ -154,13 +154,13 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
 
   // Affichage des catégories
   return (
-    <div className="space-y-2 animate-fade-in">
-      <div className="grid grid-cols-2 gap-2">
+    <div className="space-y-1.5 animate-fade-in">
+      <div className="grid grid-cols-2 gap-1.5">
         {categories.map((category, index) => (
           <button
             key={category.id}
             onClick={() => handleCategoryClick(category.id)}
-            className="group relative overflow-hidden rounded-lg p-4 transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95 border border-transparent hover:border-white/20 animate-fade-in"
+            className="group relative overflow-hidden rounded-lg p-3 transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95 border border-transparent hover:border-white/20 animate-fade-in"
             style={{ 
               backgroundColor: category.color,
               animationDelay: `${index * 0.05}s`
@@ -170,30 +170,30 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             
             {/* Contenu */}
-            <div className="relative z-10 flex flex-col items-start gap-2">
+            <div className="relative z-10 flex flex-col items-start gap-1.5">
               {/* Icône */}
               {category.icon && (
-                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg shadow-md group-hover:scale-110 transition-transform duration-300">
-                  <DynamicIcon name={category.icon} size={22} className="text-white" />
+                <div className="p-1.5 bg-white/20 backdrop-blur-sm rounded-md shadow-md group-hover:scale-110 transition-transform duration-300">
+                  <DynamicIcon name={category.icon} size={18} className="text-white" />
                 </div>
               )}
               
               {/* Nom */}
-              <h3 className="text-sm font-black text-white uppercase tracking-wide leading-tight">
+              <h3 className="text-xs font-black text-white uppercase tracking-wide leading-tight">
                 {category.name}
               </h3>
               
               {/* Flèche */}
               <div className="mt-auto">
-                <div className="w-7 h-7 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                <div className="w-6 h-6 rounded-md bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/30 transition-colors">
                   <ChevronLeft className="h-3 w-3 text-white rotate-180" />
                 </div>
               </div>
             </div>
 
             {/* Cercle décoratif */}
-            <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
-            <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-black/10 rounded-full blur-xl"></div>
+            <div className="absolute -right-6 -top-6 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
+            <div className="absolute -left-6 -bottom-6 w-20 h-20 bg-black/10 rounded-full blur-xl"></div>
           </button>
         ))}
       </div>
