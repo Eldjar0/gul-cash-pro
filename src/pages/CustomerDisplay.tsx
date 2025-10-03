@@ -303,8 +303,12 @@ const CustomerDisplay = () => {
 
           {/* Footer */}
           <div className="flex justify-center animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <div className="px-8 py-3 bg-card/60 backdrop-blur-md rounded-full border border-border/50 shadow-lg hover:shadow-xl hover:bg-card/80 transition-all duration-300">
-              <p className="text-base text-muted-foreground font-medium">
+            <div className="relative px-8 py-3 rounded-full border border-border/50 shadow-lg overflow-hidden">
+              {/* Fond animé avec bande bleue glissante */}
+              <div className="absolute inset-0 bg-white">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary to-transparent opacity-30 animate-slide-infinite" style={{ width: '200%' }}></div>
+              </div>
+              <p className="relative z-10 text-base text-muted-foreground font-medium">
                 Système de caisse développé par <span className="text-primary font-bold">Jlprod.be</span>
               </p>
             </div>
