@@ -256,13 +256,10 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
             {/* AVERTISSEMENT NON-FISCAL */}
             <div style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#DBEAFE', padding: '8px', border: '2px solid #3B82F6', marginBottom: '6px' }}>
               <div style={{ fontWeight: '900', marginBottom: '4px', textAlign: 'center', fontSize: '13px', color: '#2563EB' }}>
-                ⚠️ RAPPORT NON-FISCAL
+                RAPPORT NON-FISCAL
               </div>
               <div style={{ fontWeight: '900', fontSize: '12px', textAlign: 'center', marginBottom: '4px' }}>
                 USAGE INTERNE
-              </div>
-              <div style={{ fontWeight: '900', fontSize: '9px', textAlign: 'center', color: '#2563EB' }}>
-                JLprod v1.0
               </div>
             </div>
 

@@ -202,13 +202,10 @@ export function Receipt({ sale }: ReceiptProps) {
         {/* Mention légale */}
         <div className="mt-3 pt-3 border-t-2 border-black bg-gray-100 px-2 py-2 -mx-4">
           <p className="text-[10px] font-black uppercase text-red-600">
-            ⚠️ {isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
+            {isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
           </p>
           <p className="text-[9px] font-bold mt-1">
             OUTIL DE GESTION INTERNE
-          </p>
-          <p className="text-[7px] text-gray-500 mt-1">
-            JLprod v1.0
           </p>
         </div>
       </div>

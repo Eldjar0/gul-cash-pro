@@ -196,13 +196,10 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
       {/* AVERTISSEMENT NON-FISCAL */}
       <div style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#FEE2E2', padding: '8px', border: '2px solid #DC2626', marginBottom: '6px' }}>
         <div style={{ fontWeight: '900', marginBottom: '4px', textAlign: 'center', fontSize: '13px', color: '#DC2626' }}>
-          ⚠️ RAPPORT NON-FISCAL
+          RAPPORT NON-FISCAL
         </div>
         <div style={{ fontWeight: '900', fontSize: '12px', textAlign: 'center', marginBottom: '4px' }}>
           USAGE INTERNE UNIQUEMENT
-        </div>
-        <div style={{ fontWeight: '900', fontSize: '9px', textAlign: 'center', color: '#991B1B' }}>
-          JLprod v1.0
         </div>
       </div>
 

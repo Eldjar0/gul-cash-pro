@@ -300,13 +300,10 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           border: '1px solid #000'
         }}>
           <div style={{ fontSize: '12px', fontWeight: '900', marginBottom: '3px', color: '#DC2626' }}>
-            ⚠️ {isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
+            {isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
           </div>
           <div style={{ fontSize: '10px', fontWeight: '900', marginBottom: '2px' }}>
             OUTIL DE GESTION INTERNE
-          </div>
-          <div style={{ fontSize: '8px', color: '#999', fontWeight: '800' }}>
-            JLprod v1.0
           </div>
         </div>
       </div>
