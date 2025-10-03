@@ -215,8 +215,15 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'idle') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex items-center justify-center p-6">
-        <div className="w-full max-w-6xl space-y-8">
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Animation d'arrière-plan */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDuration: '4s' }}></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDuration: '6s', animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-category-orange/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
+        </div>
+        
+        <div className="w-full max-w-6xl space-y-8 relative z-10">
           {/* Logo et messages centrés */}
           <div className="text-center space-y-6 animate-fade-in">
             <div className="relative inline-block">
@@ -234,12 +241,6 @@ const CustomerDisplay = () => {
               <p className="text-2xl text-muted-foreground animate-fade-in" style={{ animationDelay: '0.3s' }}>
                 Un collaborateur arrive
               </p>
-            </div>
-            
-            <div className="flex justify-center gap-3 pt-2">
-              <div className="w-4 h-4 rounded-full animate-bounce bg-primary shadow-glow" style={{ animationDelay: '0s' }}></div>
-              <div className="w-4 h-4 rounded-full animate-bounce bg-accent shadow-glow" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-4 h-4 rounded-full animate-bounce bg-primary shadow-glow" style={{ animationDelay: '0.4s' }}></div>
             </div>
           </div>
 
