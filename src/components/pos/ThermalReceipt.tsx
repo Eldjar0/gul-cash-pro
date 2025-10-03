@@ -287,20 +287,27 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           www.JLprod.be
         </div>
         
-        {/* Mention légale obligatoire */}
+        {/* Mention légale obligatoire - RENFORCÉE */}
         <div style={{ 
           marginTop: '8px', 
           paddingTop: '8px', 
           borderTop: '2px solid #000',
           backgroundColor: '#F3F4F6',
-          padding: '6px',
-          margin: '8px -8px 0 -8px'
+          padding: '8px',
+          margin: '8px -8px 0 -8px',
+          border: '1px solid #000'
         }}>
-          <div style={{ fontSize: '11px', fontWeight: '900', marginBottom: '2px' }}>
-            {isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
+          <div style={{ fontSize: '12px', fontWeight: '900', marginBottom: '3px', color: '#DC2626' }}>
+            ⚠️ {isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
           </div>
-          <div style={{ fontSize: '10px', fontWeight: '900' }}>
-            POUR INFORMATION UNIQUEMENT
+          <div style={{ fontSize: '10px', fontWeight: '900', marginBottom: '2px' }}>
+            OUTIL DE GESTION INTERNE
+          </div>
+          <div style={{ fontSize: '9px', fontWeight: '800', color: '#666', marginBottom: '2px' }}>
+            Ne remplace pas le carnet de caisse officiel
+          </div>
+          <div style={{ fontSize: '8px', color: '#999', fontWeight: '800' }}>
+            Logiciel non certifié SPF Finances • JLprod v1.0
           </div>
         </div>
       </div>

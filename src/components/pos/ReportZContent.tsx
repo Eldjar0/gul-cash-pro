@@ -192,16 +192,61 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
 
       <div style={{ borderTop: '3px double #000', margin: '8px 0' }}></div>
 
-      {/* AVERTISSEMENT NON-FISCAL OBLIGATOIRE */}
+      {/* AVERTISSEMENT NON-FISCAL OBLIGATOIRE - RENFORCÉ */}
       <div style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#FEE2E2', padding: '8px', border: '2px solid #DC2626', marginBottom: '6px' }}>
         <div style={{ fontWeight: '900', marginBottom: '4px', textAlign: 'center', fontSize: '13px', color: '#DC2626' }}>
           ⚠️ RAPPORT NON-FISCAL
         </div>
         <div style={{ fontWeight: '900', fontSize: '12px', textAlign: 'center', marginBottom: '4px' }}>
-          USAGE INTERNE
+          USAGE INTERNE UNIQUEMENT
         </div>
-        <div style={{ fontWeight: '900', fontSize: '9px', textAlign: 'center', color: '#666', lineHeight: '1.3' }}>
+        <div style={{ fontWeight: '900', fontSize: '9px', textAlign: 'center', color: '#666', lineHeight: '1.3', marginBottom: '3px' }}>
           Ce rapport ne remplace pas le carnet de caisse papier exigé par le SPF Finances. Le logiciel n'est pas certifié fiscalement et ne peut servir de preuve officielle.
+        </div>
+        <div style={{ fontWeight: '900', fontSize: '9px', textAlign: 'center', color: '#991B1B' }}>
+          Logiciel non certifié SPF Finances • JLprod v1.0
+        </div>
+      </div>
+
+      {/* SECTION: À REPORTER DANS VOTRE CARNET OFFICIEL */}
+      <div style={{ fontSize: '12px', fontWeight: '900', backgroundColor: '#DBEAFE', padding: '8px', border: '2px solid #3B82F6', marginBottom: '6px' }}>
+        <div style={{ fontWeight: '900', marginBottom: '6px', textAlign: 'center', fontSize: '14px', color: '#1E40AF' }}>
+          📋 À REPORTER DANS VOTRE CARNET OFFICIEL
+        </div>
+        <div style={{ backgroundColor: 'white', padding: '6px', borderRadius: '4px', fontFamily: 'monospace' }}>
+          <div style={{ marginBottom: '3px' }}>Date: <strong>{new Date().toLocaleDateString('fr-BE')}</strong></div>
+          <div style={{ borderTop: '1px dashed #ddd', paddingTop: '3px', marginTop: '3px' }}>
+            <div style={{ marginBottom: '2px' }}>Recettes espèces: <strong>{reportData.totalCash.toFixed(2)}€</strong></div>
+            <div style={{ marginBottom: '2px' }}>Recettes carte: <strong>{reportData.totalCard.toFixed(2)}€</strong></div>
+            <div style={{ marginBottom: '2px' }}>Recettes mobile: <strong>{reportData.totalMobile.toFixed(2)}€</strong></div>
+          </div>
+          <div style={{ borderTop: '1px dashed #ddd', paddingTop: '3px', marginTop: '3px' }}>
+            {Object.entries(reportData.vatByRate)
+              .sort(([a], [b]) => parseFloat(b) - parseFloat(a))
+              .map(([rate, amounts]) => (
+                <div key={rate} style={{ marginBottom: '2px' }}>
+                  TVA {parseFloat(rate).toFixed(0)}%: Base HT <strong>{amounts.totalHT.toFixed(2)}€</strong>, Montant TVA <strong>{amounts.totalVAT.toFixed(2)}€</strong>
+                </div>
+              ))}
+          </div>
+          <div style={{ borderTop: '2px solid #3B82F6', paddingTop: '3px', marginTop: '3px', fontSize: '14px' }}>
+            Total journée: <strong style={{ fontSize: '16px' }}>{reportData.totalSales.toFixed(2)}€</strong>
+          </div>
+          {todayReport && (
+            <div style={{ borderTop: '1px dashed #ddd', paddingTop: '3px', marginTop: '3px', fontSize: '11px' }}>
+              <div>Fond caisse ouverture: <strong>{todayReport.opening_amount.toFixed(2)}€</strong></div>
+              <div>Espèces comptées: <strong>{closingAmount.toFixed(2)}€</strong></div>
+              <div style={{ 
+                color: difference === 0 ? '#10B981' : difference > 0 ? '#3B82F6' : '#EF4444',
+                fontWeight: '900'
+              }}>
+                Écart: <strong>{difference > 0 ? '+' : ''}{difference.toFixed(2)}€</strong>
+              </div>
+            </div>
+          )}
+        </div>
+        <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '4px', color: '#1E40AF', fontWeight: '900' }}>
+          Copiez ces informations dans votre carnet de caisse papier obligatoire
         </div>
       </div>
 

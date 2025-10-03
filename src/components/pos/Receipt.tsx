@@ -199,13 +199,19 @@ export function Receipt({ sale }: ReceiptProps) {
           </div>
         )}
         
-        {/* Mention légale obligatoire */}
-        <div className="mt-3 pt-3 border-t-2 border-black">
-          <p className="text-[9px] font-black uppercase">
-            {isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
+        {/* Mention légale obligatoire - RENFORCÉE */}
+        <div className="mt-3 pt-3 border-t-2 border-black bg-gray-100 px-2 py-2 -mx-4">
+          <p className="text-[10px] font-black uppercase text-red-600">
+            ⚠️ {isInvoice ? 'DOCUMENT NON-FISCAL' : 'TICKET NON-FISCAL'}
           </p>
-          <p className="text-[9px] font-bold">
-            POUR INFORMATION UNIQUEMENT
+          <p className="text-[9px] font-bold mt-1">
+            OUTIL DE GESTION INTERNE
+          </p>
+          <p className="text-[8px] font-semibold text-gray-600 mt-1">
+            Ne remplace pas le carnet de caisse officiel
+          </p>
+          <p className="text-[7px] text-gray-500 mt-1">
+            Logiciel non certifié SPF Finances • JLprod v1.0
           </p>
         </div>
       </div>

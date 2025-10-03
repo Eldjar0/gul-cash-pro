@@ -5,9 +5,10 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Palette, Save } from 'lucide-react';
+import { ArrowLeft, Building, Palette, Save, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ComplianceChecklist } from '@/components/pos/ComplianceChecklist';
 
 interface CompanySettings {
   name: string;
@@ -202,7 +203,7 @@ export default function Settings() {
 
       <div className="p-4 md:p-6 max-w-4xl mx-auto">
         <Tabs defaultValue="company" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="company">
               <Building className="h-4 w-4 mr-2" />
               Entreprise
@@ -210,6 +211,10 @@ export default function Settings() {
             <TabsTrigger value="display">
               <Palette className="h-4 w-4 mr-2" />
               Affichage Client
+            </TabsTrigger>
+            <TabsTrigger value="compliance">
+              <Shield className="h-4 w-4 mr-2" />
+              Conformité
             </TabsTrigger>
           </TabsList>
 
@@ -406,6 +411,33 @@ export default function Settings() {
                 </Button>
               </div>
             </Card>
+          </TabsContent>
+
+          {/* Compliance Settings */}
+          <TabsContent value="compliance">
+            <div className="space-y-6">
+              <ComplianceChecklist />
+              
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Ressources Utiles</h2>
+                <div className="space-y-3">
+                  <Button 
+                    onClick={() => navigate('/legal-info')} 
+                    variant="outline" 
+                    className="w-full justify-start"
+                  >
+                    📄 Informations légales complètes
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/getting-started')} 
+                    variant="outline" 
+                    className="w-full justify-start"
+                  >
+                    🚀 Guide de démarrage
+                  </Button>
+                </div>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

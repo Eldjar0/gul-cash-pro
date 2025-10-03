@@ -298,27 +298,99 @@ async function exportAndArchiveSales() {
       }
     }
 
-    // 4. Ajouter un fichier README
-    const readme = `ARCHIVE DES VENTES
-==================
+    // 4. Ajouter un fichier README détaillé
+    const readme = `═══════════════════════════════════════════════════════════════
+                    ARCHIVE DES VENTES
+═══════════════════════════════════════════════════════════════
 
 Date d'export: ${new Date().toLocaleString('fr-BE')}
 Nombre de ventes: ${sales?.length || 0}
 
-⚖️ OBLIGATION LÉGALE BELGE
----------------------------
-Ces données doivent être conservées pendant 7 ans minimum conformément à la législation fiscale belge.
+═══════════════════════════════════════════════════════════════
+⚖️ OBLIGATION LÉGALE BELGE - CONSERVATION 7 ANS MINIMUM
+═══════════════════════════════════════════════════════════════
+
+Ces données doivent être conservées pendant 7 ans minimum conformément 
+à la législation fiscale belge (Art. 15, § 1er du Code des Sociétés).
+
 En cas de contrôle du SPF Finances, vous devrez présenter ces archives.
 
+⚠️ IMPORTANT:
+- Ne pas modifier ces fichiers
+- Conserver sur support sécurisé (disque dur externe + cloud recommandé)
+- Vérifier l'intégrité de l'archive régulièrement
+- En cas de perte, contactez immédiatement votre comptable
+
+═══════════════════════════════════════════════════════════════
 CONTENU DE L'ARCHIVE
----------------------
-1. donnees-ventes.json : Données complètes au format JSON
-2. resume-ventes.csv : Résumé des ventes au format CSV (pour Excel)
-3. tickets/ : Tous les tickets de caisse au format HTML
+═══════════════════════════════════════════════════════════════
 
-Pour consulter un ticket, ouvrez le fichier HTML correspondant dans un navigateur web.
+1. 📄 donnees-ventes.json
+   └─ Données complètes au format JSON
+   └─ Tous les détails des ventes, clients, produits
+   └─ Format structuré pour import/export
 
-IMPORTANT: Ne pas modifier ces fichiers.
+2. 📊 resume-ventes.csv  
+   └─ Résumé des ventes au format CSV
+   └─ Compatible Excel et LibreOffice
+   └─ Idéal pour analyses et déclarations TVA
+
+3. 📁 tickets/
+   └─ Tous les tickets de caisse au format HTML
+   └─ Un fichier par vente
+   └─ Ouvrir dans un navigateur pour visualiser
+   └─ Imprimable si nécessaire
+
+═══════════════════════════════════════════════════════════════
+COMMENT UTILISER CETTE ARCHIVE
+═══════════════════════════════════════════════════════════════
+
+Pour consulter un ticket:
+→ Ouvrez le dossier "tickets"
+→ Double-cliquez sur le fichier HTML souhaité
+→ Le ticket s'ouvrira dans votre navigateur
+
+Pour importer dans Excel:
+→ Ouvrez Excel
+→ Fichier > Ouvrir > Sélectionnez "resume-ventes.csv"
+→ Suivez l'assistant d'importation CSV
+
+Pour restaurer dans le logiciel:
+→ Actuellement non supporté (export uniquement)
+→ Conservez cette archive comme preuve légale
+
+═══════════════════════════════════════════════════════════════
+MENTIONS LÉGALES
+═══════════════════════════════════════════════════════════════
+
+⚠️ Document non-fiscal
+Ce fichier provient d'un outil de gestion interne non certifié 
+par le SPF Finances de Belgique.
+
+Il ne remplace PAS:
+- Un carnet de caisse officiel
+- Un système de caisse enregistreuse certifié
+- Une comptabilité certifiée par un expert-comptable
+
+Responsabilité:
+Vous êtes seul(e) responsable de la conformité fiscale de votre
+entreprise. Consultez votre comptable en cas de doute.
+
+═══════════════════════════════════════════════════════════════
+SUPPORT & CONTACT
+═══════════════════════════════════════════════════════════════
+
+Développé par: JLprod
+Version du logiciel: v1.0
+Site web: www.JLprod.be
+
+Pour toute question technique ou assistance:
+→ Contactez votre administrateur système
+→ Consultez la documentation en ligne
+
+═══════════════════════════════════════════════════════════════
+DERNIÈRE VÉRIFICATION: ${new Date().toLocaleString('fr-BE')}
+═══════════════════════════════════════════════════════════════
 `;
 
     zip.file('LISEZMOI.txt', readme);
