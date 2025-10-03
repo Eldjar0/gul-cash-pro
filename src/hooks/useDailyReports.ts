@@ -45,17 +45,24 @@ export function useTodayReport() {
   return useQuery({
     queryKey: ['today_report'],
     queryFn: async () => {
-      const today = new Date().toISOString().split('T')[0];
-      
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+
       const { data, error } = await supabase
         .from('daily_reports')
         .select('*')
-        .eq('report_date', today)
+        .gte('report_date', start.toISOString())
+        .lt('report_date', end.toISOString())
+        .order('report_date', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (error) throw error;
       return data as DailyReport | null;
     },
+    refetchOnWindowFocus: true,
   });
 }
 
