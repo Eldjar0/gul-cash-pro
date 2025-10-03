@@ -1,5 +1,5 @@
-import { COMPANY_INFO } from '@/data/company';
 import { Product } from '@/hooks/useProducts';
+import { useCompanySettings } from '@/hooks/useCompanySettings';
 import logoMarket from '@/assets/logo-market.png';
 
 type DiscountType = 'percentage' | 'amount';
@@ -55,6 +55,7 @@ interface ThermalReceiptProps {
 export function ThermalReceipt({ sale }: ThermalReceiptProps) {
   const isInvoice = sale.is_invoice || false;
   const saleDate = new Date(sale.date || new Date());
+  const { settings } = useCompanySettings();
   
   // Calculer TVA par taux (comme Lidl)
   const vatByRate = sale.items.reduce((acc, item) => {
@@ -111,10 +112,10 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       {/* Company Info - centrée */}
       <div className="text-center mb-2" style={{ fontWeight: '900', fontSize: '12.3px' }}>
         <div style={{ lineHeight: '1.2' }}>
-          <div>{COMPANY_INFO.address}</div>
-          <div>{COMPANY_INFO.postalCode} {COMPANY_INFO.city}</div>
-          {COMPANY_INFO.phone && <div>Tel: {COMPANY_INFO.phone}</div>}
-          <div style={{ marginTop: '1px' }}>TVA: {COMPANY_INFO.vat}</div>
+          <div>{settings.address}</div>
+          <div>{settings.postal_code} {settings.city}</div>
+          {settings.phone && <div>Tel: {settings.phone}</div>}
+          <div style={{ marginTop: '1px' }}>TVA: {settings.vat_number}</div>
         </div>
       </div>
 
@@ -131,6 +132,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
             {(sale.customer.postal_code || sale.customer.city) && (
               <div>{sale.customer.postal_code} {sale.customer.city}</div>
             )}
+            {sale.customer.phone && <div>{sale.customer.phone}</div>}
           </div>
           <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
         </>

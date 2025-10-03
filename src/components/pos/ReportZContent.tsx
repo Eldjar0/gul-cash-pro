@@ -1,5 +1,5 @@
 import { ReportData, DailyReport } from '@/hooks/useDailyReports';
-import { COMPANY_INFO } from '@/data/company';
+import { useCompanySettings } from '@/hooks/useCompanySettings';
 
 interface ReportZContentProps {
   reportData: ReportData;
@@ -10,6 +10,7 @@ interface ReportZContentProps {
 
 export function ReportZContent({ reportData, todayReport, closingAmount, difference }: ReportZContentProps) {
   const expectedCash = todayReport ? todayReport.opening_amount + reportData.totalCash : reportData.totalCash;
+  const { settings } = useCompanySettings();
 
   return (
     <div 
@@ -45,11 +46,11 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
       {/* En-tête société */}
       <div className="text-center" style={{ fontSize: '14px', marginBottom: '6px', fontWeight: '900' }}>
         <div style={{ lineHeight: '1.2' }}>
-          <div style={{ fontWeight: '900' }}>{COMPANY_INFO.name}</div>
-          <div style={{ fontWeight: '900' }}>{COMPANY_INFO.address}</div>
-          <div style={{ fontWeight: '900' }}>{COMPANY_INFO.postalCode} {COMPANY_INFO.city}</div>
-          {COMPANY_INFO.phone && <div style={{ fontWeight: '900' }}>Tel: {COMPANY_INFO.phone}</div>}
-          <div style={{ marginTop: '1px', fontWeight: '900' }}>TVA: {COMPANY_INFO.vat}</div>
+          <div style={{ fontWeight: '900' }}>{settings.name}</div>
+          <div style={{ fontWeight: '900' }}>{settings.address}</div>
+          <div style={{ fontWeight: '900' }}>{settings.postal_code} {settings.city}</div>
+          {settings.phone && <div style={{ fontWeight: '900' }}>Tel: {settings.phone}</div>}
+          <div style={{ marginTop: '1px', fontWeight: '900' }}>TVA: {settings.vat_number}</div>
         </div>
       </div>
 

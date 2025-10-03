@@ -1,5 +1,5 @@
-import { COMPANY_INFO } from '@/data/company';
 import { Product } from '@/hooks/useProducts';
+import { useCompanySettings } from '@/hooks/useCompanySettings';
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -53,16 +53,17 @@ interface ReceiptProps {
 
 export function Receipt({ sale }: ReceiptProps) {
   const isInvoice = sale.is_invoice || false;
+  const { settings } = useCompanySettings();
   
   return (
     <div className="font-mono text-[11px] leading-tight max-w-[320px] mx-auto bg-white text-black p-4 print:p-0">
       {/* En-tête magasin */}
       <div className="text-center mb-4">
-        <h1 className="text-xl font-black tracking-wider mb-1">{COMPANY_INFO.name}</h1>
-        <p className="text-[10px]">{COMPANY_INFO.address}</p>
-        <p className="text-[10px]">{COMPANY_INFO.postalCode} {COMPANY_INFO.city}</p>
-        {COMPANY_INFO.phone && <p className="text-[10px]">Tel: {COMPANY_INFO.phone}</p>}
-        <p className="text-[10px] mt-1 font-bold">TVA: {COMPANY_INFO.vat}</p>
+        <h1 className="text-xl font-black tracking-wider mb-1">{settings.name}</h1>
+        <p className="text-[10px]">{settings.address}</p>
+        <p className="text-[10px]">{settings.postal_code} {settings.city}</p>
+        {settings.phone && <p className="text-[10px]">Tel: {settings.phone}</p>}
+        <p className="text-[10px] mt-1 font-bold">TVA: {settings.vat_number}</p>
       </div>
 
       {/* Ligne de séparation */}
@@ -98,7 +99,6 @@ export function Receipt({ sale }: ReceiptProps) {
             {(sale.customer.postal_code || sale.customer.city) && (
               <p>{sale.customer.postal_code} {sale.customer.city}</p>
             )}
-            {sale.customer.email && <p>{sale.customer.email}</p>}
             {sale.customer.phone && <p>{sale.customer.phone}</p>}
           </div>
         </>
