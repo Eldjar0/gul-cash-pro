@@ -97,7 +97,7 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
           style={{ backgroundColor: category.color }}
         >
           {category.icon && (
-            <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm">
+            <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm flex items-center justify-center" style={{ minWidth: '28px', minHeight: '28px', width: '28px', height: '28px' }}>
               <DynamicIcon name={category.icon} size={16} className="flex-shrink-0" />
             </div>
           )}
