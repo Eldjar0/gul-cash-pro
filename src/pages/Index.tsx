@@ -1135,7 +1135,7 @@ const Index = () => {
         }}
         autoFocus={false}
       />
-      {/* Main content - 3 colonnes: TICKET (5) | CALCULATRICE (2) | ARTICLES (5) */}
+      {/* Main content - 3 colonnes: TICKET (5) | CALCULATRICE (4) | ARTICLES (3) */}
       <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
         {/* LEFT PANEL - Ticket à gauche */}
         <div className="col-span-5 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
@@ -1398,10 +1398,48 @@ const Index = () => {
               <span>{totals.total.toFixed(2)}€</span>
             </div>
           </div>
+
+          {/* Payment buttons - Modern JL Prod style */}
+          <div className="bg-background p-2 space-y-2 border-t-2 border-border flex-shrink-0">
+            <Button
+              onClick={() => setPaymentDialogOpen(true)}
+              disabled={cart.length === 0}
+              className="w-full h-12 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-base shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Euro className="mr-2 h-5 w-5" />
+              PAYER {cart.length > 0 && `${totals.total.toFixed(2)}€`}
+            </Button>
+            <div className="grid grid-cols-3 gap-1.5">
+              <Button
+                onClick={() => setPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-10 text-xs bg-white hover:bg-primary/5 text-primary border-2 border-primary font-semibold shadow-sm"
+              >
+                <CreditCard className="mr-1 h-3 w-3" />
+                CB
+              </Button>
+              <Button
+                onClick={() => setPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-10 text-xs bg-white hover:bg-accent/5 text-accent border-2 border-accent font-semibold shadow-sm"
+              >
+                <Banknote className="mr-1 h-3 w-3" />
+                ESP
+              </Button>
+              <Button
+                onClick={handleClearCart}
+                disabled={cart.length === 0}
+                className="h-10 text-xs bg-white hover:bg-destructive/5 text-destructive border-2 border-destructive font-semibold shadow-sm"
+              >
+                <Trash2 className="mr-1 h-3 w-3" />
+                ANN
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* COLONNE CENTRE - Calculatrice */}
-        <div className="col-span-2 bg-background p-2 flex flex-col gap-2 overflow-y-auto">
+        <div className="col-span-4 bg-background p-2 flex flex-col gap-2 overflow-y-auto">
 
           {/* Calculatrice moderne */}
           <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-3 flex-shrink-0 shadow-lg">
@@ -1474,48 +1512,10 @@ const Index = () => {
               </div>
             )}
           </Card>
-
-          {/* Payment buttons - Modern JL Prod style */}
-          <Card className="bg-gradient-to-br from-background to-muted/20 border-2 border-primary/30 p-4 flex-shrink-0 shadow-xl">
-            <Button
-              onClick={() => setPaymentDialogOpen(true)}
-              disabled={cart.length === 0}
-              className="w-full h-14 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
-            >
-              <Euro className="mr-2 h-6 w-6" />
-              PAYER {cart.length > 0 && `${totals.total.toFixed(2)}€`}
-            </Button>
-            <div className="grid grid-cols-3 gap-3 mt-3">
-              <Button
-                onClick={() => setPaymentDialogOpen(true)}
-                disabled={cart.length === 0}
-                className="h-14 text-sm bg-gradient-to-br from-white to-primary/5 hover:from-primary/10 hover:to-primary/20 text-primary border-2 border-primary font-bold shadow-md hover:shadow-lg transition-all active:scale-95 rounded-xl"
-              >
-                <CreditCard className="mr-2 h-5 w-5" />
-                Carte
-              </Button>
-              <Button
-                onClick={() => setPaymentDialogOpen(true)}
-                disabled={cart.length === 0}
-                className="h-14 text-sm bg-gradient-to-br from-white to-accent/5 hover:from-accent/10 hover:to-accent/20 text-accent border-2 border-accent font-bold shadow-md hover:shadow-lg transition-all active:scale-95 rounded-xl"
-              >
-                <Banknote className="mr-2 h-5 w-5" />
-                Cash
-              </Button>
-              <Button
-                onClick={handleClearCart}
-                disabled={cart.length === 0}
-                className="h-14 text-sm bg-gradient-to-br from-white to-destructive/5 hover:from-destructive/10 hover:to-destructive/20 text-destructive border-2 border-destructive font-bold shadow-md hover:shadow-lg transition-all active:scale-95 rounded-xl"
-              >
-                <Trash2 className="mr-2 h-5 w-5" />
-                Annuler
-              </Button>
-            </div>
-          </Card>
         </div>
 
         {/* RIGHT PANEL - Articles/Catégories/Résultats */}
-        <div className="col-span-5 bg-white border-l border-border overflow-y-auto max-h-[calc(100vh-60px)]">
+        <div className="col-span-3 bg-white border-l border-border overflow-y-auto max-h-[calc(100vh-60px)]">
           <div className="p-2">
             {scanInput.trim() && searchResults.length === 0 ? (
               <div className="text-center py-16">
