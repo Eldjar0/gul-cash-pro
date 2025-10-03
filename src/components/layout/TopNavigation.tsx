@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History } from 'lucide-react';
+import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import logoJLProd from '@/assets/logo-jlprod.png';
 
@@ -69,6 +69,15 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            {/* Date/Heure */}
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg border border-white/20 mr-2">
+              <Clock className="h-4 w-4 text-white" />
+              <div className="text-xs text-white">
+                <span className="font-bold">{new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
+                <span className="ml-2">{new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            </div>
+            
             {/* Lock Button */}
             <Button
               onClick={onLockScreen}

@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { ProtectedLayout } from '@/components/layout/ProtectedLayout';
 import {
   ArrowLeft,
   Search,
@@ -156,24 +157,25 @@ export default function Sales() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-3">
-        <div className="flex items-center gap-2 md:gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/')}
-            className="text-white hover:bg-white/20 shrink-0"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="min-w-0">
-            <h1 className="text-lg md:text-2xl font-bold text-white truncate">Historique des Ventes</h1>
-            <p className="text-xs md:text-sm text-white/80">Tickets et factures</p>
+    <ProtectedLayout>
+      <div className="min-h-screen bg-background">
+        {/* Header - Simplified since navigation is in TopNavigation */}
+        <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-3">
+          <div className="flex items-center gap-2 md:gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/')}
+              className="text-white hover:bg-white/20 shrink-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold text-white truncate">Historique des Ventes</h1>
+              <p className="text-xs md:text-sm text-white/80">Tickets et factures</p>
+            </div>
           </div>
         </div>
-      </div>
 
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
         {/* Stats Cards */}
@@ -477,5 +479,6 @@ export default function Sales() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </ProtectedLayout>
   );
 }

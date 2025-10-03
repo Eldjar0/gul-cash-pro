@@ -942,25 +942,6 @@ const Index = () => {
         onUnlock={() => setIsLocked(false)} 
       />
       
-      {/* Info bar avec date/heure et bouton affichage */}
-      <div className="bg-muted border-b border-border px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-background rounded-lg border border-border">
-          <Clock className="h-4 w-4 text-primary" />
-          <div className="text-xs">
-            <span className="font-bold">{currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
-            <span className="text-muted-foreground ml-2">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-          </div>
-        </div>
-        
-        <Button
-          onClick={openCustomerDisplay}
-          className="bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md"
-        >
-          <Eye className="h-4 w-4 mr-2" />
-          Affichage Client
-        </Button>
-      </div>
-      
       {/* Hidden input to capture scanner input without stealing focus */}
       <input
         type="text"
