@@ -310,62 +310,8 @@ const CustomerDisplay = () => {
             </div>
           </div>
 
-          {/* Moyens de paiement avec logos */}
-          <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <div className="bg-card/80 backdrop-blur-md rounded-3xl p-8 border-2 border-accent/30 shadow-xl">
-              <h3 className="text-2xl font-black text-center text-foreground mb-6 uppercase tracking-wide">
-                Moyens de paiement acceptés
-              </h3>
-              <div className="grid grid-cols-4 gap-6">
-                {/* Visa */}
-                <div className="group relative overflow-hidden bg-gradient-to-br from-card to-primary/5 rounded-2xl p-6 border-2 border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-primary/40">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative z-10 text-center space-y-3">
-                    <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                      <CreditCard className="h-10 w-10 text-primary" />
-                    </div>
-                    <p className="text-2xl font-black text-primary">VISA</p>
-                  </div>
-                </div>
-
-                {/* Mastercard/Maestro */}
-                <div className="group relative overflow-hidden bg-gradient-to-br from-card to-destructive/5 rounded-2xl p-6 border-2 border-destructive/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-destructive/40">
-                  <div className="absolute inset-0 bg-gradient-to-br from-destructive/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative z-10 text-center space-y-3">
-                    <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-2xl flex items-center justify-center group-hover:bg-destructive/20 transition-colors duration-300">
-                      <CreditCard className="h-10 w-10 text-destructive" />
-                    </div>
-                    <p className="text-xl font-black text-destructive">MAESTRO</p>
-                  </div>
-                </div>
-
-                {/* Bancontact */}
-                <div className="group relative overflow-hidden bg-gradient-to-br from-card to-category-blue/5 rounded-2xl p-6 border-2 border-category-blue/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-category-blue/40">
-                  <div className="absolute inset-0 bg-gradient-to-br from-category-blue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative z-10 text-center space-y-3">
-                    <div className="mx-auto w-16 h-16 bg-category-blue/10 rounded-2xl flex items-center justify-center group-hover:bg-category-blue/20 transition-colors duration-300">
-                      <CreditCard className="h-10 w-10 text-category-blue" />
-                    </div>
-                    <p className="text-lg font-black text-category-blue">BANCONTACT</p>
-                  </div>
-                </div>
-
-                {/* Cash */}
-                <div className="group relative overflow-hidden bg-gradient-to-br from-card to-accent/5 rounded-2xl p-6 border-2 border-accent/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-accent/40">
-                  <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative z-10 text-center space-y-3">
-                    <div className="mx-auto w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center group-hover:bg-accent/20 transition-colors duration-300">
-                      <Banknote className="h-10 w-10 text-accent" />
-                    </div>
-                    <p className="text-2xl font-black text-accent">CASH</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Footer */}
-          <div className="flex justify-center animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <div className="flex justify-center animate-fade-in" style={{ animationDelay: '0.5s' }}>
             <div className="px-8 py-3 bg-card/60 backdrop-blur-md rounded-full border border-border/50 shadow-lg hover:shadow-xl hover:bg-card/80 transition-all duration-300">
               <p className="text-base text-muted-foreground font-medium">
                 Système de caisse développé par <span className="text-primary font-bold">Jlprod.be</span>
