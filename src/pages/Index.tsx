@@ -246,11 +246,17 @@ const Index = () => {
 
   // Recherche manuelle uniquement (désactivé auto-search)
   useEffect(() => {
-    // Vider les résultats si le champ est vide
-    if (!scanInput.trim()) {
+    const term = scanInput.trim();
+    if (!term) {
       setSearchResults([]);
+      return;
     }
-  }, [scanInput]);
+    // Recherche en direct (debounce 200ms)
+    const id = setTimeout(() => {
+      handleSearch();
+    }, 200);
+    return () => clearTimeout(id);
+  }, [scanInput, products, categories]);
 
   // Normalisation AZERTY → chiffres pour les codes-barres
   const normalizeBarcode = (raw: string): string => {
@@ -542,10 +548,11 @@ const Index = () => {
       return;
     }
 
+    const strip = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const normalizedInput = normalizeBarcode(scanInput);
-    const searchTerm = scanInput.toLowerCase();
+    const searchTerm = strip(scanInput);
     
-    // Recherche exacte par code-barre normalisé d'abord
+    // Recherche exacte par code-barres normalisé d'abord
     const exactBarcode = products.find(p => 
       p.barcode && normalizeBarcode(p.barcode) === normalizedInput
     );
@@ -555,22 +562,25 @@ const Index = () => {
       return;
     }
 
-    // Si pas de correspondance exacte, recherche générale
+    // Si pas de correspondance exacte, recherche générale accent-insensible
     let results = products.filter((p) => {
       const normalizedBarcode = p.barcode ? normalizeBarcode(p.barcode) : '';
+      const name = strip(p.name);
+      const desc = p.description ? strip(p.description) : '';
+      const idStr = strip(p.id);
       return (
         normalizedBarcode.includes(normalizedInput) ||
-        p.barcode?.toLowerCase().includes(searchTerm) ||
-        p.name.toLowerCase().includes(searchTerm) ||
-        p.id.toLowerCase().includes(searchTerm) ||
-        p.description?.toLowerCase().includes(searchTerm)
+        (p.barcode && strip(p.barcode).includes(searchTerm)) ||
+        name.includes(searchTerm) ||
+        idStr.includes(searchTerm) ||
+        desc.includes(searchTerm)
       );
     });
 
-    // Recherche par catégorie
+    // Recherche par catégorie (accent-insensible)
     if (categories && categories.length > 0) {
       const matchingCategories = categories.filter((cat) =>
-        cat.name.toLowerCase().includes(searchTerm)
+        strip(cat.name).includes(searchTerm)
       );
       
       if (matchingCategories.length > 0) {
@@ -582,19 +592,6 @@ const Index = () => {
           (product, index, self) => self.findIndex((p) => p.id === product.id) === index
         );
       }
-    }
-
-    // Si aucun résultat et que c'est un scan direct (pas de résultats intermédiaires)
-    if (results.length === 0 && searchTerm.length >= 3) {
-      toast.error('Aucun produit trouvé', {
-        description: `Code saisi: ${searchTerm}`,
-        action: {
-          label: 'Créer produit',
-          onClick: () => navigate(`/products?new=1&barcode=${encodeURIComponent(searchTerm.replace(/\D+/g, ''))}`),
-        },
-      });
-      setScanInput('');
-      return;
     }
 
     setSearchResults(results);
