@@ -214,7 +214,7 @@ const CustomerDisplay = () => {
           <div className="space-y-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <h1 className="text-8xl font-black tracking-tight">
               <span className="bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">
-                Bienvenue
+                {displaySettings.welcome_text}
               </span>
             </h1>
             <p className="text-4xl font-medium text-muted-foreground">
@@ -298,7 +298,7 @@ const CustomerDisplay = () => {
               </span>
             </h1>
             <p className="text-5xl font-semibold text-foreground">
-              À très bientôt
+              {displaySettings.thank_you_text}
             </p>
           </div>
 
@@ -314,63 +314,49 @@ const CustomerDisplay = () => {
 
   // État shopping - design moderne et épuré
   return (
-    <div className="h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex flex-col overflow-hidden">
-      {/* Header fixe - ultra moderne */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 blur-xl"></div>
-        <div className="relative bg-card/80 backdrop-blur-xl border-b border-border/50 shadow-lg">
-          <div className="max-w-7xl mx-auto px-8 py-6">
-            <div className="flex items-center justify-between">
-              {/* Logo et info */}
-              <div className="flex items-center gap-6">
-                <img src={logoMarket} alt="Logo" className="w-16 h-16 object-contain drop-shadow-lg" />
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-bold text-foreground">Vente en cours</h2>
-                    {displayState.saleNumber && (
-                      <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-semibold rounded-full">
-                        #{displayState.saleNumber}
-                      </span>
-                    )}
-                  </div>
-                  {displayState.cashierName && (
-                    <p className="text-sm text-muted-foreground">
-                      Caissier: <span className="font-semibold text-foreground">{displayState.cashierName}</span>
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Heure */}
-              <div className="text-right">
-                <p className="text-4xl font-black font-mono tabular-nums text-foreground">
-                  {currentTime.toLocaleTimeString('fr-BE', { 
-                    hour: '2-digit', 
-                    minute: '2-digit'
-                  })}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950 flex flex-col overflow-hidden">
+      {/* Header fixe - design épuré et pro */}
+      <div className="relative border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo et info */}
+            <div className="flex items-center gap-4">
+              <img src={logoMarket} alt="Logo" className="w-12 h-12 object-contain" />
+              <div className="space-y-0.5">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">TICKET EN COURS</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {currentTime.toLocaleDateString('fr-BE', { 
+                    weekday: 'long', 
                     day: 'numeric', 
-                    month: 'long'
+                    month: 'long',
+                    year: 'numeric'
+                  })} - {currentTime.toLocaleTimeString('fr-BE', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
                   })}
                 </p>
               </div>
+            </div>
+
+            {/* Info caisse */}
+            <div className="text-right">
+              <p className="text-sm text-slate-500 dark:text-slate-400">Caisse:</p>
+              <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                {displayState.cashierName || 'Caisse'}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Zone des articles - scrollable */}
-      <div className="flex-1 overflow-y-auto px-8 py-6">
-        <div className="max-w-7xl mx-auto space-y-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto space-y-3">
           {displayState.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"></div>
-                <ShoppingBag className="relative w-32 h-32 text-primary/30 mb-6" />
-              </div>
-              <p className="text-3xl font-semibold text-muted-foreground">
+              <ShoppingBag className="w-24 h-24 text-slate-300 dark:text-slate-700 mb-4" />
+              <p className="text-2xl font-semibold text-slate-400 dark:text-slate-600">
                 Panier vide
               </p>
             </div>
@@ -378,47 +364,40 @@ const CustomerDisplay = () => {
             displayState.items.map((item, index) => (
               <div
                 key={index}
-                className="group relative animate-scale-in"
+                className="bg-white dark:bg-slate-800 rounded-lg p-5 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all animate-scale-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="relative bg-card/80 backdrop-blur-xl rounded-2xl p-6 border border-border/50 shadow-lg hover:shadow-xl transition-all">
-                  <div className="flex items-center justify-between gap-6">
-                    {/* Info produit */}
-                    <div className="flex-1 space-y-2">
-                      <h3 className="text-2xl font-bold text-foreground leading-tight">
-                        {item.name}
-                      </h3>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="font-medium">
-                          Quantité: <span className="text-foreground font-bold">{item.quantity}</span>
-                          {item.unit && ` ${item.unit}`}
-                        </span>
-                        <span className="w-1 h-1 bg-muted-foreground rounded-full"></span>
-                        <span className="font-medium">
-                          Prix unitaire: <span className="text-foreground font-bold">{item.price.toFixed(2)}€</span>
-                        </span>
-                        {item.discount && (
-                          <>
-                            <span className="w-1 h-1 bg-muted-foreground rounded-full"></span>
-                            <span className="text-destructive font-semibold">
-                              -{item.discount.type === 'percentage' 
-                                ? `${item.discount.value}%` 
-                                : `${item.discount.value.toFixed(2)}€`}
-                            </span>
-                          </>
-                        )}
-                      </div>
+                <div className="flex items-start justify-between gap-6">
+                  {/* Info produit */}
+                  <div className="flex-1 space-y-2">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
+                      {item.name}
+                    </h3>
+                    <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                      <span>
+                        <span className="font-semibold text-slate-900 dark:text-white">{item.quantity}</span>
+                        {item.unit && ` ${item.unit}`} × {item.price.toFixed(2)} €
+                      </span>
+                      {item.discount && (
+                        <>
+                          <span className="text-slate-300 dark:text-slate-700">•</span>
+                          <span className="text-red-600 dark:text-red-400 font-semibold">
+                            -{item.discount.type === 'percentage' 
+                              ? `${item.discount.value}%` 
+                              : `${item.discount.value.toFixed(2)}€`}
+                          </span>
+                        </>
+                      )}
                     </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-500">
+                      TVA {item.vatRate}%: {calculateVAT(item).toFixed(2)} €
+                    </p>
+                  </div>
 
-                    {/* Prix total */}
-                    <div className="text-right">
-                      <div className="text-5xl font-black text-foreground">
-                        {item.total.toFixed(2)}€
-                      </div>
-                      <div className="text-sm text-muted-foreground mt-1">
-                        TVA {item.vatRate}%
-                      </div>
+                  {/* Prix total */}
+                  <div className="text-right">
+                    <div className="text-4xl font-black text-blue-600 dark:text-blue-400">
+                      {item.total.toFixed(2)} €
                     </div>
                   </div>
                 </div>
@@ -428,46 +407,30 @@ const CustomerDisplay = () => {
         </div>
       </div>
 
-      {/* Footer fixe - Total */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-accent/20 via-primary/20 to-accent/20 blur-2xl"></div>
-        <div className="relative bg-card/90 backdrop-blur-xl border-t border-border/50 shadow-2xl">
-          <div className="max-w-7xl mx-auto px-8 py-8">
-            {/* Détails TVA */}
-            {displayState.items.length > 0 && (
-              <div className="grid grid-cols-3 gap-6 mb-6">
-                <div className="text-center p-4 bg-background/50 rounded-xl border border-border/30">
-                  <p className="text-sm text-muted-foreground mb-1">Total HT</p>
-                  <p className="text-2xl font-bold text-foreground">{getTotalHT().toFixed(2)}€</p>
-                </div>
-                <div className="text-center p-4 bg-background/50 rounded-xl border border-border/30">
-                  <p className="text-sm text-muted-foreground mb-1">TVA</p>
-                  <p className="text-2xl font-bold text-foreground">{getTotalVAT().toFixed(2)}€</p>
-                </div>
-                <div className="text-center p-4 bg-background/50 rounded-xl border border-border/30">
-                  <p className="text-sm text-muted-foreground mb-1">Articles</p>
-                  <p className="text-2xl font-bold text-foreground">
-                    {displayState.items.reduce((sum, item) => sum + item.quantity, 0)}
-                  </p>
-                </div>
-              </div>
-            )}
+      {/* Footer fixe - Total avec dégradé moderne */}
+      <div className="relative mt-auto">
+        {/* Dégradé de fond */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-cyan-500 to-green-500"></div>
+        
+        <div className="relative">
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            {/* Ligne TVA */}
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-white/90 text-base font-medium">
+                TVA {displayState.items.length > 0 && displayState.items[0]?.vatRate ? displayState.items[0].vatRate : 6}%:
+              </span>
+              <span className="text-white text-lg font-bold">
+                {getTotalVAT().toFixed(2)} €
+              </span>
+            </div>
 
             {/* Total à payer */}
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
-              <div className="relative flex items-center justify-between px-12 py-8 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-2xl border-2 border-primary/30">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-primary/20 rounded-xl">
-                    <TrendingUp className="w-8 h-8 text-primary" />
-                  </div>
-                  <span className="text-3xl font-bold text-foreground">Total à payer</span>
-                </div>
-                <div className="text-7xl font-black">
-                  <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                    {getTotalTTC().toFixed(2)}€
-                  </span>
-                </div>
+            <div className="flex items-center justify-between">
+              <span className="text-white text-2xl font-bold uppercase tracking-wide">
+                TOTAL À PAYER
+              </span>
+              <div className="text-6xl font-black text-white drop-shadow-lg">
+                {getTotalTTC().toFixed(2)} €
               </div>
             </div>
           </div>
