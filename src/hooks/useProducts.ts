@@ -175,12 +175,42 @@ export const useSearchProducts = (search: string) => {
   return useQuery({
     queryKey: ['products', 'search', search],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const trimmedSearch = search.trim();
+      
+      // Check if search is a number (for price search)
+      const isNumber = !isNaN(Number(trimmedSearch)) && trimmedSearch !== '';
+      
+      // Check if search looks like a UUID (for ID search)
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedSearch);
+      
+      let query = supabase
         .from('products')
         .select('*')
-        .eq('is_active', true)
-        .or(`name.ilike.%${search}%,barcode.ilike.%${search}%`)
-        .limit(10);
+        .eq('is_active', true);
+      
+      // Build search conditions
+      const conditions = [];
+      
+      // Always search in name and barcode
+      conditions.push(`name.ilike.%${trimmedSearch}%`);
+      conditions.push(`barcode.ilike.%${trimmedSearch}%`);
+      
+      // If it's a number, also search by price
+      if (isNumber) {
+        const numValue = Number(trimmedSearch);
+        conditions.push(`price.eq.${numValue}`);
+      }
+      
+      // If it's a UUID, also search by ID
+      if (isUUID) {
+        conditions.push(`id.eq.${trimmedSearch}`);
+      }
+      
+      query = query.or(conditions.join(','));
+      
+      const { data, error } = await query
+        .order('name')
+        .limit(20);
 
       if (error) throw error;
       return data as Product[];
