@@ -405,47 +405,37 @@ const CustomerDisplay = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex flex-col overflow-hidden">
-      {/* Header fixe avec logo */}
-      <div className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-md border-b-4 border-primary shadow-2xl p-4 z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
+      {/* Header fixe compact */}
+      <div className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-md border-b-2 border-primary shadow-lg p-2 z-10">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="relative">
-            <div className="absolute inset-0 bg-primary/10 blur-xl rounded-full"></div>
-            <img src={logoMarket} alt="Logo" className="relative h-20 object-contain drop-shadow-lg" />
+            <img src={logoMarket} alt="Logo" className="relative h-12 object-contain drop-shadow-md" />
           </div>
           <div className="text-center flex-1">
-            <div className="inline-block px-6 py-2 bg-primary/10 rounded-full border-2 border-primary/30 mb-2">
-              <h1 className="text-5xl font-black text-primary tracking-tight">
+            <div className="inline-block px-3 py-1 bg-primary/10 rounded-lg border border-primary/30">
+              <h1 className="text-2xl font-black text-primary tracking-tight">
                 {displayState.isInvoice ? 'FACTURE' : 'TICKET'} {displayState.saleNumber || 'EN COURS'}
               </h1>
             </div>
             {displayState.isInvoice && displayState.customer && (
-              <p className="text-2xl text-accent font-bold mt-2">{displayState.customer.name}</p>
+              <p className="text-sm text-accent font-bold mt-1">{displayState.customer.name}</p>
             )}
-            <div className="text-base text-muted-foreground mt-2 font-medium">
-              {currentTime.toLocaleDateString('fr-BE', { 
-                weekday: 'long', 
-                day: '2-digit', 
-                month: 'long', 
-                year: 'numeric' 
-              })}
+            <div className="text-xs text-muted-foreground mt-1 font-medium">
+              {currentTime.toLocaleDateString('fr-BE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
               {' • '}
-              {currentTime.toLocaleTimeString('fr-BE', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit'
-              })}
+              {currentTime.toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit' })}
             </div>
           </div>
-          <div className="text-right bg-primary/10 rounded-2xl px-6 py-3 border-2 border-primary/30">
-            <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold">Caisse</p>
-            <p className="text-3xl font-black text-primary">{displayState.cashierName || 'N/A'}</p>
+          <div className="text-right bg-primary/10 rounded-lg px-3 py-1.5 border border-primary/30">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">Caisse</p>
+            <p className="text-lg font-black text-primary">{displayState.cashierName || 'N/A'}</p>
           </div>
         </div>
       </div>
 
-      {/* Zone scrollable pour les articles - avec padding top et bottom pour header/footer fixes */}
-      <div className="flex-1 overflow-y-auto pt-32 pb-56 px-6">
-        <div className="max-w-7xl mx-auto space-y-3 flex flex-col-reverse">
+      {/* Zone scrollable pour les articles - compact */}
+      <div className="flex-1 overflow-y-auto pt-20 pb-32 px-4">
+        <div className="max-w-7xl mx-auto space-y-2 flex flex-col-reverse">
           {displayState.items.map((item, index) => {
             const subtotal = calculateSubtotal(item);
             const vat = calculateVAT(item);
@@ -454,43 +444,43 @@ const CustomerDisplay = () => {
             return (
               <div
                 key={`${item.name}-${index}`}
-                className="bg-card rounded-2xl shadow-lg p-6 border-2 border-primary/20 hover:shadow-2xl hover:border-primary/40 transition-all duration-300 hover:scale-[1.02] animate-fade-in"
-                style={{ animationDelay: `${index * 0.05}s` }}
+                className="bg-card rounded-lg shadow-md p-3 border border-primary/20 hover:shadow-lg hover:border-primary/40 transition-all duration-200 animate-fade-in"
+                style={{ animationDelay: `${index * 0.03}s` }}
               >
-                <div className="flex justify-between items-start gap-6">
-                  <div className="flex-1">
-                    <h3 className="text-3xl font-black text-foreground uppercase tracking-tight mb-3 flex items-center gap-3">
-                      <div className="w-2 h-8 bg-primary rounded-full"></div>
-                      {item.name}
+                <div className="flex justify-between items-center gap-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xl font-bold text-foreground uppercase tracking-tight mb-2 flex items-center gap-2 truncate">
+                      <div className="w-1 h-5 bg-primary rounded-full flex-shrink-0"></div>
+                      <span className="truncate">{item.name}</span>
                     </h3>
-                    <div className="flex gap-4 items-center flex-wrap">
-                      <div className="flex items-center gap-3 bg-muted/50 rounded-xl px-4 py-2">
-                        <span className="text-2xl font-black text-foreground">
+                    <div className="flex gap-2 items-center flex-wrap">
+                      <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-2 py-1">
+                        <span className="text-base font-black text-foreground">
                           {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)} {unitDisplay}
                         </span>
-                        <span className="text-xl text-muted-foreground">×</span>
-                        <span className="text-2xl font-bold text-primary">
-                          {item.price.toFixed(2)} €
+                        <span className="text-sm text-muted-foreground">×</span>
+                        <span className="text-base font-bold text-primary">
+                          {item.price.toFixed(2)}€
                         </span>
                       </div>
                       {item.hasCustomPrice && (
-                        <span className="px-4 py-2 rounded-xl text-base font-bold bg-accent/20 text-accent border-2 border-accent/30">
+                        <span className="px-2 py-1 rounded-lg text-xs font-bold bg-accent/20 text-accent border border-accent/30">
                           Prix modifié
                         </span>
                       )}
                       {item.discount && (
-                        <span className="px-4 py-2 rounded-xl text-base font-bold bg-destructive/20 text-destructive border-2 border-destructive/30">
+                        <span className="px-2 py-1 rounded-lg text-xs font-bold bg-destructive/20 text-destructive border border-destructive/30">
                           -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="bg-primary/10 rounded-2xl px-6 py-4 border-2 border-primary/30">
-                      <div className="text-5xl font-black text-primary mb-2 tabular-nums">
-                        {item.total.toFixed(2)} €
+                  <div className="text-right flex-shrink-0">
+                    <div className="bg-primary/10 rounded-lg px-3 py-2 border border-primary/30">
+                      <div className="text-3xl font-black text-primary tabular-nums leading-none">
+                        {item.total.toFixed(2)}€
                       </div>
-                      <div className="text-sm text-muted-foreground font-semibold">
+                      <div className="text-xs text-muted-foreground font-semibold mt-1">
                         TVA {item.vatRate}%: <span className="text-foreground font-bold">{vat.toFixed(2)}€</span>
                       </div>
                     </div>
@@ -502,12 +492,12 @@ const CustomerDisplay = () => {
         </div>
       </div>
 
-      {/* Footer fixe avec total en bas à droite */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary via-primary-glow to-accent shadow-2xl z-10 border-t-4 border-primary-foreground/20">
-        <div className="max-w-7xl mx-auto p-8">
-          <div className="flex justify-between items-center gap-8">
-            {/* Infos TVA à gauche */}
-            <div className="space-y-3">
+      {/* Footer fixe compact */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary via-primary-glow to-accent shadow-xl z-10 border-t-2 border-primary-foreground/20">
+        <div className="max-w-7xl mx-auto p-4">
+          <div className="flex justify-between items-center gap-6">
+            {/* Infos TVA à gauche - compact */}
+            <div className="flex gap-2 flex-wrap">
               {(() => {
                 const vatByRate = displayState.items.reduce((acc, item) => {
                   const vat = calculateVAT(item);
@@ -519,20 +509,20 @@ const CustomerDisplay = () => {
                 }, {} as Record<number, number>);
 
                 return Object.entries(vatByRate).map(([rate, amount]) => (
-                  <div key={rate} className="flex items-center gap-3 bg-primary-foreground/10 backdrop-blur-sm rounded-xl px-5 py-3 border border-primary-foreground/20">
-                    <span className="text-xl font-bold text-primary-foreground uppercase tracking-wide">TVA {parseFloat(rate).toFixed(0)}%:</span>
-                    <span className="text-2xl font-black text-primary-foreground tabular-nums">{amount.toFixed(2)} €</span>
+                  <div key={rate} className="flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-primary-foreground/20">
+                    <span className="text-sm font-bold text-primary-foreground uppercase tracking-wide">TVA {parseFloat(rate).toFixed(0)}%:</span>
+                    <span className="text-base font-black text-primary-foreground tabular-nums">{amount.toFixed(2)}€</span>
                   </div>
                 ));
               })()}
             </div>
 
-            {/* Total TTC à droite - ÉNORME */}
+            {/* Total TTC à droite - compact mais visible */}
             <div className="text-right">
-              <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-3xl px-10 py-6 border-4 border-primary-foreground/30 shadow-glow-lg">
-                <div className="text-3xl font-bold text-primary-foreground mb-3 uppercase tracking-widest">TOTAL À PAYER</div>
-                <div className="text-8xl font-black text-primary-foreground tracking-tighter leading-none tabular-nums drop-shadow-2xl animate-pulse-soft">
-                  {getTotalTTC().toFixed(2)} €
+              <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-xl px-6 py-3 border-2 border-primary-foreground/30 shadow-lg">
+                <div className="text-lg font-bold text-primary-foreground uppercase tracking-wide">TOTAL À PAYER</div>
+                <div className="text-5xl font-black text-primary-foreground tracking-tight leading-none tabular-nums drop-shadow-lg animate-pulse-soft mt-1">
+                  {getTotalTTC().toFixed(2)}€
                 </div>
               </div>
             </div>
