@@ -31,24 +31,96 @@ export function CashDrawerActions({
       </h2>
       
       {/* Gestion de journée */}
-      {(onOpenDay || onCloseDay || onReportX) && <div className="mb-3 pb-3 border-b">
+      {(onOpenDay || onCloseDay || onReportX) && (
+        <div className="mb-3 pb-3 border-b">
           <h3 className="text-xs font-semibold mb-2 text-muted-foreground">Gestion de journée</h3>
           <div className="grid grid-cols-3 gap-2">
-            {!isDayOpen && onOpenDay && <Button onClick={onOpenDay} className="h-16 flex flex-col gap-1 bg-gradient-to-br from-accent to-primary text-white hover:scale-105 transition-all shadow-lg text-xs">
+            {!isDayOpen && onOpenDay && (
+              <Button 
+                onClick={onOpenDay} 
+                className="h-16 flex flex-col gap-1 bg-gradient-to-br from-accent to-primary text-white hover:scale-105 transition-all shadow-lg text-xs"
+              >
                 <Calendar className="h-5 w-5" />
                 <span className="font-bold">Ouvrir Journée</span>
-              </Button>}
-            {isDayOpen && onReportX && <Button onClick={onReportX} className="h-16 flex flex-col gap-1 bg-gradient-to-br from-category-blue to-secondary text-white hover:scale-105 transition-all shadow-lg text-xs">
+              </Button>
+            )}
+            {isDayOpen && onReportX && (
+              <Button 
+                onClick={onReportX} 
+                className="h-16 flex flex-col gap-1 bg-gradient-to-br from-category-blue to-secondary text-white hover:scale-105 transition-all shadow-lg text-xs"
+              >
                 <FileBarChart className="h-5 w-5" />
                 <span className="font-bold">Rapport X</span>
-              </Button>}
-            {isDayOpen && onCloseDay && <Button onClick={onCloseDay} className="h-16 flex flex-col gap-1 bg-gradient-to-br from-destructive to-destructive/80 text-white hover:scale-105 transition-all shadow-lg text-xs">
+              </Button>
+            )}
+            {isDayOpen && onCloseDay && (
+              <Button 
+                onClick={onCloseDay} 
+                className="h-16 flex flex-col gap-1 bg-gradient-to-br from-destructive to-destructive/80 text-white hover:scale-105 transition-all shadow-lg text-xs"
+              >
                 <CalendarX className="h-5 w-5" />
                 <span className="font-bold">Fermer Journée</span>
-              </Button>}
+              </Button>
+            )}
           </div>
-        </div>}
-      
-      
+        </div>
+      )}
+
+      {/* Actions principales */}
+      <div className="grid grid-cols-2 gap-2">
+        <Button
+          variant="outline"
+          onClick={onOpenDrawer}
+          className="h-14 flex flex-col gap-1 bg-gradient-to-br from-green-500 to-green-600 text-white hover:text-white hover:from-green-600 hover:to-green-700 transition-all hover:scale-105 shadow-md"
+        >
+          <DollarSign className="h-5 w-5" />
+          <span className="text-xs font-bold">Tiroir</span>
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={onViewStats}
+          className="h-14 flex flex-col gap-1 hover:scale-105 transition-all"
+        >
+          <TrendingUp className="h-5 w-5" />
+          <span className="text-xs font-semibold">Stats</span>
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={onViewHistory}
+          className="h-14 flex flex-col gap-1 hover:scale-105 transition-all"
+        >
+          <FileText className="h-5 w-5" />
+          <span className="text-xs font-semibold">Historique</span>
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={onManageCustomers}
+          className="h-14 flex flex-col gap-1 hover:scale-105 transition-all"
+        >
+          <Users className="h-5 w-5" />
+          <span className="text-xs font-semibold">Clients</span>
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={onManageProducts}
+          className="h-14 flex flex-col gap-1 hover:scale-105 transition-all"
+        >
+          <Package className="h-5 w-5" />
+          <span className="text-xs font-semibold">Produits</span>
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={onSettings}
+          className="h-14 flex flex-col gap-1 hover:scale-105 transition-all"
+        >
+          <Settings className="h-5 w-5" />
+          <span className="text-xs font-semibold">Paramètres</span>
+        </Button>
+      </div>
     </Card>;
 }
