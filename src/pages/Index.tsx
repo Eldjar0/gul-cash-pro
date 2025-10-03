@@ -8,18 +8,13 @@ import {
   Banknote,
   Trash2,
   Euro,
-  LogOut,
   Clock,
   ShoppingBag,
   Percent,
   Edit,
   Ticket,
   Eye,
-  History,
-  Settings as SettingsIcon,
-  FileText,
   Scale,
-  Users,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -28,6 +23,8 @@ import { DiscountDialog } from '@/components/pos/DiscountDialog';
 import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { Receipt } from '@/components/pos/Receipt';
+import { TopNavigation } from '@/components/layout/TopNavigation';
+import { PinLockDialog } from '@/components/pos/PinLockDialog';
 
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
@@ -69,11 +66,14 @@ interface CartItem {
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data: products } = useProducts();
   const { data: categories } = useCategories();
   const createSale = useCreateSale();
   const scanInputRef = useRef<HTMLInputElement>(null);
+  
+  // Lock system
+  const [isLocked, setIsLocked] = useState(false);
   
   // Daily reports hooks
   const { data: todayReport } = useTodayReport();
@@ -948,100 +948,6 @@ const Index = () => {
         }}
         autoFocus={false}
       />
-      {/* Header redesigné */}
-      <div className="bg-white border-b-2 border-border px-4 py-3 flex-shrink-0 shadow-md">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center">
-            <img src={logoMarket} alt="Logo" className="h-14 w-auto object-contain" />
-          </div>
-
-          {/* Boutons de navigation centraux */}
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => navigate('/sales')}
-              className="bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white h-10 px-4 shadow-md"
-            >
-              <History className="h-4 w-4 mr-2" />
-              Ventes
-            </Button>
-            <Button
-              onClick={() => navigate('/products')}
-              className="bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white h-10 px-4 shadow-md"
-            >
-              <ShoppingBag className="h-4 w-4 mr-2" />
-              Produits
-            </Button>
-            <Button
-              onClick={() => navigate('/customers')}
-              className="bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white h-10 px-4 shadow-md"
-            >
-              <Users className="h-4 w-4 mr-2" />
-              Clients
-            </Button>
-            <Button
-              onClick={openCustomerDisplay}
-              className="bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white h-10 px-4 shadow-md"
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              Affichage
-            </Button>
-          </div>
-
-          {/* Date/Heure et actions à droite */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-muted/50 to-muted rounded-xl border border-border">
-              <Clock className="h-4 w-4 text-primary" />
-              <div className="text-right">
-                <div className="text-xs font-bold text-foreground leading-tight">
-                  {currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
-                </div>
-                <div className="text-xs text-muted-foreground leading-tight">
-                  {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
-            </div>
-            
-            {user ? (
-              <>
-                <Button
-                  onClick={() => navigate('/reports-history')}
-                  size="icon"
-                  className="bg-gradient-to-br from-destructive to-destructive/80 hover:from-destructive/90 hover:to-destructive/70 text-white h-10 w-10 shadow-md"
-                  title="Historique Rapports Z"
-                >
-                  <FileText className="h-5 w-5" />
-                </Button>
-                <Button
-                  onClick={() => navigate('/settings')}
-                  size="icon"
-                  className="bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white h-10 w-10 shadow-md"
-                  title="Paramètres"
-                >
-                  <SettingsIcon className="h-5 w-5" />
-                </Button>
-                <Button
-                  onClick={signOut}
-                  size="icon"
-                  className="bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white h-10 w-10 shadow-md"
-                  title="Déconnexion"
-                >
-                  <LogOut className="h-5 w-5" />
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={() => navigate('/auth')}
-                className="bg-gradient-to-br from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white h-10 px-4 shadow-md"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Connexion
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Main content - 3 colonnes: TICKET (5) | CALCULATRICE (4) | ARTICLES (3) */}
       <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
         {/* LEFT PANEL - Ticket à gauche */}
@@ -1419,12 +1325,6 @@ const Index = () => {
           
           {/* Actions de caisse et gestion de journée */}
           <CashDrawerActions
-            onOpenDrawer={() => toast.info('Tiroir-caisse ouvert')}
-            onViewStats={() => navigate('/sales')}
-            onViewHistory={() => navigate('/sales')}
-            onManageCustomers={() => navigate('/customers')}
-            onManageProducts={() => navigate('/products')}
-            onSettings={() => navigate('/settings')}
             onOpenDay={() => setOpenDayDialogOpen(true)}
             onCloseDay={() => setCloseDayDialogOpen(true)}
             onReportX={handleReportX}

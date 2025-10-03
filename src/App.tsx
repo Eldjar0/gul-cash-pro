@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Sales from "./pages/Sales";
@@ -26,18 +27,22 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          {/* Public routes */}
           <Route path="/auth" element={<Auth />} />
-          <Route path="/sales" element={<Sales />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/invoices" element={<Invoices />} />
-          <Route path="/invoices/create" element={<InvoiceCreate />} />
-          <Route path="/settings" element={<Settings />} />
           <Route path="/customer-display" element={<CustomerDisplay />} />
-          <Route path="/reports-history" element={<ReportsHistory />} />
-          <Route path="/legal-info" element={<LegalInfo />} />
-          <Route path="/getting-started" element={<GettingStarted />} />
+          
+          {/* Protected routes */}
+          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+          <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
+          <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+          <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+          <Route path="/invoices" element={<ProtectedRoute><Invoices /></ProtectedRoute>} />
+          <Route path="/invoices/create" element={<ProtectedRoute><InvoiceCreate /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/reports-history" element={<ProtectedRoute><ReportsHistory /></ProtectedRoute>} />
+          <Route path="/legal-info" element={<ProtectedRoute><LegalInfo /></ProtectedRoute>} />
+          <Route path="/getting-started" element={<ProtectedRoute><GettingStarted /></ProtectedRoute>} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
