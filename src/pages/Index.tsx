@@ -81,13 +81,7 @@ const Index = () => {
   const closeDay = useCloseDay();
   // UI override so buttons update instantly after actions
   const [isDayOpenLocal, setIsDayOpenLocal] = useState<boolean | null>(null);
-  const isDayOpenEffective = isDayOpenLocal ?? (!!todayReport && todayReport.closing_amount === null);
-
-  // Debug: Log todayReport state
-  useEffect(() => {
-    console.log('[DEBUG] Today Report:', todayReport);
-    console.log('[DEBUG] isDayOpen:', !!todayReport && todayReport.closing_amount === null);
-  }, [todayReport]);
+  const isDayOpenEffective = isDayOpenLocal ?? !!todayReport;
 
   // Reset local override when server data changes
   useEffect(() => {
