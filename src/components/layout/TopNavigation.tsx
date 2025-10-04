@@ -96,43 +96,43 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           {/* Boutons principaux colorés */}
           <Button
             onClick={() => navigate("/")}
-            className="h-12 px-4 gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold"
+            className="h-14 px-3 flex flex-col gap-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold"
           >
             <ShoppingCart className="h-5 w-5" />
-            Caisse
+            <span className="text-xs">Caisse</span>
           </Button>
           
           <Button
             onClick={() => navigate("/dashboard")}
-            className="h-12 px-4 gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold"
+            className="h-14 px-3 flex flex-col gap-1 bg-green-500 hover:bg-green-600 text-white font-semibold"
           >
             <TrendingUp className="h-5 w-5" />
-            Dashboard
+            <span className="text-xs">Dashboard</span>
           </Button>
           
           <Button
             onClick={() => navigate("/products")}
-            className="h-12 px-4 gap-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold"
+            className="h-14 px-3 flex flex-col gap-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold"
           >
             <Package className="h-5 w-5" />
-            Produits
+            <span className="text-xs">Produits</span>
           </Button>
           
           <Button
             onClick={() => navigate("/customers")}
-            className="h-12 px-4 gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+            className="h-14 px-3 flex flex-col gap-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold"
           >
             <Users className="h-5 w-5" />
-            Clients
+            <span className="text-xs">Clients</span>
           </Button>
 
           {/* Menus déroulants pour le reste */}
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-12 px-4 gap-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold">
+                <NavigationMenuTrigger className="h-14 px-3 flex flex-col gap-1 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold data-[state=open]:bg-cyan-600">
                   <Receipt className="h-5 w-5" />
-                  Ventes
+                  <span className="text-xs">Ventes</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
@@ -154,9 +154,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-12 px-4 gap-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold">
+                <NavigationMenuTrigger className="h-14 px-3 flex flex-col gap-1 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold data-[state=open]:bg-indigo-600">
                   <Truck className="h-5 w-5" />
-                  Gestion
+                  <span className="text-xs">Gestion</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
@@ -178,9 +178,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-12 px-4 gap-2 bg-pink-500 hover:bg-pink-600 text-white font-semibold">
+                <NavigationMenuTrigger className="h-14 px-3 flex flex-col gap-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold data-[state=open]:bg-pink-600">
                   <Gift className="h-5 w-5" />
-                  Marketing
+                  <span className="text-xs">Marketing</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
@@ -202,9 +202,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-12 px-4 gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold">
+                <NavigationMenuTrigger className="h-14 px-3 flex flex-col gap-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold data-[state=open]:bg-amber-600">
                   <BarChart3 className="h-5 w-5" />
-                  Rapports
+                  <span className="text-xs">Rapports</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
@@ -229,10 +229,10 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                 <Button
                   variant="ghost"
                   onClick={() => navigate("/settings")}
-                  className="h-12 px-4 gap-2 bg-slate-500 hover:bg-slate-600 text-white font-semibold"
+                  className="h-14 px-3 flex flex-col gap-1 bg-slate-500 hover:bg-slate-600 text-white font-semibold"
                 >
                   <Settings className="h-5 w-5" />
-                  Paramètres
+                  <span className="text-xs">Paramètres</span>
                 </Button>
               </NavigationMenuItem>
             </NavigationMenuList>
