@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History, Clock, LayoutDashboard } from 'lucide-react';
+import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History, Clock, LayoutDashboard, Undo2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import logoGulReyhan from '@/assets/logo-gul-reyhan.png';
 interface TopNavigationProps {
@@ -44,6 +44,12 @@ export function TopNavigation({
               <Link to="/sales">
                 <History className="h-4 w-4" />
                 Ventes
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/refunds">
+                <Undo2 className="h-4 w-4" />
+                Remboursements
               </Link>
             </Button>
             <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">

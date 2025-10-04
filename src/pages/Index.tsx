@@ -25,15 +25,22 @@ import {
   X,
   TrendingUp,
   TrendingDown,
+  Save,
+  FolderOpen,
+  Undo2,
+  Split,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
+import { MixedPaymentDialog } from '@/components/pos/MixedPaymentDialog';
 import { DiscountDialog } from '@/components/pos/DiscountDialog';
 import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { Receipt } from '@/components/pos/Receipt';
 import { PinLockDialog } from '@/components/pos/PinLockDialog';
+import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
+import { RefundDialog } from '@/components/pos/RefundDialog';
 
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
@@ -148,6 +155,11 @@ const Index = () => {
   const [closeDayDialogOpen, setCloseDayDialogOpen] = useState(false);
   const [reportXDialogOpen, setReportXDialogOpen] = useState(false);
   const [reportData, setReportData] = useState<ReportData | null>(null);
+  
+  // New features states
+  const [savedCartsDialogOpen, setSavedCartsDialogOpen] = useState(false);
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
 
   // Calculate totals - defined before useEffect to avoid initialization errors
   const getTotals = () => {
@@ -850,6 +862,99 @@ const Index = () => {
     }
   };
 
+  // Gestionnaire pour charger un panier sauvegardé
+  const handleLoadCart = (cartData: any) => {
+    setCart(cartData);
+    toast.success('Panier chargé');
+  };
+
+  // Gestionnaire pour paiement mixte
+  const handleMixedPayment = async (payments: Array<{ method: 'cash' | 'card' | 'mobile'; amount: number }>) => {
+    if (!user) {
+      toast.error('Connectez-vous pour encaisser');
+      setMixedPaymentDialogOpen(false);
+      return;
+    }
+
+    const totals = getTotals();
+    
+    // Calculer le montant espèces pour le tiroir-caisse
+    const cashAmount = payments
+      .filter(p => p.method === 'cash')
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    const saleData = {
+      subtotal: totals.subtotal,
+      total_vat: totals.totalVat,
+      total_discount: totals.totalDiscount,
+      total: totals.total,
+      payment_method: 'cash' as const, // Méthode principale pour compatibilité
+      payment_methods: payments, // Détails des paiements
+      payment_split: payments.reduce((acc, p) => ({ ...acc, [p.method]: p.amount }), {}),
+      amount_paid: totals.total,
+      change_amount: 0,
+      is_invoice: isInvoiceMode,
+      is_cancelled: false,
+      cashier_id: user.id,
+      customer_id: isInvoiceMode ? selectedCustomer?.id : undefined,
+      items: cart.map(item => ({
+        product_id: item.product.id,
+        product_name: item.product.name,
+        product_barcode: item.product.barcode,
+        quantity: item.quantity,
+        unit_price: item.custom_price ?? item.product.price,
+        vat_rate: item.product.vat_rate,
+        discount_type: item.discount?.type,
+        discount_value: item.discount?.value || 0,
+        subtotal: item.subtotal,
+        vat_amount: item.vatAmount,
+        total: item.total,
+      })),
+    };
+
+    try {
+      const sale = await createSale.mutateAsync(saleData);
+      
+      const saleForReceipt = {
+        ...sale,
+        saleNumber: sale.sale_number,
+        date: sale.date,
+        items: cart,
+        subtotal: totals.subtotal,
+        totalVat: totals.totalVat,
+        totalDiscount: totals.totalDiscount,
+        total: totals.total,
+        paymentMethod: 'mixed',
+        payments: payments,
+      };
+
+      setCurrentSale(saleForReceipt);
+      
+      setTimeout(() => {
+        const idleState = {
+          items: [],
+          status: 'idle',
+          timestamp: Date.now(),
+        };
+        displayChannel.postMessage(idleState);
+        localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+      }, 5000);
+      
+      setCart([]);
+      setGlobalDiscount(null);
+      setAppliedPromoCode(null);
+      setIsInvoiceMode(false);
+      setSelectedCustomer(null);
+      setMixedPaymentDialogOpen(false);
+      setPrintConfirmDialogOpen(true);
+      
+      toast.success('Paiement mixte validé');
+    } catch (error) {
+      console.error('Error creating sale:', error);
+      toast.error('Erreur paiement mixte');
+    }
+  };
+
   const handleSelectCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
     setIsInvoiceMode(true);
@@ -1423,6 +1528,56 @@ const Index = () => {
 
           {/* Payment buttons - Modern JL Prod style */}
           <div className="bg-background p-1.5 space-y-1.5 border-t-2 border-border flex-shrink-0">
+            {/* Nouveaux boutons fonctionnalités */}
+            <div className="grid grid-cols-4 gap-1 mb-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSavedCartsDialogOpen(true)}
+                className="h-7 text-[9px] border-blue-500 text-blue-500 hover:bg-blue-500/10"
+                title="Paniers sauvegardés"
+              >
+                <FolderOpen className="h-3 w-3 mr-0.5" />
+                Charger
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (cart.length > 0) {
+                    setSavedCartsDialogOpen(true);
+                  }
+                }}
+                disabled={cart.length === 0}
+                className="h-7 text-[9px] border-green-500 text-green-500 hover:bg-green-500/10"
+                title="Sauvegarder le panier"
+              >
+                <Save className="h-3 w-3 mr-0.5" />
+                Sauver
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setMixedPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-7 text-[9px] border-purple-500 text-purple-500 hover:bg-purple-500/10"
+                title="Paiement mixte"
+              >
+                <Split className="h-3 w-3 mr-0.5" />
+                Mixte
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRefundDialogOpen(true)}
+                className="h-7 text-[9px] border-orange-500 text-orange-500 hover:bg-orange-500/10"
+                title="Créer un remboursement"
+              >
+                <Undo2 className="h-3 w-3 mr-0.5" />
+                Rembour.
+              </Button>
+            </div>
+            
             <Button
               onClick={() => setPaymentDialogOpen(true)}
               disabled={cart.length === 0}
@@ -1655,6 +1810,25 @@ const Index = () => {
         onOpenChange={setPaymentDialogOpen}
         total={totals.total}
         onConfirmPayment={handleConfirmPayment}
+      />
+
+      <MixedPaymentDialog
+        open={mixedPaymentDialogOpen}
+        onOpenChange={setMixedPaymentDialogOpen}
+        total={totals.total}
+        onConfirmPayment={handleMixedPayment}
+      />
+
+      <SavedCartsDialog
+        open={savedCartsDialogOpen}
+        onOpenChange={setSavedCartsDialogOpen}
+        currentCart={cart}
+        onLoadCart={handleLoadCart}
+      />
+
+      <RefundDialog
+        open={refundDialogOpen}
+        onOpenChange={setRefundDialogOpen}
       />
 
       <CustomerDialog
