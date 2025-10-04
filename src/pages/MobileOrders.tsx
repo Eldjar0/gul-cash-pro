@@ -22,6 +22,7 @@ import {
   Barcode,
   Tag,
   Percent,
+  Camera,
 } from 'lucide-react';
 import {
   Dialog,
@@ -34,6 +35,7 @@ import { useMobileOrders, useCreateMobileOrder, useUpdateMobileOrder, useDeleteM
 import { useProducts } from '@/hooks/useProducts';
 import { usePromotions } from '@/hooks/usePromotions';
 import { toast } from 'sonner';
+import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
 export default function MobileOrders() {
   const navigate = useNavigate();
@@ -321,6 +323,34 @@ export default function MobileOrders() {
     }
   };
 
+  const startNativeScan = async () => {
+    try {
+      const { camera } = await BarcodeScanner.requestPermissions();
+      
+      if (camera === 'granted' || camera === 'limited') {
+        const result = await BarcodeScanner.scan();
+        
+        if (result.barcodes && result.barcodes.length > 0) {
+          const scannedCode = result.barcodes[0].rawValue;
+          if (scannedCode) {
+            const product = products.find(p => p.barcode === scannedCode);
+            if (product) {
+              handleAddProductByBarcode(product.id);
+              toast.success(`${product.name} ajouté`);
+            } else {
+              toast.error('Produit non trouvé');
+            }
+          }
+        }
+      } else {
+        toast.error('Permission caméra refusée');
+      }
+    } catch (error) {
+      console.error('Erreur scan natif:', error);
+      toast.error('Erreur lors du scan');
+    }
+  };
+
   if (view === 'form') {
     return (
       <div className="min-h-screen bg-background">
@@ -400,12 +430,15 @@ export default function MobileOrders() {
                   <Search className="h-5 w-5 mr-2" />
                   Recherche rapide
                 </Button>
-                <div className="flex flex-col items-center justify-center p-2 border rounded-md bg-muted">
-                  <Barcode className="h-6 w-6 mb-1 text-muted-foreground" />
-                  <span className="text-xs text-center text-muted-foreground">
-                    Scan automatique
-                  </span>
-                </div>
+                <Button
+                  type="button"
+                  onClick={startNativeScan}
+                  variant="outline"
+                  className="h-16"
+                >
+                  <Camera className="h-5 w-5 mr-2" />
+                  Scanner code-barres
+                </Button>
               </div>
               
               <div className="space-y-2">
