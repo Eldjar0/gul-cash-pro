@@ -6,6 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState } from "react";
+import { UserManagement } from "@/components/admin/UserManagement";
 
 export default function GettingStarted() {
   const navigate = useNavigate();
@@ -88,6 +89,9 @@ export default function GettingStarted() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Gestion des utilisateurs */}
+        <UserManagement />
 
         {/* Steps */}
         <Card>
