@@ -47,30 +47,30 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
     const currentCategory = categories.find(c => c.id === selectedCategoryId);
     
     return (
-      <div className="space-y-1.5">
+      <div className="space-y-0.5 md:space-y-1.5">
         <Button 
           onClick={handleBack}
-          className="w-full h-8 bg-muted hover:brightness-110 text-foreground font-bold border border-border transition-all duration-100 rounded-lg active:brightness-90 shadow-sm text-xs cursor-pointer touch-action-manipulation"
+          className="w-full h-7 md:h-8 bg-muted hover:brightness-110 text-foreground font-bold border border-border transition-all duration-100 rounded-lg active:brightness-90 shadow-sm text-[10px] md:text-xs cursor-pointer touch-action-manipulation"
         >
-          <ChevronLeft className="h-3 w-3 mr-1" />
+          <ChevronLeft className="h-2.5 w-2.5 md:h-3 md:w-3 mr-0.5 md:mr-1" />
           RETOUR
         </Button>
 
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="grid grid-cols-2 gap-0.5 md:gap-1.5">
           {products.map((product) => (
             <Button
               key={product.id}
               onClick={() => onProductSelect(product)}
-              className="h-16 flex flex-col justify-center items-center p-2 hover:shadow-lg border-2 hover:brightness-110 transition-all duration-100 rounded-lg active:brightness-90 shadow-sm cursor-pointer touch-action-manipulation"
+              className="h-12 md:h-16 flex flex-col justify-center items-center p-1 md:p-2 hover:shadow-lg border-2 hover:brightness-110 transition-all duration-100 rounded-lg active:brightness-90 shadow-sm cursor-pointer touch-action-manipulation"
               style={{
                 backgroundColor: `${currentCategory?.color}15`,
                 borderColor: currentCategory?.color || 'hsl(210, 100%, 50%)',
               }}
             >
-              <span className="font-bold text-xs text-center line-clamp-2 mb-1 leading-tight text-foreground">
+              <span className="font-bold text-[9px] md:text-xs text-center line-clamp-2 mb-0.5 md:mb-1 leading-tight text-foreground">
                 {product.name}
               </span>
-              <span className="text-xs font-black" style={{ color: currentCategory?.color }}>
+              <span className="text-[9px] md:text-xs font-black" style={{ color: currentCategory?.color }}>
                 {product.price.toFixed(2)}€/{product.unit || 'u'}
               </span>
             </Button>
@@ -88,20 +88,20 @@ export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
   }
 
   return (
-    <div className="space-y-1.5 animate-fade-in">
+      <div className="space-y-0.5 md:space-y-1.5 animate-fade-in">
       {categories.map((category) => (
         <Button
           key={category.id}
           onClick={() => handleCategoryClick(category.id)}
-          className="w-full h-12 flex items-center justify-start gap-2 px-3 text-white font-bold transition-all duration-100 rounded-lg hover:brightness-110 active:brightness-90 shadow-md hover:shadow-lg cursor-pointer touch-action-manipulation"
+          className="w-full h-10 md:h-12 flex items-center justify-start gap-1.5 md:gap-2 px-2 md:px-3 text-white font-bold transition-all duration-100 rounded-lg hover:brightness-110 active:brightness-90 shadow-md hover:shadow-lg cursor-pointer touch-action-manipulation"
           style={{ backgroundColor: category.color }}
         >
           {category.icon && (
-            <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm flex items-center justify-center" style={{ minWidth: '28px', minHeight: '28px', width: '28px', height: '28px' }}>
-              <DynamicIcon name={category.icon} size={16} className="flex-shrink-0" />
+            <div className="p-1 md:p-1.5 bg-white/20 rounded-lg backdrop-blur-sm flex items-center justify-center flex-shrink-0" style={{ minWidth: '24px', minHeight: '24px', width: '24px', height: '24px' }}>
+              <DynamicIcon name={category.icon} size={14} className="flex-shrink-0" />
             </div>
           )}
-          <span className="text-xs uppercase tracking-wide truncate">
+          <span className="text-[10px] md:text-xs uppercase tracking-wide truncate">
             {category.name}
           </span>
         </Button>
