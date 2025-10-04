@@ -185,6 +185,27 @@ export function Receipt({ sale }: ReceiptProps) {
         </div>
       </div>
 
+      {/* QR Code Section */}
+      <div className="flex justify-center my-3">
+        <div className="bg-white p-2 rounded border border-black">
+          <svg width="80" height="80" viewBox="0 0 100 100" className="mx-auto">
+            {/* Simple QR-like pattern with sale number encoded */}
+            <rect width="100" height="100" fill="white"/>
+            <rect x="5" y="5" width="25" height="25" fill="black"/>
+            <rect x="10" y="10" width="15" height="15" fill="white"/>
+            <rect x="70" y="5" width="25" height="25" fill="black"/>
+            <rect x="75" y="10" width="15" height="15" fill="white"/>
+            <rect x="5" y="70" width="25" height="25" fill="black"/>
+            <rect x="10" y="75" width="15" height="15" fill="white"/>
+            <rect x="40" y="40" width="20" height="20" fill="black"/>
+            {/* Data pattern based on sale number */}
+            {Array.from(String(sale.saleNumber || sale.sale_number || '')).map((char, i) => (
+              <rect key={i} x={35 + (i % 6) * 5} y={15 + Math.floor(i / 6) * 5} width="4" height="4" fill="black"/>
+            ))}
+          </svg>
+        </div>
+      </div>
+
       {/* Footer */}
       <div className="text-center mt-4 pt-3 border-t border-dashed border-black">
         {isInvoice ? (

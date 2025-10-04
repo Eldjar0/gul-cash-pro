@@ -108,12 +108,12 @@ export const useCreateSale = () => {
 
       if (itemsError) throw itemsError;
 
-      // Update stock for products (stock was already verified above)
+      // Update stock for products and create stock movements
       for (const item of items) {
         if (item.product_id) {
           const { data: product } = await supabase
             .from('products')
-            .select('stock')
+            .select('stock, name, barcode')
             .eq('id', item.product_id)
             .single();
 
@@ -129,6 +129,23 @@ export const useCreateSale = () => {
               console.error('Error updating stock:', updateError);
               throw updateError;
             }
+
+            // Create stock movement record
+            await supabase
+              .from('stock_movements')
+              .insert({
+                product_id: item.product_id,
+                product_name: product.name,
+                product_barcode: product.barcode,
+                movement_type: 'sale',
+                quantity: -item.quantity,
+                previous_stock: product.stock,
+                new_stock: newStock,
+                reason: 'Vente',
+                reference_id: createdSale.id,
+                reference_type: 'sale',
+                user_id: sale.cashier_id,
+              });
           }
         }
       }

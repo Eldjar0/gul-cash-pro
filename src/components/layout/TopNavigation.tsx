@@ -1,7 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History, Clock, LayoutDashboard, Undo2, BarChart3, Tag } from 'lucide-react';
+import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History, Clock, LayoutDashboard, Undo2, BarChart3, Tag, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUnreadNotificationsCount } from '@/hooks/useNotifications';
+import { NotificationPanel } from '@/components/notifications/NotificationPanel';
+import { useState } from 'react';
 import logoGulReyhan from '@/assets/logo-gul-reyhan.png';
 interface TopNavigationProps {
   onLockScreen: () => void;
@@ -14,6 +17,8 @@ export function TopNavigation({
     signOut
   } = useAuth();
   const navigate = useNavigate();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { data: unreadCount = 0 } = useUnreadNotificationsCount();
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
@@ -92,8 +97,27 @@ export function TopNavigation({
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            {/* Date/Heure */}
-            
+            {/* Notifications */}
+            <div className="relative">
+              <Button 
+                onClick={() => setShowNotifications(!showNotifications)} 
+                variant="outline" 
+                size="icon" 
+                className="bg-white/10 text-white border-white/30 hover:bg-white/20 hover:text-white relative" 
+                title="Notifications"
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </Button>
+              <NotificationPanel 
+                isOpen={showNotifications} 
+                onClose={() => setShowNotifications(false)} 
+              />
+            </div>
             
             {/* Lock Button */}
             <Button onClick={onLockScreen} variant="outline" size="icon" className="bg-white/10 text-white border-white/30 hover:bg-white/20 hover:text-white" title="Verrouiller la caisse">

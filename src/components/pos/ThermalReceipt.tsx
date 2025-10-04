@@ -268,6 +268,25 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
 
       <div style={{ borderTop: '1.4px dashed #000', margin: '7px 0' }}></div>
 
+      {/* QR Code Section */}
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+        <div style={{ background: 'white', padding: '8px', border: '1.5px solid black', borderRadius: '4px' }}>
+          <svg width="80" height="80" viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="white"/>
+            <rect x="5" y="5" width="25" height="25" fill="black"/>
+            <rect x="10" y="10" width="15" height="15" fill="white"/>
+            <rect x="70" y="5" width="25" height="25" fill="black"/>
+            <rect x="75" y="10" width="15" height="15" fill="white"/>
+            <rect x="5" y="70" width="25" height="25" fill="black"/>
+            <rect x="10" y="75" width="15" height="15" fill="white"/>
+            <rect x="40" y="40" width="20" height="20" fill="black"/>
+            {Array.from(String(sale.saleNumber || sale.sale_number || '')).map((char, i) => (
+              <rect key={i} x={35 + (i % 6) * 5} y={15 + Math.floor(i / 6) * 5} width="4" height="4" fill="black"/>
+            ))}
+          </svg>
+        </div>
+      </div>
+
       {/* Footer */}
       <div className="text-center" style={{ marginTop: '7px', fontWeight: '900' }}>
         {isInvoice ? (
