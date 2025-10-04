@@ -481,9 +481,7 @@ export default function MobileManagement() {
   useEffect(() => {
     let buffer = "";
     let lastKeyTime = 0;
-    let isScanning = false;
     let timeoutId: NodeJS.Timeout | null = null;
-    let scanStartTime = 0;
 
     const isEditableField = (target: EventTarget | null): boolean => {
       if (!target || !(target instanceof HTMLElement)) return false;
@@ -504,61 +502,43 @@ export default function MobileManagement() {
       return isInput || isContentEditable;
     };
 
-    const mapEventToDigit = (e: KeyboardEvent): string | null => {
+    const mapEventToDigit = (e: KeyboardEvent): string => {
+      // Sur Android, e.key contient directement le chiffre
+      if (/^[0-9]$/.test(e.key)) {
+        return e.key;
+      }
+      
       const code = e.code;
-
       if (code && code.startsWith('Digit')) {
         const d = code.replace('Digit', '');
-        return /^[0-9]$/.test(d) ? d : null;
+        return /^[0-9]$/.test(d) ? d : '';
       }
 
       if (code && code.startsWith('Numpad')) {
         const d = code.replace('Numpad', '');
-        return /^[0-9]$/.test(d) ? d : null;
+        return /^[0-9]$/.test(d) ? d : '';
       }
 
-      // Fallback for browsers/devices where e.code is 'Unidentified' but e.key is numeric (common on Android tablets)
-      if (/^[0-9]$/.test(e.key)) {
-        return e.key;
-      }
-
-      return null;
+      return '';
     };
 
     const processScan = () => {
       if (buffer.length >= 3) {
-        const duration = Date.now() - scanStartTime;
-        console.log('[MOBILE SCAN] Processing:', buffer, `(${duration}ms, ${buffer.length} chars)`);
+        console.log('[MOBILE SCAN] Processing:', buffer, `(${buffer.length} chars)`);
         handlePhysicalScan(buffer);
+        toast.success(`Code scanné: ${buffer.substring(0, 4)}...`);
       }
       buffer = "";
-      isScanning = false;
-      scanStartTime = 0;
     };
 
     const handler = (e: KeyboardEvent) => {
-      // LOG DÉTAILLÉ DE TOUS LES ÉVÉNEMENTS
-      console.log('[SCAN DEBUG]', {
-        key: e.key,
-        code: e.code,
-        keyCode: e.keyCode,
-        which: e.which,
-        target: (e.target as HTMLElement)?.tagName,
-        buffer: buffer,
-        bufferLength: buffer.length,
-        isScanning: isScanning,
-        hidden: document.hidden
-      });
-
-      if (document.hidden) return;
-
       const now = Date.now();
       const delta = now - lastKeyTime;
       lastKeyTime = now;
 
-      if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'NumpadEnter') {
-        console.log('[SCAN DEBUG] Enter/Tab détecté, buffer:', buffer, 'isScanning:', isScanning);
-        if (isScanning && buffer.length >= 3) {
+      // Enter termine le scan
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        if (buffer.length >= 3) {
           e.preventDefault();
           e.stopPropagation();
           if (timeoutId) clearTimeout(timeoutId);
@@ -567,63 +547,48 @@ export default function MobileManagement() {
         return;
       }
 
-      if (e.key.length === 1) {
-        if (!isScanning && delta > 400 && buffer.length > 0) {
-          console.log('[SCAN DEBUG] Reset buffer (timeout)');
-          buffer = "";
-          isScanning = false;
-          scanStartTime = 0;
-        }
+      // Capture uniquement les chiffres
+      const digit = mapEventToDigit(e);
+      if (!digit) return;
 
-        const digit = mapEventToDigit(e);
-        console.log('[SCAN DEBUG] Caractère détecté:', e.key, '→ digit:', digit);
+      // Si on est dans un champ éditable, on ignore
+      if (buffer.length === 0 && isEditableField(e.target)) {
+        return;
+      }
 
-        if (buffer.length === 0) {
-          if (isEditableField(e.target)) {
-            console.log('[SCAN DEBUG] Dans un champ éditable, ignoré');
-            return;
-          }
-          if (digit !== null) {
-            scanStartTime = now;
-            isScanning = true;
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('[MOBILE SCAN] Start detected, code:', e.code, '→ digit:', digit);
-            buffer += digit;
-            toast.info(`Scan démarré: ${digit}`, { duration: 1000 });
-          } else {
-            console.log('[SCAN DEBUG] Non numérique au départ, ignoré');
-            return;
-          }
-        } else {
-          if (digit !== null) {
-            if (buffer.length === 1 && delta < 50) {
-              isScanning = true;
-            }
-            buffer += digit;
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('[SCAN DEBUG] Ajout au buffer:', buffer);
-          } else {
-            console.log('[SCAN DEBUG] Non numérique en cours de scan, ignoré');
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }
+      // Reset si trop de temps entre les touches
+      if (buffer.length > 0 && delta > 200) {
+        buffer = "";
+      }
 
-        if (timeoutId) clearTimeout(timeoutId);
+      // Ajouter le chiffre au buffer
+      buffer += digit;
+      e.preventDefault();
+      e.stopPropagation();
+
+      console.log('[MOBILE SCAN] Buffer:', buffer);
+
+      // Auto-traitement après délai ou si assez long
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      if (buffer.length >= 13) {
+        // Code-barres EAN13 complet
+        processScan();
+      } else {
         timeoutId = setTimeout(() => {
-          if (buffer.length >= 8) {
-            console.log('[SCAN DEBUG] Timeout atteint, traitement');
+          if (buffer.length >= 3) {
             processScan();
+          } else {
+            buffer = "";
           }
-        }, 500);
+        }, 150);
       }
     };
 
-    document.addEventListener('keydown', handler, true);
+    // Capturer en mode capture pour avoir priorité
+    window.addEventListener('keydown', handler, true);
     return () => {
-      document.removeEventListener('keydown', handler, true);
+      window.removeEventListener('keydown', handler, true);
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [products]);
