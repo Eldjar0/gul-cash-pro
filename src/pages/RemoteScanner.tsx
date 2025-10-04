@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Scan, CheckCircle2, AlertCircle, Edit, Plus, Barcode, DollarSign, Calculator, Calendar, Clock, Cloud, Home } from 'lucide-react';
+import { Scan, CheckCircle2, AlertCircle, Edit, Plus, Barcode, DollarSign, Calculator, Calendar, Clock, Cloud, Home, Camera } from 'lucide-react';
 import { useScanSession, useAddScannedItem } from '@/hooks/useRemoteScan';
 import { useProducts, useCreateProduct, useUpdateProduct, Product } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
@@ -15,6 +15,7 @@ import { useWeather } from '@/hooks/useWeather';
 import { toast } from 'sonner';
 import logo from '@/assets/logo-gul-reyhan-new.png';
 import { QuickCalculator } from '@/components/pos/QuickCalculator';
+import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
 export default function RemoteScanner() {
   const { sessionCode } = useParams();
@@ -127,6 +128,31 @@ export default function RemoteScanner() {
     handleScan(barcode);
   };
 
+  const startNativeScan = async () => {
+    try {
+      // Demander la permission de la caméra
+      const { camera } = await BarcodeScanner.requestPermissions();
+      
+      if (camera === 'granted' || camera === 'limited') {
+        // Ouvrir le scanner natif
+        const result = await BarcodeScanner.scan();
+        
+        if (result.barcodes && result.barcodes.length > 0) {
+          const scannedCode = result.barcodes[0].rawValue;
+          if (scannedCode) {
+            setBarcode(scannedCode);
+            handleScan(scannedCode);
+          }
+        }
+      } else {
+        toast.error('Permission caméra refusée');
+      }
+    } catch (error) {
+      console.error('Erreur scan natif:', error);
+      toast.error('Erreur lors du scan');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
@@ -224,6 +250,25 @@ export default function RemoteScanner() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pb-4">
+              {/* Bouton scan natif géant */}
+              <Button
+                onClick={startNativeScan}
+                size="lg"
+                className="w-full h-32 text-2xl font-black bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-4 border-blue-800 shadow-2xl flex flex-col items-center justify-center gap-3"
+              >
+                <Camera className="h-16 w-16 drop-shadow-lg animate-pulse" />
+                <span className="drop-shadow-lg">SCANNER</span>
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t-2 border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-gray-500 font-bold">Ou saisir manuellement</span>
+                </div>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-2">
                 <Input
                   ref={inputRef}
