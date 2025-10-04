@@ -8,9 +8,8 @@ import logo from '@/assets/logo-gul-reyhan-new.png';
 export default function DownloadApp() {
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   
-  // URL de l'APK - Sera générée automatiquement par GitHub Actions
-  // Format: https://github.com/VOTRE-USERNAME/VOTRE-REPO/releases/latest/download/gul-cash-pro.apk
-  const apkUrl = 'https://github.com/VOTRE-USERNAME/VOTRE-REPO/releases/latest/download/gul-cash-pro.apk';
+  // URL de l'APK - Pointe toujours vers la dernière release
+  const apkUrl = 'https://github.com/Eldjar0/gul-cash-pro/releases/latest/download/app-debug.apk';
   
   useEffect(() => {
     if (qrCanvasRef.current) {
