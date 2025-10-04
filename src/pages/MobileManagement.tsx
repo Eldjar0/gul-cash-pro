@@ -53,6 +53,7 @@ import {
   Upload,
   LogOut,
   Calculator,
+  Camera,
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
@@ -714,6 +715,15 @@ export default function MobileManagement() {
                 title="Calculatrice"
               >
                 <Calculator className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/camera-scanner')}
+                className="opacity-70 hover:opacity-100"
+                title="Scanner Caméra"
+              >
+                <Camera className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"

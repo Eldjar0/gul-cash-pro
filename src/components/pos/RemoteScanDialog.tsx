@@ -69,9 +69,8 @@ export function RemoteScanDialog({ onSessionCreated }: RemoteScanDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" size="icon">
           <Smartphone className="h-4 w-4" />
-          Scanner à Distance
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
