@@ -1,4 +1,3 @@
-import { ProtectedLayout } from '@/components/layout/ProtectedLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditCard, Gift, Wallet } from 'lucide-react';
@@ -10,8 +9,7 @@ const Payments = () => {
   const [activeTab, setActiveTab] = useState('gift-cards');
 
   return (
-    <ProtectedLayout>
-      <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto py-4 md:py-6 space-y-4 md:space-y-6 px-3 md:px-6">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Paiements Avancés</h1>
@@ -60,9 +58,8 @@ const Payments = () => {
           <TabsContent value="customer-credit" className="space-y-4">
             <CustomerCreditManagement />
           </TabsContent>
-        </Tabs>
-      </div>
-    </ProtectedLayout>
+      </Tabs>
+    </div>
   );
 };
 

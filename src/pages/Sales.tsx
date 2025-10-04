@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ProtectedLayout } from '@/components/layout/ProtectedLayout';
 import {
   ArrowLeft,
   Search,
@@ -157,8 +156,7 @@ export default function Sales() {
   }
 
   return (
-    <ProtectedLayout>
-      <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
         {/* Header - Simplified since navigation is in TopNavigation */}
         <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-3">
           <div className="flex items-center gap-2 md:gap-4">
@@ -479,6 +477,5 @@ export default function Sales() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-    </ProtectedLayout>
   );
 }

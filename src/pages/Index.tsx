@@ -1386,10 +1386,10 @@ const Index = () => {
         }}
         autoFocus={false}
       />
-      {/* Main content - 3 colonnes: TICKET (5) | CALCULATRICE (4) | ARTICLES (3) */}
-      <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
-        {/* LEFT PANEL - Ticket à gauche */}
-        <div className="col-span-5 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
+      {/* Main content - Responsive: 1 col mobile, 3 cols desktop */}
+      <div className="flex-1 flex flex-col md:grid md:grid-cols-12 gap-0 overflow-hidden">
+        {/* LEFT PANEL - Ticket (responsive) */}
+        <div className="flex-1 md:col-span-5 bg-white border-r-0 md:border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
           {/* Ticket header - Clean gradient */}
           <div className="bg-gradient-to-r from-primary to-primary-glow p-2 flex-shrink-0 shadow-lg">
             <div className="flex items-center justify-between text-white">
@@ -1738,8 +1738,8 @@ const Index = () => {
           </div>
         </div>
 
-        {/* COLONNE CENTRE - Calculatrice */}
-        <div className="col-span-4 bg-background p-1 flex flex-col gap-1 overflow-hidden h-full">
+        {/* COLONNE CENTRE - Calculatrice (hidden mobile) */}
+        <div className="hidden md:flex md:col-span-4 bg-background p-1 flex-col gap-1 overflow-hidden h-full">
 
           {/* Statistiques rapides */}
           <Card className="bg-gradient-to-br from-background to-muted/20 border-2 border-border/50 p-2 flex-shrink-0 shadow-md">
@@ -1841,8 +1841,8 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* RIGHT PANEL - Articles/Catégories/Résultats */}
-        <div className="col-span-3 bg-white border-l border-border overflow-hidden h-full">
+        {/* RIGHT PANEL - Articles/Catégories (hidden mobile) */}
+        <div className="hidden md:block md:col-span-3 bg-white border-l border-border overflow-hidden h-full">
           <div className="p-1 h-full overflow-y-auto">
             {scanInput.trim() && searchResults.length === 0 ? (
               <div className="text-center py-8">

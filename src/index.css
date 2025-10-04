@@ -213,6 +213,16 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
+  /* Hide scrollbar but allow scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+  
   /* Print styles for thermal receipt */
   @media print {
     @page {

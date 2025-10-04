@@ -1,4 +1,3 @@
-import { ProtectedLayout } from '@/components/layout/ProtectedLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuotesTab } from '@/components/orders/QuotesTab';
 import { CustomerOrdersTab } from '@/components/orders/CustomerOrdersTab';
@@ -7,8 +6,7 @@ import { FileText, ShoppingCart } from 'lucide-react';
 
 const Orders = () => {
   return (
-    <ProtectedLayout>
-      <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto py-4 md:py-6 space-y-4 md:space-y-6 px-3 md:px-6">
         <div>
           <h1 className="text-3xl font-bold">Devis & Commandes Clients</h1>
           <p className="text-muted-foreground">
@@ -37,9 +35,8 @@ const Orders = () => {
           <TabsContent value="orders">
             <CustomerOrdersTab />
           </TabsContent>
-        </Tabs>
-      </div>
-    </ProtectedLayout>
+      </Tabs>
+    </div>
   );
 };
 

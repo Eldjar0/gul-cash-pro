@@ -1,5 +1,4 @@
 import { Card } from '@/components/ui/card';
-import { ProtectedLayout } from '@/components/layout/ProtectedLayout';
 import { useSales } from '@/hooks/useSales';
 import { useProducts } from '@/hooks/useProducts';
 import { useTodayReport } from '@/hooks/useDailyReports';
@@ -90,11 +89,10 @@ export default function Dashboard() {
     .slice(0, 5);
 
   return (
-    <ProtectedLayout>
-      <div className="space-y-6 p-6">
+    <div className="space-y-4 md:space-y-6 p-3 md:p-6 max-w-7xl mx-auto">
         <div>
-          <h1 className="text-3xl font-bold">Tableau de Bord</h1>
-          <p className="text-muted-foreground">Vue d'ensemble de votre activité en temps réel</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Tableau de Bord</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Vue d'ensemble de votre activité en temps réel</p>
         </div>
 
         {/* Statistiques principales */}
@@ -260,6 +258,5 @@ export default function Dashboard() {
           <PaymentMethodsCard />
         </div>
       </div>
-    </ProtectedLayout>
   );
 }
