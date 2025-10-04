@@ -12,6 +12,7 @@ import { useScanSession, useAddScannedItem } from '@/hooks/useRemoteScan';
 import { useProducts, useCreateProduct, useUpdateProduct, Product } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { toast } from 'sonner';
+import logo from '@/assets/logo-gul-reyhan.png';
 
 export default function RemoteScanner() {
   const { sessionCode } = useParams();
@@ -47,10 +48,28 @@ export default function RemoteScanner() {
   }, []);
 
   useEffect(() => {
-    // Auto-focus input for barcode scanner
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    // Auto-focus input for barcode scanner and keep it focused
+    const keepFocused = () => {
+      if (inputRef.current && document.activeElement !== inputRef.current) {
+        inputRef.current.focus();
+      }
+    };
+
+    // Focus immediately
+    keepFocused();
+
+    // Keep checking every 100ms to maintain focus
+    const interval = setInterval(keepFocused, 100);
+
+    // Also refocus on any click
+    document.addEventListener('click', keepFocused);
+    document.addEventListener('touchstart', keepFocused);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('click', keepFocused);
+      document.removeEventListener('touchstart', keepFocused);
+    };
   }, []);
 
   useEffect(() => {
@@ -155,19 +174,17 @@ export default function RemoteScanner() {
       {/* Header */}
       <div className="bg-background/95 backdrop-blur border-b p-4">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Smartphone className="h-6 w-6 text-primary" />
-            </div>
+          <div className="flex items-center gap-4">
+            <img src={logo} alt="Logo" className="h-16 w-auto" />
             <div>
-              <h1 className="text-xl font-bold">Scanner à Distance</h1>
+              <h1 className="text-2xl font-bold">Scanner à Distance</h1>
               <Badge variant="secondary" className="bg-green-500/20 text-green-700 border-green-500/30">
                 <div className="h-2 w-2 rounded-full bg-green-500 mr-2 animate-pulse"></div>
                 Connecté
               </Badge>
             </div>
           </div>
-          <Button onClick={() => navigate('/')} variant="outline">
+          <Button onClick={() => navigate('/')} variant="outline" size="lg">
             Retour Caisse
           </Button>
         </div>
@@ -243,8 +260,8 @@ export default function RemoteScanner() {
             </CardContent>
           </Card>
 
-          {/* Hub Actions - Gros Carrés */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Hub Actions - Très Gros Carrés */}
+          <div className="grid grid-cols-2 gap-6">
             <Button
               onClick={() => {
                 if (lastScannedProduct) {
@@ -254,10 +271,10 @@ export default function RemoteScanner() {
                 }
               }}
               disabled={!lastScannedProduct}
-              className="h-32 flex flex-col items-center justify-center gap-3 text-lg"
+              className="h-48 flex flex-col items-center justify-center gap-4 text-2xl font-bold"
               variant="outline"
             >
-              <Edit className="h-10 w-10" />
+              <Edit className="h-16 w-16" />
               <span>Modifier Quantité</span>
             </Button>
 
@@ -270,10 +287,10 @@ export default function RemoteScanner() {
                 }
               }}
               disabled={!lastScannedProduct}
-              className="h-32 flex flex-col items-center justify-center gap-3 text-lg"
+              className="h-48 flex flex-col items-center justify-center gap-4 text-2xl font-bold"
               variant="outline"
             >
-              <DollarSign className="h-10 w-10" />
+              <DollarSign className="h-16 w-16" />
               <span>Modifier Prix</span>
             </Button>
 
@@ -286,10 +303,10 @@ export default function RemoteScanner() {
                 }
               }}
               disabled={!lastScannedProduct}
-              className="h-32 flex flex-col items-center justify-center gap-3 text-lg"
+              className="h-48 flex flex-col items-center justify-center gap-4 text-2xl font-bold"
               variant="outline"
             >
-              <Barcode className="h-10 w-10" />
+              <Barcode className="h-16 w-16" />
               <span>Changer Code</span>
             </Button>
 
@@ -298,10 +315,10 @@ export default function RemoteScanner() {
                 setBarcode('');
                 setNewProductDialogOpen(true);
               }}
-              className="h-32 flex flex-col items-center justify-center gap-3 text-lg"
+              className="h-48 flex flex-col items-center justify-center gap-4 text-2xl font-bold"
               variant="outline"
             >
-              <Plus className="h-10 w-10" />
+              <Plus className="h-16 w-16" />
               <span>Nouveau Produit</span>
             </Button>
           </div>
