@@ -53,6 +53,7 @@ import {
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
+import { useWeather } from '@/hooks/useWeather';
 import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
 import { toast } from 'sonner';
 import logoJlprod from '@/assets/logo-jlprod-new.png';
@@ -61,8 +62,11 @@ export default function MobileManagement() {
   const navigate = useNavigate();
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
+  const weather = useWeather();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
+
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const [view, setView] = useState<'menu' | 'products' | 'product-form' | 'stock'>('menu');
   const [searchTerm, setSearchTerm] = useState('');
@@ -122,6 +126,14 @@ export default function MobileManagement() {
   useEffect(() => {
     localStorage.setItem('mobile-favorites', JSON.stringify(favorites));
   }, [favorites]);
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const toggleFavorite = (productId: string) => {
     setFavorites(prev => 
@@ -566,7 +578,7 @@ export default function MobileManagement() {
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-4">
         <div className="max-w-md mx-auto space-y-6 pb-20">
           {/* Top actions */}
-          <div className="flex justify-between items-center gap-2 pt-2">
+          <div className="flex justify-between items-center gap-3 pt-2">
             <div className="flex gap-2">
               <Button
                 variant="ghost"
@@ -587,6 +599,23 @@ export default function MobileManagement() {
                 <Download className="h-4 w-4" />
               </Button>
             </div>
+
+            {/* Center: Time & Weather */}
+            <div className="flex flex-col items-center">
+              <div className="text-lg font-bold font-mono tabular-nums">
+                {currentTime.toLocaleTimeString('fr-FR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit', 
+                  second: '2-digit' 
+                })}
+              </div>
+              {weather && (
+                <div className="text-xs text-muted-foreground">
+                  {weather.temperature}°C
+                </div>
+              )}
+            </div>
+
             <Button
               variant="ghost"
               size="icon"
