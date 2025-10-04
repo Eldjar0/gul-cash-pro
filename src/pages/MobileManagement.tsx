@@ -59,6 +59,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { useWeather } from '@/hooks/useWeather';
 import { useAuth } from '@/hooks/useAuth';
 import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
+import { ProductSearchDialog } from '@/components/pos/ProductSearchDialog';
 import { toast } from 'sonner';
 import logoJlprod from '@/assets/logo-jlprod-new.png';
 
@@ -84,6 +85,9 @@ export default function MobileManagement() {
   const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
   const [scannedBarcode, setScannedBarcode] = useState<string>('');
   const [scannedProduct, setScannedProduct] = useState<any>(null);
+  
+  // Manual product search dialog
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   
   // New features states
   const [darkMode, setDarkMode] = useState(() => {
@@ -617,6 +621,17 @@ export default function MobileManagement() {
           onCreatePromotion={handlePhysicalScanCreatePromotion}
           onChangeBarcode={handlePhysicalScanChangeBarcode}
         />
+        
+        <ProductSearchDialog
+          open={searchDialogOpen}
+          onOpenChange={setSearchDialogOpen}
+          onCreateProduct={(barcode) => {
+            setFormData(prev => ({ ...prev, barcode: barcode || '', vat_rate: '6' }));
+            setView('product-form');
+          }}
+          onEditProduct={handleOpenProductForm}
+        />
+        
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-4">
         <div className="max-w-md mx-auto space-y-6 pb-20">
           {/* Top actions */}
@@ -668,6 +683,15 @@ export default function MobileManagement() {
             </div>
 
             <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchDialogOpen(true)}
+                className="opacity-70 hover:opacity-100"
+                title="Rechercher un produit"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
