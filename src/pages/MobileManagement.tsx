@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Plus,
   Edit,
@@ -36,6 +38,18 @@ import {
   Boxes,
   Tag,
   ShoppingCart,
+  Download,
+  Moon,
+  Sun,
+  Star,
+  Filter,
+  SortAsc,
+  History,
+  Grid3x3,
+  List,
+  Wallet,
+  BarChart3,
+  CheckSquare,
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
@@ -55,11 +69,28 @@ export default function MobileManagement() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [selectedProductForStock, setSelectedProductForStock] = useState<any>(null);
   const [stockAdjustment, setStockAdjustment] = useState('');
+  const [stockAdjustmentReason, setStockAdjustmentReason] = useState('');
   
   // Physical scan detection states
   const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
   const [scannedBarcode, setScannedBarcode] = useState<string>('');
   const [scannedProduct, setScannedProduct] = useState<any>(null);
+  
+  // New features states
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('mobile-dark-mode');
+    return saved === 'true';
+  });
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterStock, setFilterStock] = useState<'all' | 'low' | 'out'>('all');
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'stock'>('name');
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    const saved = localStorage.getItem('mobile-favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
     barcode: '',
@@ -77,12 +108,88 @@ export default function MobileManagement() {
     image: '',
   });
 
-  const filteredProducts = products.filter((product) => {
-    const searchLower = searchTerm.toLowerCase();
-    if (!searchTerm) return true;
-    return product.name.toLowerCase().includes(searchLower) || 
-           product.barcode?.toLowerCase().includes(searchLower);
-  });
+  // Toggle dark mode
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('mobile-dark-mode', darkMode.toString());
+  }, [darkMode]);
+
+  // Save favorites
+  useEffect(() => {
+    localStorage.setItem('mobile-favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  const toggleFavorite = (productId: string) => {
+    setFavorites(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+    toast.success(favorites.includes(productId) ? 'Retiré des favoris' : 'Ajouté aux favoris');
+  };
+
+  const toggleSelection = (productId: string) => {
+    setSelectedProducts(prev =>
+      prev.includes(productId)
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const exportToCSV = () => {
+    const headers = ['Code-barres', 'Nom', 'Prix', 'Stock', 'Catégorie'];
+    const rows = filteredProducts.map(p => {
+      const category = categories.find(c => c.id === p.category_id);
+      return [
+        p.barcode || '',
+        p.name,
+        p.price.toFixed(2),
+        p.stock || 0,
+        category?.name || ''
+      ].join(',');
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `produits-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    toast.success('Export CSV réussi');
+  };
+
+  const filteredProducts = products
+    .filter((product) => {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = !searchTerm || 
+        product.name.toLowerCase().includes(searchLower) || 
+        product.barcode?.toLowerCase().includes(searchLower);
+      
+      const matchesCategory = filterCategory === 'all' || product.category_id === filterCategory;
+      
+      const isLowStock = product.stock !== undefined && 
+                        product.min_stock !== undefined && 
+                        product.stock > 0 &&
+                        product.stock <= product.min_stock;
+      const isOutOfStock = product.stock === 0;
+      
+      const matchesStock = 
+        filterStock === 'all' ||
+        (filterStock === 'low' && isLowStock) ||
+        (filterStock === 'out' && isOutOfStock);
+      
+      return matchesSearch && matchesCategory && matchesStock;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return a.name.localeCompare(b.name);
+      if (sortBy === 'price') return a.price - b.price;
+      if (sortBy === 'stock') return (a.stock || 0) - (b.stock || 0);
+      return 0;
+    });
 
   const handleOpenProductForm = (product?: any) => {
     if (product) {
@@ -169,13 +276,47 @@ export default function MobileManagement() {
         id: selectedProductForStock.id,
         stock: Math.max(0, newStock),
       });
+      
+      // Log the adjustment with reason
+      if (stockAdjustmentReason) {
+        toast.success(`Stock ajusté: ${stockAdjustmentReason}`);
+      } else {
+        toast.success('Stock ajusté');
+      }
+      
       setView('menu');
       setSelectedProductForStock(null);
       setStockAdjustment('');
-      toast.success('Stock ajusté');
+      setStockAdjustmentReason('');
     } catch (error) {
       console.error('Error adjusting stock:', error);
       toast.error('Erreur lors de l\'ajustement');
+    }
+  };
+
+  const handleBulkStockAdjust = async (adjustment: number) => {
+    if (selectedProducts.length === 0) {
+      toast.error('Aucun produit sélectionné');
+      return;
+    }
+
+    try {
+      for (const productId of selectedProducts) {
+        const product = products.find(p => p.id === productId);
+        if (product) {
+          const newStock = Math.max(0, (product.stock || 0) + adjustment);
+          await updateProduct.mutateAsync({
+            id: productId,
+            stock: newStock,
+          });
+        }
+      }
+      toast.success(`${selectedProducts.length} produits ajustés`);
+      setSelectedProducts([]);
+      setSelectionMode(false);
+    } catch (error) {
+      console.error('Error bulk adjusting:', error);
+      toast.error('Erreur lors de l\'ajustement groupé');
     }
   };
 
@@ -404,6 +545,9 @@ export default function MobileManagement() {
       p.stock !== undefined && p.min_stock !== undefined && p.stock > 0 && p.stock <= p.min_stock
     ).length;
     const outOfStock = products.filter(p => p.stock === 0).length;
+    const totalCategories = categories.length;
+    const totalStockValue = products.reduce((sum, p) => sum + ((p.cost_price || 0) * (p.stock || 0)), 0);
+    const favoriteProducts = products.filter(p => favorites.includes(p.id));
 
     return (
       <>
@@ -421,8 +565,28 @@ export default function MobileManagement() {
         />
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-4">
         <div className="max-w-md mx-auto space-y-6 pb-20">
-          {/* Update button */}
-          <div className="flex justify-end gap-2 pt-2">
+          {/* Top actions */}
+          <div className="flex justify-between items-center gap-2 pt-2">
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDarkMode(!darkMode)}
+                className="opacity-70 hover:opacity-100"
+                title={darkMode ? 'Mode clair' : 'Mode sombre'}
+              >
+                {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={exportToCSV}
+                className="opacity-70 hover:opacity-100"
+                title="Exporter en CSV"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+            </div>
             <Button
               variant="ghost"
               size="icon"
@@ -432,8 +596,8 @@ export default function MobileManagement() {
                 });
                 setTimeout(() => window.location.reload(), 1000);
               }}
-              className="opacity-50 hover:opacity-100"
-              title="Mettre à jour l'application"
+              className="opacity-70 hover:opacity-100"
+              title="Mettre à jour"
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
@@ -450,7 +614,7 @@ export default function MobileManagement() {
             <p className="text-muted-foreground">{products.length} produits</p>
           </div>
 
-          {/* Stats rapides */}
+          {/* Stats enrichies */}
           <div className="grid grid-cols-2 gap-3">
             <Card className="p-4 bg-gradient-to-br from-category-orange to-category-orange/80 text-white border-0">
               <div className="space-y-1">
@@ -466,7 +630,43 @@ export default function MobileManagement() {
                 <p className="text-xs text-white/80">Rupture</p>
               </div>
             </Card>
+            <Card className="p-4 bg-gradient-to-br from-blue-600 to-blue-700 text-white border-0">
+              <div className="space-y-1">
+                <FolderKanban className="h-6 w-6 mb-2" />
+                <p className="text-2xl font-black">{totalCategories}</p>
+                <p className="text-xs text-white/80">Catégories</p>
+              </div>
+            </Card>
+            <Card className="p-4 bg-gradient-to-br from-green-600 to-green-700 text-white border-0">
+              <div className="space-y-1">
+                <Wallet className="h-6 w-6 mb-2" />
+                <p className="text-2xl font-black">{totalStockValue.toFixed(0)}€</p>
+                <p className="text-xs text-white/80">Valeur stock</p>
+              </div>
+            </Card>
           </div>
+
+          {/* Favoris rapides */}
+          {favoriteProducts.length > 0 && (
+            <Card className="p-4 bg-gradient-to-r from-accent/20 to-transparent border-l-4 border-accent">
+              <div className="flex items-center gap-2 mb-3">
+                <Star className="h-4 w-4 text-accent fill-accent" />
+                <h3 className="font-bold text-sm">Favoris</h3>
+              </div>
+              <div className="space-y-2">
+                {favoriteProducts.slice(0, 3).map(p => (
+                  <div 
+                    key={p.id}
+                    onClick={() => handleOpenProductForm(p)}
+                    className="flex justify-between items-center text-sm hover:bg-accent/10 p-2 rounded cursor-pointer"
+                  >
+                    <span className="font-medium truncate">{p.name}</span>
+                    <Badge variant="outline">{p.stock || 0}</Badge>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
 
           {/* Actions principales */}
           <div className="space-y-3">
@@ -572,6 +772,14 @@ export default function MobileManagement() {
             </Button>
             <h2 className="text-xl font-bold flex-1">Produits</h2>
             <Button
+              onClick={() => setSelectionMode(!selectionMode)}
+              variant="ghost"
+              size="icon"
+              title="Sélection multiple"
+            >
+              <CheckSquare className="h-5 w-5" />
+            </Button>
+            <Button
               onClick={() => handleOpenProductForm()}
               size="icon"
               className="bg-primary"
@@ -589,11 +797,96 @@ export default function MobileManagement() {
               className="pl-10"
             />
           </div>
+
+          {/* Filtres et tri */}
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="w-[140px] h-9">
+                <Filter className="h-3 w-3 mr-2" />
+                <SelectValue placeholder="Catégorie" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes</SelectItem>
+                {categories.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterStock} onValueChange={(v: any) => setFilterStock(v)}>
+              <SelectTrigger className="w-[120px] h-9">
+                <SelectValue placeholder="Stock" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="low">Faible</SelectItem>
+                <SelectItem value="out">Rupture</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+              <SelectTrigger className="w-[120px] h-9">
+                <SortAsc className="h-3 w-3 mr-2" />
+                <SelectValue placeholder="Trier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name">Nom</SelectItem>
+                <SelectItem value="price">Prix</SelectItem>
+                <SelectItem value="stock">Stock</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-9 w-9 shrink-0"
+              onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+            >
+              {viewMode === 'list' ? <Grid3x3 className="h-4 w-4" /> : <List className="h-4 w-4" />}
+            </Button>
+          </div>
+
+          {/* Actions groupées */}
+          {selectionMode && selectedProducts.length > 0 && (
+            <div className="flex gap-2 bg-primary/10 p-2 rounded-lg">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleBulkStockAdjust(1)}
+              >
+                +1 ({selectedProducts.length})
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleBulkStockAdjust(10)}
+              >
+                +10
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleBulkStockAdjust(-1)}
+              >
+                -1
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setSelectedProducts([]);
+                  setSelectionMode(false);
+                }}
+              >
+                Annuler
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Liste scrollable */}
-        <ScrollArea className="h-[calc(100vh-140px)]">
-          <div className="p-4 space-y-2">
+        <ScrollArea className="h-[calc(100vh-240px)]">
+          <div className={`p-4 ${viewMode === 'grid' ? 'grid grid-cols-2 gap-3' : 'space-y-2'}`}>
             {filteredProducts.map((product) => {
               const category = categories.find(c => c.id === product.category_id);
               const isLowStock = product.stock !== undefined && 
@@ -601,77 +894,126 @@ export default function MobileManagement() {
                                 product.stock > 0 &&
                                 product.stock <= product.min_stock;
               const isOutOfStock = product.stock === 0;
+              const isFavorite = favorites.includes(product.id);
+              const isSelected = selectedProducts.includes(product.id);
               
               return (
                 <Card
                   key={product.id}
-                  className={`p-4 ${
+                  className={`p-4 relative ${
                     isOutOfStock ? 'border-destructive/50 bg-destructive/5' :
                     isLowStock ? 'border-category-orange/50 bg-category-orange/5' :
                     'bg-white'
-                  }`}
+                  } ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                  onClick={() => selectionMode && toggleSelection(product.id)}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold truncate">{product.name}</h3>
-                        {isOutOfStock && (
-                          <Badge variant="destructive" className="text-xs">Rupture</Badge>
+                        {selectionMode && (
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelection(product.id)}
+                            className="h-4 w-4"
+                          />
                         )}
-                        {isLowStock && (
-                          <Badge variant="secondary" className="text-xs bg-category-orange text-white">Faible</Badge>
-                        )}
-                      </div>
-                      
-                      {category && (
-                        <Badge 
-                          className="text-xs mb-2"
-                          style={{ 
-                            backgroundColor: category.color + '20',
-                            color: category.color,
-                            borderColor: category.color
+                        <h3 className="font-bold truncate text-sm">{product.name}</h3>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(product.id);
                           }}
                         >
-                          {category.name}
-                        </Badge>
-                      )}
-                      
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className="font-bold text-primary">{product.price.toFixed(2)}€</span>
-                        <span className="text-muted-foreground">
-                          Stock: {product.stock || 0}
-                        </span>
+                          <Star className={`h-3 w-3 ${isFavorite ? 'fill-accent text-accent' : ''}`} />
+                        </Button>
                       </div>
-                      
-                      {product.barcode && (
-                        <p className="text-xs text-muted-foreground mt-1 font-mono">
-                          {product.barcode}
-                        </p>
+
+                      {!selectionMode && (
+                        <>
+                          <div className="flex items-center gap-1 mb-2 flex-wrap">
+                            {isOutOfStock && (
+                              <Badge variant="destructive" className="text-xs">Rupture</Badge>
+                            )}
+                            {isLowStock && (
+                              <Badge variant="secondary" className="text-xs bg-category-orange text-white">Faible</Badge>
+                            )}
+                            {category && (
+                              <Badge 
+                                className="text-xs"
+                                style={{ 
+                                  backgroundColor: category.color + '20',
+                                  color: category.color,
+                                  borderColor: category.color
+                                }}
+                              >
+                                {category.name}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-4 text-sm">
+                            <span className="font-bold text-primary">{product.price.toFixed(2)}€</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-muted-foreground">Stock:</span>
+                              <span className="font-bold">{product.stock || 0}</span>
+                            </div>
+                          </div>
+                          
+                          {product.barcode && (
+                            <p className="text-xs text-muted-foreground mt-1 font-mono">
+                              {product.barcode}
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
                     
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        onClick={() => handleOpenProductForm(product)}
-                        size="icon"
-                        variant="outline"
-                        className="h-9 w-9"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setSelectedProductForStock(product);
-                          setView('stock');
-                        }}
-                        size="icon"
-                        variant="outline"
-                        className="h-9 w-9"
-                      >
-                        <Boxes className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {!selectionMode && (
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          onClick={() => handleOpenProductForm(product)}
+                          size="icon"
+                          variant="outline"
+                          className="h-9 w-9"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setSelectedProductForStock(product);
+                            setView('stock');
+                          }}
+                          size="icon"
+                          variant="outline"
+                          className="h-9 w-9"
+                        >
+                          <Boxes className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Barre de progression du stock */}
+                  {!selectionMode && product.min_stock && product.min_stock > 0 && (
+                    <div className="mt-3">
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full transition-all ${
+                            isOutOfStock ? 'bg-destructive' :
+                            isLowStock ? 'bg-category-orange' :
+                            'bg-green-600'
+                          }`}
+                          style={{ 
+                            width: `${Math.min(100, ((product.stock || 0) / (product.min_stock * 2)) * 100)}%` 
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </Card>
               );
             })}
@@ -894,14 +1236,36 @@ export default function MobileManagement() {
           </Card>
 
           <div className="space-y-4">
-            <Label>Ajustement (+ ou -)</Label>
-            <Input
-              type="number"
-              value={stockAdjustment}
-              onChange={(e) => setStockAdjustment(e.target.value)}
-              placeholder="Ex: +10 ou -5"
-              className="text-xl h-14 text-center font-bold"
-            />
+            <div className="space-y-2">
+              <Label>Motif de l'ajustement</Label>
+              <Select
+                value={stockAdjustmentReason}
+                onValueChange={setStockAdjustmentReason}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un motif..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="reception">Réception</SelectItem>
+                  <SelectItem value="inventaire">Inventaire</SelectItem>
+                  <SelectItem value="casse">Casse</SelectItem>
+                  <SelectItem value="vol">Vol</SelectItem>
+                  <SelectItem value="retour">Retour</SelectItem>
+                  <SelectItem value="autre">Autre</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Ajustement (+ ou -)</Label>
+              <Input
+                type="number"
+                value={stockAdjustment}
+                onChange={(e) => setStockAdjustment(e.target.value)}
+                placeholder="Ex: +10 ou -5"
+                className="text-xl h-14 text-center font-bold"
+              />
+            </div>
 
             {stockAdjustment && (
               <Card className="p-4 bg-primary/5">
@@ -914,7 +1278,14 @@ export default function MobileManagement() {
               </Card>
             )}
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setStockAdjustment('-10')}
+              >
+                -10
+              </Button>
               <Button
                 type="button"
                 variant="outline"
@@ -935,6 +1306,22 @@ export default function MobileManagement() {
                 onClick={() => setStockAdjustment('+10')}
               >
                 +10
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="col-span-2"
+                onClick={() => setStockAdjustment('+20')}
+              >
+                +20
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="col-span-2"
+                onClick={() => setStockAdjustment('+50')}
+              >
+                +50
               </Button>
             </div>
 
