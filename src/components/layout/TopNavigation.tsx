@@ -22,6 +22,7 @@ import {
   UserCog,
   Truck,
 } from 'lucide-react';
+import logoGulReyhan from '@/assets/logo-gul-reyhan-2.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadNotificationsCount } from '@/hooks/useNotifications';
 import { NotificationPanel } from '@/components/notifications/NotificationPanel';
@@ -79,16 +80,16 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 w-full bg-gradient-to-r from-primary to-primary-glow shadow-lg">
       <div className="flex h-16 items-center gap-6 px-6">
         {/* Logo */}
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="shrink-0 gap-2 font-semibold hover:bg-accent"
+          className="shrink-0 gap-2 font-semibold hover:bg-white/10 text-white"
         >
-          <ShoppingCart className="h-5 w-5" />
-          <span>Caisse</span>
+          <img src={logoGulReyhan} alt="Gül Reyhan" className="h-8 w-8" />
+          <span>Gül Reyhan Market</span>
         </Button>
 
         {/* Navigation Menu */}
@@ -96,7 +97,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           <NavigationMenu>
             <NavigationMenuList className="gap-1">
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium">
+                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 data-[state=open]:bg-white/10">
                   Ventes
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -119,7 +120,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium">
+                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 data-[state=open]:bg-white/10">
                   Gestion
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -142,7 +143,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium">
+                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 data-[state=open]:bg-white/10">
                   Clients
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -165,7 +166,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium">
+                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 data-[state=open]:bg-white/10">
                   Rapports
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -188,7 +189,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium">
+                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 data-[state=open]:bg-white/10">
                   Paramètres
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -229,7 +230,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               variant="ghost"
               size="icon"
               onClick={() => setShowNotifications(!showNotifications)}
-              className="h-9 w-9"
+              className="h-9 w-9 text-white hover:bg-white/10"
             >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
@@ -248,7 +249,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
             variant="ghost"
             size="icon"
             onClick={onLockScreen}
-            className="h-9 w-9"
+            className="h-9 w-9 text-white hover:bg-white/10"
           >
             <Lock className="h-4 w-4" />
           </Button>
@@ -257,7 +258,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
             variant="ghost"
             size="icon"
             onClick={handleSignOut}
-            className="h-9 w-9"
+            className="h-9 w-9 text-white hover:bg-white/10"
           >
             <LogOut className="h-4 w-4" />
           </Button>
