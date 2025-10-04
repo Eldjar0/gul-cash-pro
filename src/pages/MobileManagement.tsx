@@ -35,7 +35,6 @@ import {
   Save,
   Boxes,
   Tag,
-  Download,
   ShoppingCart,
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
@@ -422,23 +421,19 @@ export default function MobileManagement() {
         />
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-4">
         <div className="max-w-md mx-auto space-y-6 pb-20">
-          {/* Reload and Update buttons */}
+          {/* Update button */}
           <div className="flex justify-end gap-2 pt-2">
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => window.open('https://github.com/Eldjar0/gul-cash-pro/releases/download/v1.0.31/app-debug.apk', '_blank')}
+              onClick={() => {
+                toast.success('Mise à jour en cours...', {
+                  description: 'L\'application va se recharger avec la dernière version.'
+                });
+                setTimeout(() => window.location.reload(), 1000);
+              }}
               className="opacity-50 hover:opacity-100"
-              title="Télécharger la mise à jour"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => window.location.reload()}
-              className="opacity-50 hover:opacity-100"
-              title="Recharger"
+              title="Mettre à jour l'application"
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
