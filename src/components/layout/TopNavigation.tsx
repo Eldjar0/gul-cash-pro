@@ -96,29 +96,6 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
 
         {/* Navigation Menu - Centré */}
         <div className="hidden lg:flex flex-1 gap-2 justify-center">
-          {/* Boutons principaux sans icônes */}
-          <Button
-            onClick={() => navigate("/dashboard")}
-            className="h-10 px-3 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all text-sm"
-          >
-            Dashboard
-          </Button>
-          
-          <Button
-            onClick={() => navigate("/products")}
-            className="h-10 px-3 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all text-sm"
-          >
-            Produits
-          </Button>
-          
-          <Button
-            onClick={() => navigate("/customers")}
-            className="h-10 px-3 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all text-sm"
-          >
-            Clients
-          </Button>
-
-          {/* Menus déroulants */}
           <NavigationMenu>
             <NavigationMenuList className="gap-2">
               <NavigationMenuItem>
@@ -127,7 +104,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 bg-white">
-                    {menuItems.ventes.slice(1).map((item) => (
+                    {menuItems.ventes.map((item) => (
                       <li key={item.path}>
                         <NavigationMenuLink asChild>
                           <button
@@ -150,7 +127,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 bg-white">
-                    {menuItems.gestion.slice(1).map((item) => (
+                    {menuItems.gestion.map((item) => (
                       <li key={item.path}>
                         <NavigationMenuLink asChild>
                           <button
@@ -169,11 +146,11 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
 
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="h-10 px-3 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 data-[state=open]:bg-white/30 transition-all text-sm">
-                  Marketing
+                  Clients
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 bg-white">
-                    {menuItems.clients.slice(1).map((item) => (
+                    {menuItems.clients.map((item) => (
                       <li key={item.path}>
                         <NavigationMenuLink asChild>
                           <button
@@ -196,7 +173,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 bg-white">
-                    {menuItems.rapports.slice(1).map((item) => (
+                    {menuItems.rapports.map((item) => (
                       <li key={item.path}>
                         <NavigationMenuLink asChild>
                           <button
@@ -214,13 +191,35 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <Button
-                  variant="ghost"
-                  onClick={() => navigate("/settings")}
-                  className="h-10 px-3 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all text-sm"
-                >
+                <NavigationMenuTrigger className="h-10 px-3 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 data-[state=open]:bg-white/30 transition-all text-sm">
                   Paramètres
-                </Button>
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[400px] gap-3 p-4 bg-white">
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <button
+                          onClick={() => navigate("/settings")}
+                          className="flex items-center gap-3 w-full rounded-md p-3 text-sm leading-none hover:bg-blue-50 transition-colors"
+                        >
+                          <Settings className="h-5 w-5 text-blue-600" />
+                          <span className="font-medium">Configuration</span>
+                        </button>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <button
+                          onClick={() => navigate("/settings")}
+                          className="flex items-center gap-3 w-full rounded-md p-3 text-sm leading-none hover:bg-blue-50 transition-colors"
+                        >
+                          <UserCog className="h-5 w-5 text-blue-600" />
+                          <span className="font-medium">Utilisateurs</span>
+                        </button>
+                      </NavigationMenuLink>
+                    </li>
+                  </ul>
+                </NavigationMenuContent>
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
