@@ -3,6 +3,8 @@ import { ProtectedLayout } from '@/components/layout/ProtectedLayout';
 import { useSales } from '@/hooks/useSales';
 import { useProducts } from '@/hooks/useProducts';
 import { useTodayReport } from '@/hooks/useDailyReports';
+import { StatsCard } from '@/components/dashboard/StatsCard';
+import { QuickActions } from '@/components/dashboard/QuickActions';
 import {
   TrendingUp,
   TrendingDown,
@@ -90,86 +92,55 @@ export default function Dashboard() {
 
         {/* Statistiques principales */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">CA du jour</p>
-                <h3 className="text-2xl font-bold mt-1">{todayTotal.toFixed(2)}€</h3>
-                <div className="flex items-center gap-2 mt-2">
-                  {totalPercentChange > 0 ? (
-                    <TrendingUp className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 text-red-500" />
-                  )}
-                  <span
-                    className={`text-sm ${
-                      totalPercentChange > 0 ? 'text-green-500' : 'text-red-500'
-                    }`}
-                  >
-                    {Math.abs(totalPercentChange).toFixed(1)}%
-                  </span>
-                  <span className="text-xs text-muted-foreground">vs hier</span>
-                </div>
-              </div>
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <Euro className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-          </Card>
+          <StatsCard
+            title="CA du jour"
+            value={`${todayTotal.toFixed(2)}€`}
+            icon={Euro}
+            trend={{
+              value: totalPercentChange,
+              label: 'vs hier',
+              isPositive: totalPercentChange >= 0,
+            }}
+            iconBgColor="bg-primary/10"
+            iconColor="text-primary"
+          />
 
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Ventes</p>
-                <h3 className="text-2xl font-bold mt-1">{todayCount}</h3>
-                <div className="flex items-center gap-2 mt-2">
-                  {countPercentChange > 0 ? (
-                    <TrendingUp className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 text-red-500" />
-                  )}
-                  <span
-                    className={`text-sm ${
-                      countPercentChange > 0 ? 'text-green-500' : 'text-red-500'
-                    }`}
-                  >
-                    {Math.abs(countPercentChange).toFixed(1)}%
-                  </span>
-                  <span className="text-xs text-muted-foreground">vs hier</span>
-                </div>
-              </div>
-              <div className="p-3 bg-blue-500/10 rounded-lg">
-                <ShoppingCart className="h-6 w-6 text-blue-500" />
-              </div>
-            </div>
-          </Card>
+          <StatsCard
+            title="Ventes"
+            value={todayCount}
+            icon={ShoppingCart}
+            trend={{
+              value: countPercentChange,
+              label: 'vs hier',
+              isPositive: countPercentChange >= 0,
+            }}
+            iconBgColor="bg-blue-500/10"
+            iconColor="text-blue-500"
+          />
 
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Panier moyen</p>
-                <h3 className="text-2xl font-bold mt-1">{avgBasket.toFixed(2)}€</h3>
-                <p className="text-xs text-muted-foreground mt-2">Aujourd'hui</p>
-              </div>
-              <div className="p-3 bg-purple-500/10 rounded-lg">
-                <Users className="h-6 w-6 text-purple-500" />
-              </div>
-            </div>
-          </Card>
+          <StatsCard
+            title="Panier moyen"
+            value={`${avgBasket.toFixed(2)}€`}
+            icon={Users}
+            iconBgColor="bg-purple-500/10"
+            iconColor="text-purple-500"
+          >
+            <p className="text-xs text-muted-foreground mt-2">Aujourd'hui</p>
+          </StatsCard>
 
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Alertes stock</p>
-                <h3 className="text-2xl font-bold mt-1">{lowStockProducts.length}</h3>
-                <p className="text-xs text-muted-foreground mt-2">Produits en alerte</p>
-              </div>
-              <div className="p-3 bg-orange-500/10 rounded-lg">
-                <AlertTriangle className="h-6 w-6 text-orange-500" />
-              </div>
-            </div>
-          </Card>
+          <StatsCard
+            title="Alertes stock"
+            value={lowStockProducts.length}
+            icon={AlertTriangle}
+            iconBgColor="bg-orange-500/10"
+            iconColor="text-orange-500"
+          >
+            <p className="text-xs text-muted-foreground mt-2">Produits en alerte</p>
+          </StatsCard>
         </div>
+
+        {/* Actions rapides */}
+        <QuickActions />
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Top produits */}

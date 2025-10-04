@@ -5,13 +5,15 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Save, Shield, Scale, Image, Receipt, Monitor, Home } from 'lucide-react';
+import { ArrowLeft, Building, Save, Shield, Scale, Image, Receipt, Monitor, Home, Database, Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { BrandingSettings } from '@/components/settings/BrandingSettings';
 import { TicketSettings } from '@/components/settings/TicketSettings';
 import { DisplaySettings } from '@/components/settings/DisplaySettings';
 import { HomePageSettings } from '@/components/settings/HomePageSettings';
+import { BackupSettings } from '@/components/settings/BackupSettings';
+import { StockAlertSettings } from '@/components/settings/StockAlertSettings';
 
 
 interface CompanySettings {
@@ -137,7 +139,7 @@ export default function Settings() {
 
       <div className="p-4 md:p-6 max-w-6xl mx-auto">
         <Tabs defaultValue="company" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 mb-6">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-6">
             <TabsTrigger value="company">
               <Building className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Entreprise</span>
@@ -157,6 +159,14 @@ export default function Settings() {
             <TabsTrigger value="homepage">
               <Home className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Accueil</span>
+            </TabsTrigger>
+            <TabsTrigger value="backup">
+              <Database className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Sauvegardes</span>
+            </TabsTrigger>
+            <TabsTrigger value="alerts">
+              <Bell className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Alertes</span>
             </TabsTrigger>
             <TabsTrigger value="compliance">
               <Shield className="h-4 w-4 mr-2" />
@@ -263,6 +273,16 @@ export default function Settings() {
           {/* Homepage Settings */}
           <TabsContent value="homepage">
             <HomePageSettings />
+          </TabsContent>
+
+          {/* Backup Settings */}
+          <TabsContent value="backup">
+            <BackupSettings />
+          </TabsContent>
+
+          {/* Alerts Settings */}
+          <TabsContent value="alerts">
+            <StockAlertSettings />
           </TabsContent>
 
           {/* Compliance Settings */}
