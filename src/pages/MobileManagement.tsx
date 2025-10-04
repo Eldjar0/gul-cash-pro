@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -32,20 +33,22 @@ import {
   ArrowLeft,
   Save,
   Boxes,
+  Tag,
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
-import { useCategories, useCreateCategory } from '@/hooks/useCategories';
+import { useCategories } from '@/hooks/useCategories';
 import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
 import { toast } from 'sonner';
+import logoGulReyhan from '@/assets/logo-gul-reyhan-new.png';
 
 export default function MobileManagement() {
+  const navigate = useNavigate();
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
-  const createCategory = useCreateCategory();
 
-  const [view, setView] = useState<'menu' | 'products' | 'product-form' | 'category-form' | 'stock'>('menu');
+  const [view, setView] = useState<'menu' | 'products' | 'product-form' | 'stock'>('menu');
   const [searchTerm, setSearchTerm] = useState('');
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [selectedProductForStock, setSelectedProductForStock] = useState<any>(null);
@@ -70,13 +73,6 @@ export default function MobileManagement() {
     min_stock: '',
     supplier: '',
     image: '',
-  });
-
-  const [categoryFormData, setCategoryFormData] = useState({
-    name: '',
-    description: '',
-    color: '#22c55e',
-    display_order: 0,
   });
 
   const filteredProducts = products.filter((product) => {
@@ -155,25 +151,6 @@ export default function MobileManagement() {
     } catch (error) {
       console.error('Error saving product:', error);
       toast.error('Erreur lors de la sauvegarde');
-    }
-  };
-
-  const handleSubmitCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!categoryFormData.name) {
-      toast.error('Nom de catégorie requis');
-      return;
-    }
-
-    try {
-      await createCategory.mutateAsync(categoryFormData);
-      setView('menu');
-      setCategoryFormData({ name: '', description: '', color: '#22c55e', display_order: 0 });
-      toast.success('Catégorie créée');
-    } catch (error) {
-      console.error('Error creating category:', error);
-      toast.error('Erreur lors de la création');
     }
   };
 
@@ -409,8 +386,8 @@ export default function MobileManagement() {
         <div className="max-w-md mx-auto space-y-6 pb-20">
           {/* Header */}
           <div className="text-center space-y-2 pt-4">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-2xl mb-4">
-              <Package className="h-10 w-10 text-primary" />
+            <div className="inline-flex items-center justify-center w-32 h-32 bg-white rounded-2xl mb-4 p-4">
+              <img src={logoGulReyhan} alt="Gül Reyhan Market" className="w-full h-full object-contain" />
             </div>
             <h1 className="text-3xl font-black text-foreground">Gestion Mobile</h1>
             <p className="text-muted-foreground">{products.length} produits</p>
@@ -447,13 +424,23 @@ export default function MobileManagement() {
             </Button>
 
             <Button
-              onClick={() => setView('category-form')}
+              onClick={() => navigate('/mobile/categories')}
               className="w-full h-16 bg-secondary hover:bg-secondary/90 text-lg font-bold"
               size="lg"
               variant="outline"
             >
               <FolderKanban className="h-6 w-6 mr-3" />
-              Créer une Catégorie
+              Gérer les Catégories
+            </Button>
+
+            <Button
+              onClick={() => navigate('/mobile/promotions')}
+              className="w-full h-16 bg-accent hover:bg-accent/90 text-lg font-bold"
+              size="lg"
+              variant="outline"
+            >
+              <Tag className="h-6 w-6 mr-3" />
+              Gérer les Promotions
             </Button>
 
             <Button
@@ -757,70 +744,6 @@ export default function MobileManagement() {
             </Button>
           </form>
         </ScrollArea>
-      </div>
-    );
-  }
-
-  // Formulaire catégorie
-  if (view === 'category-form') {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="sticky top-0 z-10 bg-background border-b p-4">
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => setView('menu')}
-              variant="ghost"
-              size="icon"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h2 className="text-xl font-bold">Nouvelle Catégorie</h2>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmitCategory} className="p-4 space-y-4">
-          <div className="space-y-2">
-            <Label>Nom *</Label>
-            <Input
-              value={categoryFormData.name}
-              onChange={(e) => setCategoryFormData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Nom de la catégorie"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Input
-              value={categoryFormData.description}
-              onChange={(e) => setCategoryFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Description"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Couleur</Label>
-            <div className="flex gap-2">
-              <Input
-                type="color"
-                value={categoryFormData.color}
-                onChange={(e) => setCategoryFormData(prev => ({ ...prev, color: e.target.value }))}
-                className="w-20 h-12"
-              />
-              <Input
-                value={categoryFormData.color}
-                onChange={(e) => setCategoryFormData(prev => ({ ...prev, color: e.target.value }))}
-                placeholder="#22c55e"
-                className="flex-1"
-              />
-            </div>
-          </div>
-
-          <Button type="submit" className="w-full h-12 mt-6" size="lg">
-            <Save className="h-5 w-5 mr-2" />
-            Créer la Catégorie
-          </Button>
-        </form>
       </div>
     );
   }
