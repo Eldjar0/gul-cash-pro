@@ -26,7 +26,11 @@ export default function Auth() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    await signIn(email, password);
+    // Convertir l'identifiant en email pour Supabase
+    const loginEmail = email.toLowerCase() === 'admin' 
+      ? 'admin@system.local' 
+      : email;
+    await signIn(loginEmail, password);
     setIsLoading(false);
   };
 
@@ -68,11 +72,11 @@ export default function Auth() {
           ) : (
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email / Identifiant</Label>
+                <Label htmlFor="email">Identifiant</Label>
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="votre@email.com"
+                  type="text"
+                  placeholder="admin"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
