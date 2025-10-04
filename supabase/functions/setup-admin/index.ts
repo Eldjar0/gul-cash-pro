@@ -45,11 +45,14 @@ Deno.serve(async (req) => {
 
     console.log('✅ Tous les utilisateurs ont été supprimés');
 
+    // Generate strong random password
+    const strongPassword = crypto.randomUUID() + Math.random().toString(36).slice(2) + '!A1';
+    
     // Créer le compte admin
     console.log('👤 Création du compte admin...');
     const { data: adminUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: 'admin@system.local',
-      password: '3679',
+      password: strongPassword,
       email_confirm: true,
       user_metadata: {
         full_name: 'Administrateur'
@@ -63,26 +66,41 @@ Deno.serve(async (req) => {
 
     console.log('✅ Compte admin créé avec succès:', adminUser.user.email);
 
-    // Créer le profil admin
+    // Créer le profil admin (without role - now in user_roles)
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .upsert({
         id: adminUser.user.id,
-        full_name: 'Administrateur',
-        role: 'cashier'
+        full_name: 'Administrateur'
       });
 
     if (profileError) {
       console.error('Erreur lors de la création du profil:', profileError);
-    } else {
-      console.log('✅ Profil admin créé');
+      throw profileError;
     }
+
+    // Assign admin role in user_roles table
+    const { error: roleError } = await supabaseAdmin
+      .from('user_roles')
+      .upsert({
+        user_id: adminUser.user.id,
+        role: 'admin'
+      });
+
+    if (roleError) {
+      console.error('Erreur lors de l\'assignation du rôle admin:', roleError);
+      throw roleError;
+    }
+
+    console.log('✅ Profil et rôle admin créés');
 
     return new Response(
       JSON.stringify({
         success: true,
         message: 'Compte admin créé avec succès',
-        email: 'admin@system.local'
+        email: 'admin@system.local',
+        password: strongPassword,
+        warning: 'CHANGEZ CE MOT DE PASSE IMMÉDIATEMENT'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

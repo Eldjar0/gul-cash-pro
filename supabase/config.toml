@@ -1,7 +1,7 @@
 project_id = "htoihjbbwzpnyphcfomq"
 
 [functions.setup-admin]
-verify_jwt = false
+verify_jwt = true
 
 [functions.manage-users]
-verify_jwt = false
+verify_jwt = true

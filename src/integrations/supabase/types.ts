@@ -170,6 +170,38 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_access_log: {
+        Row: {
+          accessed_at: string | null
+          action: string
+          customer_id: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          action: string
+          customer_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          action?: string
+          customer_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_access_log_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_credit_accounts: {
         Row: {
           created_at: string | null
@@ -1179,7 +1211,6 @@ export type Database = {
           id: string
           is_active: boolean | null
           pin_code: string | null
-          role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string | null
         }
         Insert: {
@@ -1188,7 +1219,6 @@ export type Database = {
           id: string
           is_active?: boolean | null
           pin_code?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string | null
         }
         Update: {
@@ -1197,7 +1227,6 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           pin_code?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string | null
         }
         Relationships: []

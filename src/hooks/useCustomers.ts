@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { customerSchema } from '@/lib/validation';
 
 export interface Customer {
   id: string;
@@ -61,6 +62,13 @@ export const useCreateCustomer = () => {
 
   return useMutation({
     mutationFn: async (customer: Omit<Customer, 'id' | 'created_at' | 'updated_at'>) => {
+      // Validate input
+      const validationResult = customerSchema.safeParse(customer);
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(e => e.message).join(', ');
+        throw new Error(`Validation échouée: ${errors}`);
+      }
+
       const { data, error } = await supabase
         .from('customers')
         .insert(customer)
@@ -81,7 +89,7 @@ export const useCreateCustomer = () => {
       console.error('Error creating customer:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de créer le client.',
+        description: error instanceof Error ? error.message : 'Impossible de créer le client.',
         variant: 'destructive',
       });
     },

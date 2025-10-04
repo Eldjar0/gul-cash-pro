@@ -26,12 +26,18 @@ export default function Auth() {
     try {
       const { data, error } = await supabase.functions.invoke('setup-admin');
       if (error) throw error;
+      
+      const responseData = data as { password: string };
       toast.success('Compte admin créé', {
-        description: 'Identifiant: admin | Mot de passe: 3679'
+        description: `⚠️ CHANGEZ CE MOT DE PASSE IMMÉDIATEMENT !`,
+        duration: 10000
       });
+      
+      // Show password in a separate alert that user must acknowledge
+      alert(`COMPTE ADMIN CRÉÉ\n\nIdentifiant: admin@system.local\nMot de passe: ${responseData.password}\n\n⚠️ IMPORTANT: Notez ce mot de passe et changez-le immédiatement après connexion !`);
+      
       setEmail('admin');
-      setPassword('3679');
-      await signIn('admin@system.local', '3679');
+      setPassword(responseData.password);
     } catch (err) {
       toast.error('Échec de la configuration', {
         description: err instanceof Error ? err.message : 'Une erreur est survenue'

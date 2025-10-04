@@ -11,6 +11,12 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify user is authenticated
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      throw new Error('Non autorisé - authentification requise');
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -22,8 +28,28 @@ Deno.serve(async (req) => {
       }
     );
 
+    // Get authenticated user and verify admin role
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    
+    if (authError || !user) {
+      throw new Error('Authentification invalide');
+    }
+
+    // Check if user is admin
+    const { data: roles, error: roleError } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .single();
+
+    if (roleError || !roles) {
+      throw new Error('Accès refusé - droits administrateur requis');
+    }
+
     const { action, userId, email, password, fullName } = await req.json();
-    console.log(`Action: ${action}`, { userId, email });
+    console.log(`Action: ${action}`, { userId, email, adminUser: user.email });
 
     switch (action) {
       case 'list': {
@@ -53,17 +79,30 @@ Deno.serve(async (req) => {
 
         if (createError) throw createError;
 
-        // Créer le profil
+        // Créer le profil (without role)
         const { error: profileError } = await supabaseAdmin
           .from('profiles')
           .upsert({
             id: newUser.user.id,
-            full_name: fullName || 'Utilisateur',
-            role: 'cashier'
+            full_name: fullName || 'Utilisateur'
           });
 
         if (profileError) {
           console.error('Erreur création profil:', profileError);
+          throw profileError;
+        }
+
+        // Assign default cashier role
+        const { error: roleError } = await supabaseAdmin
+          .from('user_roles')
+          .upsert({
+            user_id: newUser.user.id,
+            role: 'cashier'
+          });
+
+        if (roleError) {
+          console.error('Erreur assignation rôle:', roleError);
+          throw roleError;
         }
 
         console.log(`✅ Compte créé: ${email}`);
