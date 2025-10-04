@@ -49,6 +49,14 @@ export const useCreateCategory = () => {
         description: 'La catégorie a été créée avec succès.',
       });
     },
+    onError: (error: any) => {
+      console.error('Error creating category:', error);
+      toast({
+        title: 'Erreur',
+        description: error?.message || 'Impossible de créer la catégorie.',
+        variant: 'destructive',
+      });
+    },
   });
 };
 
@@ -72,6 +80,15 @@ export const useUpdateCategory = () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast({
         title: 'Catégorie mise à jour',
+        description: 'La catégorie a été mise à jour avec succès.',
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error updating category:', error);
+      toast({
+        title: 'Erreur',
+        description: error?.message || 'Impossible de mettre à jour la catégorie.',
+        variant: 'destructive',
       });
     },
   });

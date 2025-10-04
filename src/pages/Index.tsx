@@ -515,6 +515,15 @@ const Index = () => {
       const hasOpenDialog = document.querySelector('[role="dialog"]') !== null;
       if (hasOpenDialog) return true;
       
+      // Vérifier si l'élément ou un parent a l'attribut data-scan-ignore
+      let element: HTMLElement | null = target;
+      while (element) {
+        if (element.hasAttribute('data-scan-ignore')) {
+          return true;
+        }
+        element = element.parentElement;
+      }
+      
       const tagName = target.tagName.toLowerCase();
       const isContentEditable = target.isContentEditable;
       const isInput = tagName === 'input' || tagName === 'textarea' || tagName === 'select';

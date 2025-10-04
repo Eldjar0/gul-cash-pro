@@ -104,10 +104,20 @@ export const useCreateProduct = () => {
         description: 'Le produit a été créé avec succès.',
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Error creating product:', error);
+      let description = "Impossible de créer le produit.";
+      
+      // Handle duplicate barcode error
+      if (error?.message?.includes('duplicate key') && error?.message?.includes('barcode')) {
+        description = "Ce code-barres existe déjà. Veuillez en utiliser un autre.";
+      } else if (error?.message) {
+        description = error.message;
+      }
+      
       toast({
         title: 'Erreur',
-        description: "Impossible de créer le produit.",
+        description,
         variant: 'destructive',
       });
     },
@@ -137,10 +147,20 @@ export const useUpdateProduct = () => {
         description: 'Le produit a été mis à jour avec succès.',
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Error updating product:', error);
+      let description = 'Impossible de mettre à jour le produit.';
+      
+      // Handle duplicate barcode error
+      if (error?.message?.includes('duplicate key') && error?.message?.includes('barcode')) {
+        description = "Ce code-barres existe déjà. Veuillez en utiliser un autre.";
+      } else if (error?.message) {
+        description = error.message;
+      }
+      
       toast({
         title: 'Erreur',
-        description: 'Impossible de mettre à jour le produit.',
+        description,
         variant: 'destructive',
       });
     },
