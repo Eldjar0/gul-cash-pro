@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import logoJLProd from '@/assets/logo-jlprod.png';
+import logoGulReyhan from '@/assets/logo-gul-reyhan.png';
 interface TopNavigationProps {
   onLockScreen: () => void;
 }
@@ -22,9 +22,8 @@ export function TopNavigation({
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <img src={logoJLProd} alt="JLProd" className="h-10 w-auto" />
-            <span className="text-xl font-bold text-white hidden sm:block">Gül Reyhan</span>
+          <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
+            <img src={logoGulReyhan} alt="Gül Reyhan Market" className="h-16 w-auto" />
           </Link>
 
           {/* Navigation Links */}
