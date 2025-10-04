@@ -3,6 +3,7 @@ import { ShoppingBag, CheckCircle2, Thermometer, Calendar, Clock, CreditCard, Ba
 import { supabase } from '@/integrations/supabase/client';
 import logoMarket from '@/assets/logo-market.png';
 import { PromotionBanner } from '@/components/customer-display/PromotionBanner';
+import { createSafeBroadcastChannel } from '@/lib/safeBroadcast';
 
 interface DisplayItem {
   name: string;
@@ -108,7 +109,7 @@ const CustomerDisplay = () => {
 
   useEffect(() => {
     // Canal de communication
-    const channel = new BroadcastChannel('customer_display');
+    const channel = createSafeBroadcastChannel('customer_display');
 
     channel.onmessage = (event) => {
       console.log('[CustomerDisplay] Message received:', event.data);

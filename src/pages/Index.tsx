@@ -67,6 +67,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { createSafeBroadcastChannel } from '@/lib/safeBroadcast';
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -159,7 +160,7 @@ const Index = () => {
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
   const [customerDisplayWindow, setCustomerDisplayWindow] = useState<Window | null>(null);
-  const [displayChannel] = useState(() => new BroadcastChannel('customer_display'));
+  const [displayChannel] = useState(() => createSafeBroadcastChannel('customer_display'));
   
   // Daily reports states
   const [openDayDialogOpen, setOpenDayDialogOpen] = useState(false);

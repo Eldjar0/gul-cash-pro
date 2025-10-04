@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import logoJLProd from '@/assets/logo-jlprod.png';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Capacitor } from '@capacitor/core';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
@@ -42,7 +43,11 @@ export default function Auth() {
 
   useEffect(() => {
     if (user) {
-      navigate('/');
+      if (Capacitor.isNativePlatform()) {
+        navigate('/mobile');
+      } else {
+        navigate('/');
+      }
     }
   }, [user, navigate]);
 

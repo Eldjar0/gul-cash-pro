@@ -4,6 +4,11 @@
   "webDir": "dist",
   "server": {
     "url": "https://gul-caisse.jlprod.be",
-    "cleartext": true
+    "cleartext": true,
+    "allowNavigation": [
+      "gul-caisse.jlprod.be",
+      "*.lovableproject.com",
+      "*.lovable.app"
+    ]
   }
 }
