@@ -8,18 +8,20 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet } from 'lucide-react';
+import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Gift, Receipt as ReceiptIcon, Split } from 'lucide-react';
 
-type PaymentMethod = 'cash' | 'card' | 'mobile';
+type PaymentMethod = 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check' | 'mixed';
 
 interface PaymentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   total: number;
-  onConfirmPayment: (method: PaymentMethod, amountPaid?: number) => void;
+  onConfirmPayment: (method: PaymentMethod, amountPaid?: number, metadata?: any) => void;
+  onMixedPayment?: () => void;
+  customerId?: string;
 }
 
-export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment }: PaymentDialogProps) {
+export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment, onMixedPayment, customerId }: PaymentDialogProps) {
   const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [amountPaid, setAmountPaid] = useState('');
 
@@ -62,36 +64,92 @@ export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment }: P
         </DialogHeader>
 
         {!method ? (
-          <div className="grid grid-cols-3 gap-4 py-6">
-            <Card
-              onClick={() => setMethod('cash')}
-              className="h-48 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-4 border-category-green hover:border-pos-success transition-all"
-            >
-              <div className="h-full flex flex-col items-center justify-center gap-4">
-                <Banknote className="h-20 w-20 text-category-green" />
-                <span className="text-white font-bold text-xl font-mono">ESPÈCES</span>
-              </div>
-            </Card>
+          <div className="space-y-6">
+            {/* Primary payment methods */}
+            <div className="grid grid-cols-3 gap-4">
+              <Card
+                onClick={() => setMethod('cash')}
+                className="h-40 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-4 border-category-green hover:border-pos-success transition-all"
+              >
+                <div className="h-full flex flex-col items-center justify-center gap-3">
+                  <Banknote className="h-16 w-16 text-category-green" />
+                  <span className="text-white font-bold text-lg font-mono">ESPÈCES</span>
+                </div>
+              </Card>
 
-            <Card
-              onClick={() => setMethod('card')}
-              className="h-48 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-4 border-category-blue hover:border-pos-success transition-all"
-            >
-              <div className="h-full flex flex-col items-center justify-center gap-4">
-                <CreditCard className="h-20 w-20 text-category-blue" />
-                <span className="text-white font-bold text-xl font-mono">CARTE</span>
-              </div>
-            </Card>
+              <Card
+                onClick={() => setMethod('card')}
+                className="h-40 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-4 border-category-blue hover:border-pos-success transition-all"
+              >
+                <div className="h-full flex flex-col items-center justify-center gap-3">
+                  <CreditCard className="h-16 w-16 text-category-blue" />
+                  <span className="text-white font-bold text-lg font-mono">CARTE</span>
+                </div>
+              </Card>
 
-            <Card
-              onClick={() => setMethod('mobile')}
-              className="h-48 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-4 border-category-purple hover:border-pos-success transition-all"
-            >
-              <div className="h-full flex flex-col items-center justify-center gap-4">
-                <Smartphone className="h-20 w-20 text-category-purple" />
-                <span className="text-white font-bold text-xl font-mono">SANS CONTACT</span>
-              </div>
-            </Card>
+              <Card
+                onClick={() => setMethod('mobile')}
+                className="h-40 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-4 border-category-purple hover:border-pos-success transition-all"
+              >
+                <div className="h-full flex flex-col items-center justify-center gap-3">
+                  <Smartphone className="h-16 w-16 text-category-purple" />
+                  <span className="text-white font-bold text-lg font-mono">SANS CONTACT</span>
+                </div>
+              </Card>
+            </div>
+
+            {/* Secondary payment methods */}
+            <div className="grid grid-cols-4 gap-3">
+              <Card
+                onClick={() => setMethod('gift_card')}
+                className="h-32 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-2 border-pink-500/30 hover:border-pink-500 transition-all"
+              >
+                <div className="h-full flex flex-col items-center justify-center gap-2">
+                  <Gift className="h-12 w-12 text-pink-500" />
+                  <span className="text-white font-bold text-sm font-mono">CARTE CADEAU</span>
+                </div>
+              </Card>
+
+              <Card
+                onClick={() => setMethod('check')}
+                className="h-32 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-2 border-orange-500/30 hover:border-orange-500 transition-all"
+              >
+                <div className="h-full flex flex-col items-center justify-center gap-2">
+                  <ReceiptIcon className="h-12 w-12 text-orange-500" />
+                  <span className="text-white font-bold text-sm font-mono">CHÈQUE</span>
+                </div>
+              </Card>
+
+              <Card
+                onClick={() => customerId && setMethod('customer_credit')}
+                className={`h-32 bg-[#1a1a1a] border-2 border-cyan-500/30 transition-all ${
+                  customerId 
+                    ? 'cursor-pointer hover:bg-[#2a2a2a] hover:border-cyan-500' 
+                    : 'cursor-not-allowed opacity-50'
+                }`}
+              >
+                <div className="h-full flex flex-col items-center justify-center gap-2">
+                  <Wallet className="h-12 w-12 text-cyan-500" />
+                  <span className="text-white font-bold text-sm font-mono text-center">CRÉDIT CLIENT</span>
+                  {!customerId && <span className="text-xs text-gray-500">Client requis</span>}
+                </div>
+              </Card>
+
+              <Card
+                onClick={() => {
+                  if (onMixedPayment) {
+                    onOpenChange(false);
+                    onMixedPayment();
+                  }
+                }}
+                className="h-32 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-2 border-yellow-500/30 hover:border-yellow-500 transition-all"
+              >
+                <div className="h-full flex flex-col items-center justify-center gap-2">
+                  <Split className="h-12 w-12 text-yellow-500" />
+                  <span className="text-white font-bold text-sm font-mono">PAIEMENT MIXTE</span>
+                </div>
+              </Card>
+            </div>
           </div>
         ) : method === 'cash' ? (
           <div className="space-y-6">
@@ -178,6 +236,42 @@ export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment }: P
                 onClick={handleConfirm}
                 disabled={!amountPaid || parseFloat(amountPaid) < total}
                 className="flex-1 h-14 bg-pos-success hover:bg-pos-success/90 text-black font-bold text-lg disabled:opacity-50 font-mono"
+              >
+                VALIDER
+              </Button>
+            </div>
+          </div>
+        ) : method === 'gift_card' || method === 'check' || method === 'customer_credit' ? (
+          <div className="space-y-6 py-6">
+            <Card className="p-8 text-center bg-[#1a1a1a] border-2 border-pos-success/30">
+              <div className="animate-pulse mb-4">
+                {method === 'gift_card' && <Gift className="h-24 w-24 mx-auto text-pink-500" />}
+                {method === 'check' && <ReceiptIcon className="h-24 w-24 mx-auto text-orange-500" />}
+                {method === 'customer_credit' && <Wallet className="h-24 w-24 mx-auto text-cyan-500" />}
+              </div>
+              <p className="text-white text-xl font-bold mb-2 font-mono">
+                {method === 'gift_card' && 'SAISIR N° CARTE CADEAU'}
+                {method === 'check' && 'VALIDER LE CHÈQUE'}
+                {method === 'customer_credit' && 'CRÉDIT CLIENT'}
+              </p>
+              <p className="text-gray-400 font-mono">
+                {method === 'gift_card' && 'Scanner ou saisir le numéro...'}
+                {method === 'check' && 'Montant: ' + total.toFixed(2) + '€'}
+                {method === 'customer_credit' && 'Utiliser le crédit disponible'}
+              </p>
+            </Card>
+
+            <div className="flex gap-3">
+              <Button 
+                onClick={handleBack} 
+                className="flex-1 h-14 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono"
+              >
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                RETOUR
+              </Button>
+              <Button 
+                onClick={handleConfirm} 
+                className="flex-1 h-14 bg-pos-success hover:bg-pos-success/90 text-black font-bold text-lg font-mono"
               >
                 VALIDER
               </Button>
