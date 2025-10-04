@@ -34,6 +34,7 @@ const Loyalty = lazy(() => import("./pages/Loyalty"));
 const Payments = lazy(() => import("./pages/Payments"));
 const RemoteScanner = lazy(() => import("./pages/RemoteScanner"));
 const DownloadApp = lazy(() => import("./pages/DownloadApp"));
+const MobileManagement = lazy(() => import("./pages/MobileManagement"));
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/customer-display" element={<CustomerDisplay />} />
             <Route path="/remote-scanner/:sessionCode" element={<RemoteScanner />} />
             <Route path="/download-app" element={<DownloadApp />} />
+            <Route path="/mobile" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
             
             {/* Protected routes with navigation */}
             <Route path="/" element={<ProtectedRoute><ProtectedLayout><Index /></ProtectedLayout></ProtectedRoute>} />
