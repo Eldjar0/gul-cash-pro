@@ -7,12 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Scan, CheckCircle2, AlertCircle, Smartphone, Edit, Plus, Barcode, DollarSign, Package } from 'lucide-react';
+import { Scan, CheckCircle2, AlertCircle, Edit, Plus, Barcode, DollarSign, Package, Calculator, Calendar, Clock, Cloud, Home } from 'lucide-react';
 import { useScanSession, useAddScannedItem } from '@/hooks/useRemoteScan';
 import { useProducts, useCreateProduct, useUpdateProduct, Product } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
+import { useWeather } from '@/hooks/useWeather';
 import { toast } from 'sonner';
-import logo from '@/assets/logo-gul-reyhan.png';
+import logo from '@/assets/logo-gul-reyhan-new.png';
+import { QuickCalculator } from '@/components/pos/QuickCalculator';
 
 export default function RemoteScanner() {
   const { sessionCode } = useParams();
@@ -27,6 +29,8 @@ export default function RemoteScanner() {
   const [editQuantity, setEditQuantity] = useState('1');
   const [editPrice, setEditPrice] = useState('');
   const [newBarcode, setNewBarcode] = useState('');
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -36,6 +40,7 @@ export default function RemoteScanner() {
   const addScannedItem = useAddScannedItem();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
+  const weather = useWeather();
   
   // Sons optimisés
   const successSound = useRef<HTMLAudioElement | null>(null);
@@ -70,6 +75,12 @@ export default function RemoteScanner() {
       document.removeEventListener('click', keepFocused);
       document.removeEventListener('touchstart', keepFocused);
     };
+  }, []);
+
+  useEffect(() => {
+    // Update time every second
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -169,36 +180,82 @@ export default function RemoteScanner() {
     ? products?.find(p => p.barcode === scannedItems[0].barcode)
     : null;
 
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-primary to-primary-foreground">
-      {/* Header */}
-      <div className="bg-background/95 backdrop-blur border-b p-4">
-        <div className="flex items-center justify-between max-w-6xl mx-auto">
-          <div className="flex items-center gap-4">
-            <img src={logo} alt="Logo" className="h-16 w-auto" />
-            <div>
-              <h1 className="text-2xl font-bold">Scanner à Distance</h1>
-              <Badge variant="secondary" className="bg-green-500/20 text-green-700 border-green-500/30">
-                <div className="h-2 w-2 rounded-full bg-green-500 mr-2 animate-pulse"></div>
-                Connecté
-              </Badge>
+    <div className="fixed inset-0 overflow-hidden bg-gradient-to-br from-purple-600 via-pink-500 to-orange-500">
+      {/* Header avec infos */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-2xl">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Info gauche: Date et Heure */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
+                <Calendar className="h-5 w-5" />
+                <span className="font-semibold text-sm">{formatDate(currentTime)}</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
+                <Clock className="h-6 w-6" />
+                <span className="font-bold text-2xl tabular-nums">{formatTime(currentTime)}</span>
+              </div>
+            </div>
+
+            {/* Centre: Status */}
+            <Badge className="bg-green-500 text-white border-0 px-4 py-2 text-base font-bold">
+              <div className="h-3 w-3 rounded-full bg-white mr-2 animate-pulse"></div>
+              Connecté
+            </Badge>
+
+            {/* Info droite: Météo et Actions */}
+            <div className="flex items-center gap-3">
+              {!weather.loading && !weather.error && (
+                <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
+                  <Cloud className="h-5 w-5" />
+                  <span className="font-bold text-xl">{weather.temperature}°C</span>
+                </div>
+              )}
+              <Button 
+                onClick={() => setShowCalculator(!showCalculator)}
+                variant="secondary"
+                size="lg"
+                className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold"
+              >
+                <Calculator className="h-5 w-5 mr-2" />
+                Calculatrice
+              </Button>
+              <Button 
+                onClick={() => navigate('/')} 
+                variant="secondary" 
+                size="lg"
+                className="bg-white hover:bg-gray-100 text-black font-bold"
+              >
+                <Home className="h-5 w-5 mr-2" />
+                Retour Caisse
+              </Button>
             </div>
           </div>
-          <Button onClick={() => navigate('/')} variant="outline" size="lg">
-            Retour Caisse
-          </Button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="h-[calc(100vh-80px)] overflow-auto">
-        <div className="max-w-6xl mx-auto p-6 space-y-6">
+      {/* Main Content - Fixed height, no scroll */}
+      <div className="h-[calc(100vh-88px)] overflow-y-auto">
+        <div className="max-w-7xl mx-auto p-6 space-y-6">
           
-          {/* Zone de Scan */}
-          <Card className="border-4 border-primary/20 shadow-2xl">
+          {/* Logo + Zone de Scan */}
+          <Card className="border-4 border-white/30 shadow-2xl bg-gradient-to-br from-white/95 to-blue-50/95 backdrop-blur">
             <CardHeader className="text-center pb-4">
-              <CardTitle className="text-3xl flex items-center justify-center gap-3">
-                <Scan className="h-10 w-10 text-primary" />
+              {/* Logo centré */}
+              <div className="flex justify-center mb-4">
+                <img src={logo} alt="Logo" className="h-24 w-auto drop-shadow-2xl" />
+              </div>
+              <CardTitle className="text-4xl font-black flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <Scan className="h-12 w-12 text-blue-600" />
                 Scanner un produit
               </CardTitle>
             </CardHeader>
@@ -226,41 +283,41 @@ export default function RemoteScanner() {
 
               {/* Dernier produit scanné */}
               {lastScannedProduct && (
-                <div className="p-6 bg-green-50 border-4 border-green-500 rounded-xl">
+                <div className="p-6 bg-gradient-to-r from-green-400 to-emerald-500 border-4 border-green-600 rounded-2xl shadow-2xl">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle2 className="h-6 w-6 text-green-600" />
-                        <span className="text-sm text-green-600 font-semibold">Dernier scan réussi</span>
+                      <div className="flex items-center gap-2 mb-3">
+                        <CheckCircle2 className="h-8 w-8 text-white drop-shadow-lg" />
+                        <span className="text-lg text-white font-bold drop-shadow">✓ Dernier scan réussi</span>
                       </div>
-                      <h3 className="text-2xl font-bold mb-2">{lastScannedProduct.name}</h3>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Code: </span>
-                          <span className="font-mono font-bold">{lastScannedProduct.barcode}</span>
+                      <h3 className="text-3xl font-black mb-4 text-white drop-shadow-lg">{lastScannedProduct.name}</h3>
+                      <div className="grid grid-cols-2 gap-4 text-base">
+                        <div className="bg-white/20 backdrop-blur p-3 rounded-lg">
+                          <span className="text-white/80 text-sm">Code:</span>
+                          <div className="font-mono font-bold text-white text-lg">{lastScannedProduct.barcode}</div>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground">Prix: </span>
-                          <span className="font-bold">{lastScannedProduct.price.toFixed(2)} €</span>
+                        <div className="bg-white/20 backdrop-blur p-3 rounded-lg">
+                          <span className="text-white/80 text-sm">Prix:</span>
+                          <div className="font-bold text-white text-lg">{lastScannedProduct.price.toFixed(2)} €</div>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground">Stock: </span>
-                          <span className="font-bold">{lastScannedProduct.stock}</span>
+                        <div className="bg-white/20 backdrop-blur p-3 rounded-lg">
+                          <span className="text-white/80 text-sm">Stock:</span>
+                          <div className="font-bold text-white text-lg">{lastScannedProduct.stock}</div>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground">Type: </span>
-                          <span className="font-bold">{lastScannedProduct.type === 'weight' ? 'Poids' : 'Unité'}</span>
+                        <div className="bg-white/20 backdrop-blur p-3 rounded-lg">
+                          <span className="text-white/80 text-sm">Type:</span>
+                          <div className="font-bold text-white text-lg">{lastScannedProduct.type === 'weight' ? 'Poids' : 'Unité'}</div>
                         </div>
                       </div>
                     </div>
-                    <Package className="h-16 w-16 text-green-600 opacity-20" />
+                    <Package className="h-20 w-20 text-white/30 drop-shadow-2xl" />
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Hub Actions - Très Gros Carrés */}
+          {/* Hub Actions - Très Gros Carrés Colorés */}
           <div className="grid grid-cols-2 gap-6">
             <Button
               onClick={() => {
@@ -271,11 +328,10 @@ export default function RemoteScanner() {
                 }
               }}
               disabled={!lastScannedProduct}
-              className="h-48 flex flex-col items-center justify-center gap-4 text-2xl font-bold"
-              variant="outline"
+              className="h-56 flex flex-col items-center justify-center gap-4 text-2xl font-black shadow-2xl bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-4 border-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
             >
-              <Edit className="h-16 w-16" />
-              <span>Modifier Quantité</span>
+              <Edit className="h-20 w-20 drop-shadow-lg" />
+              <span className="drop-shadow">Modifier Quantité</span>
             </Button>
 
             <Button
@@ -287,11 +343,10 @@ export default function RemoteScanner() {
                 }
               }}
               disabled={!lastScannedProduct}
-              className="h-48 flex flex-col items-center justify-center gap-4 text-2xl font-bold"
-              variant="outline"
+              className="h-56 flex flex-col items-center justify-center gap-4 text-2xl font-black shadow-2xl bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-4 border-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
             >
-              <DollarSign className="h-16 w-16" />
-              <span>Modifier Prix</span>
+              <DollarSign className="h-20 w-20 drop-shadow-lg" />
+              <span className="drop-shadow">Modifier Prix</span>
             </Button>
 
             <Button
@@ -303,11 +358,10 @@ export default function RemoteScanner() {
                 }
               }}
               disabled={!lastScannedProduct}
-              className="h-48 flex flex-col items-center justify-center gap-4 text-2xl font-bold"
-              variant="outline"
+              className="h-56 flex flex-col items-center justify-center gap-4 text-2xl font-black shadow-2xl bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-4 border-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
             >
-              <Barcode className="h-16 w-16" />
-              <span>Changer Code</span>
+              <Barcode className="h-20 w-20 drop-shadow-lg" />
+              <span className="drop-shadow">Changer Code</span>
             </Button>
 
             <Button
@@ -315,46 +369,45 @@ export default function RemoteScanner() {
                 setBarcode('');
                 setNewProductDialogOpen(true);
               }}
-              className="h-48 flex flex-col items-center justify-center gap-4 text-2xl font-bold"
-              variant="outline"
+              className="h-56 flex flex-col items-center justify-center gap-4 text-2xl font-black shadow-2xl bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-4 border-purple-700 transition-all duration-200 hover:scale-105"
             >
-              <Plus className="h-16 w-16" />
-              <span>Nouveau Produit</span>
+              <Plus className="h-20 w-20 drop-shadow-lg" />
+              <span className="drop-shadow">Nouveau Produit</span>
             </Button>
           </div>
 
           {/* Historique des scans */}
           {scannedItems.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Historique des scans</CardTitle>
-                <CardDescription>Derniers produits scannés</CardDescription>
+            <Card className="bg-white/90 backdrop-blur border-4 border-indigo-300 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-t-lg">
+                <CardTitle className="text-2xl font-black">📋 Historique des scans</CardTitle>
+                <CardDescription className="text-white/80 font-semibold">Derniers produits scannés</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid gap-2">
+              <CardContent className="pt-4">
+                <div className="grid gap-3">
                   {scannedItems.slice(0, 5).map((item, index) => {
                     const product = products?.find(p => p.barcode === item.barcode);
                     return (
                       <div
                         key={index}
-                        className={`p-4 rounded-lg border-2 flex items-center justify-between ${
+                        className={`p-4 rounded-xl border-3 flex items-center justify-between shadow-lg transition-all ${
                           item.success 
-                            ? 'bg-green-50 border-green-200' 
-                            : 'bg-red-50 border-red-200'
+                            ? 'bg-gradient-to-r from-green-100 to-emerald-100 border-green-400' 
+                            : 'bg-gradient-to-r from-red-100 to-pink-100 border-red-400'
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           {item.success ? (
-                            <CheckCircle2 className="h-6 w-6 text-green-600" />
+                            <CheckCircle2 className="h-7 w-7 text-green-600" />
                           ) : (
-                            <AlertCircle className="h-6 w-6 text-red-600" />
+                            <AlertCircle className="h-7 w-7 text-red-600" />
                           )}
                           <div>
-                            <p className="font-mono font-bold">{item.barcode}</p>
-                            {product && <p className="text-sm text-muted-foreground">{product.name}</p>}
+                            <p className="font-mono font-bold text-lg">{item.barcode}</p>
+                            {product && <p className="text-sm font-semibold text-gray-600">{product.name}</p>}
                           </div>
                         </div>
-                        <span className="text-xs text-muted-foreground">{item.time}</span>
+                        <span className="text-sm font-bold text-gray-500">{item.time}</span>
                       </div>
                     );
                   })}
@@ -364,6 +417,23 @@ export default function RemoteScanner() {
           )}
         </div>
       </div>
+
+      {/* Calculatrice flottante */}
+      {showCalculator && (
+        <div className="fixed bottom-6 right-6 z-50 animate-scale-in">
+          <QuickCalculator
+            onProductCode={(code) => {
+              setBarcode(code);
+              handleScan(code);
+              setShowCalculator(false);
+            }}
+            onCreateProduct={() => {
+              setNewProductDialogOpen(true);
+              setShowCalculator(false);
+            }}
+          />
+        </div>
+      )}
       
       {/* Dialog Modifier Quantité */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
