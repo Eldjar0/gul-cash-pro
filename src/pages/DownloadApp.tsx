@@ -8,8 +8,9 @@ import logo from '@/assets/logo-gul-reyhan-new.png';
 export default function DownloadApp() {
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   
-  // URL de l'APK - À REMPLACER par l'URL réelle de votre APK hébergé
-  const apkUrl = 'https://github.com/VOTRE-USERNAME/VOTRE-REPO/releases/download/v1.0.0/gul-cash-pro.apk';
+  // URL de l'APK - Sera générée automatiquement par GitHub Actions
+  // Format: https://github.com/VOTRE-USERNAME/VOTRE-REPO/releases/latest/download/gul-cash-pro.apk
+  const apkUrl = 'https://github.com/VOTRE-USERNAME/VOTRE-REPO/releases/latest/download/gul-cash-pro.apk';
   
   useEffect(() => {
     if (qrCanvasRef.current) {
@@ -125,34 +126,39 @@ export default function DownloadApp() {
         </Card>
 
         {/* Setup Instructions for Developer */}
-        <Card className="border-4 border-blue-300 bg-blue-50">
+        <Card className="border-4 border-green-300 bg-green-50">
           <CardHeader>
-            <CardTitle className="text-blue-900">👨‍💻 Instructions pour le développeur</CardTitle>
+            <CardTitle className="text-green-900">✅ Compilation Automatique Configurée !</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="bg-blue-900 text-white p-4 rounded-lg font-mono text-xs overflow-x-auto">
-              <p className="font-bold mb-2">Étapes pour compiler et héberger l'APK :</p>
-              <div className="space-y-1">
-                <p>1. Exportez vers GitHub et clonez le projet</p>
-                <p>2. Installez : npm install</p>
-                <p>3. Ajoutez Android : npx cap add android</p>
-                <p>4. Compilez : npm run build && npx cap sync</p>
-                <p>5. Ouvrez Android Studio : npx cap open android</p>
-                <p>6. Build → Build Bundle(s) / APK(s) → Build APK(s)</p>
-                <p>7. Hébergez l'APK sur GitHub Releases ou un serveur</p>
-                <p>8. Mettez à jour l'URL dans src/pages/DownloadApp.tsx (ligne 13)</p>
-              </div>
+          <CardContent className="space-y-4 text-sm">
+            <div className="bg-green-900 text-white p-4 rounded-lg">
+              <p className="font-bold mb-2">🚀 GitHub Actions va compiler l'APK automatiquement !</p>
+              <p className="text-green-200">Un workflow a été créé dans .github/workflows/build-android.yml</p>
             </div>
             
-            <div className="text-blue-900">
-              <p className="font-bold">Pour héberger sur GitHub Releases :</p>
-              <ol className="list-decimal list-inside space-y-1 ml-2">
-                <li>Allez sur votre repo GitHub</li>
-                <li>Cliquez sur "Releases" → "Create a new release"</li>
-                <li>Uploadez votre APK compilé</li>
-                <li>Copiez l'URL du fichier APK</li>
-                <li>Remplacez apkUrl dans ce fichier</li>
-              </ol>
+            <div className="text-green-900 space-y-3">
+              <div>
+                <p className="font-bold mb-2">📋 Étapes simples :</p>
+                <ol className="list-decimal list-inside space-y-2 ml-2 bg-white p-3 rounded border-2 border-green-200">
+                  <li className="font-semibold">Exportez vers GitHub (bouton en haut à droite)</li>
+                  <li>GitHub Actions compile automatiquement l'APK à chaque push</li>
+                  <li>Allez sur votre repo GitHub → onglet "Releases"</li>
+                  <li>Téléchargez l'APK depuis la dernière release</li>
+                  <li>Mettez à jour la ligne 13 de ce fichier avec votre URL GitHub :
+                    <div className="mt-2 p-2 bg-gray-800 text-green-400 rounded font-mono text-xs overflow-x-auto">
+                      https://github.com/VOTRE-USERNAME/VOTRE-REPO/releases/latest/download/gul-cash-pro.apk
+                    </div>
+                  </li>
+                </ol>
+              </div>
+              
+              <div className="bg-yellow-100 border-2 border-yellow-400 p-3 rounded">
+                <p className="font-bold text-yellow-900">⚠️ Important :</p>
+                <p className="text-yellow-800 text-xs">
+                  Après le premier export GitHub, attendez quelques minutes que GitHub Actions compile l'APK. 
+                  Vous verrez un badge vert ✅ dans l'onglet "Actions" quand c'est terminé.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
