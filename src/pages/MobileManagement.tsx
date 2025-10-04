@@ -406,6 +406,19 @@ export default function MobileManagement() {
     const outOfStock = products.filter(p => p.stock === 0).length;
 
     return (
+      <>
+        <MobilePhysicalScanDialog
+          open={physicalScanDialogOpen}
+          onOpenChange={setPhysicalScanDialogOpen}
+          barcode={scannedBarcode}
+          product={scannedProduct}
+          onEditProduct={handlePhysicalScanAddToForm}
+          onAdjustStock={handlePhysicalScanAdjustStock}
+          onCreateProduct={handlePhysicalScanCreateProduct}
+          onChangeCategory={handlePhysicalScanChangeCategory}
+          onCreatePromotion={handlePhysicalScanCreatePromotion}
+          onChangeBarcode={handlePhysicalScanChangeBarcode}
+        />
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-4">
         <div className="max-w-md mx-auto space-y-6 pb-20">
           {/* Reload button */}
@@ -511,12 +524,26 @@ export default function MobileManagement() {
           )}
         </div>
       </div>
+      </>
     );
   }
 
   // Liste des produits
   if (view === 'products') {
     return (
+      <>
+        <MobilePhysicalScanDialog
+          open={physicalScanDialogOpen}
+          onOpenChange={setPhysicalScanDialogOpen}
+          barcode={scannedBarcode}
+          product={scannedProduct}
+          onEditProduct={handlePhysicalScanAddToForm}
+          onAdjustStock={handlePhysicalScanAdjustStock}
+          onCreateProduct={handlePhysicalScanCreateProduct}
+          onChangeCategory={handlePhysicalScanChangeCategory}
+          onCreatePromotion={handlePhysicalScanCreatePromotion}
+          onChangeBarcode={handlePhysicalScanChangeBarcode}
+        />
       <div className="min-h-screen bg-background">
         {/* Header fixe */}
         <div className="sticky top-0 z-10 bg-background border-b p-4 space-y-3">
@@ -636,12 +663,26 @@ export default function MobileManagement() {
           </div>
         </ScrollArea>
       </div>
+      </>
     );
   }
 
   // Formulaire produit
   if (view === 'product-form') {
     return (
+      <>
+        <MobilePhysicalScanDialog
+          open={physicalScanDialogOpen}
+          onOpenChange={setPhysicalScanDialogOpen}
+          barcode={scannedBarcode}
+          product={scannedProduct}
+          onEditProduct={handlePhysicalScanAddToForm}
+          onAdjustStock={handlePhysicalScanAdjustStock}
+          onCreateProduct={handlePhysicalScanCreateProduct}
+          onChangeCategory={handlePhysicalScanChangeCategory}
+          onCreatePromotion={handlePhysicalScanCreatePromotion}
+          onChangeBarcode={handlePhysicalScanChangeBarcode}
+        />
       <div className="min-h-screen bg-background">
         <div className="sticky top-0 z-10 bg-background border-b p-4">
           <div className="flex items-center gap-3">
@@ -785,12 +826,26 @@ export default function MobileManagement() {
           </form>
         </ScrollArea>
       </div>
+      </>
     );
   }
 
   // Ajustement de stock
   if (view === 'stock' && selectedProductForStock) {
     return (
+      <>
+        <MobilePhysicalScanDialog
+          open={physicalScanDialogOpen}
+          onOpenChange={setPhysicalScanDialogOpen}
+          barcode={scannedBarcode}
+          product={scannedProduct}
+          onEditProduct={handlePhysicalScanAddToForm}
+          onAdjustStock={handlePhysicalScanAdjustStock}
+          onCreateProduct={handlePhysicalScanCreateProduct}
+          onChangeCategory={handlePhysicalScanChangeCategory}
+          onCreatePromotion={handlePhysicalScanCreatePromotion}
+          onChangeBarcode={handlePhysicalScanChangeBarcode}
+        />
       <div className="min-h-screen bg-background">
         <div className="sticky top-0 z-10 bg-background border-b p-4">
           <div className="flex items-center gap-3">
@@ -880,24 +935,9 @@ export default function MobileManagement() {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
-  return (
-    <>
-      <MobilePhysicalScanDialog
-        open={physicalScanDialogOpen}
-        onOpenChange={setPhysicalScanDialogOpen}
-        barcode={scannedBarcode}
-        product={scannedProduct}
-        onEditProduct={handlePhysicalScanAddToForm}
-        onAdjustStock={handlePhysicalScanAdjustStock}
-        onCreateProduct={handlePhysicalScanCreateProduct}
-        onChangeCategory={handlePhysicalScanChangeCategory}
-        onCreatePromotion={handlePhysicalScanCreatePromotion}
-        onChangeBarcode={handlePhysicalScanChangeBarcode}
-      />
-      {null}
-    </>
-  );
+  return null;
 }
