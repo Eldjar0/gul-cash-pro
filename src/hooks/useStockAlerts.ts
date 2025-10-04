@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useProducts } from './useProducts';
 import { useCreateNotification } from './useNotifications';
 import { useAuth } from './useAuth';
@@ -7,6 +7,7 @@ export const useStockAlerts = () => {
   const { data: products = [] } = useProducts();
   const createNotification = useCreateNotification();
   const { user } = useAuth();
+  const lastCheckRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!user || !products.length) return;
@@ -28,6 +29,13 @@ export const useStockAlerts = () => {
         product.stock !== null &&
         product.stock <= 0
     );
+
+    // Create a unique key for this stock state
+    const currentStateKey = `${lowStockProducts.length}-${outOfStockProducts.length}-${lowStockProducts.map(p => p.id).join(',')}-${outOfStockProducts.map(p => p.id).join(',')}`;
+    
+    // Only create notifications if the state has changed
+    if (lastCheckRef.current === currentStateKey) return;
+    lastCheckRef.current = currentStateKey;
 
     // Create notification for low stock if any
     if (lowStockProducts.length > 0) {

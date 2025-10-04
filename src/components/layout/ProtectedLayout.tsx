@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { TopNavigation } from './TopNavigation';
 import { PinLockDialog } from '../pos/PinLockDialog';
 import { useStockAlerts } from '@/hooks/useStockAlerts';
+import { usePromotionAlerts } from '@/hooks/usePromotionAlerts';
+import { useDailyReportReminder } from '@/hooks/useDailyReportReminder';
+import { useCustomerMilestoneAlerts } from '@/hooks/useCustomerMilestoneAlerts';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -10,8 +13,11 @@ interface ProtectedLayoutProps {
 export function ProtectedLayout({ children }: ProtectedLayoutProps) {
   const [isLocked, setIsLocked] = useState(false);
   
-  // Monitor stock levels and create alerts
+  // Monitor and create intelligent alerts
   useStockAlerts();
+  usePromotionAlerts();
+  useDailyReportReminder();
+  useCustomerMilestoneAlerts();
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
