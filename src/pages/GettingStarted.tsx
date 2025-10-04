@@ -1,11 +1,37 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, PlayCircle, Settings, FileText, HelpCircle } from "lucide-react";
+import { CheckCircle2, PlayCircle, Settings, FileText, HelpCircle, Loader2, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useState } from "react";
 
 export default function GettingStarted() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const setupAdmin = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('setup-admin');
+      
+      if (error) throw error;
+      
+      toast.success("Compte admin configuré avec succès!", {
+        description: "Identifiant: admin | Mot de passe: 3679"
+      });
+      
+      console.log('Setup result:', data);
+    } catch (error) {
+      console.error('Setup error:', error);
+      toast.error("Erreur lors de la configuration", {
+        description: error instanceof Error ? error.message : "Une erreur est survenue"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -20,6 +46,48 @@ export default function GettingStarted() {
             Retour
           </Button>
         </div>
+
+        {/* Configuration Admin */}
+        <Card className="border-primary/50 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Configuration du compte administrateur
+            </CardTitle>
+            <CardDescription>
+              Créez le compte admin pour accéder au système
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm space-y-2">
+              <p className="font-medium">Cette action va :</p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-2">
+                <li>Supprimer tous les comptes existants</li>
+                <li>Créer le compte admin unique</li>
+                <li>Identifiant : <strong>admin</strong></li>
+                <li>Mot de passe : <strong>3679</strong></li>
+              </ul>
+            </div>
+            <Button 
+              onClick={setupAdmin} 
+              disabled={isLoading}
+              className="w-full"
+              size="lg"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Configuration en cours...
+                </>
+              ) : (
+                <>
+                  <Shield className="mr-2 h-4 w-4" />
+                  Configurer le compte admin
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Steps */}
         <Card>
