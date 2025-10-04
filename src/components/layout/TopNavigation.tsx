@@ -58,20 +58,12 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
     { icon: Package, label: "Produits", path: "/products" },
     { icon: TrendingUp, label: "Dashboard", path: "/dashboard" },
     { icon: FileText, label: "Factures", path: "/invoices" },
-    { icon: FileText, label: "Commandes", path: "/orders" },
-    { icon: BarChart3, label: "Analyses", path: "/analytics" },
-    { icon: FileBarChart, label: "Rapports", path: "/reports-history" },
   ];
 
   const bottomMenuItems = [
-    { icon: Truck, label: "Stock", path: "/inventory" },
-    { icon: Clock, label: "Historique", path: "/stock-history" },
-    { icon: Truck, label: "Fournisseurs", path: "/suppliers" },
-    { icon: Users, label: "Clients", path: "/customers" },
-    { icon: Gift, label: "Fidélité", path: "/loyalty" },
-    { icon: CreditCard, label: "Paiements", path: "/payments" },
-    { icon: Tags, label: "Promotions", path: "/promotions" },
-    { icon: AlertTriangle, label: "Remboursements", path: "/refunds" },
+    { icon: Truck, label: "Stock & Fournisseurs", path: "/stock-management" },
+    { icon: Users, label: "Clients & Fidélité", path: "/clients-management" },
+    { icon: BarChart3, label: "Analyses & Rapports", path: "/reports-analytics" },
     { icon: Settings, label: "Configuration", path: "/settings" },
   ];
 

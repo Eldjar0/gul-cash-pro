@@ -24,15 +24,13 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Customers = lazy(() => import("./pages/Customers"));
 const Invoices = lazy(() => import("./pages/Invoices"));
 const CustomerDisplay = lazy(() => import("./pages/CustomerDisplay"));
-const ReportsHistory = lazy(() => import("./pages/ReportsHistory"));
 const LegalInfo = lazy(() => import("./pages/LegalInfo"));
 const GettingStarted = lazy(() => import("./pages/GettingStarted"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const InvoiceCreate = lazy(() => import("./pages/InvoiceCreate"));
-const Inventory = lazy(() => import("./pages/Inventory"));
-const Orders = lazy(() => import("./pages/Orders"));
-const Loyalty = lazy(() => import("./pages/Loyalty"));
-const Payments = lazy(() => import("./pages/Payments"));
+const ClientsManagement = lazy(() => import("./pages/ClientsManagement"));
+const StockManagement = lazy(() => import("./pages/StockManagement"));
+const ReportsAnalytics = lazy(() => import("./pages/ReportsAnalytics"));
 const RemoteScanner = lazy(() => import("./pages/RemoteScanner"));
 const DownloadApp = lazy(() => import("./pages/DownloadApp"));
 const MobileManagement = lazy(() => import("./pages/MobileManagement"));
@@ -80,23 +78,16 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><ProtectedLayout><Index /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><ProtectedLayout><Dashboard /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/sales" element={<ProtectedRoute><ProtectedLayout><Sales /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/refunds" element={<ProtectedRoute><ProtectedLayout><Refunds /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/analytics" element={<ProtectedRoute><ProtectedLayout><Analytics /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/promotions" element={<ProtectedRoute><ProtectedLayout><Promotions /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/suppliers" element={<ProtectedRoute><ProtectedLayout><Suppliers /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/stock-history" element={<ProtectedRoute><ProtectedLayout><StockHistory /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/products" element={<ProtectedRoute><ProtectedLayout><Products /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/customers" element={<ProtectedRoute><ProtectedLayout><Customers /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/clients-management" element={<ProtectedRoute><ProtectedLayout><ClientsManagement /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/stock-management" element={<ProtectedRoute><ProtectedLayout><StockManagement /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/reports-analytics" element={<ProtectedRoute><ProtectedLayout><ReportsAnalytics /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/invoices" element={<ProtectedRoute><ProtectedLayout><Invoices /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/invoices/create" element={<ProtectedRoute><ProtectedLayout><InvoiceCreate /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><ProtectedLayout><Settings /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/reports-history" element={<ProtectedRoute><ProtectedLayout><ReportsHistory /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/legal-info" element={<ProtectedRoute><ProtectedLayout><LegalInfo /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/getting-started" element={<ProtectedRoute><ProtectedLayout><GettingStarted /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/inventory" element={<ProtectedRoute><ProtectedLayout><Inventory /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/orders" element={<ProtectedRoute><ProtectedLayout><Orders /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/loyalty" element={<ProtectedRoute><ProtectedLayout><Loyalty /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/payments" element={<ProtectedRoute><ProtectedLayout><Payments /></ProtectedLayout></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
