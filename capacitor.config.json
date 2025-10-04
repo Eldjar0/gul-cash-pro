@@ -3,7 +3,7 @@
   "appName": "gul-cash-pro",
   "webDir": "dist",
   "server": {
-    "url": "https://gul-caisse.jlprod.be",
+    "url": "https://gul-caisse.jlprod.be/mobile",
     "cleartext": true,
     "allowNavigation": [
       "gul-caisse.jlprod.be",
