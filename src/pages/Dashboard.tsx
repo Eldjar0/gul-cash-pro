@@ -6,6 +6,10 @@ import { useTodayReport } from '@/hooks/useDailyReports';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { LowStockAlert } from '@/components/dashboard/LowStockAlert';
+import { TopProductsCard } from '@/components/dashboard/TopProductsCard';
+import { CashierPerformanceCard } from '@/components/dashboard/CashierPerformanceCard';
+import { RevenueChart } from '@/components/dashboard/RevenueChart';
+import { PaymentMethodsCard } from '@/components/dashboard/PaymentMethodsCard';
 import {
   TrendingUp,
   TrendingDown,
@@ -233,6 +237,23 @@ export default function Dashboard() {
             </div>
           </Card>
         )}
+
+        {/* Analytics avancées */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Analytics Avancées</h2>
+          
+          {/* Graphique revenus */}
+          <RevenueChart />
+
+          {/* Top produits et performance caissiers */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <TopProductsCard />
+            <CashierPerformanceCard />
+          </div>
+
+          {/* Répartition paiements */}
+          <PaymentMethodsCard />
+        </div>
       </div>
     </ProtectedLayout>
   );
