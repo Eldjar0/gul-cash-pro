@@ -12,14 +12,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -29,7 +21,6 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import {
-  ArrowLeft,
   Plus,
   Edit,
   Trash2,
@@ -37,6 +28,12 @@ import {
   Package,
   AlertTriangle,
   FolderKanban,
+  TrendingDown,
+  TrendingUp,
+  BarChart3,
+  DollarSign,
+  ShoppingBag,
+  AlertCircle,
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
@@ -56,7 +53,9 @@ export default function Products() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [stockFilter, setStockFilter] = useState<'all' | 'low' | 'out'>('all');
   const barcodeInputRef = useRef<HTMLInputElement>(null);
+  
   const [formData, setFormData] = useState({
     barcode: '',
     name: '',
@@ -73,47 +72,36 @@ export default function Products() {
     image: '',
   });
 
-  // Auto-focus sur le champ code-barres quand le dialogue s'ouvre
   useEffect(() => {
     if (dialogOpen && barcodeInputRef.current) {
-      setTimeout(() => {
-        barcodeInputRef.current?.focus();
-      }, 100);
+      setTimeout(() => barcodeInputRef.current?.focus(), 100);
     }
   }, [dialogOpen]);
 
   const filteredProducts = products.filter((product) => {
     const trimmedSearch = searchTerm.trim();
+    const searchLower = trimmedSearch.toLowerCase();
+    
+    // Stock filter
+    if (stockFilter === 'low') {
+      const hasLowStock = product.stock !== undefined && 
+                         product.min_stock !== undefined && 
+                         product.stock > 0 &&
+                         product.stock <= product.min_stock;
+      if (!hasLowStock) return false;
+    } else if (stockFilter === 'out') {
+      if (product.stock === undefined || product.stock > 0) return false;
+    }
+    
+    // Search filter
     if (!trimmedSearch) return true;
     
-    const searchLower = trimmedSearch.toLowerCase();
     const isNumber = !isNaN(Number(trimmedSearch)) && trimmedSearch !== '';
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedSearch);
     
-    // Recherche dans le nom
     if (product.name.toLowerCase().includes(searchLower)) return true;
-    
-    // Recherche dans le code-barres (normalisé)
-    if (product.barcode) {
-      const normalizedBarcode = product.barcode.replace(/[^0-9]/g, '');
-      const normalizedSearch = trimmedSearch.replace(/[^0-9]/g, '');
-      if (searchLower && normalizedBarcode.toLowerCase().includes(searchLower)) return true;
-      if (normalizedSearch.length > 0 && normalizedBarcode.includes(normalizedSearch)) return true;
-    }
-    
-    // Recherche dans la description
+    if (product.barcode?.toLowerCase().includes(searchLower)) return true;
     if (product.description?.toLowerCase().includes(searchLower)) return true;
-    
-    // Recherche par ID
-    if (isUUID && product.id === trimmedSearch) return true;
-    if (product.id.toLowerCase().includes(searchLower)) return true;
-    
-    // Recherche par prix
-    if (isNumber) {
-      const numValue = Number(trimmedSearch);
-      if (Math.abs(product.price - numValue) < 0.01) return true;
-      if (product.price.toString().includes(trimmedSearch)) return true;
-    }
+    if (isNumber && Math.abs(product.price - Number(trimmedSearch)) < 0.01) return true;
     
     return false;
   });
@@ -157,7 +145,6 @@ export default function Products() {
     setDialogOpen(true);
   };
 
-  // Ouvrir automatiquement le formulaire si on arrive avec ?new=1&barcode=XXX
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const shouldOpen = params.get('new');
@@ -167,7 +154,6 @@ export default function Products() {
       handleOpenDialog();
       setFormData((prev) => ({ ...prev, barcode: digitsOnly }));
       setTimeout(() => barcodeInputRef.current?.focus(), 100);
-      // Nettoyer l'URL pour éviter les réouvertures
       navigate('/products', { replace: true });
     }
   }, [location.search]);
@@ -213,199 +199,346 @@ export default function Products() {
     }
   };
 
-  const getLowStockProducts = () => {
-    return products.filter(p => 
-      p.stock !== undefined && 
-      p.min_stock !== undefined && 
-      p.stock <= p.min_stock
-    );
+  const getStats = () => {
+    const lowStock = products.filter(p => 
+      p.stock !== undefined && p.min_stock !== undefined && p.stock > 0 && p.stock <= p.min_stock
+    ).length;
+    const outOfStock = products.filter(p => p.stock === 0).length;
+    const totalValue = products.reduce((sum, p) => sum + (p.price * (p.stock || 0)), 0);
+    const totalCostValue = products.reduce((sum, p) => sum + ((p.cost_price || 0) * (p.stock || 0)), 0);
+    const profit = totalValue - totalCostValue;
+    
+    return { lowStock, outOfStock, totalValue, totalCostValue, profit };
   };
 
-  const lowStockCount = getLowStockProducts().length;
+  const { lowStock, outOfStock, totalValue, totalCostValue, profit } = getStats();
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto mb-4"></div>
+          <p className="text-lg text-muted-foreground font-medium">Chargement des produits...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-3">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Page Title & Actions */}
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 md:gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/')}
-              className="text-white hover:bg-white/20 shrink-0"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-lg md:text-2xl font-bold text-white">Gestion des Produits</h1>
-              <p className="text-xs md:text-sm text-white/80">{products.length} produits</p>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary/10 rounded-xl">
+                <Package className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-black text-foreground">Gestion Produits</h1>
+                <p className="text-muted-foreground text-lg">{products.length} produits au catalogue</p>
+              </div>
             </div>
           </div>
           <div className="flex gap-2">
             <Button
               onClick={() => setCategoryDialogOpen(true)}
               variant="outline"
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+              size="lg"
+              className="h-12"
             >
-              <FolderKanban className="h-4 w-4 mr-2" />
+              <FolderKanban className="h-5 w-5 mr-2" />
               Catégories
             </Button>
             <Button
               onClick={() => handleOpenDialog()}
-              className="bg-white text-primary hover:bg-white/90"
+              size="lg"
+              className="h-12 bg-primary hover:bg-primary/90"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Nouveau
+              <Plus className="h-5 w-5 mr-2" />
+              Nouveau Produit
             </Button>
           </div>
         </div>
-      </div>
 
-      <div className="p-4 md:p-6 max-w-7xl mx-auto">
-        {/* Alert Stock */}
-        {lowStockCount > 0 && (
-          <Card className="p-4 mb-4 bg-destructive/10 border-destructive/20">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              <div>
-                <p className="font-semibold text-destructive">Stock faible</p>
-                <p className="text-sm text-muted-foreground">
-                  {lowStockCount} produit{lowStockCount > 1 ? 's' : ''} en dessous du stock minimum
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="p-6 bg-gradient-to-br from-primary to-primary-glow text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <p className="text-white/80 text-sm font-medium">Valeur Stock</p>
+                <p className="text-3xl font-black">{totalValue.toFixed(2)}€</p>
+                <div className="flex items-center gap-1 text-white/60 text-xs">
+                  <ShoppingBag className="h-3 w-3" />
+                  <span>Prix de vente</span>
+                </div>
+              </div>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <DollarSign className="h-6 w-6" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 bg-gradient-to-br from-accent to-accent/80 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <p className="text-white/80 text-sm font-medium">Marge Potentielle</p>
+                <p className="text-3xl font-black">{profit.toFixed(2)}€</p>
+                <div className="flex items-center gap-1 text-white/60 text-xs">
+                  <TrendingUp className="h-3 w-3" />
+                  <span>{((profit / totalCostValue) * 100 || 0).toFixed(1)}% de marge</span>
+                </div>
+              </div>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <BarChart3 className="h-6 w-6" />
+              </div>
+            </div>
+          </Card>
+
+          <Card 
+            className="p-6 bg-gradient-to-br from-category-orange to-category-orange/80 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100 cursor-pointer"
+            onClick={() => setStockFilter(stockFilter === 'low' ? 'all' : 'low')}
+          >
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <p className="text-white/80 text-sm font-medium">Stock Faible</p>
+                <p className="text-3xl font-black">{lowStock}</p>
+                <p className="text-white/60 text-xs">Produits à commander</p>
+              </div>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <AlertTriangle className="h-6 w-6" />
+              </div>
+            </div>
+          </Card>
+
+          <Card 
+            className="p-6 bg-gradient-to-br from-destructive to-destructive/80 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100 cursor-pointer"
+            onClick={() => setStockFilter(stockFilter === 'out' ? 'all' : 'out')}
+          >
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <p className="text-white/80 text-sm font-medium">Rupture de Stock</p>
+                <p className="text-3xl font-black">{outOfStock}</p>
+                <p className="text-white/60 text-xs">Produits épuisés</p>
+              </div>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <AlertCircle className="h-6 w-6" />
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Alert Banners */}
+        {lowStock > 0 && (
+          <Card className="p-5 bg-gradient-to-r from-category-orange/10 to-category-orange/5 border-2 border-category-orange/20">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-category-orange/20 rounded-lg shrink-0">
+                <AlertTriangle className="h-6 w-6 text-category-orange" />
+              </div>
+              <div className="space-y-1">
+                <p className="font-bold text-lg text-foreground">Alerte Stock Faible</p>
+                <p className="text-muted-foreground">
+                  {lowStock} produit{lowStock > 1 ? 's sont' : ' est'} en dessous du stock minimum et nécessite{lowStock > 1 ? 'nt' : ''} une commande urgente
                 </p>
               </div>
             </div>
           </Card>
         )}
 
-        {/* Search */}
-        <Card className="p-4 bg-white mb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher par nom, code-barres, ID ou prix..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+        {outOfStock > 0 && (
+          <Card className="p-5 bg-gradient-to-r from-destructive/10 to-destructive/5 border-2 border-destructive/20">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-destructive/20 rounded-lg shrink-0">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+              </div>
+              <div className="space-y-1">
+                <p className="font-bold text-lg text-foreground">Rupture de Stock</p>
+                <p className="text-muted-foreground">
+                  {outOfStock} produit{outOfStock > 1 ? 's sont' : ' est'} totalement épuisé{outOfStock > 1 ? 's' : ''} et indisponible{outOfStock > 1 ? 's' : ''} à la vente
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Search & Filter */}
+        <Card className="p-4 bg-white border-0 shadow-lg">
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par nom, code-barres, description ou prix..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-11 h-12 text-base"
+              />
+            </div>
+            <Select value={stockFilter} onValueChange={(v: any) => setStockFilter(v)}>
+              <SelectTrigger className="w-[200px] h-12">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les produits</SelectItem>
+                <SelectItem value="low">Stock faible</SelectItem>
+                <SelectItem value="out">Rupture de stock</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </Card>
 
-        {/* Products Table */}
-        <Card className="bg-white overflow-hidden">
-          <div className="overflow-x-auto">
-            <ScrollArea className="h-[calc(100vh-350px)]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Code-barres</TableHead>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Catégorie</TableHead>
-                    <TableHead>Prix</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead>TVA</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProducts.map((product) => {
-                    const category = categories.find(c => c.id === product.category_id);
-                    const isLowStock = product.stock !== undefined && 
-                                      product.min_stock !== undefined && 
-                                      product.stock <= product.min_stock;
-                    
-                    return (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-mono text-sm">
-                          {product.barcode || '-'}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{product.name}</p>
-                            {product.description && (
-                              <p className="text-xs text-muted-foreground truncate max-w-xs">
-                                {product.description}
-                              </p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {category ? (
-                            <Badge 
-                              style={{ backgroundColor: category.color + '20', color: category.color }}
-                            >
+        {/* Products Grid */}
+        <ScrollArea className="h-[calc(100vh-620px)]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-4">
+            {filteredProducts.map((product) => {
+              const category = categories.find(c => c.id === product.category_id);
+              const isLowStock = product.stock !== undefined && 
+                                product.min_stock !== undefined && 
+                                product.stock > 0 &&
+                                product.stock <= product.min_stock;
+              const isOutOfStock = product.stock === 0;
+              const margin = product.cost_price ? ((product.price - product.cost_price) / product.cost_price * 100) : 0;
+              
+              return (
+                <Card
+                  key={product.id}
+                  className={`p-5 border-2 hover:shadow-lg transition-all duration-100 ${
+                    isOutOfStock 
+                      ? 'border-destructive/30 bg-destructive/5' 
+                      : isLowStock 
+                      ? 'border-category-orange/30 bg-category-orange/5'
+                      : 'hover:border-primary/30 bg-white'
+                  }`}
+                >
+                  <div className="space-y-4">
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-start gap-2">
+                          {product.barcode && (
+                            <Badge variant="outline" className="font-mono text-xs">
+                              {product.barcode}
+                            </Badge>
+                          )}
+                          {category && (
+                            <Badge style={{ backgroundColor: category.color + '20', color: category.color }}>
                               {category.name}
                             </Badge>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">-</span>
                           )}
-                        </TableCell>
-                        <TableCell className="font-semibold">
-                          {product.price.toFixed(2)}€ / {product.unit || 'u'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span className={isLowStock ? 'text-destructive font-semibold' : ''}>
-                              {product.stock !== undefined ? product.stock : '-'}
-                            </span>
-                            {isLowStock && (
-                              <AlertTriangle className="h-4 w-4 text-destructive" />
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>{product.vat_rate}%</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleOpenDialog(product)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(product.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  {filteredProducts.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        Aucun produit trouvé
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+                        </div>
+                        <h3 className="text-xl font-bold text-foreground">{product.name}</h3>
+                        {product.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenDialog(product)}
+                          className="h-10 w-10"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(product.id)}
+                          className="h-10 w-10 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Pricing & Stock Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Prix de Vente</p>
+                        <p className="text-2xl font-black text-primary">{product.price.toFixed(2)}€</p>
+                        <p className="text-xs text-muted-foreground">/ {product.unit || 'u'}</p>
+                      </div>
+
+                      {product.cost_price && (
+                        <div className="p-3 bg-muted/50 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Prix d'Achat</p>
+                          <p className="text-lg font-bold">{product.cost_price.toFixed(2)}€</p>
+                          <p className={`text-xs font-semibold ${margin >= 0 ? 'text-accent' : 'text-destructive'}`}>
+                            {margin >= 0 ? <TrendingUp className="h-3 w-3 inline mr-1" /> : <TrendingDown className="h-3 w-3 inline mr-1" />}
+                            {margin.toFixed(1)}% marge
+                          </p>
+                        </div>
+                      )}
+
+                      <div className={`p-3 rounded-lg ${
+                        isOutOfStock 
+                          ? 'bg-destructive/10' 
+                          : isLowStock 
+                          ? 'bg-category-orange/10'
+                          : 'bg-accent/10'
+                      }`}>
+                        <p className="text-xs text-muted-foreground mb-1">Stock Actuel</p>
+                        <div className="flex items-center gap-2">
+                          <p className={`text-2xl font-black ${
+                            isOutOfStock ? 'text-destructive' : isLowStock ? 'text-category-orange' : 'text-accent'
+                          }`}>
+                            {product.stock !== undefined ? product.stock : '-'}
+                          </p>
+                          {(isLowStock || isOutOfStock) && (
+                            <AlertTriangle className={`h-5 w-5 ${isOutOfStock ? 'text-destructive' : 'text-category-orange'}`} />
+                          )}
+                        </div>
+                        {product.min_stock !== undefined && (
+                          <p className="text-xs text-muted-foreground">Min: {product.min_stock}</p>
+                        )}
+                      </div>
+
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">TVA</p>
+                        <p className="text-lg font-bold">{product.vat_rate}%</p>
+                        {product.supplier && (
+                          <p className="text-xs text-muted-foreground truncate">{product.supplier}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Stock Status Badge */}
+                    {isOutOfStock && (
+                      <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                        <p className="text-sm font-bold text-destructive text-center">
+                          ⚠️ RUPTURE DE STOCK - Commande urgente requise
+                        </p>
+                      </div>
+                    )}
+                    {isLowStock && !isOutOfStock && (
+                      <div className="p-3 bg-category-orange/10 border border-category-orange/20 rounded-lg">
+                        <p className="text-sm font-bold text-category-orange text-center">
+                          ⚠️ Stock faible - Réapprovisionnement recommandé
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+
+            {filteredProducts.length === 0 && (
+              <div className="col-span-full text-center py-16">
+                <div className="inline-flex p-6 bg-muted/30 rounded-full mb-4">
+                  <Package className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <p className="text-xl font-semibold text-muted-foreground">Aucun produit trouvé</p>
+                <p className="text-sm text-muted-foreground mt-2">Essayez de modifier vos critères de recherche</p>
+              </div>
+            )}
           </div>
-        </Card>
+        </ScrollArea>
       </div>
 
       {/* Product Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-2xl">
               {editingProduct ? 'Modifier le produit' : 'Nouveau produit'}
             </DialogTitle>
           </DialogHeader>
@@ -416,37 +549,8 @@ export default function Products() {
                 <Input
                   ref={barcodeInputRef}
                   id="barcode"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  autoComplete="off"
                   value={formData.barcode}
-                  onChange={(e) => {
-                    // Fallback: copier-coller → ne garder que les chiffres
-                    const digitsOnly = e.target.value.replace(/\D+/g, '');
-                    setFormData({ ...formData, barcode: digitsOnly });
-                  }}
-                  onKeyDown={(e) => {
-                    // Empêcher le système de scan global et capturer les vrais chiffres via code physique
-                    e.stopPropagation();
-                    const code = e.code;
-                    let digit = '';
-                    if (code.startsWith('Digit')) {
-                      digit = code.replace('Digit', '');
-                    } else if (code.startsWith('Numpad')) {
-                      digit = code.replace('Numpad', '');
-                    }
-                    if (digit && /^[0-9]$/.test(digit)) {
-                      e.preventDefault();
-                      setFormData({ ...formData, barcode: (formData.barcode || '') + digit });
-                    } else if (e.key === 'Backspace') {
-                      e.preventDefault();
-                      setFormData({ ...formData, barcode: (formData.barcode || '').slice(0, -1) });
-                    } else if (e.key === 'Enter' || e.key === 'Tab') {
-                      return; // laisser passer
-                    } else if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
-                      e.preventDefault(); // bloquer symboles
-                    }
-                  }}
+                  onChange={(e) => setFormData({ ...formData, barcode: e.target.value.replace(/\D+/g, '') })}
                   placeholder="Ex: 3760123456789"
                 />
               </div>
@@ -520,17 +624,10 @@ export default function Products() {
                     <SelectItem value="unité">Unité (u)</SelectItem>
                     <SelectItem value="carton">Carton</SelectItem>
                     <SelectItem value="lot">Lot</SelectItem>
-                    <SelectItem value="pack">Pack</SelectItem>
                     <SelectItem value="kg">Kilogramme (kg)</SelectItem>
                     <SelectItem value="g">Gramme (g)</SelectItem>
                     <SelectItem value="litre">Litre (L)</SelectItem>
                     <SelectItem value="ml">Millilitre (ml)</SelectItem>
-                    <SelectItem value="m">Mètre (m)</SelectItem>
-                    <SelectItem value="m2">Mètre carré (m²)</SelectItem>
-                    <SelectItem value="m3">Mètre cube (m³)</SelectItem>
-                    <SelectItem value="pièce">Pièce</SelectItem>
-                    <SelectItem value="boîte">Boîte</SelectItem>
-                    <SelectItem value="sachet">Sachet</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -585,7 +682,7 @@ export default function Products() {
                   placeholder="0"
                 />
               </div>
-              <div className="col-span-2 md:col-span-1">
+              <div className="col-span-2">
                 <Label htmlFor="supplier">Fournisseur</Label>
                 <Input
                   id="supplier"
@@ -595,11 +692,11 @@ export default function Products() {
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                 Annuler
               </Button>
-              <Button type="submit">
+              <Button type="submit" className="min-w-[120px]">
                 {editingProduct ? 'Mettre à jour' : 'Créer'}
               </Button>
             </DialogFooter>
