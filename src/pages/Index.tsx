@@ -1258,7 +1258,7 @@ const Index = () => {
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Pin Lock Dialog */}
       <PinLockDialog 
         open={isLocked} 
@@ -1405,7 +1405,7 @@ const Index = () => {
           </div>
 
           {/* Items list - Modern cards */}
-          <ScrollArea className="flex-1 p-1.5 bg-background/50 h-[calc(100vh-370px)]">
+          <ScrollArea className="flex-1 p-1.5 bg-background/50">
             {cart.length === 0 ? (
               <div className="text-center py-6">
                 <div className="p-3 bg-muted/50 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">

@@ -96,9 +96,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="gap-2">
-                  <ShoppingCart className="h-4 w-4" />
-                  Ventes
+                <NavigationMenuTrigger className="flex-col gap-1 py-1">
+                  <ShoppingCart className="h-5 w-5" />
+                  <span className="text-[11px] leading-tight">Ventes</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
@@ -120,9 +120,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="gap-2">
-                  <Package className="h-4 w-4" />
-                  Gestion
+                <NavigationMenuTrigger className="flex-col gap-1 py-1">
+                  <Package className="h-5 w-5" />
+                  <span className="text-[11px] leading-tight">Gestion</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
@@ -144,9 +144,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="gap-2">
-                  <Users className="h-4 w-4" />
-                  Clients
+                <NavigationMenuTrigger className="flex-col gap-1 py-1">
+                  <Users className="h-5 w-5" />
+                  <span className="text-[11px] leading-tight">Clients</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
@@ -168,9 +168,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  Rapports
+                <NavigationMenuTrigger className="flex-col gap-1 py-1">
+                  <BarChart3 className="h-5 w-5" />
+                  <span className="text-[11px] leading-tight">Rapports</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
