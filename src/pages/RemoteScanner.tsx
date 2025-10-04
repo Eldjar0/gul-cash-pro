@@ -146,173 +146,206 @@ export default function RemoteScanner() {
     );
   }
 
+  const lastScannedProduct = scannedItems.length > 0 && scannedItems[0].success
+    ? products?.find(p => p.barcode === scannedItems[0].barcode)
+    : null;
+
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-primary via-primary/90 to-primary/80 overflow-hidden">
-      <div className="h-full flex flex-col p-4 gap-4">
-        {/* Header Compact */}
-        <div className="flex items-center justify-between text-white/90 pb-2 border-b border-white/20">
-          <div className="flex items-center gap-2">
-            <Smartphone className="h-5 w-5" />
-            <span className="font-semibold">Scanner à Distance</span>
-            <Badge variant="secondary" className="animate-pulse bg-green-500 text-white border-0">
-              <div className="h-2 w-2 rounded-full bg-white mr-2"></div>
-              Actif
-            </Badge>
+    <div className="fixed inset-0 bg-gradient-to-br from-primary to-primary-foreground">
+      {/* Header */}
+      <div className="bg-background/95 backdrop-blur border-b p-4">
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Smartphone className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">Scanner à Distance</h1>
+              <Badge variant="secondary" className="bg-green-500/20 text-green-700 border-green-500/30">
+                <div className="h-2 w-2 rounded-full bg-green-500 mr-2 animate-pulse"></div>
+                Connecté
+              </Badge>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="secondary" 
-              size="sm"
-              onClick={() => navigate('/')}
-            >
-              Retour Caisse
-            </Button>
-          </div>
+          <Button onClick={() => navigate('/')} variant="outline">
+            Retour Caisse
+          </Button>
         </div>
+      </div>
 
-        {/* Scanner Input - Grande zone centrale */}
-        <div className="flex-1 flex flex-col justify-center">
-          <Card className="bg-white/95 backdrop-blur shadow-2xl border-4 border-white">
-            <CardContent className="p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="text-center space-y-4">
-                  <div className="flex justify-center">
-                    <div className="p-6 bg-primary/10 rounded-full">
-                      <Scan className="h-16 w-16 text-primary" />
-                    </div>
-                  </div>
-                  <h2 className="text-3xl font-bold text-primary">Scanner un produit</h2>
-                </div>
-                
-                <div className="space-y-4">
-                  <Input
-                    ref={inputRef}
-                    type="text"
-                    placeholder="Code-barres..."
-                    value={barcode}
-                    onChange={(e) => setBarcode(e.target.value)}
-                    className="text-2xl h-20 text-center font-mono font-bold border-4 focus-visible:ring-4"
-                    autoFocus
-                  />
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button 
-                      type="submit" 
-                      size="lg"
-                      className="h-16 text-xl font-semibold"
-                      disabled={!barcode.trim()}
-                    >
-                      <CheckCircle2 className="h-6 w-6 mr-2" />
-                      Scanner
-                    </Button>
-                    
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      size="lg"
-                      className="h-16 text-xl font-semibold"
-                      onClick={() => setNewProductDialogOpen(true)}
-                    >
-                      <Plus className="h-6 w-6 mr-2" />
-                      Nouveau
-                    </Button>
-                  </div>
-                </div>
+      {/* Main Content */}
+      <div className="h-[calc(100vh-80px)] overflow-auto">
+        <div className="max-w-6xl mx-auto p-6 space-y-6">
+          
+          {/* Zone de Scan */}
+          <Card className="border-4 border-primary/20 shadow-2xl">
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-3xl flex items-center justify-center gap-3">
+                <Scan className="h-10 w-10 text-primary" />
+                Scanner un produit
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Scannez ou saisissez le code-barres..."
+                  value={barcode}
+                  onChange={(e) => setBarcode(e.target.value)}
+                  className="text-3xl h-24 text-center font-mono font-bold border-4 focus-visible:ring-4"
+                  autoFocus
+                />
+                <Button 
+                  type="submit" 
+                  size="lg"
+                  className="w-full h-20 text-2xl"
+                  disabled={!barcode.trim()}
+                >
+                  <CheckCircle2 className="h-8 w-8 mr-3" />
+                  Valider le scan
+                </Button>
               </form>
-              
-              {/* Actions rapides */}
-              <div className="grid grid-cols-3 gap-2 mt-6 pt-6 border-t">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => {
-                    const lastSuccess = scannedItems.find(i => i.success);
-                    if (lastSuccess) {
-                      const prod = products?.find(p => p.barcode === lastSuccess.barcode);
-                      if (prod) {
-                        setSelectedProduct(prod);
-                        setEditPriceDialogOpen(true);
-                      }
-                    }
-                  }}
-                >
-                  <DollarSign className="h-4 w-4 mr-1" />
-                  Prix
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => {
-                    const lastSuccess = scannedItems.find(i => i.success);
-                    if (lastSuccess) {
-                      const prod = products?.find(p => p.barcode === lastSuccess.barcode);
-                      if (prod) {
-                        setSelectedProduct(prod);
-                        setChangeBarcodeDialogOpen(true);
-                      }
-                    }
-                  }}
-                >
-                  <Barcode className="h-4 w-4 mr-1" />
-                  Code
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => {
-                    const lastSuccess = scannedItems.find(i => i.success);
-                    if (lastSuccess) {
-                      const prod = products?.find(p => p.barcode === lastSuccess.barcode);
-                      if (prod) {
-                        setSelectedProduct(prod);
-                        setEditQuantity('1');
-                        setEditDialogOpen(true);
-                      }
-                    }
-                  }}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Quantité
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Historique Compact */}
-        {scannedItems.length > 0 && (
-          <Card className="bg-white/90 backdrop-blur">
-            <CardContent className="p-3">
-              <div className="flex gap-2 overflow-x-auto">
-                {scannedItems.slice(0, 10).map((item, index) => {
-                  const product = products?.find(p => p.barcode === item.barcode);
-                  return (
-                    <div
-                      key={index}
-                      className={`flex-shrink-0 p-2 rounded-lg border-2 ${
-                        item.success 
-                          ? 'bg-green-50 border-green-500' 
-                          : 'bg-red-50 border-red-500'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {item.success ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <AlertCircle className="h-4 w-4 text-red-600" />
-                        )}
-                        <div className="text-xs">
-                          <div className="font-mono font-bold">{item.barcode}</div>
-                          {product && <div className="text-muted-foreground truncate max-w-[100px]">{product.name}</div>}
+              {/* Dernier produit scanné */}
+              {lastScannedProduct && (
+                <div className="p-6 bg-green-50 border-4 border-green-500 rounded-xl">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle2 className="h-6 w-6 text-green-600" />
+                        <span className="text-sm text-green-600 font-semibold">Dernier scan réussi</span>
+                      </div>
+                      <h3 className="text-2xl font-bold mb-2">{lastScannedProduct.name}</h3>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Code: </span>
+                          <span className="font-mono font-bold">{lastScannedProduct.barcode}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Prix: </span>
+                          <span className="font-bold">{lastScannedProduct.price.toFixed(2)} €</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Stock: </span>
+                          <span className="font-bold">{lastScannedProduct.stock}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Type: </span>
+                          <span className="font-bold">{lastScannedProduct.type === 'weight' ? 'Poids' : 'Unité'}</span>
                         </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                    <Package className="h-16 w-16 text-green-600 opacity-20" />
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
-        )}
+
+          {/* Hub Actions - Gros Carrés */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Button
+              onClick={() => {
+                if (lastScannedProduct) {
+                  setSelectedProduct(lastScannedProduct);
+                  setEditQuantity('1');
+                  setEditDialogOpen(true);
+                }
+              }}
+              disabled={!lastScannedProduct}
+              className="h-32 flex flex-col items-center justify-center gap-3 text-lg"
+              variant="outline"
+            >
+              <Edit className="h-10 w-10" />
+              <span>Modifier Quantité</span>
+            </Button>
+
+            <Button
+              onClick={() => {
+                if (lastScannedProduct) {
+                  setSelectedProduct(lastScannedProduct);
+                  setEditPrice(lastScannedProduct.price.toString());
+                  setEditPriceDialogOpen(true);
+                }
+              }}
+              disabled={!lastScannedProduct}
+              className="h-32 flex flex-col items-center justify-center gap-3 text-lg"
+              variant="outline"
+            >
+              <DollarSign className="h-10 w-10" />
+              <span>Modifier Prix</span>
+            </Button>
+
+            <Button
+              onClick={() => {
+                if (lastScannedProduct) {
+                  setSelectedProduct(lastScannedProduct);
+                  setNewBarcode('');
+                  setChangeBarcodeDialogOpen(true);
+                }
+              }}
+              disabled={!lastScannedProduct}
+              className="h-32 flex flex-col items-center justify-center gap-3 text-lg"
+              variant="outline"
+            >
+              <Barcode className="h-10 w-10" />
+              <span>Changer Code</span>
+            </Button>
+
+            <Button
+              onClick={() => {
+                setBarcode('');
+                setNewProductDialogOpen(true);
+              }}
+              className="h-32 flex flex-col items-center justify-center gap-3 text-lg"
+              variant="outline"
+            >
+              <Plus className="h-10 w-10" />
+              <span>Nouveau Produit</span>
+            </Button>
+          </div>
+
+          {/* Historique des scans */}
+          {scannedItems.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Historique des scans</CardTitle>
+                <CardDescription>Derniers produits scannés</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-2">
+                  {scannedItems.slice(0, 5).map((item, index) => {
+                    const product = products?.find(p => p.barcode === item.barcode);
+                    return (
+                      <div
+                        key={index}
+                        className={`p-4 rounded-lg border-2 flex items-center justify-between ${
+                          item.success 
+                            ? 'bg-green-50 border-green-200' 
+                            : 'bg-red-50 border-red-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {item.success ? (
+                            <CheckCircle2 className="h-6 w-6 text-green-600" />
+                          ) : (
+                            <AlertCircle className="h-6 w-6 text-red-600" />
+                          )}
+                          <div>
+                            <p className="font-mono font-bold">{item.barcode}</p>
+                            {product && <p className="text-sm text-muted-foreground">{product.name}</p>}
+                          </div>
+                        </div>
+                        <span className="text-xs text-muted-foreground">{item.time}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
       
       {/* Dialog Modifier Quantité */}
