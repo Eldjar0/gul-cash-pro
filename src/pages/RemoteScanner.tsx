@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Scan, CheckCircle2, AlertCircle, Edit, Plus, Barcode, DollarSign, Package, Calculator, Calendar, Clock, Cloud, Home } from 'lucide-react';
+import { Scan, CheckCircle2, AlertCircle, Edit, Plus, Barcode, DollarSign, Calculator, Calendar, Clock, Cloud, Home } from 'lucide-react';
 import { useScanSession, useAddScannedItem } from '@/hooks/useRemoteScan';
 import { useProducts, useCreateProduct, useUpdateProduct, Product } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
@@ -42,34 +42,24 @@ export default function RemoteScanner() {
   const updateProduct = useUpdateProduct();
   const weather = useWeather();
   
-  // Sons optimisés
   const successSound = useRef<HTMLAudioElement | null>(null);
   const errorSound = useRef<HTMLAudioElement | null>(null);
   
   useEffect(() => {
-    // Sons de notification plus agréables
     successSound.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTQIGWi77eeeTRAMUKfj8LZjHAY4ktfx');
     errorSound.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAgICAgH9+fn5+fX19fHx8e3t7enp6eXl5eHh4d3d3dnZ2dXV1dHR0c3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nz');
   }, []);
 
   useEffect(() => {
-    // Auto-focus input for barcode scanner and keep it focused
     const keepFocused = () => {
       if (inputRef.current && document.activeElement !== inputRef.current) {
         inputRef.current.focus();
       }
     };
-
-    // Focus immediately
     keepFocused();
-
-    // Keep checking every 100ms to maintain focus
     const interval = setInterval(keepFocused, 100);
-
-    // Also refocus on any click
     document.addEventListener('click', keepFocused);
     document.addEventListener('touchstart', keepFocused);
-
     return () => {
       clearInterval(interval);
       document.removeEventListener('click', keepFocused);
@@ -78,7 +68,6 @@ export default function RemoteScanner() {
   }, []);
 
   useEffect(() => {
-    // Update time every second
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -92,8 +81,6 @@ export default function RemoteScanner() {
 
   const handleScan = async (scannedBarcode: string) => {
     if (!session || !scannedBarcode.trim()) return;
-
-    // Vérifier si le produit existe
     const product = products?.find(p => p.barcode === scannedBarcode.trim());
     
     if (!product) {
@@ -103,7 +90,7 @@ export default function RemoteScanner() {
       ]);
       errorSound.current?.play().catch(() => {});
       toast.error('Produit inconnu', {
-        description: 'Code-barres non trouvé dans le système',
+        description: 'Code-barres non trouvé',
         action: {
           label: 'Créer',
           onClick: () => {
@@ -121,12 +108,10 @@ export default function RemoteScanner() {
         barcode: scannedBarcode.trim(),
         quantity: 1,
       });
-
       setScannedItems(prev => [
         { barcode: scannedBarcode, time: new Date().toLocaleTimeString(), success: true },
         ...prev.slice(0, 19)
       ]);
-      
       setBarcode('');
       successSound.current?.play().catch(() => {});
       toast.success('Produit scanné', { description: product.name });
@@ -147,7 +132,7 @@ export default function RemoteScanner() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Connexion à la session...</p>
+          <p className="text-muted-foreground">Connexion...</p>
         </div>
       </div>
     );
@@ -162,14 +147,10 @@ export default function RemoteScanner() {
               <AlertCircle className="h-6 w-6" />
               <CardTitle>Session Invalide</CardTitle>
             </div>
-            <CardDescription>
-              Cette session de scan n'existe pas ou a expiré.
-            </CardDescription>
+            <CardDescription>Cette session n'existe pas ou a expiré.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate('/')} className="w-full">
-              Retour à la caisse
-            </Button>
+            <Button onClick={() => navigate('/')} className="w-full">Retour à la caisse</Button>
           </CardContent>
         </Card>
       </div>
@@ -180,145 +161,124 @@ export default function RemoteScanner() {
     ? products?.find(p => p.barcode === scannedItems[0].barcode)
     : null;
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  };
+  const formatTime = (date: Date) => date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const formatDate = (date: Date) => date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-gradient-to-br from-purple-600 via-pink-500 to-orange-500">
-      {/* Header avec infos */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-2xl">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            {/* Info gauche: Date et Heure */}
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
-                <Calendar className="h-5 w-5" />
-                <span className="font-semibold text-sm">{formatDate(currentTime)}</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
-                <Clock className="h-6 w-6" />
-                <span className="font-bold text-2xl tabular-nums">{formatTime(currentTime)}</span>
-              </div>
+    <div className="fixed inset-0 overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600">
+      {/* Header Compact Mobile */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-xl">
+        <div className="px-3 py-2 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur px-2 py-1 rounded-lg text-xs">
+              <Clock className="h-3.5 w-3.5" />
+              <span className="font-bold tabular-nums">{formatTime(currentTime)}</span>
             </div>
-
-            {/* Centre: Status */}
-            <Badge className="bg-green-500 text-white border-0 px-4 py-2 text-base font-bold">
-              <div className="h-3 w-3 rounded-full bg-white mr-2 animate-pulse"></div>
+            <Badge className="bg-green-500 text-white border-0 px-2 py-0.5 text-xs font-bold">
+              <div className="h-2 w-2 rounded-full bg-white mr-1 animate-pulse"></div>
               Connecté
             </Badge>
-
-            {/* Info droite: Météo et Actions */}
-            <div className="flex items-center gap-3">
-              {!weather.loading && !weather.error && (
-                <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
-                  <Cloud className="h-5 w-5" />
-                  <span className="font-bold text-xl">{weather.temperature}°C</span>
-                </div>
-              )}
-              <Button 
-                onClick={() => setShowCalculator(!showCalculator)}
-                variant="secondary"
-                size="lg"
-                className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold"
-              >
-                <Calculator className="h-5 w-5 mr-2" />
-                Calculatrice
-              </Button>
-              <Button 
-                onClick={() => navigate('/')} 
-                variant="secondary" 
-                size="lg"
-                className="bg-white hover:bg-gray-100 text-black font-bold"
-              >
-                <Home className="h-5 w-5 mr-2" />
-                Retour Caisse
-              </Button>
-            </div>
+            {!weather.loading && !weather.error && (
+              <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur px-2 py-1 rounded-lg text-xs">
+                <Cloud className="h-3.5 w-3.5" />
+                <span className="font-bold">{weather.temperature}°C</span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-center gap-1.5 bg-white/10 backdrop-blur px-2 py-1 rounded-lg">
+            <Calendar className="h-3.5 w-3.5" />
+            <span className="font-medium text-xs">{formatDate(currentTime)}</span>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setShowCalculator(!showCalculator)}
+              size="sm"
+              className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-8 text-xs"
+            >
+              <Calculator className="h-3.5 w-3.5 mr-1" />
+              Calculatrice
+            </Button>
+            <Button 
+              onClick={() => navigate('/')} 
+              size="sm"
+              className="flex-1 bg-white hover:bg-gray-100 text-black font-bold h-8 text-xs"
+            >
+              <Home className="h-3.5 w-3.5 mr-1" />
+              Caisse
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Main Content - Fixed height, no scroll */}
-      <div className="h-[calc(100vh-88px)] overflow-y-auto">
-        <div className="max-w-7xl mx-auto p-6 space-y-6">
-          
-          {/* Logo + Zone de Scan */}
-          <Card className="border-4 border-white/30 shadow-2xl bg-gradient-to-br from-white/95 to-blue-50/95 backdrop-blur">
-            <CardHeader className="text-center pb-4">
-              {/* Logo centré */}
-              <div className="flex justify-center mb-4">
-                <img src={logo} alt="Logo" className="h-24 w-auto drop-shadow-2xl" />
+      {/* Main Content */}
+      <div className="h-[calc(100vh-140px)] overflow-y-auto">
+        <div className="p-3 space-y-3">
+          <Card className="border-2 border-white/40 shadow-xl bg-white/95 backdrop-blur">
+            <CardHeader className="text-center pb-3 pt-4">
+              <div className="flex justify-center mb-2">
+                <img src={logo} alt="Logo" className="h-16 w-auto drop-shadow-lg" />
               </div>
-              <CardTitle className="text-4xl font-black flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                <Scan className="h-12 w-12 text-blue-600" />
+              <CardTitle className="text-xl font-black flex items-center justify-center gap-2 text-primary">
+                <Scan className="h-6 w-6" />
                 Scanner un produit
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
+            <CardContent className="space-y-3 pb-4">
+              <form onSubmit={handleSubmit} className="space-y-2">
                 <Input
                   ref={inputRef}
                   type="text"
-                  placeholder="Scannez ou saisissez le code-barres..."
+                  placeholder="Code-barres..."
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
-                  className="text-3xl h-24 text-center font-mono font-bold border-4 focus-visible:ring-4"
+                  className="text-xl h-14 text-center font-mono font-bold border-2 focus-visible:ring-2"
                   autoFocus
                 />
                 <Button 
                   type="submit" 
                   size="lg"
-                  className="w-full h-20 text-2xl"
+                  className="w-full h-12 text-base font-bold"
                   disabled={!barcode.trim()}
                 >
-                  <CheckCircle2 className="h-8 w-8 mr-3" />
-                  Valider le scan
+                  <CheckCircle2 className="h-5 w-5 mr-2" />
+                  Valider
                 </Button>
               </form>
 
-              {/* Dernier produit scanné */}
               {lastScannedProduct && (
-                <div className="p-6 bg-gradient-to-r from-green-400 to-emerald-500 border-4 border-green-600 rounded-2xl shadow-2xl">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-3">
-                        <CheckCircle2 className="h-8 w-8 text-white drop-shadow-lg" />
-                        <span className="text-lg text-white font-bold drop-shadow">✓ Dernier scan réussi</span>
-                      </div>
-                      <h3 className="text-3xl font-black mb-4 text-white drop-shadow-lg">{lastScannedProduct.name}</h3>
-                      <div className="grid grid-cols-2 gap-4 text-base">
-                        <div className="bg-white/20 backdrop-blur p-3 rounded-lg">
-                          <span className="text-white/80 text-sm">Code:</span>
-                          <div className="font-mono font-bold text-white text-lg">{lastScannedProduct.barcode}</div>
+                <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-600 border-2 border-green-700 rounded-xl shadow-lg">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 text-white drop-shadow flex-shrink-0 mt-1" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-white/90 font-bold mb-1">✓ Dernier scan</div>
+                      <h3 className="text-lg font-black mb-2 text-white drop-shadow truncate">{lastScannedProduct.name}</h3>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-white/20 backdrop-blur p-2 rounded">
+                          <span className="text-white/80 block mb-0.5">Code</span>
+                          <div className="font-mono font-bold text-white truncate">{lastScannedProduct.barcode}</div>
                         </div>
-                        <div className="bg-white/20 backdrop-blur p-3 rounded-lg">
-                          <span className="text-white/80 text-sm">Prix:</span>
-                          <div className="font-bold text-white text-lg">{lastScannedProduct.price.toFixed(2)} €</div>
+                        <div className="bg-white/20 backdrop-blur p-2 rounded">
+                          <span className="text-white/80 block mb-0.5">Prix</span>
+                          <div className="font-bold text-white">{lastScannedProduct.price.toFixed(2)} €</div>
                         </div>
-                        <div className="bg-white/20 backdrop-blur p-3 rounded-lg">
-                          <span className="text-white/80 text-sm">Stock:</span>
-                          <div className="font-bold text-white text-lg">{lastScannedProduct.stock}</div>
+                        <div className="bg-white/20 backdrop-blur p-2 rounded">
+                          <span className="text-white/80 block mb-0.5">Stock</span>
+                          <div className="font-bold text-white">{lastScannedProduct.stock}</div>
                         </div>
-                        <div className="bg-white/20 backdrop-blur p-3 rounded-lg">
-                          <span className="text-white/80 text-sm">Type:</span>
-                          <div className="font-bold text-white text-lg">{lastScannedProduct.type === 'weight' ? 'Poids' : 'Unité'}</div>
+                        <div className="bg-white/20 backdrop-blur p-2 rounded">
+                          <span className="text-white/80 block mb-0.5">Type</span>
+                          <div className="font-bold text-white">{lastScannedProduct.type === 'weight' ? 'Poids' : 'Unité'}</div>
                         </div>
                       </div>
                     </div>
-                    <Package className="h-20 w-20 text-white/30 drop-shadow-2xl" />
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Hub Actions - Très Gros Carrés Colorés */}
-          <div className="grid grid-cols-2 gap-6">
+          {/* Actions Grid */}
+          <div className="grid grid-cols-2 gap-3">
             <Button
               onClick={() => {
                 if (lastScannedProduct) {
@@ -328,10 +288,10 @@ export default function RemoteScanner() {
                 }
               }}
               disabled={!lastScannedProduct}
-              className="h-56 flex flex-col items-center justify-center gap-4 text-2xl font-black shadow-2xl bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-4 border-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
+              className="h-32 flex flex-col items-center justify-center gap-2 text-base font-black shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-2 border-blue-700 disabled:opacity-50"
             >
-              <Edit className="h-20 w-20 drop-shadow-lg" />
-              <span className="drop-shadow">Modifier Quantité</span>
+              <Edit className="h-10 w-10 drop-shadow" />
+              <span className="drop-shadow text-sm leading-tight">Modifier<br/>Quantité</span>
             </Button>
 
             <Button
@@ -343,10 +303,10 @@ export default function RemoteScanner() {
                 }
               }}
               disabled={!lastScannedProduct}
-              className="h-56 flex flex-col items-center justify-center gap-4 text-2xl font-black shadow-2xl bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-4 border-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
+              className="h-32 flex flex-col items-center justify-center gap-2 text-base font-black shadow-lg bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-2 border-green-700 disabled:opacity-50"
             >
-              <DollarSign className="h-20 w-20 drop-shadow-lg" />
-              <span className="drop-shadow">Modifier Prix</span>
+              <DollarSign className="h-10 w-10 drop-shadow" />
+              <span className="drop-shadow text-sm leading-tight">Modifier<br/>Prix</span>
             </Button>
 
             <Button
@@ -358,10 +318,10 @@ export default function RemoteScanner() {
                 }
               }}
               disabled={!lastScannedProduct}
-              className="h-56 flex flex-col items-center justify-center gap-4 text-2xl font-black shadow-2xl bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-4 border-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
+              className="h-32 flex flex-col items-center justify-center gap-2 text-base font-black shadow-lg bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-2 border-orange-700 disabled:opacity-50"
             >
-              <Barcode className="h-20 w-20 drop-shadow-lg" />
-              <span className="drop-shadow">Changer Code</span>
+              <Barcode className="h-10 w-10 drop-shadow" />
+              <span className="drop-shadow text-sm leading-tight">Changer<br/>Code</span>
             </Button>
 
             <Button
@@ -369,45 +329,39 @@ export default function RemoteScanner() {
                 setBarcode('');
                 setNewProductDialogOpen(true);
               }}
-              className="h-56 flex flex-col items-center justify-center gap-4 text-2xl font-black shadow-2xl bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-4 border-purple-700 transition-all duration-200 hover:scale-105"
+              className="h-32 flex flex-col items-center justify-center gap-2 text-base font-black shadow-lg bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-2 border-purple-700"
             >
-              <Plus className="h-20 w-20 drop-shadow-lg" />
-              <span className="drop-shadow">Nouveau Produit</span>
+              <Plus className="h-10 w-10 drop-shadow" />
+              <span className="drop-shadow text-sm leading-tight">Nouveau<br/>Produit</span>
             </Button>
           </div>
 
-          {/* Historique des scans */}
+          {/* Historique */}
           {scannedItems.length > 0 && (
-            <Card className="bg-white/90 backdrop-blur border-4 border-indigo-300 shadow-xl">
-              <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-t-lg">
-                <CardTitle className="text-2xl font-black">📋 Historique des scans</CardTitle>
-                <CardDescription className="text-white/80 font-semibold">Derniers produits scannés</CardDescription>
+            <Card className="bg-white/95 backdrop-blur border-2 border-indigo-300 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-t-lg py-3">
+                <CardTitle className="text-base font-black">📋 Historique</CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
-                <div className="grid gap-3">
-                  {scannedItems.slice(0, 5).map((item, index) => {
+              <CardContent className="pt-3 pb-3">
+                <div className="space-y-2">
+                  {scannedItems.slice(0, 3).map((item, index) => {
                     const product = products?.find(p => p.barcode === item.barcode);
                     return (
                       <div
                         key={index}
-                        className={`p-4 rounded-xl border-3 flex items-center justify-between shadow-lg transition-all ${
-                          item.success 
-                            ? 'bg-gradient-to-r from-green-100 to-emerald-100 border-green-400' 
-                            : 'bg-gradient-to-r from-red-100 to-pink-100 border-red-400'
+                        className={`flex items-center gap-2 p-2 rounded-lg border ${
+                          item.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          {item.success ? (
-                            <CheckCircle2 className="h-7 w-7 text-green-600" />
-                          ) : (
-                            <AlertCircle className="h-7 w-7 text-red-600" />
-                          )}
-                          <div>
-                            <p className="font-mono font-bold text-lg">{item.barcode}</p>
-                            {product && <p className="text-sm font-semibold text-gray-600">{product.name}</p>}
-                          </div>
+                        {item.success ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-sm truncate">{product?.name || item.barcode}</div>
+                          <div className="text-xs text-muted-foreground">{item.time}</div>
                         </div>
-                        <span className="text-sm font-bold text-gray-500">{item.time}</span>
                       </div>
                     );
                   })}
@@ -418,10 +372,13 @@ export default function RemoteScanner() {
         </div>
       </div>
 
-      {/* Calculatrice flottante */}
-      {showCalculator && (
-        <div className="fixed bottom-6 right-6 z-50 animate-scale-in">
-          <QuickCalculator
+      {/* Dialogs */}
+      <Dialog open={showCalculator} onOpenChange={setShowCalculator}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Calculatrice</DialogTitle>
+          </DialogHeader>
+          <QuickCalculator 
             onProductCode={(code) => {
               setBarcode(code);
               handleScan(code);
@@ -432,215 +389,252 @@ export default function RemoteScanner() {
               setShowCalculator(false);
             }}
           />
-        </div>
-      )}
-      
-      {/* Dialog Modifier Quantité */}
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Modifier la quantité</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {selectedProduct && (
-              <div className="p-3 bg-accent rounded-lg">
-                <p className="font-semibold">{selectedProduct.name}</p>
-                <p className="text-sm text-muted-foreground">{selectedProduct.barcode}</p>
-              </div>
-            )}
             <div>
-              <Label>Quantité</Label>
+              <Label>Produit</Label>
+              <div className="font-bold mt-1">{selectedProduct?.name}</div>
+            </div>
+            <div>
+              <Label htmlFor="quantity">Quantité</Label>
               <Input
+                id="quantity"
                 type="number"
-                step="0.01"
                 value={editQuantity}
                 onChange={(e) => setEditQuantity(e.target.value)}
-                className="text-xl h-14 text-center"
+                min="1"
+                step="1"
+                className="text-lg h-12 font-bold"
               />
             </div>
-            <Button 
-              className="w-full" 
+            <Button
               onClick={async () => {
-                if (selectedProduct && session) {
+                if (!selectedProduct || !session) return;
+                try {
                   await addScannedItem.mutateAsync({
                     sessionId: session.id,
-                    barcode: selectedProduct.barcode || '',
-                    quantity: parseFloat(editQuantity),
+                    barcode: selectedProduct.barcode,
+                    quantity: parseInt(editQuantity) || 1,
                   });
-                  toast.success('Quantité ajoutée');
                   setEditDialogOpen(false);
+                  toast.success('Quantité modifiée');
+                } catch (error) {
+                  toast.error('Erreur');
                 }
               }}
+              className="w-full h-12 text-base font-bold"
             >
-              Confirmer
+              Valider
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog Nouveau Produit */}
-      <Dialog open={newProductDialogOpen} onOpenChange={setNewProductDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Créer un nouveau produit</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            await createProduct.mutateAsync({
-              name: formData.get('name') as string,
-              barcode: barcode || formData.get('barcode') as string,
-              price: parseFloat(formData.get('price') as string),
-              cost_price: parseFloat(formData.get('cost_price') as string) || undefined,
-              vat_rate: parseFloat(formData.get('vat_rate') as string),
-              type: formData.get('type') as 'unit' | 'weight',
-              category_id: formData.get('category_id') as string || undefined,
-              stock: parseFloat(formData.get('stock') as string) || 0,
-              is_active: true,
-            });
-            setNewProductDialogOpen(false);
-            setBarcode('');
-          }} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Code-barres</Label>
-                <Input name="barcode" defaultValue={barcode} required />
-              </div>
-              <div>
-                <Label>Nom du produit</Label>
-                <Input name="name" required />
-              </div>
-              <div>
-                <Label>Prix de vente (€)</Label>
-                <Input name="price" type="number" step="0.01" required />
-              </div>
-              <div>
-                <Label>Prix d'achat (€)</Label>
-                <Input name="cost_price" type="number" step="0.01" />
-              </div>
-              <div>
-                <Label>TVA (%)</Label>
-                <Input name="vat_rate" type="number" step="0.01" defaultValue="21" required />
-              </div>
-              <div>
-                <Label>Type</Label>
-                <Select name="type" defaultValue="unit">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unit">Unité</SelectItem>
-                    <SelectItem value="weight">Poids</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Catégorie</Label>
-                <Select name="category_id">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Aucune" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map(cat => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Stock initial</Label>
-                <Input name="stock" type="number" step="0.01" defaultValue="0" />
-              </div>
-            </div>
-            <Button type="submit" className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
-              Créer le produit
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog Changer Code-barres */}
-      <Dialog open={changeBarcodeDialogOpen} onOpenChange={setChangeBarcodeDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Modifier le code-barres</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {selectedProduct && (
-              <div className="p-3 bg-accent rounded-lg">
-                <p className="font-semibold">{selectedProduct.name}</p>
-                <p className="text-sm text-muted-foreground">Actuel: {selectedProduct.barcode}</p>
-              </div>
-            )}
-            <div>
-              <Label>Nouveau code-barres</Label>
-              <Input
-                value={newBarcode}
-                onChange={(e) => setNewBarcode(e.target.value)}
-                placeholder="Scannez ou saisissez"
-                className="text-xl h-14 text-center font-mono"
-              />
-            </div>
-            <Button 
-              className="w-full" 
-              onClick={async () => {
-                if (selectedProduct && newBarcode.trim()) {
-                  await updateProduct.mutateAsync({
-                    id: selectedProduct.id,
-                    barcode: newBarcode.trim(),
-                  });
-                  setChangeBarcodeDialogOpen(false);
-                  setNewBarcode('');
-                }
-              }}
-            >
-              Confirmer
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog Modifier Prix */}
       <Dialog open={editPriceDialogOpen} onOpenChange={setEditPriceDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Modifier le prix</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {selectedProduct && (
-              <div className="p-3 bg-accent rounded-lg">
-                <p className="font-semibold">{selectedProduct.name}</p>
-                <p className="text-sm text-muted-foreground">Prix actuel: {selectedProduct.price.toFixed(2)} €</p>
-              </div>
-            )}
             <div>
-              <Label>Nouveau prix (€)</Label>
+              <Label>Produit</Label>
+              <div className="font-bold mt-1">{selectedProduct?.name}</div>
+            </div>
+            <div>
+              <Label htmlFor="price">Nouveau prix (€)</Label>
               <Input
+                id="price"
                 type="number"
-                step="0.01"
                 value={editPrice}
                 onChange={(e) => setEditPrice(e.target.value)}
-                className="text-xl h-14 text-center"
-                placeholder={selectedProduct?.price.toFixed(2)}
+                min="0"
+                step="0.01"
+                className="text-lg h-12 font-bold"
               />
             </div>
-            <Button 
-              className="w-full" 
+            <Button
               onClick={async () => {
-                if (selectedProduct && editPrice) {
+                if (!selectedProduct) return;
+                try {
                   await updateProduct.mutateAsync({
                     id: selectedProduct.id,
                     price: parseFloat(editPrice),
                   });
                   setEditPriceDialogOpen(false);
-                  setEditPrice('');
+                  toast.success('Prix modifié');
+                } catch (error) {
+                  toast.error('Erreur');
                 }
               }}
+              className="w-full h-12 text-base font-bold"
             >
-              Confirmer
+              Valider
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={changeBarcodeDialogOpen} onOpenChange={setChangeBarcodeDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Changer le code-barres</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Produit</Label>
+              <div className="font-bold mt-1">{selectedProduct?.name}</div>
+            </div>
+            <div>
+              <Label>Code actuel</Label>
+              <div className="font-mono mt-1">{selectedProduct?.barcode}</div>
+            </div>
+            <div>
+              <Label htmlFor="newBarcode">Nouveau code-barres</Label>
+              <Input
+                id="newBarcode"
+                type="text"
+                value={newBarcode}
+                onChange={(e) => setNewBarcode(e.target.value)}
+                className="text-lg h-12 font-mono font-bold"
+              />
+            </div>
+            <Button
+              onClick={async () => {
+                if (!selectedProduct || !newBarcode.trim()) return;
+                try {
+                  await updateProduct.mutateAsync({
+                    id: selectedProduct.id,
+                    barcode: newBarcode.trim(),
+                  });
+                  setChangeBarcodeDialogOpen(false);
+                  toast.success('Code-barres modifié');
+                } catch (error) {
+                  toast.error('Erreur');
+                }
+              }}
+              className="w-full h-12 text-base font-bold"
+            >
+              Valider
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={newProductDialogOpen} onOpenChange={setNewProductDialogOpen}>
+        <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Créer un produit</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              try {
+                await createProduct.mutateAsync({
+                  name: formData.get('name') as string,
+                  barcode: formData.get('barcode') as string,
+                  price: parseFloat(formData.get('price') as string),
+                  stock: parseInt(formData.get('stock') as string),
+                  min_stock: parseInt(formData.get('min_stock') as string) || 5,
+                  category_id: (formData.get('category_id') as string) || null,
+                  type: (formData.get('type') as 'unit' | 'weight') || 'unit',
+                  vat_rate: 21,
+                  is_active: true,
+                });
+                setNewProductDialogOpen(false);
+                toast.success('Produit créé');
+              } catch (error) {
+                toast.error('Erreur lors de la création');
+              }
+            }}
+            className="space-y-3"
+          >
+            <div>
+              <Label htmlFor="name">Nom *</Label>
+              <Input id="name" name="name" required className="h-10" />
+            </div>
+            <div>
+              <Label htmlFor="barcode">Code-barres *</Label>
+              <Input
+                id="barcode"
+                name="barcode"
+                defaultValue={barcode}
+                required
+                className="font-mono h-10"
+              />
+            </div>
+            <div>
+              <Label htmlFor="price">Prix (€) *</Label>
+              <Input
+                id="price"
+                name="price"
+                type="number"
+                step="0.01"
+                min="0"
+                required
+                className="h-10"
+              />
+            </div>
+            <div>
+              <Label htmlFor="stock">Stock *</Label>
+              <Input
+                id="stock"
+                name="stock"
+                type="number"
+                min="0"
+                required
+                className="h-10"
+              />
+            </div>
+            <div>
+              <Label htmlFor="min_stock">Stock minimum</Label>
+              <Input
+                id="min_stock"
+                name="min_stock"
+                type="number"
+                min="0"
+                defaultValue="5"
+                className="h-10"
+              />
+            </div>
+            <div>
+              <Label htmlFor="category_id">Catégorie</Label>
+              <Select name="category_id">
+                <SelectTrigger className="h-10">
+                  <SelectValue placeholder="Sélectionner..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="type">Type</Label>
+              <Select name="type" defaultValue="unit">
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unit">Unité</SelectItem>
+                  <SelectItem value="weight">Poids (kg)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button type="submit" className="w-full h-10 font-bold">
+              Créer le produit
+            </Button>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
