@@ -112,7 +112,7 @@ export default function MobileManagement() {
         type: 'unit',
         unit: 'unité',
         category_id: '',
-        vat_rate: '21',
+        vat_rate: '6',
         stock: '',
         min_stock: '',
         supplier: '',
@@ -234,14 +234,37 @@ export default function MobileManagement() {
   };
 
   const handlePhysicalScanCreateProduct = () => {
-    setFormData(prev => ({ ...prev, barcode: scannedBarcode }));
+    setFormData(prev => ({ ...prev, barcode: scannedBarcode, vat_rate: '6' }));
     setView('product-form');
+    setPhysicalScanDialogOpen(false);
   };
 
   const handlePhysicalScanAdjustStock = () => {
     if (scannedProduct) {
       setSelectedProductForStock(scannedProduct);
       setView('stock');
+      setPhysicalScanDialogOpen(false);
+    }
+  };
+
+  const handlePhysicalScanChangeCategory = () => {
+    if (scannedProduct) {
+      handleOpenProductForm(scannedProduct);
+      setPhysicalScanDialogOpen(false);
+    }
+  };
+
+  const handlePhysicalScanCreatePromotion = () => {
+    if (scannedProduct) {
+      navigate('/mobile/promotions');
+      setPhysicalScanDialogOpen(false);
+    }
+  };
+
+  const handlePhysicalScanChangeBarcode = () => {
+    if (scannedProduct) {
+      handleOpenProductForm(scannedProduct);
+      setPhysicalScanDialogOpen(false);
     }
   };
 
@@ -440,9 +463,8 @@ export default function MobileManagement() {
 
             <Button
               onClick={() => navigate('/mobile/categories')}
-              className="w-full h-16 bg-secondary hover:bg-secondary/90 text-lg font-bold"
+              className="w-full h-16 bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold border-0"
               size="lg"
-              variant="outline"
             >
               <FolderKanban className="h-6 w-6 mr-3" />
               Gérer les Catégories
@@ -746,11 +768,14 @@ export default function MobileManagement() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="0">0%</SelectItem>
-                  <SelectItem value="5.5">5.5%</SelectItem>
-                  <SelectItem value="10">10%</SelectItem>
+                  <SelectItem value="6">6%</SelectItem>
+                  <SelectItem value="12">12%</SelectItem>
                   <SelectItem value="21">21%</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Par défaut: 6%
+              </p>
             </div>
 
             <Button type="submit" className="w-full h-12 mt-6" size="lg">
@@ -868,6 +893,9 @@ export default function MobileManagement() {
         onEditProduct={handlePhysicalScanAddToForm}
         onAdjustStock={handlePhysicalScanAdjustStock}
         onCreateProduct={handlePhysicalScanCreateProduct}
+        onChangeCategory={handlePhysicalScanChangeCategory}
+        onCreatePromotion={handlePhysicalScanCreatePromotion}
+        onChangeBarcode={handlePhysicalScanChangeBarcode}
       />
       {null}
     </>
