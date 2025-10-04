@@ -95,14 +95,6 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
         <div className="hidden lg:flex flex-1 gap-2">
           {/* Boutons principaux colorés */}
           <Button
-            onClick={() => navigate("/")}
-            className="h-14 px-3 flex flex-col gap-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold"
-          >
-            <ShoppingCart className="h-5 w-5" />
-            <span className="text-xs">Caisse</span>
-          </Button>
-          
-          <Button
             onClick={() => navigate("/dashboard")}
             className="h-14 px-3 flex flex-col gap-1 bg-green-500 hover:bg-green-600 text-white font-semibold"
           >
