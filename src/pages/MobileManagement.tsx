@@ -50,10 +50,14 @@ import {
   Wallet,
   BarChart3,
   CheckSquare,
+  Upload,
+  LogOut,
+  Calculator,
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { useWeather } from '@/hooks/useWeather';
+import { useAuth } from '@/hooks/useAuth';
 import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
 import { toast } from 'sonner';
 import logoJlprod from '@/assets/logo-jlprod-new.png';
@@ -63,6 +67,7 @@ export default function MobileManagement() {
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
   const weather = useWeather();
+  const { signOut } = useAuth();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
 
@@ -172,6 +177,56 @@ export default function MobileManagement() {
     a.download = `produits-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     toast.success('Export CSV réussi');
+  };
+
+  const importFromCSV = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv';
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const text = await file.text();
+      const lines = text.split('\n');
+      let imported = 0;
+      
+      for (let i = 1; i < lines.length; i++) {
+        const [barcode, name, price, stock, categoryName] = lines[i].split(',');
+        if (name && price) {
+          const category = categories.find(c => c.name.trim() === categoryName?.trim());
+          try {
+            await createProduct.mutateAsync({
+              barcode: barcode?.trim() || undefined,
+              name: name.trim(),
+              price: parseFloat(price),
+              stock: parseFloat(stock || '0'),
+              category_id: category?.id,
+              vat_rate: 21,
+              type: 'unit',
+              unit: 'unité',
+              is_active: true,
+            });
+            imported++;
+          } catch (error) {
+            console.error('Error importing product:', name, error);
+          }
+        }
+      }
+      toast.success(`${imported} produits importés`);
+    };
+    input.click();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success('Déconnexion réussie');
+      navigate('/auth');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast.error('Erreur lors de la déconnexion');
+    }
   };
 
   const filteredProducts = products
@@ -592,9 +647,18 @@ export default function MobileManagement() {
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={importFromCSV}
+                className="opacity-70 hover:opacity-100"
+                title="Importer CSV"
+              >
+                <Upload className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={exportToCSV}
                 className="opacity-70 hover:opacity-100"
-                title="Exporter en CSV"
+                title="Exporter CSV"
               >
                 <Download className="h-4 w-4" />
               </Button>
@@ -616,20 +680,40 @@ export default function MobileManagement() {
               )}
             </div>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                toast.success('Mise à jour en cours...', {
-                  description: 'L\'application va se recharger avec la dernière version.'
-                });
-                setTimeout(() => window.location.reload(), 1000);
-              }}
-              className="opacity-70 hover:opacity-100"
-              title="Mettre à jour"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/mobile/calculator')}
+                className="opacity-70 hover:opacity-100"
+                title="Calculatrice"
+              >
+                <Calculator className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                className="opacity-70 hover:opacity-100"
+                title="Déconnexion"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  toast.success('Mise à jour en cours...', {
+                    description: 'L\'application va se recharger avec la dernière version.'
+                  });
+                  setTimeout(() => window.location.reload(), 1000);
+                }}
+                className="opacity-70 hover:opacity-100"
+                title="Mettre à jour"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           
           {/* Header */}

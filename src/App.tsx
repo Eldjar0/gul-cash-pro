@@ -39,6 +39,7 @@ const MobileManagement = lazy(() => import("./pages/MobileManagement"));
 const MobileCategories = lazy(() => import("./pages/MobileCategories"));
 const MobilePromotions = lazy(() => import("./pages/MobilePromotions"));
 const MobileOrders = lazy(() => import("./pages/MobileOrders"));
+const MobileCalculator = lazy(() => import("./pages/MobileCalculator"));
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/mobile/categories" element={<ProtectedRoute><MobileCategories /></ProtectedRoute>} />
             <Route path="/mobile/promotions" element={<ProtectedRoute><MobilePromotions /></ProtectedRoute>} />
             <Route path="/mobile/orders" element={<ProtectedRoute><MobileOrders /></ProtectedRoute>} />
+            <Route path="/mobile/calculator" element={<ProtectedRoute><MobileCalculator /></ProtectedRoute>} />
             
             {/* Protected routes with navigation */}
             <Route path="/" element={<ProtectedRoute><ProtectedLayout><Index /></ProtectedLayout></ProtectedRoute>} />
