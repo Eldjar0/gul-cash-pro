@@ -114,22 +114,61 @@ export const useLoadCart = () => {
 
       if (error) throw error;
       
-      // Transform to SavedCart format
+      // Transform to Cart format expected by Index.tsx
       const items = Array.isArray(data.items) ? data.items : [];
+      
+      // Fetch full product details for each item
+      const productIds = items.map((item: any) => item.product_id).filter(Boolean);
+      const { data: productsData } = await supabase
+        .from('products')
+        .select('*')
+        .in('id', productIds);
+      
+      const productsMap = new Map(productsData?.map(p => [p.id, p]) || []);
+      
       return {
         id: data.id,
         cashier_id: data.created_by,
         cart_name: data.notes || data.order_number,
-        cart_data: items.map((item: any) => ({
-          product_id: item.product_id,
-          name: item.product_name,
-          quantity: item.quantity,
-          price: item.unit_price,
-          vat_rate: 21,
-          subtotal: item.total_price,
-          vat_amount: item.total_price * 0.21 / 1.21,
-          total: item.total_price,
-        })),
+        cart_data: items.map((item: any) => {
+          const product = productsMap.get(item.product_id);
+          if (!product) {
+            // Fallback: create minimal product object from stored data
+            return {
+              product: {
+                id: item.product_id,
+                name: item.product_name,
+                price: item.unit_price,
+                barcode: '',
+                type: 'unit' as const,
+                vat: 21,
+                stock: 0,
+              },
+              quantity: item.quantity,
+              subtotal: item.total_price / 1.21,
+              vatAmount: item.total_price * 0.21 / 1.21,
+              total: item.total_price,
+            };
+          }
+          
+          return {
+            product: {
+              id: product.id,
+              barcode: product.barcode || '',
+              name: product.name,
+              price: item.unit_price, // Use saved price, not current price
+              type: product.type,
+              category: product.category_id,
+              stock: product.stock,
+              vat: product.vat_rate,
+              image: product.image,
+            },
+            quantity: item.quantity,
+            subtotal: item.total_price / 1.21,
+            vatAmount: item.total_price * 0.21 / 1.21,
+            total: item.total_price,
+          };
+        }),
         created_at: data.created_at,
         updated_at: data.updated_at,
       } as SavedCart;
