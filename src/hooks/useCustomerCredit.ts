@@ -22,6 +22,21 @@ export interface CustomerCreditTransaction {
   created_at: string;
 }
 
+export const useCustomerCredit = () => {
+  return useQuery({
+    queryKey: ['customer-credit-accounts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customer_credit_accounts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as CustomerCreditAccount[];
+    },
+  });
+};
+
 export const useCustomerCreditAccount = (customerId?: string) => {
   return useQuery({
     queryKey: ['customer-credit-account', customerId],

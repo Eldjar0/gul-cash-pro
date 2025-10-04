@@ -731,7 +731,7 @@ const Index = () => {
   };
 
 
-  const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile', amountPaid?: number) => {
+  const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check', amountPaid?: number, metadata?: any) => {
     if (!user) {
       toast.error('Connectez-vous pour encaisser', {
         description: 'Vous devez être connecté pour enregistrer une vente',
@@ -756,12 +756,20 @@ const Index = () => {
 
     const totals = getTotals();
     
+    // Map payment methods to DB enum types
+    let dbPaymentMethod: 'cash' | 'card' | 'mobile' | 'check' | 'voucher' = 'cash';
+    if (method === 'customer_credit' || method === 'gift_card') {
+      dbPaymentMethod = 'voucher';
+    } else {
+      dbPaymentMethod = method as 'cash' | 'card' | 'mobile' | 'check';
+    }
+    
     const saleData = {
       subtotal: totals.subtotal,
       total_vat: totals.totalVat,
       total_discount: totals.totalDiscount,
       total: totals.total,
-      payment_method: method,
+      payment_method: dbPaymentMethod,
       amount_paid: amountPaid,
       change_amount: amountPaid ? amountPaid - totals.total : 0,
       is_invoice: isInvoiceMode,
@@ -1810,6 +1818,11 @@ const Index = () => {
         onOpenChange={setPaymentDialogOpen}
         total={totals.total}
         onConfirmPayment={handleConfirmPayment}
+        onMixedPayment={() => {
+          setPaymentDialogOpen(false);
+          setMixedPaymentDialogOpen(true);
+        }}
+        customerId={selectedCustomer?.id}
       />
 
       <MixedPaymentDialog
@@ -1817,6 +1830,7 @@ const Index = () => {
         onOpenChange={setMixedPaymentDialogOpen}
         total={totals.total}
         onConfirmPayment={handleMixedPayment}
+        customerId={selectedCustomer?.id}
       />
 
       <SavedCartsDialog

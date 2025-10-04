@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditCard, Gift, Wallet } from 'lucide-react';
 import { useState } from 'react';
+import { GiftCardsManagement } from '@/components/payments/GiftCardsManagement';
+import { CustomerCreditManagement } from '@/components/payments/CustomerCreditManagement';
 
 const Payments = () => {
   const [activeTab, setActiveTab] = useState('gift-cards');
@@ -36,19 +38,7 @@ const Payments = () => {
           </TabsList>
 
           <TabsContent value="gift-cards" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Cartes Cadeaux</CardTitle>
-                <CardDescription>
-                  Émission et gestion des cartes cadeaux rechargeables
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center text-muted-foreground py-8">
-                  Fonctionnalité en cours d'implémentation
-                </div>
-              </CardContent>
-            </Card>
+            <GiftCardsManagement />
           </TabsContent>
 
           <TabsContent value="restaurant-vouchers" className="space-y-4">
@@ -68,19 +58,7 @@ const Payments = () => {
           </TabsContent>
 
           <TabsContent value="customer-credit" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Crédit Client</CardTitle>
-                <CardDescription>
-                  Gestion des comptes crédit et paiements différés
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center text-muted-foreground py-8">
-                  Fonctionnalité en cours d'implémentation
-                </div>
-              </CardContent>
-            </Card>
+            <CustomerCreditManagement />
           </TabsContent>
         </Tabs>
       </div>

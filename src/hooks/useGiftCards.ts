@@ -26,6 +26,21 @@ export interface GiftCardTransaction {
   created_at: string;
 }
 
+export const useGiftCards = () => {
+  return useQuery({
+    queryKey: ['gift-cards'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('gift_cards')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as GiftCard[];
+    },
+  });
+};
+
 export const useGiftCard = (cardNumber?: string) => {
   return useQuery({
     queryKey: ['gift-card', cardNumber],
