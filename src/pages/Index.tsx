@@ -173,6 +173,7 @@ const Index = () => {
   const [savedCartsDialogOpen, setSavedCartsDialogOpen] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
   // Remote scanning states
   const [remoteScanSessionId, setRemoteScanSessionId] = useState<string | null>(null);
@@ -1907,7 +1908,11 @@ const Index = () => {
                   <div className="h-1 w-1 rounded-full bg-primary"></div>
                   CATÉGORIES
                 </h2>
-                <CategoryGrid onProductSelect={handleProductSelect} />
+                <CategoryGrid 
+                  onProductSelect={handleProductSelect} 
+                  onCategorySelect={setSelectedCategory}
+                  selectedCategory={selectedCategory}
+                />
               </>
             )}
           </div>

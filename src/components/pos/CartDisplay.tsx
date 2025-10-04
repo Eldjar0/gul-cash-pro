@@ -1,185 +1,209 @@
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Trash2, Percent, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Trash2, Percent, Minus, Plus, ShoppingCart, User, Tag, CreditCard } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Product } from '@/hooks/useProducts';
-import logoMarket from '@/assets/logo-market.png';
-
-type DiscountType = 'percentage' | 'amount';
+import { Separator } from '@/components/ui/separator';
 
 interface CartItem {
-  product: Product;
+  id: string;
+  name: string;
+  price: number;
   quantity: number;
-  discount?: {
-    type: DiscountType;
-    value: number;
-  };
-  subtotal: number;
-  vatAmount: number;
-  total: number;
+  discount: number;
 }
 
 interface CartDisplayProps {
-  items: CartItem[];
-  onRemoveItem: (index: number) => void;
-  onUpdateQuantity: (index: number, quantity: number) => void;
-  onApplyDiscount: (index: number) => void;
+  cart: CartItem[];
+  onUpdateQuantity: (id: string, quantity: number) => void;
+  onRemoveItem: (id: string) => void;
+  onApplyDiscount: (item: CartItem) => void;
+  onOpenPaymentDialog: () => void;
+  onOpenCheckPaymentDialog: () => void;
+  onOpenMixedPaymentDialog: () => void;
+  onOpenPromoCodeDialog: () => void;
+  onOpenLoyaltyDialog: () => void;
+  onOpenCustomerDialog: () => void;
+  onOpenGiftCardDialog: () => void;
+  onOpenCustomerCreditDialog: () => void;
+  onClearCart: () => void;
+  selectedCustomer: any;
 }
 
-export function CartDisplay({ items, onRemoveItem, onUpdateQuantity, onApplyDiscount }: CartDisplayProps) {
-  const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-    const totalVat = items.reduce((sum, item) => sum + item.vatAmount, 0);
-    const totalDiscount = items.reduce((sum, item) => {
-      if (item.discount) {
-        const discountAmount =
-          item.discount.type === 'percentage'
-            ? (item.subtotal * item.discount.value) / 100
-            : item.discount.value;
-        return sum + discountAmount;
-      }
-      return sum;
-    }, 0);
-    const total = items.reduce((sum, item) => sum + item.total, 0);
+const formatPrice = (price: number) => `${price.toFixed(2)}€`;
 
-    return { subtotal, totalVat, totalDiscount, total };
-  };
-
-  const totals = calculateTotals();
+export function CartDisplay({
+  cart,
+  onUpdateQuantity,
+  onRemoveItem,
+  onApplyDiscount,
+  onOpenPaymentDialog,
+  onClearCart,
+  onOpenCustomerDialog,
+  onOpenPromoCodeDialog,
+  selectedCustomer,
+}: CartDisplayProps) {
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const discount = cart.reduce((sum, item) => sum + item.discount, 0);
+  const tax = subtotal * 0.2;
+  const total = subtotal + tax - discount;
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden glass border-2 border-primary/20 shadow-xl">
-      {/* Header with gradient - Responsive */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[var(--gradient-primary)]"></div>
-        <div className="relative p-2 md:p-4 flex items-center justify-between gap-2 md:gap-3">
-          <img src={logoMarket} alt="Logo" className="h-8 md:h-12 object-contain" />
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="p-1.5 md:p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-              <ShoppingBag className="h-3.5 w-3.5 md:h-5 md:w-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-sm md:text-lg font-bold text-white">Panier</h2>
-              <p className="text-[10px] md:text-xs text-white/80">{items.length} article{items.length > 1 ? 's' : ''}</p>
-            </div>
-          </div>
+    <Card className="h-full flex flex-col shadow-xl border-2">
+      <CardHeader className="p-3 border-b bg-muted/30">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-bold">Ticket de caisse</CardTitle>
+          {cart.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClearCart}
+              className="h-8 w-8 text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-      </div>
+      </CardHeader>
 
-      <ScrollArea className="flex-1 p-2 md:p-4">
-        {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 md:py-12 text-center">
-            <div className="p-3 md:p-4 bg-muted/50 rounded-full mb-3 md:mb-4">
-              <ShoppingBag className="h-8 w-8 md:h-12 md:w-12 text-muted-foreground" />
+      <CardContent className="flex-1 p-0 overflow-hidden">
+        <ScrollArea className="h-full">
+          {cart.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full p-6 text-muted-foreground">
+              <ShoppingCart className="h-12 w-12 mb-3 opacity-20" />
+              <p className="text-sm text-center">
+                Aucun article
+                <br />
+                Commencez à scanner ou sélectionner des produits
+              </p>
             </div>
-            <p className="text-sm md:text-base text-muted-foreground font-medium">Panier vide</p>
-            <p className="text-xs md:text-sm text-muted-foreground/70 mt-1">Ajoutez des articles</p>
-          </div>
-        ) : (
-          <div className="space-y-2 md:space-y-3">
-            {items.map((item, index) => (
-              <Card key={index} className="p-2 md:p-3 bg-card hover:shadow-md transition-all duration-300 border border-border/50 group animate-scale-in">
-                <div className="flex gap-2 md:gap-3">
-                  {/* Product info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-1.5 md:mb-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-[11px] md:text-sm text-foreground truncate">{item.product.name}</h3>
-                        <p className="text-[9px] md:text-xs text-muted-foreground mt-0.5">
-                          {item.product.price.toFixed(2)}€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}
-                          {item.product.type === 'weight' && ' kg'}
-                        </p>
-                      </div>
-                      
-                      {/* Actions */}
-                      <div className="flex gap-0.5 md:gap-1 ml-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onApplyDiscount(index)}
-                          className="h-6 w-6 md:h-8 md:w-8 hover:bg-accent/10 hover:text-accent p-0"
-                        >
-                          <Percent className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onRemoveItem(index)}
-                          className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
+          ) : (
+            <div className="p-2 space-y-1">
+              {cart.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-2 border rounded-lg bg-card hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm truncate">{item.name}</h4>
+                      <p className="text-xs text-muted-foreground">
+                        {formatPrice(item.price)} × {item.quantity}
+                      </p>
                     </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onApplyDiscount(item)}
+                        className="h-6 w-6"
+                      >
+                        <Percent className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onRemoveItem(item.id)}
+                        className="h-6 w-6 text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
 
-                    {/* Quantity controls */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 md:gap-2 bg-muted/50 rounded-lg p-0.5 md:p-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onUpdateQuantity(index, Math.max(0.001, item.quantity - (item.product.type === 'weight' ? 0.1 : 1)))}
-                          className="h-5 w-5 md:h-7 md:w-7 hover:bg-background p-0"
-                        >
-                          <Minus className="h-2.5 w-2.5 md:h-3 md:w-3" />
-                        </Button>
-                        <span className="text-[10px] md:text-sm font-semibold min-w-8 md:min-w-10 text-center">
-                          {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onUpdateQuantity(index, item.quantity + (item.product.type === 'weight' ? 0.1 : 1))}
-                          className="h-5 w-5 md:h-7 md:w-7 hover:bg-background p-0"
-                        >
-                          <Plus className="h-2.5 w-2.5 md:h-3 md:w-3" />
-                        </Button>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => onUpdateQuantity(item.id, Math.max(0, item.quantity - 1))}
+                        className="h-6 w-6"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="w-8 text-center text-sm font-medium">
+                        {item.quantity}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                        className="h-6 w-6"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-bold">
+                        {formatPrice(item.price * item.quantity)}
                       </div>
-                      
-                      {/* Price */}
-                      <div className="text-right">
-                        {item.discount && (
-                          <div className="text-[9px] md:text-xs text-muted-foreground line-through">
-                            {item.subtotal.toFixed(2)}€
-                          </div>
-                        )}
-                        <div className="font-bold text-sm md:text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                          {item.total.toFixed(2)}€
+                      {item.discount > 0 && (
+                        <div className="text-xs text-green-600 dark:text-green-400">
+                          -{formatPrice(item.discount)}
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </ScrollArea>
-
-      {/* Totals - Responsive */}
-      <div className="relative overflow-hidden mt-auto">
-        <div className="absolute inset-0 bg-[var(--gradient-display)]"></div>
-        <div className="relative p-2 md:p-4 space-y-1 md:space-y-2">
-          <div className="flex justify-between text-[10px] md:text-sm text-white/70">
-            <span>Sous-total HT</span>
-            <span className="font-medium text-white">{totals.subtotal.toFixed(2)}€</span>
-          </div>
-          <div className="flex justify-between text-[10px] md:text-sm text-white/70">
-            <span>TVA</span>
-            <span className="font-medium text-white">{totals.totalVat.toFixed(2)}€</span>
-          </div>
-          {totals.totalDiscount > 0 && (
-            <div className="flex justify-between text-[10px] md:text-sm bg-accent/20 px-2 md:px-3 py-1 md:py-1.5 rounded-lg backdrop-blur-sm">
-              <span className="text-white font-medium">Remise</span>
-              <span className="text-white font-bold">-{totals.totalDiscount.toFixed(2)}€</span>
+              ))}
             </div>
           )}
-          <div className="flex justify-between text-lg md:text-2xl font-bold text-white pt-2 md:pt-3 border-t border-white/20 mt-2 md:mt-3">
-            <span>TOTAL</span>
-            <span className="text-pos-success">{totals.total.toFixed(2)}€</span>
+        </ScrollArea>
+      </CardContent>
+
+      <CardFooter className="flex-col gap-2 p-3 border-t bg-muted/30">
+        <div className="w-full space-y-1 text-sm">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Sous-total:</span>
+            <span className="font-medium">{formatPrice(subtotal)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">TVA (20%):</span>
+            <span className="font-medium">{formatPrice(tax)}</span>
+          </div>
+          {discount > 0 && (
+            <div className="flex justify-between text-green-600 dark:text-green-400">
+              <span>Remise:</span>
+              <span className="font-medium">-{formatPrice(discount)}</span>
+            </div>
+          )}
+          <Separator className="my-1" />
+          <div className="flex justify-between text-lg font-bold">
+            <span>Total:</span>
+            <span>{formatPrice(total)}</span>
           </div>
         </div>
-      </div>
+
+        <div className="w-full grid grid-cols-2 gap-2">
+          <Button
+            onClick={onOpenCustomerDialog}
+            variant="outline"
+            size="sm"
+            className="gap-1"
+          >
+            <User className="h-3 w-3" />
+            {selectedCustomer ? selectedCustomer.name : 'Client'}
+          </Button>
+          <Button
+            onClick={onOpenPromoCodeDialog}
+            variant="outline"
+            size="sm"
+            className="gap-1"
+          >
+            <Tag className="h-3 w-3" />
+            Promo
+          </Button>
+        </div>
+
+        <Button
+          onClick={onOpenPaymentDialog}
+          disabled={cart.length === 0}
+          className="w-full"
+          size="lg"
+        >
+          <CreditCard className="mr-2 h-4 w-4" />
+          Payer {formatPrice(total)}
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

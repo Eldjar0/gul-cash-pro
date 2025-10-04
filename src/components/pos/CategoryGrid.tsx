@@ -1,111 +1,98 @@
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCategories } from '@/hooks/useCategories';
-import { useProductsByCategory } from '@/hooks/useProducts';
-import { useState } from 'react';
+import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/hooks/useProducts';
-import { ChevronLeft, Package2 } from 'lucide-react';
-import { DynamicIcon } from '@/components/ui/dynamic-icon';
+import { Package, Grid3x3 } from 'lucide-react';
+import { useState } from 'react';
 
 interface CategoryGridProps {
   onProductSelect: (product: Product) => void;
+  onCategorySelect: (categoryId: string | null) => void;
+  selectedCategory: string | null;
 }
 
-export function CategoryGrid({ onProductSelect }: CategoryGridProps) {
+export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCategory }: CategoryGridProps) {
   const { data: categories, isLoading: categoriesLoading } = useCategories();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>();
-  const { data: products } = useProductsByCategory(selectedCategoryId);
+  const { data: products, isLoading: productsLoading } = useProducts();
 
-  if (categoriesLoading) {
-    return (
-      <div className="flex items-center justify-center py-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-1"></div>
-          <p className="text-xs text-muted-foreground">CHARGEMENT...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!categories || categories.length === 0) {
-    return (
-      <div className="p-4 text-center">
-        <Package2 className="h-8 w-8 mx-auto mb-1 text-muted-foreground" />
-        <p className="text-muted-foreground text-xs">AUCUNE CATÉGORIE</p>
-      </div>
-    );
-  }
-
-  const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategoryId(categoryId);
-  };
-
-  const handleBack = () => {
-    setSelectedCategoryId(undefined);
-  };
-
-  if (selectedCategoryId && products) {
-    const currentCategory = categories.find(c => c.id === selectedCategoryId);
-    
-    return (
-      <div className="space-y-0.5 md:space-y-1.5">
-        <Button 
-          onClick={handleBack}
-          className="w-full h-7 md:h-8 bg-muted hover:brightness-110 text-foreground font-bold border border-border transition-all duration-100 rounded-lg active:brightness-90 shadow-sm text-[10px] md:text-xs cursor-pointer touch-action-manipulation"
-        >
-          <ChevronLeft className="h-2.5 w-2.5 md:h-3 md:w-3 mr-0.5 md:mr-1" />
-          RETOUR
-        </Button>
-
-        <div className="grid grid-cols-2 gap-0.5 md:gap-1.5">
-          {products.map((product) => (
-            <Button
-              key={product.id}
-              onClick={() => onProductSelect(product)}
-              className="h-12 md:h-16 flex flex-col justify-center items-center p-1 md:p-2 hover:shadow-lg border-2 hover:brightness-110 transition-all duration-100 rounded-lg active:brightness-90 shadow-sm cursor-pointer touch-action-manipulation"
-              style={{
-                backgroundColor: `${currentCategory?.color}15`,
-                borderColor: currentCategory?.color || 'hsl(210, 100%, 50%)',
-              }}
-            >
-              <span className="font-bold text-[9px] md:text-xs text-center line-clamp-2 mb-0.5 md:mb-1 leading-tight text-foreground">
-                {product.name}
-              </span>
-              <span className="text-[9px] md:text-xs font-black" style={{ color: currentCategory?.color }}>
-                {product.price.toFixed(2)}€/{product.unit || 'u'}
-              </span>
-            </Button>
-          ))}
-        </div>
-
-        {products.length === 0 && (
-          <div className="text-center py-4">
-            <Package2 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-muted-foreground text-xs">AUCUN PRODUIT</p>
-          </div>
-        )}
-      </div>
-    );
-  }
+  const filteredProducts = selectedCategory
+    ? products?.filter(p => p.category_id === selectedCategory)
+    : products;
 
   return (
-      <div className="space-y-0.5 md:space-y-1.5 animate-fade-in">
-      {categories.map((category) => (
-        <Button
-          key={category.id}
-          onClick={() => handleCategoryClick(category.id)}
-          className="w-full h-10 md:h-12 flex items-center justify-start gap-1.5 md:gap-2 px-2 md:px-3 text-white font-bold transition-all duration-100 rounded-lg hover:brightness-110 active:brightness-90 shadow-md hover:shadow-lg cursor-pointer touch-action-manipulation"
-          style={{ backgroundColor: category.color }}
-        >
-          {category.icon && (
-            <div className="p-1 md:p-1.5 bg-white/20 rounded-lg backdrop-blur-sm flex items-center justify-center flex-shrink-0" style={{ minWidth: '24px', minHeight: '24px', width: '24px', height: '24px' }}>
-              <DynamicIcon name={category.icon} size={14} className="flex-shrink-0" />
+    <div className="flex flex-col gap-2 h-full">
+      <Tabs defaultValue="categories" className="flex-1 flex flex-col">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="categories">Catégories</TabsTrigger>
+          <TabsTrigger value="products">Produits</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="categories" className="flex-1 mt-2 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="grid grid-cols-3 gap-2 p-1">
+              <Button
+                variant={selectedCategory === null ? "default" : "outline"}
+                onClick={() => onCategorySelect(null)}
+                className="h-20 flex flex-col items-center justify-center gap-1 p-2"
+              >
+                <Grid3x3 className="h-5 w-5" />
+                <span className="text-xs font-medium">Tout</span>
+              </Button>
+              {categories?.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "outline"}
+                  onClick={() => onCategorySelect(category.id)}
+                  className="h-20 flex flex-col items-center justify-center gap-1 p-2"
+                >
+                  <Package className="h-5 w-5" />
+                  <span className="text-xs font-medium text-center line-clamp-2">
+                    {category.name}
+                  </span>
+                </Button>
+              ))}
             </div>
-          )}
-          <span className="text-[10px] md:text-xs uppercase tracking-wide truncate">
-            {category.name}
-          </span>
-        </Button>
-      ))}
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="products" className="flex-1 mt-2 overflow-hidden">
+          <ScrollArea className="h-full">
+            {productsLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="text-sm text-muted-foreground">Chargement...</div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 p-1">
+                {filteredProducts?.map((product) => (
+                  <Button
+                    key={product.id}
+                    variant="outline"
+                    onClick={() => onProductSelect(product)}
+                    className="h-20 flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10"
+                    disabled={product.stock <= 0}
+                  >
+                    <span className="text-xs font-medium text-center line-clamp-2">
+                      {product.name}
+                    </span>
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="text-xs font-bold text-primary">
+                        {product.price.toFixed(2)}€
+                      </span>
+                      {product.stock <= 0 && (
+                        <span className="text-[10px] text-destructive font-medium">
+                          Rupture
+                        </span>
+                      )}
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
