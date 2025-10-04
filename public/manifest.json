@@ -1,0 +1,61 @@
+{
+  "name": "GUL CASH PRO - Caisse Enregistreuse",
+  "short_name": "GUL CASH",
+  "description": "Système de caisse enregistreuse professionnel pour GUL REYHAN",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": ["business", "finance", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Caisse",
+      "short_name": "POS",
+      "description": "Ouvrir la caisse enregistreuse",
+      "url": "/",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Produits",
+      "short_name": "Produits",
+      "description": "Gérer les produits",
+      "url": "/products",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Stats",
+      "description": "Voir les statistiques",
+      "url": "/dashboard",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+    }
+  ]
+}
