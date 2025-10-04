@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Package, AlertCircle, Plus, Edit } from 'lucide-react';
+import { Search, Package, AlertCircle, Plus, Edit, TrendingUp, Tag, FolderKanban, Barcode } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { useProducts } from '@/hooks/useProducts';
 import { useBarcodeScanner } from '@/hooks/useBarcodeScanner';
 
@@ -103,52 +104,65 @@ export function ProductSearchDialog({
               )}
 
               {filteredProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="border rounded-lg p-3 space-y-2 hover:bg-accent/50 transition-colors cursor-pointer"
-                  onClick={() => {
-                    onEditProduct(product);
-                    onOpenChange(false);
-                  }}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium truncate">{product.name}</h3>
-                      {product.barcode && (
-                        <p className="text-xs text-muted-foreground font-mono">
-                          {product.barcode}
-                        </p>
-                      )}
-                    </div>
-                    <Badge variant={product.stock && product.stock > 0 ? 'default' : 'destructive'}>
-                      {product.stock || 0} en stock
+                <Card key={product.id} className="p-4 bg-gradient-to-br from-primary/5 to-secondary/5 space-y-3">
+                  <div>
+                    <h3 className="text-lg font-bold">{product.name}</h3>
+                    {product.description && (
+                      <p className="text-sm text-muted-foreground mt-1">{product.description}</p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="secondary" className="text-lg font-bold px-3 py-1">
+                      {product.price.toFixed(2)}€
                     </Badge>
+                    <Badge variant="outline">
+                      {product.type === 'weight' ? 'Au kilo' : 'À l\'unité'}
+                    </Badge>
+                    {product.vat_rate && (
+                      <Badge variant="outline">TVA {product.vat_rate}%</Badge>
+                    )}
                   </div>
 
-                  <div className="flex items-center justify-between text-sm">
-                    <div>
-                      <span className="font-bold">{product.price.toFixed(2)} €</span>
-                      <span className="text-muted-foreground ml-2">TVA {product.vat_rate}%</span>
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t">
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Stock actuel</p>
+                      <p className="text-lg font-bold flex items-center gap-1">
+                        <Package className="h-4 w-4" />
+                        {product.stock ?? 0} {product.unit || 'unité'}
+                      </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditProduct(product);
-                        onOpenChange(false);
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    {product.min_stock !== undefined && (
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Stock min</p>
+                        <p className="text-lg font-semibold text-muted-foreground">
+                          {product.min_stock} {product.unit || 'unité'}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
-                  {product.description && (
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {product.description}
-                    </p>
+                  {product.barcode && (
+                    <div className="pt-2 border-t">
+                      <p className="text-xs text-muted-foreground mb-1">Code-barres</p>
+                      <Badge variant="secondary" className="font-mono">
+                        {product.barcode}
+                      </Badge>
+                    </div>
                   )}
-                </div>
+
+                  <Button
+                    size="lg"
+                    className="w-full gap-2 h-12 text-base bg-primary mt-2"
+                    onClick={() => {
+                      onEditProduct(product);
+                      onOpenChange(false);
+                    }}
+                  >
+                    <Edit className="h-5 w-5" />
+                    Modifier le Produit
+                  </Button>
+                </Card>
               ))}
             </div>
           </ScrollArea>
