@@ -1,10 +1,5 @@
 {
   "appId": "com.gulreyhan.cashpro",
   "appName": "gul-cash-pro",
-  "webDir": "dist",
-  "server": {
-    "url": "https://00042e2c-1236-4607-a30f-a5ee7708026d.lovableproject.com?forceHideBadge=true",
-    "cleartext": true
-  },
-  "bundledWebRuntime": false
+  "webDir": "dist"
 }
