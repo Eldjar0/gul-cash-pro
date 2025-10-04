@@ -60,6 +60,7 @@ import { useWeather } from '@/hooks/useWeather';
 import { useAuth } from '@/hooks/useAuth';
 import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
 import { ProductSearchDialog } from '@/components/pos/ProductSearchDialog';
+import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 import { toast } from 'sonner';
 import logoJlprod from '@/assets/logo-jlprod-new.png';
 
@@ -88,6 +89,9 @@ export default function MobileManagement() {
   
   // Manual product search dialog
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
+  
+  // Remote scan session
+  const [remoteScanSessionId, setRemoteScanSessionId] = useState<string | null>(null);
   
   // New features states
   const [darkMode, setDarkMode] = useState(() => {
@@ -664,6 +668,16 @@ export default function MobileManagement() {
               >
                 <Download className="h-4 w-4" />
               </Button>
+            </div>
+            
+            {/* Remote Scan Button */}
+            <div>
+              <RemoteScanDialog 
+                onSessionCreated={(sessionId, sessionCode) => {
+                  setRemoteScanSessionId(sessionId);
+                  toast.success(`Session scan créée: ${sessionCode}`);
+                }}
+              />
             </div>
 
             {/* Center: Time & Weather */}
