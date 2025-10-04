@@ -4,19 +4,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Scan, CheckCircle2, AlertCircle, Smartphone } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Scan, CheckCircle2, AlertCircle, Smartphone, Edit, Plus, Barcode, DollarSign, Package } from 'lucide-react';
 import { useScanSession, useAddScannedItem } from '@/hooks/useRemoteScan';
+import { useProducts, useCreateProduct, useUpdateProduct, Product } from '@/hooks/useProducts';
+import { useCategories } from '@/hooks/useCategories';
 import { toast } from 'sonner';
 
 export default function RemoteScanner() {
   const { sessionCode } = useParams();
   const navigate = useNavigate();
   const [barcode, setBarcode] = useState('');
-  const [scannedItems, setScannedItems] = useState<Array<{ barcode: string; time: string }>>([]);
+  const [scannedItems, setScannedItems] = useState<Array<{ barcode: string; time: string; success: boolean }>>([]);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [newProductDialogOpen, setNewProductDialogOpen] = useState(false);
+  const [changeBarcodeDialogOpen, setChangeBarcodeDialogOpen] = useState(false);
+  const [editPriceDialogOpen, setEditPriceDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [editQuantity, setEditQuantity] = useState('1');
+  const [editPrice, setEditPrice] = useState('');
+  const [newBarcode, setNewBarcode] = useState('');
+  
   const inputRef = useRef<HTMLInputElement>(null);
   
   const { data: session, isLoading, error } = useScanSession(sessionCode);
+  const { data: products } = useProducts();
+  const { data: categories } = useCategories();
   const addScannedItem = useAddScannedItem();
+  const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
+  
+  // Sons optimisés
+  const successSound = useRef<HTMLAudioElement | null>(null);
+  const errorSound = useRef<HTMLAudioElement | null>(null);
+  
+  useEffect(() => {
+    // Sons de notification plus agréables
+    successSound.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTQIGWi77eeeTRAMUKfj8LZjHAY4ktfx');
+    errorSound.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAgICAgH9+fn5+fX19fHx8e3t7enp6eXl5eHh4d3d3dnZ2dXV1dHR0c3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nz');
+  }, []);
 
   useEffect(() => {
     // Auto-focus input for barcode scanner
@@ -35,6 +63,28 @@ export default function RemoteScanner() {
   const handleScan = async (scannedBarcode: string) => {
     if (!session || !scannedBarcode.trim()) return;
 
+    // Vérifier si le produit existe
+    const product = products?.find(p => p.barcode === scannedBarcode.trim());
+    
+    if (!product) {
+      setScannedItems(prev => [
+        { barcode: scannedBarcode, time: new Date().toLocaleTimeString(), success: false },
+        ...prev.slice(0, 19)
+      ]);
+      errorSound.current?.play().catch(() => {});
+      toast.error('Produit inconnu', {
+        description: 'Code-barres non trouvé dans le système',
+        action: {
+          label: 'Créer',
+          onClick: () => {
+            setBarcode(scannedBarcode);
+            setNewProductDialogOpen(true);
+          }
+        }
+      });
+      return;
+    }
+
     try {
       await addScannedItem.mutateAsync({
         sessionId: session.id,
@@ -43,17 +93,17 @@ export default function RemoteScanner() {
       });
 
       setScannedItems(prev => [
-        { barcode: scannedBarcode, time: new Date().toLocaleTimeString() },
-        ...prev.slice(0, 9) // Keep last 10 items
+        { barcode: scannedBarcode, time: new Date().toLocaleTimeString(), success: true },
+        ...prev.slice(0, 19)
       ]);
       
       setBarcode('');
-      
-      // Play success sound
-      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTQIGWi77eeeTRAMUKfj8LZjHAY4ktfx');
-      audio.play().catch(() => {});
+      successSound.current?.play().catch(() => {});
+      toast.success('Produit scanné', { description: product.name });
     } catch (error) {
       console.error('Error scanning item:', error);
+      errorSound.current?.play().catch(() => {});
+      toast.error('Erreur de scan');
     }
   };
 
@@ -97,103 +147,382 @@ export default function RemoteScanner() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-primary/5 p-4">
-      <div className="max-w-2xl mx-auto space-y-4">
-        {/* Header */}
-        <Card className="border-primary">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary rounded-lg">
-                  <Smartphone className="h-6 w-6 text-primary-foreground" />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl">Scanner à Distance</CardTitle>
-                  <CardDescription className="text-base">
-                    Session: <span className="font-mono font-bold">{session.session_code}</span>
-                  </CardDescription>
-                </div>
-              </div>
-              <Badge variant="default" className="animate-pulse">
-                <div className="h-2 w-2 rounded-full bg-white mr-2"></div>
-                Connecté
-              </Badge>
-            </div>
-          </CardHeader>
-        </Card>
+    <div className="fixed inset-0 bg-gradient-to-br from-primary via-primary/90 to-primary/80 overflow-hidden">
+      <div className="h-full flex flex-col p-4 gap-4">
+        {/* Header Compact */}
+        <div className="flex items-center justify-between text-white/90 pb-2 border-b border-white/20">
+          <div className="flex items-center gap-2">
+            <Smartphone className="h-5 w-5" />
+            <span className="font-semibold">Scanner à Distance</span>
+            <Badge variant="secondary" className="animate-pulse bg-green-500 text-white border-0">
+              <div className="h-2 w-2 rounded-full bg-white mr-2"></div>
+              Actif
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="secondary" 
+              size="sm"
+              onClick={() => navigate('/')}
+            >
+              Retour Caisse
+            </Button>
+          </div>
+        </div>
 
-        {/* Scanner Input */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Scan className="h-5 w-5" />
-              Scanner un produit
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Code-barres du produit..."
-                  value={barcode}
-                  onChange={(e) => setBarcode(e.target.value)}
-                  className="text-lg h-14 text-center font-mono"
-                  autoFocus
-                />
-                <p className="text-xs text-muted-foreground text-center">
-                  Scannez un code-barres ou saisissez-le manuellement
-                </p>
-              </div>
-              <Button type="submit" className="w-full h-12 text-lg" disabled={!barcode.trim()}>
-                <CheckCircle2 className="h-5 w-5 mr-2" />
-                Ajouter au panier
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Scanned Items History */}
-        {scannedItems.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Articles scannés récemment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {scannedItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-accent rounded-lg animate-in slide-in-from-top"
-                  >
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                      <span className="font-mono font-semibold">{item.barcode}</span>
+        {/* Scanner Input - Grande zone centrale */}
+        <div className="flex-1 flex flex-col justify-center">
+          <Card className="bg-white/95 backdrop-blur shadow-2xl border-4 border-white">
+            <CardContent className="p-8">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="text-center space-y-4">
+                  <div className="flex justify-center">
+                    <div className="p-6 bg-primary/10 rounded-full">
+                      <Scan className="h-16 w-16 text-primary" />
                     </div>
-                    <span className="text-xs text-muted-foreground">{item.time}</span>
                   </div>
-                ))}
+                  <h2 className="text-3xl font-bold text-primary">Scanner un produit</h2>
+                </div>
+                
+                <div className="space-y-4">
+                  <Input
+                    ref={inputRef}
+                    type="text"
+                    placeholder="Code-barres..."
+                    value={barcode}
+                    onChange={(e) => setBarcode(e.target.value)}
+                    className="text-2xl h-20 text-center font-mono font-bold border-4 focus-visible:ring-4"
+                    autoFocus
+                  />
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button 
+                      type="submit" 
+                      size="lg"
+                      className="h-16 text-xl font-semibold"
+                      disabled={!barcode.trim()}
+                    >
+                      <CheckCircle2 className="h-6 w-6 mr-2" />
+                      Scanner
+                    </Button>
+                    
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      size="lg"
+                      className="h-16 text-xl font-semibold"
+                      onClick={() => setNewProductDialogOpen(true)}
+                    >
+                      <Plus className="h-6 w-6 mr-2" />
+                      Nouveau
+                    </Button>
+                  </div>
+                </div>
+              </form>
+              
+              {/* Actions rapides */}
+              <div className="grid grid-cols-3 gap-2 mt-6 pt-6 border-t">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    const lastSuccess = scannedItems.find(i => i.success);
+                    if (lastSuccess) {
+                      const prod = products?.find(p => p.barcode === lastSuccess.barcode);
+                      if (prod) {
+                        setSelectedProduct(prod);
+                        setEditPriceDialogOpen(true);
+                      }
+                    }
+                  }}
+                >
+                  <DollarSign className="h-4 w-4 mr-1" />
+                  Prix
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    const lastSuccess = scannedItems.find(i => i.success);
+                    if (lastSuccess) {
+                      const prod = products?.find(p => p.barcode === lastSuccess.barcode);
+                      if (prod) {
+                        setSelectedProduct(prod);
+                        setChangeBarcodeDialogOpen(true);
+                      }
+                    }
+                  }}
+                >
+                  <Barcode className="h-4 w-4 mr-1" />
+                  Code
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    const lastSuccess = scannedItems.find(i => i.success);
+                    if (lastSuccess) {
+                      const prod = products?.find(p => p.barcode === lastSuccess.barcode);
+                      if (prod) {
+                        setSelectedProduct(prod);
+                        setEditQuantity('1');
+                        setEditDialogOpen(true);
+                      }
+                    }
+                  }}
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Quantité
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Historique Compact */}
+        {scannedItems.length > 0 && (
+          <Card className="bg-white/90 backdrop-blur">
+            <CardContent className="p-3">
+              <div className="flex gap-2 overflow-x-auto">
+                {scannedItems.slice(0, 10).map((item, index) => {
+                  const product = products?.find(p => p.barcode === item.barcode);
+                  return (
+                    <div
+                      key={index}
+                      className={`flex-shrink-0 p-2 rounded-lg border-2 ${
+                        item.success 
+                          ? 'bg-green-50 border-green-500' 
+                          : 'bg-red-50 border-red-500'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {item.success ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-red-600" />
+                        )}
+                        <div className="text-xs">
+                          <div className="font-mono font-bold">{item.barcode}</div>
+                          {product && <div className="text-muted-foreground truncate max-w-[100px]">{product.name}</div>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
         )}
-
-        {/* Instructions */}
-        <Card className="bg-accent/50">
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              <p className="text-sm font-medium">💡 Conseils d'utilisation:</p>
-              <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
-                <li>Gardez cette page ouverte pendant le scan</li>
-                <li>Pointez la caméra directement sur le code-barres</li>
-                <li>Assurez-vous d'avoir un bon éclairage</li>
-                <li>Les produits sont ajoutés automatiquement au panier</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
       </div>
+      
+      {/* Dialog Modifier Quantité */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier la quantité</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedProduct && (
+              <div className="p-3 bg-accent rounded-lg">
+                <p className="font-semibold">{selectedProduct.name}</p>
+                <p className="text-sm text-muted-foreground">{selectedProduct.barcode}</p>
+              </div>
+            )}
+            <div>
+              <Label>Quantité</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={editQuantity}
+                onChange={(e) => setEditQuantity(e.target.value)}
+                className="text-xl h-14 text-center"
+              />
+            </div>
+            <Button 
+              className="w-full" 
+              onClick={async () => {
+                if (selectedProduct && session) {
+                  await addScannedItem.mutateAsync({
+                    sessionId: session.id,
+                    barcode: selectedProduct.barcode || '',
+                    quantity: parseFloat(editQuantity),
+                  });
+                  toast.success('Quantité ajoutée');
+                  setEditDialogOpen(false);
+                }
+              }}
+            >
+              Confirmer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Nouveau Produit */}
+      <Dialog open={newProductDialogOpen} onOpenChange={setNewProductDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Créer un nouveau produit</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            await createProduct.mutateAsync({
+              name: formData.get('name') as string,
+              barcode: barcode || formData.get('barcode') as string,
+              price: parseFloat(formData.get('price') as string),
+              cost_price: parseFloat(formData.get('cost_price') as string) || undefined,
+              vat_rate: parseFloat(formData.get('vat_rate') as string),
+              type: formData.get('type') as 'unit' | 'weight',
+              category_id: formData.get('category_id') as string || undefined,
+              stock: parseFloat(formData.get('stock') as string) || 0,
+              is_active: true,
+            });
+            setNewProductDialogOpen(false);
+            setBarcode('');
+          }} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Code-barres</Label>
+                <Input name="barcode" defaultValue={barcode} required />
+              </div>
+              <div>
+                <Label>Nom du produit</Label>
+                <Input name="name" required />
+              </div>
+              <div>
+                <Label>Prix de vente (€)</Label>
+                <Input name="price" type="number" step="0.01" required />
+              </div>
+              <div>
+                <Label>Prix d'achat (€)</Label>
+                <Input name="cost_price" type="number" step="0.01" />
+              </div>
+              <div>
+                <Label>TVA (%)</Label>
+                <Input name="vat_rate" type="number" step="0.01" defaultValue="21" required />
+              </div>
+              <div>
+                <Label>Type</Label>
+                <Select name="type" defaultValue="unit">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unit">Unité</SelectItem>
+                    <SelectItem value="weight">Poids</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Catégorie</Label>
+                <Select name="category_id">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Aucune" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories?.map(cat => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Stock initial</Label>
+                <Input name="stock" type="number" step="0.01" defaultValue="0" />
+              </div>
+            </div>
+            <Button type="submit" className="w-full">
+              <Plus className="h-4 w-4 mr-2" />
+              Créer le produit
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Changer Code-barres */}
+      <Dialog open={changeBarcodeDialogOpen} onOpenChange={setChangeBarcodeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le code-barres</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedProduct && (
+              <div className="p-3 bg-accent rounded-lg">
+                <p className="font-semibold">{selectedProduct.name}</p>
+                <p className="text-sm text-muted-foreground">Actuel: {selectedProduct.barcode}</p>
+              </div>
+            )}
+            <div>
+              <Label>Nouveau code-barres</Label>
+              <Input
+                value={newBarcode}
+                onChange={(e) => setNewBarcode(e.target.value)}
+                placeholder="Scannez ou saisissez"
+                className="text-xl h-14 text-center font-mono"
+              />
+            </div>
+            <Button 
+              className="w-full" 
+              onClick={async () => {
+                if (selectedProduct && newBarcode.trim()) {
+                  await updateProduct.mutateAsync({
+                    id: selectedProduct.id,
+                    barcode: newBarcode.trim(),
+                  });
+                  setChangeBarcodeDialogOpen(false);
+                  setNewBarcode('');
+                }
+              }}
+            >
+              Confirmer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Modifier Prix */}
+      <Dialog open={editPriceDialogOpen} onOpenChange={setEditPriceDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le prix</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedProduct && (
+              <div className="p-3 bg-accent rounded-lg">
+                <p className="font-semibold">{selectedProduct.name}</p>
+                <p className="text-sm text-muted-foreground">Prix actuel: {selectedProduct.price.toFixed(2)} €</p>
+              </div>
+            )}
+            <div>
+              <Label>Nouveau prix (€)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={editPrice}
+                onChange={(e) => setEditPrice(e.target.value)}
+                className="text-xl h-14 text-center"
+                placeholder={selectedProduct?.price.toFixed(2)}
+              />
+            </div>
+            <Button 
+              className="w-full" 
+              onClick={async () => {
+                if (selectedProduct && editPrice) {
+                  await updateProduct.mutateAsync({
+                    id: selectedProduct.id,
+                    price: parseFloat(editPrice),
+                  });
+                  setEditPriceDialogOpen(false);
+                  setEditPrice('');
+                }
+              }}
+            >
+              Confirmer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

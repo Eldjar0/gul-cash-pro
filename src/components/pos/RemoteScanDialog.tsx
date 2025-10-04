@@ -25,12 +25,17 @@ export function RemoteScanDialog({ onSessionCreated }: RemoteScanDialogProps) {
   const closeSession = useCloseScanSession();
 
   const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen && currentSession) {
+    // Ne pas fermer automatiquement la session
+    setOpen(isOpen);
+  };
+  
+  const handleCloseSession = () => {
+    if (currentSession) {
       closeSession.mutate(currentSession.id);
       setCurrentSession(null);
       setQrCodeUrl('');
     }
-    setOpen(isOpen);
+    setOpen(false);
   };
 
   const handleCreateSession = async () => {
@@ -98,11 +103,19 @@ export function RemoteScanDialog({ onSessionCreated }: RemoteScanDialogProps) {
                 <p className="text-sm font-medium">Instructions:</p>
                 <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
                   <li>Scannez le QR code avec votre téléphone</li>
-                  <li>Autorisez l'accès à la caméra</li>
+                  <li>La connexion reste active jusqu'à fermeture manuelle</li>
                   <li>Scannez les codes-barres des produits</li>
-                  <li>Les produits seront ajoutés automatiquement au panier</li>
+                  <li>Les produits sont ajoutés automatiquement au panier</li>
                 </ol>
               </div>
+              
+              <Button 
+                variant="destructive" 
+                className="w-full"
+                onClick={handleCloseSession}
+              >
+                Fermer la session
+              </Button>
             </>
           ) : (
             <div className="flex items-center justify-center h-64">
