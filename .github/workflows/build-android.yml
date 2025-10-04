@@ -43,29 +43,24 @@ jobs:
         cd android
         ./gradlew assembleDebug --stacktrace
     
-    - name: Upload APK
-      uses: actions/upload-artifact@v3
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
       with:
         name: gul-cash-pro-apk
         path: android/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 90
     
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Get APK file
+      id: get_apk
+      run: echo "apk_path=android/app/build/outputs/apk/debug/app-debug.apk" >> $GITHUB_OUTPUT
+    
+    - name: Create Release and Upload APK
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: v1.0.${{ github.run_number }}
-        release_name: Release v1.0.${{ github.run_number }}
+        name: Release v1.0.${{ github.run_number }}
+        files: android/app/build/outputs/apk/debug/app-debug.apk
         draft: false
         prerelease: false
-    
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: android/app/build/outputs/apk/debug/app-debug.apk
-        asset_name: gul-cash-pro.apk
-        asset_content_type: application/vnd.android.package-archive
