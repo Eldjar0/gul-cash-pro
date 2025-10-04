@@ -52,184 +52,114 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
     navigate('/auth');
   };
 
-  const allMenuItems = [
+  const topMenuItems = [
     { icon: ShoppingCart, label: "Caisse", path: "/" },
     { icon: Receipt, label: "Ventes", path: "/sales" },
     { icon: Package, label: "Produits", path: "/products" },
-    { icon: Truck, label: "Stock", path: "/inventory" },
-    { icon: Users, label: "Clients", path: "/customers" },
     { icon: TrendingUp, label: "Dashboard", path: "/dashboard" },
     { icon: FileText, label: "Factures", path: "/invoices" },
     { icon: FileText, label: "Commandes", path: "/orders" },
     { icon: BarChart3, label: "Analyses", path: "/analytics" },
-    { icon: Gift, label: "Fidélité", path: "/loyalty" },
-    { icon: Tags, label: "Promotions", path: "/promotions" },
-    { icon: CreditCard, label: "Paiements", path: "/payments" },
-    { icon: Clock, label: "Historique", path: "/stock-history" },
-    { icon: Users, label: "Fournisseurs", path: "/suppliers" },
-    { icon: AlertTriangle, label: "Remboursements", path: "/refunds" },
     { icon: FileBarChart, label: "Rapports", path: "/reports-history" },
+  ];
+
+  const bottomMenuItems = [
+    { icon: Truck, label: "Stock", path: "/inventory" },
+    { icon: Clock, label: "Historique", path: "/stock-history" },
+    { icon: Truck, label: "Fournisseurs", path: "/suppliers" },
+    { icon: Users, label: "Clients", path: "/customers" },
+    { icon: Gift, label: "Fidélité", path: "/loyalty" },
+    { icon: CreditCard, label: "Paiements", path: "/payments" },
+    { icon: Tags, label: "Promotions", path: "/promotions" },
+    { icon: AlertTriangle, label: "Remboursements", path: "/refunds" },
     { icon: Settings, label: "Configuration", path: "/settings" },
-    { icon: UserCog, label: "Utilisateurs", path: "/settings" },
   ];
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-gradient-to-r from-primary to-primary-glow shadow-lg">
-      <div className="flex h-16 items-center gap-6 px-6">
-        {/* Logo */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="shrink-0 gap-2 font-semibold hover:bg-white/10 text-white"
-        >
-          <img src={logoGulReyhan} alt="Gül Reyhan" className="h-8 w-8" />
-          <span>Gül Reyhan Market</span>
-        </Button>
+      <div className="flex flex-col">
+        {/* Première ligne - Principaux */}
+        <div className="flex h-14 items-center gap-4 px-6">
+          {/* Logo */}
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+            className="shrink-0 gap-2 font-semibold hover:bg-white/10 text-white"
+          >
+            <img src={logoGulReyhan} alt="Gül Reyhan" className="h-8 w-8" />
+            <span className="hidden xl:inline">Gül Reyhan Market</span>
+          </Button>
 
-        {/* Navigation Menu */}
-        <div className="hidden lg:flex flex-1 gap-1 overflow-hidden">
-          <div className="flex gap-1 items-center">
-            {/* Afficher les 6 premiers boutons sur grands écrans */}
-            <div className="hidden 2xl:flex gap-1">
-              {allMenuItems.slice(0, 6).map((item) => (
-                <Button
-                  key={item.path}
-                  variant="ghost"
-                  onClick={() => navigate(item.path)}
-                  className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 gap-2"
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </Button>
-              ))}
-            </div>
-
-            {/* Afficher 4 boutons sur écrans moyens */}
-            <div className="hidden xl:flex 2xl:hidden gap-1">
-              {allMenuItems.slice(0, 4).map((item) => (
-                <Button
-                  key={item.path}
-                  variant="ghost"
-                  onClick={() => navigate(item.path)}
-                  className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 gap-2"
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </Button>
-              ))}
-            </div>
-
-            {/* Afficher 3 boutons sur petits écrans lg */}
-            <div className="flex xl:hidden gap-1">
-              {allMenuItems.slice(0, 3).map((item) => (
-                <Button
-                  key={item.path}
-                  variant="ghost"
-                  onClick={() => navigate(item.path)}
-                  className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 gap-2"
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </Button>
-              ))}
-            </div>
+          {/* Boutons principaux */}
+          <div className="hidden lg:flex flex-1 gap-1 overflow-x-auto">
+            {topMenuItems.map((item) => (
+              <Button
+                key={item.path}
+                variant="ghost"
+                onClick={() => navigate(item.path)}
+                className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 gap-2 whitespace-nowrap"
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </Button>
+            ))}
           </div>
 
-          {/* Menu Plus avec le reste */}
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white">
-                  Plus
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[200px] gap-1 p-2 bg-popover max-h-[400px] overflow-y-auto">
-                    {/* Afficher les éléments restants selon la taille d'écran */}
-                    <div className="hidden 2xl:block">
-                      {allMenuItems.slice(6).map((item) => (
-                        <li key={item.path}>
-                          <button
-                            onClick={() => navigate(item.path)}
-                            className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm hover:bg-accent"
-                          >
-                            <item.icon className="h-4 w-4" />
-                            <span>{item.label}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </div>
-                    <div className="hidden xl:block 2xl:hidden">
-                      {allMenuItems.slice(4).map((item) => (
-                        <li key={item.path}>
-                          <button
-                            onClick={() => navigate(item.path)}
-                            className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm hover:bg-accent"
-                          >
-                            <item.icon className="h-4 w-4" />
-                            <span>{item.label}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </div>
-                    <div className="block xl:hidden">
-                      {allMenuItems.slice(3).map((item) => (
-                        <li key={item.path}>
-                          <button
-                            onClick={() => navigate(item.path)}
-                            className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm hover:bg-accent"
-                          >
-                            <item.icon className="h-4 w-4" />
-                            <span>{item.label}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </div>
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-        </div>
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="h-9 w-9 text-white hover:bg-white/10"
+              >
+                <Bell className="h-4 w-4" />
+                {unreadCount > 0 && (
+                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-xs">
+                    {unreadCount}
+                  </Badge>
+                )}
+              </Button>
+              <NotificationPanel 
+                isOpen={showNotifications} 
+                onClose={() => setShowNotifications(false)} 
+              />
+            </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          <div className="relative">
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setShowNotifications(!showNotifications)}
+              onClick={onLockScreen}
               className="h-9 w-9 text-white hover:bg-white/10"
             >
-              <Bell className="h-4 w-4" />
-              {unreadCount > 0 && (
-                <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-xs">
-                  {unreadCount}
-                </Badge>
-              )}
+              <Lock className="h-4 w-4" />
             </Button>
-            <NotificationPanel 
-              isOpen={showNotifications} 
-              onClose={() => setShowNotifications(false)} 
-            />
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSignOut}
+              className="h-9 w-9 text-white hover:bg-white/10"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
+        </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onLockScreen}
-            className="h-9 w-9 text-white hover:bg-white/10"
-          >
-            <Lock className="h-4 w-4" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSignOut}
-            className="h-9 w-9 text-white hover:bg-white/10"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
+        {/* Deuxième ligne - Stock, Clients, Promos */}
+        <div className="hidden lg:flex h-12 items-center gap-1 px-6 bg-white/5 border-t border-white/10 overflow-x-auto">
+          {bottomMenuItems.map((item) => (
+            <Button
+              key={item.path}
+              variant="ghost"
+              onClick={() => navigate(item.path)}
+              className="h-8 px-3 text-xs font-medium text-white hover:bg-white/10 gap-2 whitespace-nowrap"
+            >
+              <item.icon className="h-3.5 w-3.5" />
+              <span>{item.label}</span>
+            </Button>
+          ))}
         </div>
       </div>
     </nav>
