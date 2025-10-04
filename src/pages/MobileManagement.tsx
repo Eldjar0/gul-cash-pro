@@ -36,6 +36,7 @@ import {
   Boxes,
   Tag,
   Download,
+  ShoppingCart,
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
@@ -501,6 +502,15 @@ export default function MobileManagement() {
             >
               <Tag className="h-6 w-6 mr-3" />
               Gérer les Promotions
+            </Button>
+
+            <Button
+              onClick={() => navigate('/mobile/orders')}
+              className="w-full h-16 bg-primary hover:bg-primary/90 text-white text-lg font-bold border-0"
+              size="lg"
+            >
+              <ShoppingCart className="h-6 w-6 mr-3" />
+              Gérer les Commandes
             </Button>
 
             <Button
