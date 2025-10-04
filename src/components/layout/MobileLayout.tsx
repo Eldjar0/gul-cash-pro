@@ -62,11 +62,10 @@ export function MobileLayout({ children, title, showBottomNav = true }: MobileLa
             <h1 className="text-2xl font-black">{title}</h1>
             <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
               <span>{currentTime.toLocaleTimeString('fr-FR')}</span>
-              {weather && (
+              {weather && !weather.loading && (
                 <>
                   <span>•</span>
                   <span>{weather.temperature}°C</span>
-                  <span>{weather.description}</span>
                 </>
               )}
             </div>

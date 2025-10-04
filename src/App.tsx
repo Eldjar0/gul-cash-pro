@@ -40,6 +40,7 @@ const MobileCategories = lazy(() => import("./pages/MobileCategories"));
 const MobilePromotions = lazy(() => import("./pages/MobilePromotions"));
 const MobileOrders = lazy(() => import("./pages/MobileOrders"));
 const MobileCalculator = lazy(() => import("./pages/MobileCalculator"));
+const MobileProducts = lazy(() => import("./pages/MobileProducts"));
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,8 @@ const App = () => (
             <Route path="/remote-scanner/:sessionCode" element={<RemoteScanner />} />
             <Route path="/download-app" element={<DownloadApp />} />
             <Route path="/mobile" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
+            <Route path="/mobile/management" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
+            <Route path="/mobile/products" element={<ProtectedRoute><MobileProducts /></ProtectedRoute>} />
             <Route path="/mobile/categories" element={<ProtectedRoute><MobileCategories /></ProtectedRoute>} />
             <Route path="/mobile/promotions" element={<ProtectedRoute><MobilePromotions /></ProtectedRoute>} />
             <Route path="/mobile/orders" element={<ProtectedRoute><MobileOrders /></ProtectedRoute>} />
