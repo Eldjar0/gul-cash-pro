@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -18,6 +18,10 @@ import {
   FileText,
   Check,
   X,
+  Search,
+  Barcode,
+  Tag,
+  Percent,
 } from 'lucide-react';
 import {
   Dialog,
@@ -28,12 +32,14 @@ import {
 } from '@/components/ui/dialog';
 import { useMobileOrders, useCreateMobileOrder, useUpdateMobileOrder, useDeleteMobileOrder, MobileOrder, MobileOrderItem } from '@/hooks/useMobileOrders';
 import { useProducts } from '@/hooks/useProducts';
+import { usePromotions } from '@/hooks/usePromotions';
 import { toast } from 'sonner';
 
 export default function MobileOrders() {
   const navigate = useNavigate();
   const { data: orders = [] } = useMobileOrders('pending');
   const { data: products = [] } = useProducts();
+  const { data: promotions = [] } = usePromotions();
   const createOrder = useCreateMobileOrder();
   const updateOrder = useUpdateMobileOrder();
   const deleteOrder = useDeleteMobileOrder();
@@ -42,6 +48,19 @@ export default function MobileOrders() {
   const [editingOrder, setEditingOrder] = useState<MobileOrder | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
+  
+  // Product search dialog
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Item editing dialog
+  const [editItemDialogOpen, setEditItemDialogOpen] = useState(false);
+  const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
+  const [editItemData, setEditItemData] = useState({
+    quantity: '1',
+    unit_price: '0',
+    discount_percent: '0',
+  });
 
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -73,6 +92,147 @@ export default function MobileOrders() {
     }
     setView('form');
   };
+
+  // Scan detection for barcode scanner
+  useEffect(() => {
+    if (view !== 'form') return;
+    
+    let buffer = "";
+    let lastKeyTime = 0;
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    const processScan = (barcode: string) => {
+      const product = products.find(p => p.barcode === barcode);
+      if (product) {
+        handleAddProductByBarcode(product.id);
+        toast.success(`${product.name} ajouté`);
+      } else {
+        toast.error('Produit non trouvé');
+      }
+    };
+
+    const handler = (e: KeyboardEvent) => {
+      if (document.activeElement?.tagName === 'INPUT' || 
+          document.activeElement?.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      const now = Date.now();
+      const delta = now - lastKeyTime;
+      lastKeyTime = now;
+
+      if (e.key === 'Enter' && buffer.length >= 3) {
+        e.preventDefault();
+        if (timeoutId) clearTimeout(timeoutId);
+        processScan(buffer);
+        buffer = "";
+        return;
+      }
+
+      if (e.key.length === 1 && /[0-9]/.test(e.key)) {
+        if (delta > 400 && buffer.length > 0) {
+          buffer = "";
+        }
+        buffer += e.key;
+        
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (buffer.length >= 8) {
+            processScan(buffer);
+            buffer = "";
+          }
+        }, 300);
+      }
+    };
+
+    document.addEventListener('keydown', handler);
+    return () => {
+      document.removeEventListener('keydown', handler);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [view, products]);
+
+  const handleAddProductByBarcode = (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    // Check for applicable promotions
+    const applicablePromo = promotions.find(promo => 
+      promo.is_active &&
+      promo.type === 'percentage' &&
+      (!promo.applicable_products || promo.applicable_products.includes(product.id))
+    );
+
+    const qty = 1;
+    const unitPrice = product.price;
+    let discountPercent = 0;
+
+    if (applicablePromo) {
+      discountPercent = applicablePromo.value || 0;
+    }
+
+    const discountAmount = (unitPrice * qty * discountPercent) / 100;
+    const totalPrice = (unitPrice * qty) - discountAmount;
+
+    const newItem: MobileOrderItem = {
+      product_id: product.id,
+      product_name: product.name,
+      quantity: qty,
+      unit_price: unitPrice,
+      total_price: totalPrice,
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      items: [...prev.items, newItem],
+    }));
+  };
+
+  const handleSearchProduct = (productId: string) => {
+    handleAddProductByBarcode(productId);
+    setSearchDialogOpen(false);
+    setSearchTerm('');
+  };
+
+  const handleEditItem = (index: number) => {
+    const item = formData.items[index];
+    setEditingItemIndex(index);
+    setEditItemData({
+      quantity: item.quantity.toString(),
+      unit_price: item.unit_price.toString(),
+      discount_percent: '0',
+    });
+    setEditItemDialogOpen(true);
+  };
+
+  const handleSaveEditedItem = () => {
+    if (editingItemIndex === null) return;
+
+    const qty = parseFloat(editItemData.quantity);
+    const unitPrice = parseFloat(editItemData.unit_price);
+    const discountPercent = parseFloat(editItemData.discount_percent);
+
+    const subtotal = qty * unitPrice;
+    const discountAmount = (subtotal * discountPercent) / 100;
+    const totalPrice = subtotal - discountAmount;
+
+    setFormData(prev => ({
+      ...prev,
+      items: prev.items.map((item, index) => 
+        index === editingItemIndex
+          ? { ...item, quantity: qty, unit_price: unitPrice, total_price: totalPrice }
+          : item
+      ),
+    }));
+
+    setEditItemDialogOpen(false);
+    setEditingItemIndex(null);
+  };
+
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleAddProduct = () => {
     if (!selectedProductId || !quantity) {
@@ -229,6 +389,25 @@ export default function MobileOrders() {
             <Card className="p-4 space-y-3">
               <h3 className="font-bold">Ajouter des produits</h3>
               
+              {/* Quick actions */}
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  onClick={() => setSearchDialogOpen(true)}
+                  variant="outline"
+                  className="h-16"
+                >
+                  <Search className="h-5 w-5 mr-2" />
+                  Recherche rapide
+                </Button>
+                <div className="flex flex-col items-center justify-center p-2 border rounded-md bg-muted">
+                  <Barcode className="h-6 w-6 mb-1 text-muted-foreground" />
+                  <span className="text-xs text-center text-muted-foreground">
+                    Scan automatique
+                  </span>
+                </div>
+              </div>
+              
               <div className="space-y-2">
                 <Label>Produit</Label>
                 <select
@@ -287,6 +466,14 @@ export default function MobileOrders() {
                         type="button"
                         variant="ghost"
                         size="icon"
+                        onClick={() => handleEditItem(index)}
+                      >
+                        <Edit className="h-4 w-4 text-primary" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleRemoveProduct(index)}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -294,7 +481,7 @@ export default function MobileOrders() {
                     </div>
                   </div>
                 ))}
-
+                
                 <div className="pt-3 border-t flex justify-between items-center">
                   <span className="text-lg font-bold">Total:</span>
                   <span className="text-2xl font-bold text-primary">
@@ -412,6 +599,133 @@ export default function MobileOrders() {
           )}
         </div>
       </ScrollArea>
+
+      {/* Product Search Dialog */}
+      <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
+        <DialogContent className="max-w-md max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Rechercher un produit
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <Input
+              placeholder="Nom ou code-barres..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              autoFocus
+            />
+            
+            <ScrollArea className="h-[400px]">
+              <div className="space-y-2">
+                {filteredProducts.map(product => (
+                  <Card
+                    key={product.id}
+                    className="p-3 cursor-pointer hover:bg-accent transition-colors"
+                    onClick={() => handleSearchProduct(product.id)}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-semibold">{product.name}</p>
+                        {product.barcode && (
+                          <p className="text-xs text-muted-foreground">{product.barcode}</p>
+                        )}
+                      </div>
+                      <Badge variant="secondary">{product.price.toFixed(2)}€</Badge>
+                    </div>
+                  </Card>
+                ))}
+                {filteredProducts.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">
+                    Aucun produit trouvé
+                  </p>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Item Dialog */}
+      <Dialog open={editItemDialogOpen} onOpenChange={setEditItemDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" />
+              Modifier l'article
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Quantité</Label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={editItemData.quantity}
+                onChange={(e) => setEditItemData(prev => ({ ...prev, quantity: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Prix unitaire (€)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={editItemData.unit_price}
+                onChange={(e) => setEditItemData(prev => ({ ...prev, unit_price: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Percent className="h-4 w-4" />
+                Remise (%)
+              </Label>
+              <Input
+                type="number"
+                step="1"
+                min="0"
+                max="100"
+                value={editItemData.discount_percent}
+                onChange={(e) => setEditItemData(prev => ({ ...prev, discount_percent: e.target.value }))}
+              />
+            </div>
+
+            {parseFloat(editItemData.discount_percent) > 0 && (
+              <div className="p-3 bg-accent rounded-lg">
+                <p className="text-sm">
+                  <span className="font-semibold">Total: </span>
+                  {(
+                    parseFloat(editItemData.quantity) * parseFloat(editItemData.unit_price) *
+                    (1 - parseFloat(editItemData.discount_percent) / 100)
+                  ).toFixed(2)}€
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Économie: {(
+                    parseFloat(editItemData.quantity) * parseFloat(editItemData.unit_price) *
+                    parseFloat(editItemData.discount_percent) / 100
+                  ).toFixed(2)}€
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditItemDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveEditedItem}>
+              <Check className="h-4 w-4 mr-2" />
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
