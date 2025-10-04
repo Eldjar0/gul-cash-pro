@@ -260,11 +260,6 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
             <Lock className="h-5 w-5" />
           </Button>
 
-          <div className="hidden md:flex items-center gap-2 pl-2 border-l">
-            <UserCog className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">{user?.email}</span>
-          </div>
-
           <Button
             variant="ghost"
             size="icon"
