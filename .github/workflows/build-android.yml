@@ -26,25 +26,6 @@ jobs:
     - name: Build web app
       run: npm run build
     
-    - name: Ensure domain config
-      run: |
-        cat > capacitor.config.json << 'EOF'
-        {
-          "appId": "com.gulreyhan.cashpro",
-          "appName": "gul-cash-pro",
-          "webDir": "dist",
-          "server": {
-            "url": "https://gul-caisse.jlprod.be/mobile",
-            "cleartext": true,
-            "allowNavigation": [
-              "gul-caisse.jlprod.be",
-              "*.lovableproject.com",
-              "*.lovable.app"
-            ]
-          }
-        }
-        EOF
-    
     - name: Setup Java
       uses: actions/setup-java@v4
       with:

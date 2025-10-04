@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { ProtectedLayout } from "./components/layout/ProtectedLayout";
 import { GlobalAlerts } from "./components/alerts/GlobalAlerts";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -50,9 +51,10 @@ const App = () => (
       <GlobalAlerts />
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
             {/* Public routes */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/customer-display" element={<CustomerDisplay />} />
@@ -87,6 +89,7 @@ const App = () => (
           </Routes>
         </Suspense>
       </BrowserRouter>
+      </ErrorBoundary>
     </TooltipProvider>
   </QueryClientProvider>
 );
