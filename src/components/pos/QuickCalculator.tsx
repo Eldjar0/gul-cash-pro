@@ -209,7 +209,7 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
           <Button
             onClick={handleEquals}
             disabled={!display}
-            className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:scale-105 transition-all text-xl col-span-2"
+            className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100 text-xl col-span-2"
           >
             =
           </Button>
@@ -221,7 +221,7 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
           <Button
             onClick={handleSearch}
             disabled={!display}
-            className="h-12 w-full bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:scale-105 transition-all"
+            className="h-12 w-full bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100"
           >
             <Search className="h-4 w-4 mr-2" />
             Valider {calcMode === 'weight' ? 'le poids' : calcMode === 'quantity' ? 'la quantité' : 'le prix'}
@@ -234,14 +234,14 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
           <Button
             onClick={handleSearch}
             disabled={!display}
-            className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:scale-105 transition-all text-sm"
+            className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100 text-sm"
           >
             <Search className="h-4 w-4 mr-1" />
             Chercher
           </Button>
           <Button
             onClick={onCreateProduct}
-            className="h-12 bg-gradient-to-br from-primary to-primary-glow text-white font-bold shadow-lg hover:scale-105 transition-all text-sm"
+            className="h-12 bg-gradient-to-br from-primary to-primary-glow text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100 text-sm"
           >
             <Plus className="h-4 w-4 mr-1" />
             Nouveau

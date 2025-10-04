@@ -150,7 +150,7 @@ export function CategoryDialog({ open, onOpenChange }: CategoryDialogProps) {
                         key={iconName}
                         type="button"
                         onClick={() => setFormData({ ...formData, icon: iconName })}
-                        className={`p-2 rounded border-2 transition-all hover:scale-110 ${
+                        className={`p-2 rounded border-2 transition-all duration-100 hover:brightness-110 hover:shadow-lg ${
                           formData.icon === iconName
                             ? 'border-primary bg-primary/10'
                             : 'border-border hover:border-primary/50'

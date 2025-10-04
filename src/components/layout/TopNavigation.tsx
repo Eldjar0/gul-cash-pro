@@ -29,42 +29,42 @@ export function TopNavigation({
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-2">
-            <Link to="/">
-              <Button variant="ghost" className="text-white hover:bg-white/20 gap-2">
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/">
                 <ShoppingCart className="h-4 w-4" />
                 Caisse
-              </Button>
-            </Link>
-            <Link to="/sales">
-              <Button variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/sales">
                 <History className="h-4 w-4" />
                 Ventes
-              </Button>
-            </Link>
-            <Link to="/products">
-              <Button variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/products">
                 <Package className="h-4 w-4" />
                 Produits
-              </Button>
-            </Link>
-            <Link to="/customers">
-              <Button variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/customers">
                 <Users className="h-4 w-4" />
                 Clients
-              </Button>
-            </Link>
-            <Link to="/reports-history">
-              <Button variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/reports-history">
                 <History className="h-4 w-4" />
                 Historique
-              </Button>
-            </Link>
-            <Link to="/settings">
-              <Button variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/settings">
                 <Settings className="h-4 w-4" />
                 Paramètres
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           {/* Actions */}

@@ -24,7 +24,7 @@ export function CashDrawerActions({
           // Journée fermée: seulement le bouton Ouvrir
           <Button 
             onClick={onOpenDay} 
-            className="w-full h-20 flex flex-col gap-2 bg-gradient-to-br from-accent to-primary text-white hover:scale-105 transition-all shadow-lg text-sm"
+            className="w-full h-20 flex flex-col gap-2 bg-gradient-to-br from-accent to-primary text-white hover:brightness-110 active:brightness-90 transition-all duration-100 shadow-lg text-sm"
           >
             <Calendar className="h-6 w-6" />
             <span className="font-bold">Ouvrir Journée</span>
@@ -36,7 +36,7 @@ export function CashDrawerActions({
               {onReportX && (
                 <Button 
                   onClick={onReportX} 
-                  className="h-20 flex flex-col gap-2 bg-gradient-to-br from-category-blue to-secondary text-white hover:scale-105 transition-all shadow-lg text-sm"
+                  className="h-20 flex flex-col gap-2 bg-gradient-to-br from-category-blue to-secondary text-white hover:brightness-110 active:brightness-90 transition-all duration-100 shadow-lg text-sm"
                 >
                   <FileBarChart className="h-6 w-6" />
                   <span className="font-bold">Rapport X</span>
@@ -45,7 +45,7 @@ export function CashDrawerActions({
               {onCloseDay && (
                 <Button 
                   onClick={onCloseDay} 
-                  className="h-20 flex flex-col gap-2 bg-gradient-to-br from-destructive to-destructive/80 text-white hover:scale-105 transition-all shadow-lg text-sm"
+                  className="h-20 flex flex-col gap-2 bg-gradient-to-br from-destructive to-destructive/80 text-white hover:brightness-110 active:brightness-90 transition-all duration-100 shadow-lg text-sm"
                 >
                   <CalendarX className="h-6 w-6" />
                   <span className="font-bold">Fermer Journée</span>

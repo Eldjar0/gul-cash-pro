@@ -16,7 +16,7 @@ export function NumericKeypad({ onNumberClick, onClear, onBackspace }: NumericKe
         <Button
           key={num}
           onClick={() => onNumberClick(num)}
-          className="aspect-square text-3xl font-light text-white border-0 transition-all duration-200 hover:scale-105 hover:brightness-125 active:scale-95 rounded-full shadow-lg hover:shadow-xl"
+          className="aspect-square text-3xl font-light text-white border-0 transition-all duration-100 hover:brightness-125 active:brightness-90 rounded-full shadow-lg hover:shadow-xl"
           style={{ backgroundColor: '#505050' }}
         >
           {num}
@@ -24,14 +24,14 @@ export function NumericKeypad({ onNumberClick, onClear, onBackspace }: NumericKe
       ))}
       <Button
         onClick={onBackspace}
-        className="aspect-square text-white border-0 transition-all duration-300 hover:scale-110 active:scale-95 rounded-full shadow-xl hover:shadow-2xl hover:shadow-primary/60 group"
+        className="aspect-square text-white border-0 transition-all duration-100 hover:brightness-110 active:brightness-90 rounded-full shadow-xl hover:shadow-2xl hover:shadow-primary/60 group"
         style={{ background: 'linear-gradient(135deg, hsl(217, 91%, 60%), hsl(262, 83%, 58%))' }}
       >
-        <Delete className="h-6 w-6 text-white group-hover:rotate-12 transition-transform" />
+        <Delete className="h-6 w-6 text-white group-hover:rotate-12 transition-transform duration-100" />
       </Button>
       <Button
         onClick={onClear}
-        className="aspect-square text-xl font-semibold border-0 transition-all duration-300 hover:scale-105 hover:brightness-110 active:scale-95 rounded-full col-span-2 shadow-lg hover:shadow-xl"
+        className="aspect-square text-xl font-semibold border-0 transition-all duration-100 hover:brightness-110 active:brightness-90 rounded-full col-span-2 shadow-lg hover:shadow-xl"
         style={{ backgroundColor: '#D4D4D2', color: '#000000' }}
       >
         C
