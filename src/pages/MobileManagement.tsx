@@ -308,7 +308,8 @@ export default function MobileManagement() {
         return /^[0-9]$/.test(d) ? d : null;
       }
 
-      if (!code && /^[0-9]$/.test(e.key)) {
+      // Fallback for browsers/devices where e.code is 'Unidentified' but e.key is numeric (common on Android tablets)
+      if (/^[0-9]$/.test(e.key)) {
         return e.key;
       }
 
