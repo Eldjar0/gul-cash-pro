@@ -426,7 +426,7 @@ export default function MobileManagement() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => window.open('https://github.com/Eldjar0/gul-cash-pro/releases/download/v1.0.28/app-debug.apk', '_blank')}
+              onClick={() => window.open('https://github.com/Eldjar0/gul-cash-pro/releases/download/v1.0.31/app-debug.apk', '_blank')}
               className="opacity-50 hover:opacity-100"
               title="Télécharger la mise à jour"
             >
