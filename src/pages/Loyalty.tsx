@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useLoyaltyTiers } from '@/hooks/useLoyaltyTiers';
 import { Badge } from '@/components/ui/badge';
 import { Gift, Users, TrendingUp, Award } from 'lucide-react';
+import { LoyaltyTransactionsHistory } from '@/components/loyalty/LoyaltyTransactionsHistory';
 
 const Loyalty = () => {
   const { data: tiers, isLoading } = useLoyaltyTiers();
@@ -114,6 +115,8 @@ const Loyalty = () => {
             )}
           </CardContent>
         </Card>
+
+        <LoyaltyTransactionsHistory />
       </div>
     </ProtectedLayout>
   );

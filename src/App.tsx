@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { ProtectedLayout } from "./components/layout/ProtectedLayout";
+import { GlobalAlerts } from "./components/alerts/GlobalAlerts";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -43,6 +44,7 @@ const LoadingFallback = () => (
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <GlobalAlerts />
       <Toaster />
       <Sonner />
       <BrowserRouter>

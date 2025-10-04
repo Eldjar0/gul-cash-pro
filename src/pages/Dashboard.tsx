@@ -4,11 +4,13 @@ import { useSales } from '@/hooks/useSales';
 import { useProducts } from '@/hooks/useProducts';
 import { useTodayReport } from '@/hooks/useDailyReports';
 import { StatsCard } from '@/components/dashboard/StatsCard';
-import { QuickActions } from '@/components/dashboard/QuickActions';
-import { LowStockAlert } from '@/components/dashboard/LowStockAlert';
-import { TopProductsCard } from '@/components/dashboard/TopProductsCard';
-import { CashierPerformanceCard } from '@/components/dashboard/CashierPerformanceCard';
 import { RevenueChart } from '@/components/dashboard/RevenueChart';
+import { TopProductsCard } from '@/components/dashboard/TopProductsCard';
+import { LowStockAlert } from '@/components/dashboard/LowStockAlert';
+import { QuickActions } from '@/components/dashboard/QuickActions';
+import { AdvancedDashboardStats } from '@/components/dashboard/AdvancedDashboardStats';
+import { StockAlertsWidget } from '@/components/inventory/StockAlertsWidget';
+import { CashierPerformanceCard } from '@/components/dashboard/CashierPerformanceCard';
 import { PaymentMethodsCard } from '@/components/dashboard/PaymentMethodsCard';
 import {
   TrendingUp,
@@ -147,8 +149,11 @@ export default function Dashboard() {
         {/* Low Stock Alert Banner */}
         <LowStockAlert />
 
-        {/* Actions rapides */}
-        <QuickActions />
+        {/* Advanced alerts widget */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <StockAlertsWidget />
+          <QuickActions />
+        </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Top produits */}
