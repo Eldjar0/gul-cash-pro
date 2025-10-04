@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History, Clock } from 'lucide-react';
+import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History, Clock, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import logoGulReyhan from '@/assets/logo-gul-reyhan.png';
 interface TopNavigationProps {
@@ -28,6 +28,12 @@ export function TopNavigation({
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-2">
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/dashboard">
+                <LayoutDashboard className="h-4 w-4" />
+                Tableau de bord
+              </Link>
+            </Button>
             <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
               <Link to="/">
                 <ShoppingCart className="h-4 w-4" />

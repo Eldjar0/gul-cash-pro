@@ -327,6 +327,129 @@ export type Database = {
         }
         Relationships: []
       }
+      refund_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_barcode: string | null
+          product_id: string | null
+          product_name: string
+          quantity: number
+          refund_id: string
+          subtotal: number
+          total: number
+          unit_price: number
+          vat_amount: number
+          vat_rate: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_barcode?: string | null
+          product_id?: string | null
+          product_name: string
+          quantity: number
+          refund_id: string
+          subtotal: number
+          total: number
+          unit_price: number
+          vat_amount: number
+          vat_rate: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_barcode?: string | null
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          refund_id?: string
+          subtotal?: number
+          total?: number
+          unit_price?: number
+          vat_amount?: number
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refund_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_items_refund_id_fkey"
+            columns: ["refund_id"]
+            isOneToOne: false
+            referencedRelation: "refunds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      refunds: {
+        Row: {
+          cashier_id: string | null
+          created_at: string | null
+          customer_id: string | null
+          id: string
+          notes: string | null
+          original_sale_id: string | null
+          payment_method: string
+          reason: string
+          refund_number: string
+          refund_type: string
+          subtotal: number
+          total: number
+          total_vat: number
+        }
+        Insert: {
+          cashier_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          original_sale_id?: string | null
+          payment_method: string
+          reason: string
+          refund_number: string
+          refund_type: string
+          subtotal: number
+          total: number
+          total_vat: number
+        }
+        Update: {
+          cashier_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          original_sale_id?: string | null
+          payment_method?: string
+          reason?: string
+          refund_number?: string
+          refund_type?: string
+          subtotal?: number
+          total?: number
+          total_vat?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refunds_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_original_sale_id_fkey"
+            columns: ["original_sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sale_items: {
         Row: {
           created_at: string | null
@@ -406,6 +529,8 @@ export type Database = {
           is_invoice: boolean | null
           notes: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_methods: Json | null
+          payment_split: Json | null
           sale_number: string
           subtotal: number
           total: number
@@ -425,6 +550,8 @@ export type Database = {
           is_invoice?: boolean | null
           notes?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_methods?: Json | null
+          payment_split?: Json | null
           sale_number: string
           subtotal: number
           total: number
@@ -444,6 +571,8 @@ export type Database = {
           is_invoice?: boolean | null
           notes?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_methods?: Json | null
+          payment_split?: Json | null
           sale_number?: string
           subtotal?: number
           total?: number
@@ -468,6 +597,33 @@ export type Database = {
           },
         ]
       }
+      saved_carts: {
+        Row: {
+          cart_data: Json
+          cart_name: string
+          cashier_id: string
+          created_at: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          cart_data: Json
+          cart_name: string
+          cashier_id: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          cart_data?: Json
+          cart_name?: string
+          cashier_id?: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           id: string
@@ -489,11 +645,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_refund_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_sale_number: {
         Args: { is_invoice_param?: boolean }
         Returns: string
@@ -502,8 +686,20 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "manager" | "cashier" | "viewer"
       movement_type:
         | "opening"
         | "closing"
@@ -641,6 +837,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "manager", "cashier", "viewer"],
       movement_type: [
         "opening",
         "closing",
