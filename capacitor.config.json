@@ -1,5 +1,9 @@
 {
   "appId": "com.gulreyhan.cashpro",
   "appName": "gul-cash-pro",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "url": "https://gul-caisse.jlprod.be",
+    "cleartext": true
+  }
 }
