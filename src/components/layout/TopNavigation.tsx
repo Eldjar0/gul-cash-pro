@@ -96,38 +96,34 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
 
         {/* Navigation Menu - Centré */}
         <div className="hidden lg:flex flex-1 gap-2 justify-center">
-          {/* Boutons principaux */}
+          {/* Boutons principaux sans icônes */}
           <Button
             onClick={() => navigate("/dashboard")}
-            className="h-12 px-4 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all"
+            className="h-10 px-3 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all text-sm"
           >
-            <TrendingUp className="h-5 w-5" />
-            <span className="text-sm">Dashboard</span>
+            Dashboard
           </Button>
           
           <Button
             onClick={() => navigate("/products")}
-            className="h-12 px-4 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all"
+            className="h-10 px-3 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all text-sm"
           >
-            <Package className="h-5 w-5" />
-            <span className="text-sm">Produits</span>
+            Produits
           </Button>
           
           <Button
             onClick={() => navigate("/customers")}
-            className="h-12 px-4 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all"
+            className="h-10 px-3 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all text-sm"
           >
-            <Users className="h-5 w-5" />
-            <span className="text-sm">Clients</span>
+            Clients
           </Button>
 
           {/* Menus déroulants */}
           <NavigationMenu>
             <NavigationMenuList className="gap-2">
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-12 px-4 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 data-[state=open]:bg-white/30 transition-all">
-                  <Receipt className="h-5 w-5" />
-                  <span className="text-sm">Ventes</span>
+                <NavigationMenuTrigger className="h-10 px-3 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 data-[state=open]:bg-white/30 transition-all text-sm">
+                  Ventes
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 bg-white">
@@ -149,13 +145,12 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-12 px-4 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 data-[state=open]:bg-white/30 transition-all">
-                  <Truck className="h-5 w-5" />
-                  <span className="text-sm">Gestion</span>
+                <NavigationMenuTrigger className="h-10 px-3 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 data-[state=open]:bg-white/30 transition-all text-sm">
+                  Gestion
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 bg-white">
-                    {menuItems.gestion.map((item) => (
+                    {menuItems.gestion.slice(1).map((item) => (
                       <li key={item.path}>
                         <NavigationMenuLink asChild>
                           <button
@@ -173,9 +168,8 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-12 px-4 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 data-[state=open]:bg-white/30 transition-all">
-                  <Gift className="h-5 w-5" />
-                  <span className="text-sm">Marketing</span>
+                <NavigationMenuTrigger className="h-10 px-3 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 data-[state=open]:bg-white/30 transition-all text-sm">
+                  Marketing
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 bg-white">
@@ -197,9 +191,8 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-12 px-4 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 data-[state=open]:bg-white/30 transition-all">
-                  <BarChart3 className="h-5 w-5" />
-                  <span className="text-sm">Rapports</span>
+                <NavigationMenuTrigger className="h-10 px-3 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 data-[state=open]:bg-white/30 transition-all text-sm">
+                  Rapports
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 bg-white">
@@ -224,10 +217,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                 <Button
                   variant="ghost"
                   onClick={() => navigate("/settings")}
-                  className="h-12 px-4 gap-2 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all"
+                  className="h-10 px-3 bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 hover:border-white/40 transition-all text-sm"
                 >
-                  <Settings className="h-5 w-5" />
-                  <span className="text-sm">Paramètres</span>
+                  Paramètres
                 </Button>
               </NavigationMenuItem>
             </NavigationMenuList>
