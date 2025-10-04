@@ -91,8 +91,15 @@ export const useCreatePurchaseOrder = () => {
 
       // Insérer les items
       const itemsWithPOId = items.map(item => ({
-        ...item,
         purchase_order_id: newPO.id,
+        product_id: item.product_id,
+        product_name: item.product_name!,
+        product_barcode: item.product_barcode,
+        quantity_ordered: item.quantity_ordered!,
+        quantity_received: item.quantity_received || 0,
+        unit_cost: item.unit_cost!,
+        tax_rate: item.tax_rate || 0,
+        subtotal: item.subtotal!,
       }));
 
       const { error: itemsError } = await supabase

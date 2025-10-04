@@ -86,17 +86,36 @@ export const useCreateQuote = () => {
 
       const { items, ...quoteData } = quote;
 
+      const insertData: any = {
+        subtotal: quoteData.subtotal!,
+        total_vat: quoteData.total_vat!,
+        total: quoteData.total!,
+      };
+
+      if (quoteData.customer_id) insertData.customer_id = quoteData.customer_id;
+      if (quoteData.status) insertData.status = quoteData.status;
+      if (quoteData.valid_until) insertData.valid_until = quoteData.valid_until;
+      if (quoteData.notes) insertData.notes = quoteData.notes;
+
       const { data: newQuote, error: quoteError } = await supabase
         .from('quotes')
-        .insert({ ...quoteData, quote_number: quoteNumber })
+        .insert(insertData)
         .select()
         .single();
 
       if (quoteError) throw quoteError;
 
       const itemsWithQuoteId = items.map(item => ({
-        ...item,
         quote_id: newQuote.id,
+        product_id: item.product_id,
+        product_name: item.product_name!,
+        product_barcode: item.product_barcode,
+        quantity: item.quantity!,
+        unit_price: item.unit_price!,
+        vat_rate: item.vat_rate!,
+        subtotal: item.subtotal!,
+        vat_amount: item.vat_amount!,
+        total: item.total!,
       }));
 
       const { error: itemsError } = await supabase

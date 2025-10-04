@@ -27,6 +27,10 @@ const LegalInfo = lazy(() => import("./pages/LegalInfo"));
 const GettingStarted = lazy(() => import("./pages/GettingStarted"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const InvoiceCreate = lazy(() => import("./pages/InvoiceCreate"));
+const Inventory = lazy(() => import("./pages/Inventory"));
+const Orders = lazy(() => import("./pages/Orders"));
+const Loyalty = lazy(() => import("./pages/Loyalty"));
+const Payments = lazy(() => import("./pages/Payments"));
 
 const queryClient = new QueryClient();
 
@@ -65,6 +69,10 @@ const App = () => (
             <Route path="/reports-history" element={<ProtectedRoute><ProtectedLayout><ReportsHistory /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/legal-info" element={<ProtectedRoute><ProtectedLayout><LegalInfo /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/getting-started" element={<ProtectedRoute><ProtectedLayout><GettingStarted /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/inventory" element={<ProtectedRoute><ProtectedLayout><Inventory /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/orders" element={<ProtectedRoute><ProtectedLayout><Orders /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/loyalty" element={<ProtectedRoute><ProtectedLayout><Loyalty /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/payments" element={<ProtectedRoute><ProtectedLayout><Payments /></ProtectedLayout></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

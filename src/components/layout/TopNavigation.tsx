@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History, Clock, LayoutDashboard, Undo2, BarChart3, Tag, Bell, PackageOpen } from 'lucide-react';
+import { Lock, LogOut, User, ShoppingCart, Package, Users, Settings, History, Clock, LayoutDashboard, Undo2, BarChart3, Tag, Bell, PackageOpen, Truck, FileText, Gift, CreditCard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadNotificationsCount } from '@/hooks/useNotifications';
 import { NotificationPanel } from '@/components/notifications/NotificationPanel';
@@ -79,6 +79,30 @@ export function TopNavigation({
               <Link to="/stock-history">
                 <PackageOpen className="h-4 w-4" />
                 Mouvements Stock
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/inventory">
+                <Truck className="h-4 w-4" />
+                Inventaire
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/orders">
+                <FileText className="h-4 w-4" />
+                Devis & Commandes
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/loyalty">
+                <Gift className="h-4 w-4" />
+                Fidélité
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">
+              <Link to="/payments">
+                <CreditCard className="h-4 w-4" />
+                Paiements
               </Link>
             </Button>
             <Button asChild variant="ghost" className="text-white hover:bg-white/20 gap-2">

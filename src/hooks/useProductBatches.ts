@@ -69,7 +69,15 @@ export const useCreateProductBatch = () => {
     mutationFn: async (batch: Partial<ProductBatch>) => {
       const { error } = await supabase
         .from('product_batches')
-        .insert([batch]);
+        .insert([{
+          product_id: batch.product_id!,
+          batch_number: batch.batch_number!,
+          purchase_order_id: batch.purchase_order_id,
+          expiry_date: batch.expiry_date,
+          quantity: batch.quantity || 0,
+          unit_cost: batch.unit_cost,
+          notes: batch.notes,
+        }]);
 
       if (error) throw error;
     },

@@ -89,12 +89,21 @@ export const useCreateCustomerOrder = () => {
 
       const { items, ...orderData } = order;
 
+      // Générer automatiquement order_number
+      const generatedOrderNumber = orderNumber as unknown as string;
+
       const { data: newOrder, error: orderError } = await supabase
         .from('customer_orders')
         .insert({ 
-          ...orderData, 
-          order_number: orderNumber,
+          order_number: generatedOrderNumber,
+          customer_id: orderData.customer_id || null,
+          status: orderData.status || 'pending',
+          subtotal: orderData.subtotal!,
+          total_vat: orderData.total_vat!,
+          total: orderData.total!,
+          deposit_paid: orderData.deposit_paid || 0,
           remaining_balance: orderData.total! - (orderData.deposit_paid || 0),
+          notes: orderData.notes || null,
         })
         .select()
         .single();
@@ -102,8 +111,16 @@ export const useCreateCustomerOrder = () => {
       if (orderError) throw orderError;
 
       const itemsWithOrderId = items.map(item => ({
-        ...item,
         customer_order_id: newOrder.id,
+        product_id: item.product_id,
+        product_name: item.product_name!,
+        product_barcode: item.product_barcode,
+        quantity: item.quantity!,
+        unit_price: item.unit_price!,
+        vat_rate: item.vat_rate!,
+        subtotal: item.subtotal!,
+        vat_amount: item.vat_amount!,
+        total: item.total!,
       }));
 
       const { error: itemsError } = await supabase

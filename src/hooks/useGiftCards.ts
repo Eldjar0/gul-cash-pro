@@ -74,7 +74,14 @@ export const useCreateGiftCard = () => {
 
       const { data, error } = await supabase
         .from('gift_cards')
-        .insert({ ...card, card_number: cardNumber })
+        .insert({
+          card_number: cardNumber,
+          card_type: card.card_type || 'gift_card',
+          initial_balance: card.initial_balance!,
+          current_balance: card.current_balance || card.initial_balance!,
+          customer_id: card.customer_id,
+          expiry_date: card.expiry_date,
+        })
         .select()
         .single();
 
