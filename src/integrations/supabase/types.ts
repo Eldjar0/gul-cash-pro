@@ -1567,6 +1567,68 @@ export type Database = {
           },
         ]
       }
+      remote_scan_sessions: {
+        Row: {
+          cashier_id: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          session_code: string
+        }
+        Insert: {
+          cashier_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          session_code: string
+        }
+        Update: {
+          cashier_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          session_code?: string
+        }
+        Relationships: []
+      }
+      remote_scanned_items: {
+        Row: {
+          barcode: string
+          created_at: string | null
+          id: string
+          processed: boolean | null
+          quantity: number | null
+          session_id: string
+        }
+        Insert: {
+          barcode: string
+          created_at?: string | null
+          id?: string
+          processed?: boolean | null
+          quantity?: number | null
+          session_id: string
+        }
+        Update: {
+          barcode?: string
+          created_at?: string | null
+          id?: string
+          processed?: boolean | null
+          quantity?: number | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remote_scanned_items_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "remote_scan_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           created_at: string | null

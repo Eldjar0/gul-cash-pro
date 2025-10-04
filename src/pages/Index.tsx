@@ -41,6 +41,7 @@ import { Receipt } from '@/components/pos/Receipt';
 import { PinLockDialog } from '@/components/pos/PinLockDialog';
 import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
 import { RefundDialog } from '@/components/pos/RefundDialog';
+import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
@@ -48,6 +49,7 @@ import { ReportXDialog } from '@/components/pos/ReportXDialog';
 import { CloseDayDialog } from '@/components/pos/CloseDayDialog';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
+import { useRealtimeScannedItems, useMarkItemProcessed } from '@/hooks/useRemoteScan';
 import { useCreateSale, useSales } from '@/hooks/useSales';
 import { useCategories } from '@/hooks/useCategories';
 import { Customer } from '@/hooks/useCustomers';
@@ -160,6 +162,10 @@ const Index = () => {
   const [savedCartsDialogOpen, setSavedCartsDialogOpen] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
+  
+  // Remote scanning states
+  const [remoteScanSessionId, setRemoteScanSessionId] = useState<string | null>(null);
+  const markItemProcessed = useMarkItemProcessed();
 
   // Calculate totals - defined before useEffect to avoid initialization errors
   const getTotals = () => {
@@ -260,6 +266,24 @@ const Index = () => {
 
     updateCustomerDisplay();
   }, [cart, displayChannel, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer]);
+
+  // Traiter les items scannés à distance
+  useRealtimeScannedItems(remoteScanSessionId ?? undefined, (newItem) => {
+    console.log('New remote scanned item:', newItem);
+    
+    // Find product by barcode
+    const product = products?.find(p => p.barcode === newItem.barcode);
+    if (product) {
+      handleProductSelect(product, newItem.quantity);
+      toast.success(`Produit ajouté: ${product.name}`);
+      // Mark item as processed
+      markItemProcessed.mutate(newItem.id);
+    } else {
+      toast.error(`Produit non trouvé: ${newItem.barcode}`);
+      // Still mark as processed to avoid retry
+      markItemProcessed.mutate(newItem.id);
+    }
+  });
 
   // Ouvrir l'affichage client dans une nouvelle fenêtre
   const openCustomerDisplay = () => {
@@ -1253,6 +1277,13 @@ const Index = () => {
             <Eye className="h-3 w-3 mr-1" />
             Affichage
           </Button>
+          
+          <RemoteScanDialog 
+            onSessionCreated={(sessionId, sessionCode) => {
+              setRemoteScanSessionId(sessionId);
+              toast.success(`Session créée: ${sessionCode}`);
+            }}
+          />
         </div>
       </div>
       
