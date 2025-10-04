@@ -88,7 +88,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           onClick={() => navigate("/")}
           className="shrink-0"
         >
-          <Home className="h-5 w-5" />
+          <ShoppingCart className="h-5 w-5" />
         </Button>
 
         {/* Navigation Menu - Hidden on mobile */}
