@@ -18,13 +18,9 @@ export const useSavedCarts = () => {
   return useQuery({
     queryKey: ['saved-carts'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
-
       const { data, error } = await supabase
         .from('mobile_orders')
         .select('*')
-        .eq('created_by', user.id)
         .eq('status', 'pending')
         .order('updated_at', { ascending: false });
 
