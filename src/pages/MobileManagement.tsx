@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,20 +25,18 @@ import {
   Search,
   Package,
   FolderKanban,
-  ScanBarcode,
   QrCode,
   TrendingUp,
   TrendingDown,
   AlertTriangle,
   ArrowLeft,
   Save,
-  Camera,
   Boxes,
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { useCategories, useCreateCategory } from '@/hooks/useCategories';
+import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
 import { toast } from 'sonner';
-import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
 export default function MobileManagement() {
   const { data: products = [] } = useProducts();
@@ -52,6 +50,11 @@ export default function MobileManagement() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [selectedProductForStock, setSelectedProductForStock] = useState<any>(null);
   const [stockAdjustment, setStockAdjustment] = useState('');
+  
+  // Physical scan detection states
+  const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
+  const [scannedBarcode, setScannedBarcode] = useState<string>('');
+  const [scannedProduct, setScannedProduct] = useState<any>(null);
   
   const [formData, setFormData] = useState({
     barcode: '',
@@ -82,29 +85,6 @@ export default function MobileManagement() {
     return product.name.toLowerCase().includes(searchLower) || 
            product.barcode?.toLowerCase().includes(searchLower);
   });
-
-  const handleScanBarcode = async () => {
-    try {
-      const { camera } = await BarcodeScanner.requestPermissions();
-      
-      if (camera === 'granted' || camera === 'limited') {
-        const result = await BarcodeScanner.scan();
-        
-        if (result.barcodes && result.barcodes.length > 0) {
-          const scannedCode = result.barcodes[0].rawValue;
-          if (scannedCode) {
-            setFormData(prev => ({ ...prev, barcode: scannedCode }));
-            toast.success(`Code-barres scanné: ${scannedCode}`);
-          }
-        }
-      } else {
-        toast.error('Permission caméra requise');
-      }
-    } catch (error) {
-      console.error('Scan error:', error);
-      toast.error('Erreur lors du scan');
-    }
-  };
 
   const handleOpenProductForm = (product?: any) => {
     if (product) {
@@ -220,6 +200,203 @@ export default function MobileManagement() {
     }
   };
 
+  // Normalisation AZERTY → chiffres
+  const normalizeBarcode = (raw: string): string => {
+    const azertyMap: Record<string, string> = {
+      '&': '1', '!': '1', 'é': '2', '@': '2', '"': '3', '#': '3', 
+      "'": '4', '$': '4', '(': '5', '%': '5', '-': '6', '^': '6',
+      'è': '7', '_': '8', '*': '8', 'ç': '9', 
+      'à': '0', ')': '0', '§': '6'
+    };
+    const normalized = raw.split('').map(c => azertyMap[c] ?? c).join('');
+    return normalized.replace(/\D+/g, '');
+  };
+
+  // Gestion du scan physique
+  const handlePhysicalScan = (raw: string) => {
+    const normalized = normalizeBarcode(raw.trim());
+    const normalizedDigits = normalized.replace(/\D+/g, '');
+    
+    if (!normalized || normalized.length < 3) return;
+
+    // Recherche du produit
+    let found = products?.find(
+      (p) => p.barcode && normalizeBarcode(p.barcode).toLowerCase() === normalized.toLowerCase()
+    );
+
+    if (!found && normalizedDigits.length >= 3) {
+      found = products?.find(
+        (p) => p.barcode && p.barcode.replace(/\D+/g, '') === normalizedDigits
+      );
+    }
+
+    const barcodeToUse = normalizedDigits.length >= 3 ? normalizedDigits : normalized;
+    
+    // Ouvrir le dialog avec le résultat
+    setScannedBarcode(barcodeToUse);
+    setScannedProduct(found || null);
+    setPhysicalScanDialogOpen(true);
+  };
+
+  // Gestionnaires du dialog de scan physique
+  const handlePhysicalScanAddToForm = () => {
+    if (scannedProduct) {
+      handleOpenProductForm(scannedProduct);
+    } else {
+      // Nouveau produit avec code-barres pré-rempli
+      setFormData(prev => ({ ...prev, barcode: scannedBarcode }));
+      setView('product-form');
+    }
+  };
+
+  const handlePhysicalScanViewProduct = () => {
+    if (scannedProduct) {
+      handleOpenProductForm(scannedProduct);
+    }
+  };
+
+  const handlePhysicalScanCreateProduct = () => {
+    setFormData(prev => ({ ...prev, barcode: scannedBarcode }));
+    setView('product-form');
+  };
+
+  const handlePhysicalScanAdjustStock = () => {
+    if (scannedProduct) {
+      setSelectedProductForStock(scannedProduct);
+      setView('stock');
+    }
+  };
+
+  // Détection ultra-robuste des scans de lecteur code-barres (HID)
+  useEffect(() => {
+    let buffer = "";
+    let lastKeyTime = 0;
+    let isScanning = false;
+    let timeoutId: NodeJS.Timeout | null = null;
+    let scanStartTime = 0;
+
+    const isEditableField = (target: EventTarget | null): boolean => {
+      if (!target || !(target instanceof HTMLElement)) return false;
+      
+      const hasOpenDialog = document.querySelector('[role="dialog"]') !== null;
+      if (hasOpenDialog) return true;
+      
+      let element: HTMLElement | null = target;
+      while (element) {
+        if (element.hasAttribute('data-scan-ignore')) {
+          return true;
+        }
+        element = element.parentElement;
+      }
+      
+      const tagName = target.tagName.toLowerCase();
+      const isContentEditable = target.isContentEditable;
+      const isInput = tagName === 'input' || tagName === 'textarea' || tagName === 'select';
+      
+      return isInput || isContentEditable;
+    };
+
+    const mapEventToDigit = (e: KeyboardEvent): string | null => {
+      const code = e.code;
+
+      if (code && code.startsWith('Digit')) {
+        const d = code.replace('Digit', '');
+        return /^[0-9]$/.test(d) ? d : null;
+      }
+
+      if (code && code.startsWith('Numpad')) {
+        const d = code.replace('Numpad', '');
+        return /^[0-9]$/.test(d) ? d : null;
+      }
+
+      if (!code && /^[0-9]$/.test(e.key)) {
+        return e.key;
+      }
+
+      return null;
+    };
+
+    const processScan = () => {
+      if (buffer.length >= 3) {
+        const duration = Date.now() - scanStartTime;
+        console.log('[MOBILE SCAN] Processing:', buffer, `(${duration}ms, ${buffer.length} chars)`);
+        handlePhysicalScan(buffer);
+      }
+      buffer = "";
+      isScanning = false;
+      scanStartTime = 0;
+    };
+
+    const handler = (e: KeyboardEvent) => {
+      if (document.hidden) return;
+
+      const now = Date.now();
+      const delta = now - lastKeyTime;
+      lastKeyTime = now;
+
+      if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'NumpadEnter') {
+        if (isScanning && buffer.length >= 3) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (timeoutId) clearTimeout(timeoutId);
+          processScan();
+        }
+        return;
+      }
+
+      if (e.key.length === 1) {
+        if (!isScanning && delta > 400 && buffer.length > 0) {
+          buffer = "";
+          isScanning = false;
+          scanStartTime = 0;
+        }
+
+        const digit = mapEventToDigit(e);
+
+        if (buffer.length === 0) {
+          if (isEditableField(e.target)) {
+            return;
+          }
+          if (digit !== null) {
+            scanStartTime = now;
+            isScanning = true;
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('[MOBILE SCAN] Start detected, code:', e.code, '→ digit:', digit);
+            buffer += digit;
+          } else {
+            return;
+          }
+        } else {
+          if (digit !== null) {
+            if (buffer.length === 1 && delta < 50) {
+              isScanning = true;
+            }
+            buffer += digit;
+            e.preventDefault();
+            e.stopPropagation();
+          } else {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
+
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (buffer.length >= 8) {
+            processScan();
+          }
+        }, 500);
+      }
+    };
+
+    document.addEventListener('keydown', handler, true);
+    return () => {
+      document.removeEventListener('keydown', handler, true);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [products]);
+
   // Menu Principal
   if (view === 'menu') {
     const lowStock = products.filter(p => 
@@ -259,15 +436,6 @@ export default function MobileManagement() {
 
           {/* Actions principales */}
           <div className="space-y-3">
-            <Button
-              onClick={handleScanBarcode}
-              className="w-full h-16 bg-primary hover:bg-primary/90 text-lg font-bold"
-              size="lg"
-            >
-              <Camera className="h-6 w-6 mr-3" />
-              Scanner Code-Barres
-            </Button>
-
             <Button
               onClick={() => setView('products')}
               className="w-full h-16 bg-accent hover:bg-accent/90 text-lg font-bold"
@@ -470,22 +638,16 @@ export default function MobileManagement() {
           <form onSubmit={handleSubmitProduct} className="p-4 space-y-4">
             <div className="space-y-2">
               <Label>Code-barres</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.barcode}
-                  onChange={(e) => setFormData(prev => ({ ...prev, barcode: e.target.value }))}
-                  placeholder="Code-barres"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  onClick={handleScanBarcode}
-                  size="icon"
-                  variant="outline"
-                >
-                  <ScanBarcode className="h-5 w-5" />
-                </Button>
-              </div>
+              <Input
+                value={formData.barcode}
+                onChange={(e) => setFormData(prev => ({ ...prev, barcode: e.target.value }))}
+                placeholder="Scannez ou saisissez le code-barres"
+                className="w-full"
+                data-scan-ignore="true"
+              />
+              <p className="text-xs text-muted-foreground">
+                Le scanner physique détectera automatiquement les codes-barres
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -758,5 +920,18 @@ export default function MobileManagement() {
     );
   }
 
-  return null;
+  return (
+    <>
+      <MobilePhysicalScanDialog
+        open={physicalScanDialogOpen}
+        onOpenChange={setPhysicalScanDialogOpen}
+        barcode={scannedBarcode}
+        product={scannedProduct}
+        onEditProduct={handlePhysicalScanAddToForm}
+        onAdjustStock={handlePhysicalScanAdjustStock}
+        onCreateProduct={handlePhysicalScanCreateProduct}
+      />
+      {null}
+    </>
+  );
 }
