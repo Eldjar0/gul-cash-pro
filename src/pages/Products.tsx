@@ -34,11 +34,17 @@ import {
   DollarSign,
   ShoppingBag,
   AlertCircle,
+  Upload,
+  Tag,
+  Settings,
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { toast } from 'sonner';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
+import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
+import { BarcodeLabelDialog } from '@/components/products/BarcodeLabelDialog';
+import { QuickStockAdjustDialog } from '@/components/products/QuickStockAdjustDialog';
 
 export default function Products() {
   const navigate = useNavigate();
@@ -52,6 +58,11 @@ export default function Products() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [barcodeLabelDialogOpen, setBarcodeLabelDialogOpen] = useState(false);
+  const [stockAdjustDialogOpen, setStockAdjustDialogOpen] = useState(false);
+  const [selectedProductForStock, setSelectedProductForStock] = useState<any>(null);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [stockFilter, setStockFilter] = useState<'all' | 'low' | 'out'>('all');
   const barcodeInputRef = useRef<HTMLInputElement>(null);
@@ -240,7 +251,27 @@ export default function Products() {
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              onClick={() => setImportDialogOpen(true)}
+              variant="outline"
+              size="lg"
+              className="h-12"
+            >
+              <Upload className="h-5 w-5 mr-2" />
+              Importer CSV
+            </Button>
+            {selectedProducts.length > 0 && (
+              <Button
+                onClick={() => setBarcodeLabelDialogOpen(true)}
+                variant="outline"
+                size="lg"
+                className="h-12"
+              >
+                <Tag className="h-5 w-5 mr-2" />
+                Étiquettes ({selectedProducts.length})
+              </Button>
+            )}
             <Button
               onClick={() => setCategoryDialogOpen(true)}
               variant="outline"
@@ -412,8 +443,21 @@ export default function Products() {
                   <div className="space-y-4">
                     {/* Header */}
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-start gap-2">
+                      <div className="flex items-start gap-3 flex-1">
+                        <input
+                          type="checkbox"
+                          checked={selectedProducts.includes(product.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedProducts([...selectedProducts, product.id]);
+                            } else {
+                              setSelectedProducts(selectedProducts.filter(id => id !== product.id));
+                            }
+                          }}
+                          className="mt-1 h-4 w-4 rounded border-gray-300"
+                        />
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-start gap-2 flex-wrap">
                           {product.barcode && (
                             <Badge variant="outline" className="font-mono text-xs">
                               {product.barcode}
@@ -424,11 +468,12 @@ export default function Products() {
                               {category.name}
                             </Badge>
                           )}
+                          </div>
+                          <h3 className="text-xl font-bold text-foreground">{product.name}</h3>
+                          {product.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
+                          )}
                         </div>
-                        <h3 className="text-xl font-bold text-foreground">{product.name}</h3>
-                        {product.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
-                        )}
                       </div>
                       <div className="flex gap-1 shrink-0">
                         <Button
@@ -709,6 +754,36 @@ export default function Products() {
         open={categoryDialogOpen} 
         onOpenChange={setCategoryDialogOpen}
       />
+
+      {/* Import Products Dialog */}
+      <ImportProductsDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+      />
+
+      {/* Barcode Label Dialog */}
+      <BarcodeLabelDialog
+        open={barcodeLabelDialogOpen}
+        onOpenChange={setBarcodeLabelDialogOpen}
+        products={selectedProducts.map(id => {
+          const p = products.find(prod => prod.id === id);
+          return {
+            id: p?.id || '',
+            name: p?.name || '',
+            barcode: p?.barcode,
+            price: p?.price || 0,
+          };
+        })}
+      />
+
+      {/* Quick Stock Adjust Dialog */}
+      {selectedProductForStock && (
+        <QuickStockAdjustDialog
+          open={stockAdjustDialogOpen}
+          onOpenChange={setStockAdjustDialogOpen}
+          product={selectedProductForStock}
+        />
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { useTodayReport } from '@/hooks/useDailyReports';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { LowStockAlert } from '@/components/dashboard/LowStockAlert';
 import {
   TrendingUp,
   TrendingDown,
@@ -138,6 +139,9 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground mt-2">Produits en alerte</p>
           </StatsCard>
         </div>
+
+        {/* Low Stock Alert Banner */}
+        <LowStockAlert />
 
         {/* Actions rapides */}
         <QuickActions />
