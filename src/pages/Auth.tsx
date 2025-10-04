@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import logoJLProd from '@/assets/logo-jlprod.png';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
@@ -16,6 +18,27 @@ export default function Auth() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { user, signIn } = useAuth();
   const navigate = useNavigate();
+  const [isSettingUp, setIsSettingUp] = useState(false);
+
+  const handleSetupAdmin = async () => {
+    setIsSettingUp(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('setup-admin');
+      if (error) throw error;
+      toast.success('Compte admin créé', {
+        description: 'Identifiant: admin | Mot de passe: 3679'
+      });
+      setEmail('admin');
+      setPassword('3679');
+      await signIn('admin@system.local', '3679');
+    } catch (err) {
+      toast.error('Échec de la configuration', {
+        description: err instanceof Error ? err.message : 'Une erreur est survenue'
+      });
+    } finally {
+      setIsSettingUp(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -108,6 +131,22 @@ export default function Auth() {
                 className="w-full text-sm text-muted-foreground hover:text-primary"
               >
                 Mot de passe ou identifiant oublié ?
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSetupAdmin}
+                className="w-full"
+                disabled={isSettingUp}
+              >
+                {isSettingUp ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Configuration en cours...
+                  </>
+                ) : (
+                  'Créer/Restaurer le compte admin'
+                )}
               </Button>
             </form>
           )}
