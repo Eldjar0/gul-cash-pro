@@ -33,6 +33,7 @@ const Orders = lazy(() => import("./pages/Orders"));
 const Loyalty = lazy(() => import("./pages/Loyalty"));
 const Payments = lazy(() => import("./pages/Payments"));
 const RemoteScanner = lazy(() => import("./pages/RemoteScanner"));
+const DownloadApp = lazy(() => import("./pages/DownloadApp"));
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/customer-display" element={<CustomerDisplay />} />
             <Route path="/remote-scanner/:sessionCode" element={<RemoteScanner />} />
+            <Route path="/download-app" element={<DownloadApp />} />
             
             {/* Protected routes with navigation */}
             <Route path="/" element={<ProtectedRoute><ProtectedLayout><Index /></ProtectedLayout></ProtectedRoute>} />

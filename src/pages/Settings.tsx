@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Save, Shield, Scale, Image, Receipt, Monitor, Home, Database, Bell, Gift } from 'lucide-react';
+import { ArrowLeft, Building, Save, Shield, Scale, Image, Receipt, Monitor, Home, Database, Bell, Gift, Smartphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { BrandingSettings } from '@/components/settings/BrandingSettings';
@@ -298,6 +298,24 @@ export default function Settings() {
           {/* Compliance Settings */}
           <TabsContent value="compliance">
             <div className="space-y-6">
+              <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <Smartphone className="h-6 w-6 text-blue-600" />
+                  Application Mobile
+                </h2>
+                <p className="text-muted-foreground mb-4">
+                  Téléchargez l'application Android pour scanner les produits avec la caméra de votre téléphone.
+                </p>
+                <Button 
+                  onClick={() => window.open('/download-app', '_blank')} 
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
+                >
+                  <Smartphone className="h-5 w-5 mr-2" />
+                  Télécharger l'Application Android
+                </Button>
+              </Card>
+
               <Card className="p-6">
                 <h2 className="text-xl font-semibold mb-4">Ressources Utiles</h2>
                 <div className="space-y-3">
