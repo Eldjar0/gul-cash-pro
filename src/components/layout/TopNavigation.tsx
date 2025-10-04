@@ -97,7 +97,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           <NavigationMenu>
             <NavigationMenuList className="gap-1">
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 data-[state=open]:bg-white/10">
+                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white">
                   Ventes
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -120,7 +120,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 data-[state=open]:bg-white/10">
+                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white">
                   Gestion
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -143,7 +143,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 data-[state=open]:bg-white/10">
+                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white">
                   Clients
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -166,7 +166,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 data-[state=open]:bg-white/10">
+                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white">
                   Rapports
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -189,7 +189,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 data-[state=open]:bg-white/10">
+                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white">
                   Paramètres
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
