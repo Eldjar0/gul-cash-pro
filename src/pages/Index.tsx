@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -85,6 +86,14 @@ interface CartItem {
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  
+  // Redirection automatique vers /mobile si on est sur APK
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      navigate('/mobile', { replace: true });
+    }
+  }, [navigate]);
+  
   const { data: products } = useProducts();
   const { data: categories } = useCategories();
   const createSale = useCreateSale();
