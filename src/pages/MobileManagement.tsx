@@ -279,9 +279,7 @@ export default function MobileManagement() {
     const isEditableField = (target: EventTarget | null): boolean => {
       if (!target || !(target instanceof HTMLElement)) return false;
       
-      const hasOpenDialog = document.querySelector('[role="dialog"]') !== null;
-      if (hasOpenDialog) return true;
-      
+      // Check if the target element itself is an input field
       let element: HTMLElement | null = target;
       while (element) {
         if (element.hasAttribute('data-scan-ignore')) {
