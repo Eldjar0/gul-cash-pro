@@ -537,6 +537,19 @@ export default function MobileManagement() {
     };
 
     const handler = (e: KeyboardEvent) => {
+      // LOG DÉTAILLÉ DE TOUS LES ÉVÉNEMENTS
+      console.log('[SCAN DEBUG]', {
+        key: e.key,
+        code: e.code,
+        keyCode: e.keyCode,
+        which: e.which,
+        target: (e.target as HTMLElement)?.tagName,
+        buffer: buffer,
+        bufferLength: buffer.length,
+        isScanning: isScanning,
+        hidden: document.hidden
+      });
+
       if (document.hidden) return;
 
       const now = Date.now();
@@ -544,6 +557,7 @@ export default function MobileManagement() {
       lastKeyTime = now;
 
       if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'NumpadEnter') {
+        console.log('[SCAN DEBUG] Enter/Tab détecté, buffer:', buffer, 'isScanning:', isScanning);
         if (isScanning && buffer.length >= 3) {
           e.preventDefault();
           e.stopPropagation();
@@ -555,15 +569,18 @@ export default function MobileManagement() {
 
       if (e.key.length === 1) {
         if (!isScanning && delta > 400 && buffer.length > 0) {
+          console.log('[SCAN DEBUG] Reset buffer (timeout)');
           buffer = "";
           isScanning = false;
           scanStartTime = 0;
         }
 
         const digit = mapEventToDigit(e);
+        console.log('[SCAN DEBUG] Caractère détecté:', e.key, '→ digit:', digit);
 
         if (buffer.length === 0) {
           if (isEditableField(e.target)) {
+            console.log('[SCAN DEBUG] Dans un champ éditable, ignoré');
             return;
           }
           if (digit !== null) {
@@ -573,7 +590,9 @@ export default function MobileManagement() {
             e.stopPropagation();
             console.log('[MOBILE SCAN] Start detected, code:', e.code, '→ digit:', digit);
             buffer += digit;
+            toast.info(`Scan démarré: ${digit}`, { duration: 1000 });
           } else {
+            console.log('[SCAN DEBUG] Non numérique au départ, ignoré');
             return;
           }
         } else {
@@ -584,7 +603,9 @@ export default function MobileManagement() {
             buffer += digit;
             e.preventDefault();
             e.stopPropagation();
+            console.log('[SCAN DEBUG] Ajout au buffer:', buffer);
           } else {
+            console.log('[SCAN DEBUG] Non numérique en cours de scan, ignoré');
             e.preventDefault();
             e.stopPropagation();
           }
@@ -593,6 +614,7 @@ export default function MobileManagement() {
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
           if (buffer.length >= 8) {
+            console.log('[SCAN DEBUG] Timeout atteint, traitement');
             processScan();
           }
         }, 500);
