@@ -43,6 +43,7 @@ import { PinLockDialog } from '@/components/pos/PinLockDialog';
 import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
+import { PhysicalScanActionDialog } from '@/components/pos/PhysicalScanActionDialog';
 
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
@@ -176,6 +177,11 @@ const Index = () => {
   // Remote scanning states
   const [remoteScanSessionId, setRemoteScanSessionId] = useState<string | null>(null);
   const markItemProcessed = useMarkItemProcessed();
+
+  // Physical scan action dialog states
+  const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
+  const [scannedBarcode, setScannedBarcode] = useState<string>('');
+  const [scannedProduct, setScannedProduct] = useState<Product | null>(null);
 
   // Calculate totals - defined before useEffect to avoid initialization errors
   const getTotals = () => {
@@ -421,7 +427,33 @@ const Index = () => {
     toast.success(`${product.name} ajouté au panier`);
   };
 
-  // Traitement du code-barres scanné
+  // Traitement d'un scan physique - ouvre le dialog d'actions
+  const handlePhysicalScan = (raw: string) => {
+    const normalized = normalizeBarcode(raw.trim());
+    const normalizedDigits = normalized.replace(/\D+/g, '');
+    
+    if (!normalized || normalized.length < 3) return;
+
+    // Recherche du produit
+    let found = products?.find(
+      (p) => p.barcode && normalizeBarcode(p.barcode).toLowerCase() === normalized.toLowerCase()
+    );
+
+    if (!found && normalizedDigits.length >= 3) {
+      found = products?.find(
+        (p) => p.barcode && p.barcode.replace(/\D+/g, '') === normalizedDigits
+      );
+    }
+
+    const barcodeToUse = normalizedDigits.length >= 3 ? normalizedDigits : normalized;
+    
+    // Ouvrir le dialog avec le résultat
+    setScannedBarcode(barcodeToUse);
+    setScannedProduct(found || null);
+    setPhysicalScanDialogOpen(true);
+  };
+
+  // Traitement du code-barres scanné (utilisé pour les scans manuels)
   const handleBarcodeScan = (raw: string) => {
     const DEBUG_SCAN = false; // Mettre à true pour debug
     
@@ -518,7 +550,7 @@ const Index = () => {
       if (buffer.length >= 3) {
         const duration = Date.now() - scanStartTime;
         console.log('[SCAN] 🔍 Processing:', buffer, `(${duration}ms, ${buffer.length} chars)`);
-        handleBarcodeScan(buffer);
+        handlePhysicalScan(buffer);
       }
       buffer = "";
       isScanning = false;
@@ -908,6 +940,39 @@ const Index = () => {
   const handleLoadCart = (cartData: any) => {
     setCart(cartData);
     toast.success('Panier chargé');
+  };
+
+  // Gestionnaires pour le dialog de scan physique
+  const handlePhysicalScanAddToCart = () => {
+    if (scannedProduct) {
+      handleProductSelect(scannedProduct);
+    }
+  };
+
+  const handlePhysicalScanAddToRemote = () => {
+    if (scannedProduct && remoteScanSessionId) {
+      // Ajouter le produit à la session de scan à distance
+      const { useAddScannedItem } = require('@/hooks/useRemoteScan');
+      const addScannedItem = useAddScannedItem();
+      addScannedItem.mutate({
+        session_id: remoteScanSessionId,
+        barcode: scannedBarcode,
+        quantity: 1,
+      });
+      toast.success('Produit ajouté au scanner à distance');
+    } else if (!remoteScanSessionId) {
+      toast.error('Aucune session de scan à distance active');
+    }
+  };
+
+  const handlePhysicalScanViewProduct = () => {
+    if (scannedProduct) {
+      navigate(`/products?id=${scannedProduct.id}`);
+    }
+  };
+
+  const handlePhysicalScanCreateProduct = () => {
+    navigate(`/products?new=1&barcode=${encodeURIComponent(scannedBarcode)}`);
   };
 
   // Gestionnaire pour paiement mixte
@@ -1884,6 +1949,17 @@ const Index = () => {
       <RefundDialog
         open={refundDialogOpen}
         onOpenChange={setRefundDialogOpen}
+      />
+
+      <PhysicalScanActionDialog
+        open={physicalScanDialogOpen}
+        onOpenChange={setPhysicalScanDialogOpen}
+        barcode={scannedBarcode}
+        product={scannedProduct}
+        onAddToCart={handlePhysicalScanAddToCart}
+        onAddToRemoteScan={handlePhysicalScanAddToRemote}
+        onViewProduct={handlePhysicalScanViewProduct}
+        onCreateProduct={handlePhysicalScanCreateProduct}
       />
 
       <CustomerDialog
