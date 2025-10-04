@@ -52,32 +52,26 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
     navigate('/auth');
   };
 
-  const menuItems = {
-    ventes: [
-      { icon: ShoppingCart, label: "Caisse", path: "/" },
-      { icon: Receipt, label: "Ventes", path: "/sales" },
-      { icon: FileText, label: "Factures", path: "/invoices" },
-      { icon: FileText, label: "Commandes", path: "/orders" },
-      { icon: AlertTriangle, label: "Remboursements", path: "/refunds" },
-    ],
-    gestion: [
-      { icon: Package, label: "Produits", path: "/products" },
-      { icon: Truck, label: "Stock", path: "/inventory" },
-      { icon: Clock, label: "Historique", path: "/stock-history" },
-      { icon: Users, label: "Fournisseurs", path: "/suppliers" },
-    ],
-    clients: [
-      { icon: Users, label: "Clients", path: "/customers" },
-      { icon: Gift, label: "Fidélité", path: "/loyalty" },
-      { icon: Tags, label: "Promotions", path: "/promotions" },
-      { icon: CreditCard, label: "Paiements", path: "/payments" },
-    ],
-    rapports: [
-      { icon: TrendingUp, label: "Dashboard", path: "/dashboard" },
-      { icon: BarChart3, label: "Analyses", path: "/analytics" },
-      { icon: FileBarChart, label: "Rapports", path: "/reports-history" },
-    ],
-  };
+  const allMenuItems = [
+    { icon: ShoppingCart, label: "Caisse", path: "/" },
+    { icon: Receipt, label: "Ventes", path: "/sales" },
+    { icon: Package, label: "Produits", path: "/products" },
+    { icon: Truck, label: "Stock", path: "/inventory" },
+    { icon: Users, label: "Clients", path: "/customers" },
+    { icon: TrendingUp, label: "Dashboard", path: "/dashboard" },
+    { icon: FileText, label: "Factures", path: "/invoices" },
+    { icon: FileText, label: "Commandes", path: "/orders" },
+    { icon: BarChart3, label: "Analyses", path: "/analytics" },
+    { icon: Gift, label: "Fidélité", path: "/loyalty" },
+    { icon: Tags, label: "Promotions", path: "/promotions" },
+    { icon: CreditCard, label: "Paiements", path: "/payments" },
+    { icon: Clock, label: "Historique", path: "/stock-history" },
+    { icon: Users, label: "Fournisseurs", path: "/suppliers" },
+    { icon: AlertTriangle, label: "Remboursements", path: "/refunds" },
+    { icon: FileBarChart, label: "Rapports", path: "/reports-history" },
+    { icon: Settings, label: "Configuration", path: "/settings" },
+    { icon: UserCog, label: "Utilisateurs", path: "/settings" },
+  ];
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-gradient-to-r from-primary to-primary-glow shadow-lg">
@@ -93,18 +87,67 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
         </Button>
 
         {/* Navigation Menu */}
-        <div className="hidden lg:flex flex-1 gap-1">
+        <div className="hidden lg:flex flex-1 gap-1 overflow-hidden">
+          <div className="flex gap-1 items-center">
+            {/* Afficher les 6 premiers boutons sur grands écrans */}
+            <div className="hidden 2xl:flex gap-1">
+              {allMenuItems.slice(0, 6).map((item) => (
+                <Button
+                  key={item.path}
+                  variant="ghost"
+                  onClick={() => navigate(item.path)}
+                  className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 gap-2"
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Button>
+              ))}
+            </div>
+
+            {/* Afficher 4 boutons sur écrans moyens */}
+            <div className="hidden xl:flex 2xl:hidden gap-1">
+              {allMenuItems.slice(0, 4).map((item) => (
+                <Button
+                  key={item.path}
+                  variant="ghost"
+                  onClick={() => navigate(item.path)}
+                  className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 gap-2"
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Button>
+              ))}
+            </div>
+
+            {/* Afficher 3 boutons sur petits écrans lg */}
+            <div className="flex xl:hidden gap-1">
+              {allMenuItems.slice(0, 3).map((item) => (
+                <Button
+                  key={item.path}
+                  variant="ghost"
+                  onClick={() => navigate(item.path)}
+                  className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 gap-2"
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Menu Plus avec le reste */}
           <NavigationMenu>
-            <NavigationMenuList className="gap-1">
+            <NavigationMenuList>
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white">
-                  Ventes
+                  Plus
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid w-[200px] gap-1 p-2 bg-popover">
-                    {menuItems.ventes.map((item) => (
-                      <li key={item.path}>
-                        <NavigationMenuLink asChild>
+                  <ul className="grid w-[200px] gap-1 p-2 bg-popover max-h-[400px] overflow-y-auto">
+                    {/* Afficher les éléments restants selon la taille d'écran */}
+                    <div className="hidden 2xl:block">
+                      {allMenuItems.slice(6).map((item) => (
+                        <li key={item.path}>
                           <button
                             onClick={() => navigate(item.path)}
                             className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm hover:bg-accent"
@@ -112,22 +155,12 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                             <item.icon className="h-4 w-4" />
                             <span>{item.label}</span>
                           </button>
-                        </NavigationMenuLink>
-                      </li>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white">
-                  Gestion
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[200px] gap-1 p-2 bg-popover">
-                    {menuItems.gestion.map((item) => (
-                      <li key={item.path}>
-                        <NavigationMenuLink asChild>
+                        </li>
+                      ))}
+                    </div>
+                    <div className="hidden xl:block 2xl:hidden">
+                      {allMenuItems.slice(4).map((item) => (
+                        <li key={item.path}>
                           <button
                             onClick={() => navigate(item.path)}
                             className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm hover:bg-accent"
@@ -135,22 +168,12 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                             <item.icon className="h-4 w-4" />
                             <span>{item.label}</span>
                           </button>
-                        </NavigationMenuLink>
-                      </li>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white">
-                  Clients
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[200px] gap-1 p-2 bg-popover">
-                    {menuItems.clients.map((item) => (
-                      <li key={item.path}>
-                        <NavigationMenuLink asChild>
+                        </li>
+                      ))}
+                    </div>
+                    <div className="block xl:hidden">
+                      {allMenuItems.slice(3).map((item) => (
+                        <li key={item.path}>
                           <button
                             onClick={() => navigate(item.path)}
                             className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm hover:bg-accent"
@@ -158,64 +181,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                             <item.icon className="h-4 w-4" />
                             <span>{item.label}</span>
                           </button>
-                        </NavigationMenuLink>
-                      </li>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white">
-                  Rapports
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[200px] gap-1 p-2 bg-popover">
-                    {menuItems.rapports.map((item) => (
-                      <li key={item.path}>
-                        <NavigationMenuLink asChild>
-                          <button
-                            onClick={() => navigate(item.path)}
-                            className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm hover:bg-accent"
-                          >
-                            <item.icon className="h-4 w-4" />
-                            <span>{item.label}</span>
-                          </button>
-                        </NavigationMenuLink>
-                      </li>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium text-white">
-                  Paramètres
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[200px] gap-1 p-2 bg-popover">
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <button
-                          onClick={() => navigate("/settings")}
-                          className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm hover:bg-accent"
-                        >
-                          <Settings className="h-4 w-4" />
-                          <span>Configuration</span>
-                        </button>
-                      </NavigationMenuLink>
-                    </li>
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <button
-                          onClick={() => navigate("/settings")}
-                          className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm hover:bg-accent"
-                        >
-                          <UserCog className="h-4 w-4" />
-                          <span>Utilisateurs</span>
-                        </button>
-                      </NavigationMenuLink>
-                    </li>
+                        </li>
+                      ))}
+                    </div>
                   </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
