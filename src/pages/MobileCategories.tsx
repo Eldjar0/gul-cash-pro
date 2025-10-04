@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   Plus,
   Edit,
+  RefreshCw,
   Trash2,
   FolderKanban,
   Save,
@@ -114,6 +115,14 @@ export default function MobileCategories() {
             >
               <Plus className="h-4 w-4" />
               Nouvelle
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => window.location.reload()}
+              className="opacity-50 hover:opacity-100"
+            >
+              <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
 

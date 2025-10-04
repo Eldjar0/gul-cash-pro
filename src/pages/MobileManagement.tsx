@@ -31,6 +31,7 @@ import {
   TrendingDown,
   AlertTriangle,
   ArrowLeft,
+  RefreshCw,
   Save,
   Boxes,
   Tag,
@@ -39,7 +40,7 @@ import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProd
 import { useCategories } from '@/hooks/useCategories';
 import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
 import { toast } from 'sonner';
-import logoGulReyhan from '@/assets/logo-gul-reyhan-new.png';
+import logoJlprod from '@/assets/logo-jlprod-new.png';
 
 export default function MobileManagement() {
   const navigate = useNavigate();
@@ -384,11 +385,25 @@ export default function MobileManagement() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-4">
         <div className="max-w-md mx-auto space-y-6 pb-20">
+          {/* Reload button */}
+          <div className="flex justify-end pt-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => window.location.reload()}
+              className="opacity-50 hover:opacity-100"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
+          
           {/* Header */}
-          <div className="text-center space-y-2 pt-4">
-            <div className="inline-flex items-center justify-center w-32 h-32 bg-white rounded-2xl mb-4 p-4">
-              <img src={logoGulReyhan} alt="Gül Reyhan Market" className="w-full h-full object-contain" />
-            </div>
+          <div className="text-center space-y-2">
+            <img 
+              src={logoJlprod} 
+              alt="JL Prod" 
+              className="w-full h-auto max-w-[200px] mx-auto mb-4" 
+            />
             <h1 className="text-3xl font-black text-foreground">Gestion Mobile</h1>
             <p className="text-muted-foreground">{products.length} produits</p>
           </div>

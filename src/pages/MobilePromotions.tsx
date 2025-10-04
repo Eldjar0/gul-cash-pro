@@ -23,6 +23,7 @@ import {
   ArrowLeft,
   Plus,
   Edit,
+  RefreshCw,
   Trash2,
   Tag,
   Percent,
@@ -370,6 +371,14 @@ export default function MobilePromotions() {
               <Plus className="h-4 w-4" />
               Nouvelle
             </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => window.location.reload()}
+              className="opacity-50 hover:opacity-100"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
 
           <ScrollArea className="h-[calc(100vh-200px)]">
@@ -665,7 +674,7 @@ export default function MobilePromotions() {
             <div className="space-y-2">
               <Label>Catégories applicables</Label>
               <Select
-                value={formData.applicable_categories[0] || ''}
+                value={formData.applicable_categories[0] || undefined}
                 onValueChange={(value) => setFormData(prev => ({ 
                   ...prev, 
                   applicable_categories: value ? [value] : [] 
@@ -675,7 +684,6 @@ export default function MobilePromotions() {
                   <SelectValue placeholder="Toutes les catégories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les catégories</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
                       {cat.name}
