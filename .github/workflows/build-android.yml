@@ -26,6 +26,16 @@ jobs:
     - name: Build web app
       run: npm run build
     
+    - name: Ensure production config
+      run: |
+        cat > capacitor.config.json << 'EOF'
+        {
+          "appId": "com.gulreyhan.cashpro",
+          "appName": "gul-cash-pro",
+          "webDir": "dist"
+        }
+        EOF
+    
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
