@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ShoppingBag, CheckCircle2, Thermometer, Calendar, Clock, CreditCard, Banknote } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import logoMarket from '@/assets/logo-market.png';
+import { PromotionBanner } from '@/components/customer-display/PromotionBanner';
 
 interface DisplayItem {
   name: string;
@@ -258,6 +259,11 @@ const CustomerDisplay = () => {
             <p className="text-3xl text-muted-foreground">
               Un collaborateur va prendre votre commande
             </p>
+          </div>
+
+          {/* Promotion Banner */}
+          <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <PromotionBanner />
           </div>
 
           {/* Section infos (date, heure, température) - carrousel infini */}

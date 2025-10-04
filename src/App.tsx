@@ -15,6 +15,7 @@ const Sales = lazy(() => import("./pages/Sales"));
 const Refunds = lazy(() => import("./pages/Refunds"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Promotions = lazy(() => import("./pages/Promotions"));
+const Suppliers = lazy(() => import("./pages/Suppliers"));
 const Products = lazy(() => import("./pages/Products"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Customers = lazy(() => import("./pages/Customers"));
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/refunds" element={<ProtectedRoute><ProtectedLayout><Refunds /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><ProtectedLayout><Analytics /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/promotions" element={<ProtectedRoute><ProtectedLayout><Promotions /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/suppliers" element={<ProtectedRoute><ProtectedLayout><Suppliers /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/products" element={<ProtectedRoute><ProtectedLayout><Products /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/customers" element={<ProtectedRoute><ProtectedLayout><Customers /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/invoices" element={<ProtectedRoute><ProtectedLayout><Invoices /></ProtectedLayout></ProtectedRoute>} />

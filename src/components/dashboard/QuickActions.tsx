@@ -9,7 +9,9 @@ import {
   Settings,
   Undo2,
   BarChart3,
-  Download
+  Download,
+  Tag,
+  Truck
 } from 'lucide-react';
 
 export function QuickActions() {
@@ -53,10 +55,24 @@ export function QuickActions() {
     },
     {
       icon: BarChart3,
-      label: 'Rapports',
-      description: 'Rapports et stats',
-      onClick: () => navigate('/reports-history'),
+      label: 'Analytiques',
+      description: 'Stats détaillées',
+      onClick: () => navigate('/analytics'),
       color: 'bg-pink-500 hover:bg-pink-600',
+    },
+    {
+      icon: Tag,
+      label: 'Promotions',
+      description: 'Gérer les offres',
+      onClick: () => navigate('/promotions'),
+      color: 'bg-yellow-500 hover:bg-yellow-600',
+    },
+    {
+      icon: Truck,
+      label: 'Fournisseurs',
+      description: 'Gérer les contacts',
+      onClick: () => navigate('/suppliers'),
+      color: 'bg-cyan-500 hover:bg-cyan-600',
     },
     {
       icon: Download,
