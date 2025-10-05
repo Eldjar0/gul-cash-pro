@@ -810,7 +810,7 @@ const Index = () => {
       payment_method: dbPaymentMethod,
       amount_paid: amountPaid || totals.total,
       change_amount: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
-      is_invoice: isInvoiceMode,
+      is_invoice: method === 'customer_credit' ? false : isInvoiceMode, // Crédit = toujours ticket
       is_cancelled: false,
       cashier_id: user.id,
       customer_id: selectedCustomer?.id,
@@ -862,7 +862,7 @@ const Index = () => {
         paymentMethod: method,
         amountPaid: amountPaid || totals.total,
         change: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
-        is_invoice: isInvoiceMode,
+        is_invoice: method === 'customer_credit' ? false : isInvoiceMode, // Crédit = toujours ticket
         customer: selectedCustomer
       };
       setCurrentSale(saleForReceipt);
