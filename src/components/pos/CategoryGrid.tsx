@@ -32,7 +32,7 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
               <Button
                 key={category.id}
                 onClick={() => onCategorySelect(category.id)}
-                className="min-h-[5rem] flex flex-col items-center justify-center gap-1.5 p-2 text-white font-semibold transition-all hover:brightness-110"
+                className="min-h-[6rem] h-auto flex flex-col items-center justify-center gap-1.5 p-2 text-white font-semibold transition-all hover:brightness-110"
                 style={{ 
                   backgroundColor: category.color,
                   borderColor: category.color,
@@ -40,7 +40,7 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
                 }}
               >
                 <Package className="h-5 w-5 shrink-0" />
-                <span className="text-xs font-medium text-center line-clamp-2 leading-tight">
+                <span className="text-xs font-medium text-center line-clamp-2 leading-snug break-words">
                   {category.name}
                 </span>
               </Button>
@@ -83,10 +83,10 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
                     key={product.id}
                     variant="outline"
                     onClick={() => onProductSelect(product)}
-                    className="min-h-[5rem] flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10"
+                    className="min-h-[6rem] h-auto flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10"
                     disabled={product.stock <= 0}
                   >
-                    <span className="text-xs font-medium text-center line-clamp-2 leading-tight">
+                    <span className="text-xs font-medium text-center line-clamp-2 leading-snug break-words">
                       {product.name}
                     </span>
                     <div className="flex flex-col items-center gap-0.5">
