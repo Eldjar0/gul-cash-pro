@@ -106,6 +106,11 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
       doc.text(`${invoice.customer.postalCode || ''} ${invoice.customer.city}`, 15, yPos);
       yPos += 4;
     }
+    
+    if (invoice.customer.vatNumber) {
+      doc.text(`TVA: ${invoice.customer.vatNumber}`, 15, yPos);
+      yPos += 4;
+    }
   }
 
   // ============ INFOS FACTURE (DROITE) ============
@@ -132,13 +137,6 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
     doc.setFont('helvetica', 'normal');
     doc.text(format(new Date(invoice.dueDate), 'dd/MM/yyyy', { locale: fr }), valueX, infoY, { align: 'right' });
     infoY += 5;
-  }
-  
-  if (invoice.customer?.vatNumber) {
-    doc.setFont('helvetica', 'bold');
-    doc.text('Numéro TVA client', labelX, infoY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(invoice.customer.vatNumber, valueX, infoY, { align: 'right' });
   }
 
   yPos = Math.max(yPos, infoY + 10);
