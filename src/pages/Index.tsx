@@ -1784,57 +1784,6 @@ const Index = () => {
             </div>
           </Card>
 
-          {/* Historique des scans */}
-          <Card className="bg-background border border-border p-1.5 flex-shrink-0">
-            <div className="flex items-center gap-1 mb-1">
-              <Scan className="h-2.5 w-2.5 text-primary" />
-              <h3 className="text-[9px] font-bold text-foreground uppercase tracking-wide">
-                Derniers Scans
-              </h3>
-            </div>
-            <div className="space-y-0.5">
-              {scanHistory.length === 0 ? (
-                <div className="text-[8px] text-muted-foreground text-center py-1">
-                  Aucun scan récent
-                </div>
-              ) : (
-                scanHistory.map((scan, idx) => (
-                  <div 
-                    key={`${scan.barcode}-${scan.timestamp}`}
-                    className={`flex items-center justify-between p-1 rounded text-[8px] ${
-                      scan.status === 'success' 
-                        ? 'bg-green-50 border border-green-200' 
-                        : 'bg-red-50 border border-red-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1 flex-1 min-w-0">
-                      {scan.status === 'success' ? (
-                        <CheckCircle className="h-2.5 w-2.5 text-green-600 shrink-0" />
-                      ) : (
-                        <AlertCircle className="h-2.5 w-2.5 text-red-600 shrink-0" />
-                      )}
-                      <span className={`font-mono font-semibold ${
-                        scan.status === 'success' ? 'text-green-700' : 'text-red-700'
-                      }`}>
-                        {scan.barcode}
-                      </span>
-                    </div>
-                    {scan.product && (
-                      <span className="text-green-600 font-medium truncate ml-1">
-                        {scan.product}
-                      </span>
-                    )}
-                    {scan.status === 'not_found' && (
-                      <span className="text-red-600 font-medium ml-1">
-                        Inconnu
-                      </span>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </Card>
-
           {/* Calculatrice moderne et visible */}
           <Card className="bg-gradient-to-br from-slate-100 to-slate-50 border-2 border-slate-300 p-3 flex-shrink-0 shadow-xl">
             <div className="flex items-center justify-between mb-2">
@@ -2061,8 +2010,61 @@ const Index = () => {
                   <div className="h-1 w-1 rounded-full bg-primary"></div>
                   CATÉGORIES
                 </h2>
-                <div className="flex-1 overflow-hidden">
-                  <CategoryGrid onProductSelect={handleProductSelect} onCategorySelect={setSelectedCategory} selectedCategory={selectedCategory} />
+                <div className="flex-1 overflow-hidden flex flex-col gap-2">
+                  <div className="flex-1 overflow-hidden">
+                    <CategoryGrid onProductSelect={handleProductSelect} onCategorySelect={setSelectedCategory} selectedCategory={selectedCategory} />
+                  </div>
+                  
+                  {/* Historique des scans */}
+                  <Card className="bg-background border border-border p-2 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Scan className="h-3 w-3 text-primary" />
+                      <h3 className="text-[10px] font-bold text-foreground uppercase tracking-wide">
+                        Derniers Scans
+                      </h3>
+                    </div>
+                    <div className="space-y-1">
+                      {scanHistory.length === 0 ? (
+                        <div className="text-[9px] text-muted-foreground text-center py-2">
+                          Aucun scan récent
+                        </div>
+                      ) : (
+                        scanHistory.map((scan, idx) => (
+                          <div 
+                            key={`${scan.barcode}-${scan.timestamp}`}
+                            className={`flex items-center justify-between p-1.5 rounded text-[9px] ${
+                              scan.status === 'success' 
+                                ? 'bg-green-50 border border-green-200' 
+                                : 'bg-red-50 border border-red-200'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                              {scan.status === 'success' ? (
+                                <CheckCircle className="h-3 w-3 text-green-600 shrink-0" />
+                              ) : (
+                                <AlertCircle className="h-3 w-3 text-red-600 shrink-0" />
+                              )}
+                              <span className={`font-mono font-semibold ${
+                                scan.status === 'success' ? 'text-green-700' : 'text-red-700'
+                              }`}>
+                                {scan.barcode}
+                              </span>
+                            </div>
+                            {scan.product && (
+                              <span className="text-green-600 font-medium truncate ml-2 max-w-[120px]">
+                                {scan.product}
+                              </span>
+                            )}
+                            {scan.status === 'not_found' && (
+                              <span className="text-red-600 font-medium ml-2">
+                                Inconnu
+                              </span>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </Card>
                 </div>
                 
               </div>}
