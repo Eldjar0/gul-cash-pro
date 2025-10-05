@@ -31,6 +31,8 @@ import {
   Undo2,
   Split,
   UserCog,
+  ReceiptText,
+  ChevronRight,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -1693,51 +1695,58 @@ const Index = () => {
           </Card>
 
           {/* Calculatrice moderne */}
-          <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-2 flex-shrink-0 shadow-lg">
-            <div className="flex items-center justify-between mb-1.5">
+          <Card className="bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/5 border-2 border-primary/30 p-3 flex-shrink-0 shadow-xl relative overflow-hidden">
+            {/* Effet de brillance */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none" />
+            
+            <div className="flex items-center justify-between mb-2 relative z-10">
               <div className="text-center flex-1">
-                <div className="text-[9px] font-semibold text-primary uppercase tracking-wide mb-0.5">Calculette</div>
-                <div className="text-[9px] text-muted-foreground">{calcMode === 'input' ? 'Poids / Quantité / Prix' : 'Calcul'}</div>
+                <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-0.5 flex items-center justify-center gap-1">
+                  <Calculator className="h-3 w-3" />
+                  Calculette
+                </div>
+                <div className="text-[9px] text-muted-foreground font-medium">{calcMode === 'input' ? 'Poids / Quantité / Prix' : 'Calcul'}</div>
               </div>
-              <div className="flex gap-0.5">
+              <div className="flex gap-1">
                 <Button
                   variant={calcMode === 'input' ? 'default' : 'outline'}
                   size="sm"
-                  className="h-6 w-6 p-0"
+                  className={`h-7 w-7 p-0 transition-all ${calcMode === 'input' ? 'shadow-md' : ''}`}
                   onClick={() => setCalcMode('input')}
                 >
-                  <Scale className="h-2.5 w-2.5" />
+                  <Scale className="h-3 w-3" />
                 </Button>
                 <Button
                   variant={calcMode === 'math' ? 'default' : 'outline'}
                   size="sm"
-                  className="h-6 w-6 p-0"
+                  className={`h-7 w-7 p-0 transition-all ${calcMode === 'math' ? 'shadow-md' : ''}`}
                   onClick={() => setCalcMode('math')}
                 >
-                  <Calculator className="h-2.5 w-2.5" />
+                  <Calculator className="h-3 w-3" />
                 </Button>
               </div>
             </div>
             
             {/* Affichage */}
-            <div className="bg-gradient-to-br from-primary to-primary-glow p-2 rounded-xl mb-2 border-2 border-primary shadow-inner">
-              <div className="text-white text-xl font-bold text-center font-mono tracking-wider drop-shadow-lg">
+            <div className="bg-gradient-to-br from-primary via-primary-glow to-secondary p-3 rounded-2xl mb-2 border-2 border-primary/50 shadow-[0_8px_20px_rgba(0,0,0,0.15)] relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
+              <div className="text-white text-2xl font-bold text-center font-mono tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)] relative z-10">
                 {quantityInput}
               </div>
             </div>
             
             {/* Clavier */}
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-3 gap-1.5 relative z-10">
               {['7', '8', '9', '4', '5', '6', '1', '2', '3', '.', '0', 'C'].map((key) => (
                 <Button
                   key={key}
                   onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)}
-                  className={`h-8 text-sm font-bold transition-all active:scale-95 shadow-sm ${
+                  className={`h-10 text-base font-bold transition-all active:scale-95 ${
                     key === 'C' 
-                      ? 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0' 
+                      ? 'bg-gradient-to-br from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:to-red-800 text-white border-0 shadow-[0_4px_12px_rgba(220,38,38,0.3)]' 
                       : key === '.' 
-                      ? 'bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white border-0'
-                      : 'bg-gradient-to-br from-white to-gray-50 hover:from-primary/10 hover:to-primary/5 text-foreground border-2 border-border'
+                      ? 'bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white border-0 shadow-[0_4px_12px_rgba(245,158,11,0.3)]'
+                      : 'bg-gradient-to-br from-white via-gray-50 to-gray-100 hover:from-primary/15 hover:to-primary/10 text-foreground border-2 border-border/50 shadow-md hover:shadow-lg hover:border-primary/30'
                   }`}
                 >
                   {key}
@@ -1745,19 +1754,19 @@ const Index = () => {
               ))}
             </div>
             {calcMode === 'math' ? (
-              <div className="mt-2">
-                <div className="grid grid-cols-4 gap-1">
-                  <Button onClick={() => handleOperation('+')} className="h-8 text-sm bg-primary/10 font-bold">+</Button>
-                  <Button onClick={() => handleOperation('-')} className="h-8 text-sm bg-primary/10 font-bold"><Minus className="h-3.5 w-3.5" /></Button>
-                  <Button onClick={() => handleOperation('*')} className="h-8 text-sm bg-primary/10 font-bold"><X className="h-3.5 w-3.5" /></Button>
-                  <Button onClick={() => handleOperation('/')} className="h-8 text-sm bg-primary/10 font-bold"><Divide className="h-3.5 w-3.5" /></Button>
-                  <Button onClick={() => handleOperation('%')} className="h-8 text-sm bg-primary/10 font-bold col-span-2"><Percent className="h-3.5 w-3.5 mr-0.5" />%</Button>
-                  <Button onClick={handleEqualsCalc} disabled={!quantityInput} className="h-8 text-sm bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-md col-span-2">=</Button>
+              <div className="mt-2 relative z-10">
+                <div className="grid grid-cols-4 gap-1.5">
+                  <Button onClick={() => handleOperation('+')} className="h-9 text-base bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 font-bold border border-primary/20 shadow-md">+</Button>
+                  <Button onClick={() => handleOperation('-')} className="h-9 text-base bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 font-bold border border-primary/20 shadow-md"><Minus className="h-4 w-4" /></Button>
+                  <Button onClick={() => handleOperation('*')} className="h-9 text-base bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 font-bold border border-primary/20 shadow-md"><X className="h-4 w-4" /></Button>
+                  <Button onClick={() => handleOperation('/')} className="h-9 text-base bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 font-bold border border-primary/20 shadow-md"><Divide className="h-4 w-4" /></Button>
+                  <Button onClick={() => handleOperation('%')} className="h-9 text-sm bg-gradient-to-br from-secondary/20 to-secondary/10 hover:from-secondary/30 hover:to-secondary/20 font-bold border border-secondary/20 shadow-md col-span-2"><Percent className="h-3.5 w-3.5 mr-1" />%</Button>
+                  <Button onClick={handleEqualsCalc} disabled={!quantityInput} className="h-9 text-base bg-gradient-to-br from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-bold shadow-[0_4px_12px_rgba(34,197,94,0.3)] col-span-2">=</Button>
                 </div>
               </div>
             ) : (
-              <div className="mt-2 pt-2 border-t border-border">
-                <div className="text-[9px] text-center text-muted-foreground">
+              <div className="mt-2 pt-2 border-t border-border/50 relative z-10">
+                <div className="text-[9px] text-center text-muted-foreground font-medium">
                   Tapez la quantité avant d'ajouter un article
                 </div>
               </div>
@@ -1792,6 +1801,67 @@ const Index = () => {
                     <span className="text-[10px]">Fermer</span>
                   </Button>
                 </>
+              )}
+            </div>
+          </Card>
+
+          {/* Historique des derniers tickets */}
+          <Card className="bg-gradient-to-br from-background to-muted/10 border-2 border-border/50 p-2 flex-shrink-0 shadow-md">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[10px] font-bold text-primary uppercase tracking-wide flex items-center gap-1">
+                <ReceiptText className="h-3 w-3" />
+                Derniers Tickets
+              </h3>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/sales')}
+                className="h-5 text-[9px] px-1.5 hover:bg-primary/10 text-primary font-semibold"
+              >
+                Voir plus
+                <ChevronRight className="h-2.5 w-2.5 ml-0.5" />
+              </Button>
+            </div>
+            <div className="space-y-1 max-h-[200px] overflow-y-auto">
+              {todaySales?.filter(s => !s.is_cancelled).slice(0, 4).map((sale) => (
+                <button
+                  key={sale.id}
+                  onClick={() => {
+                    setCurrentSale(sale);
+                    setReceiptDialogOpen(true);
+                  }}
+                  className="w-full p-1.5 bg-white hover:bg-primary/5 border border-border/50 rounded-lg text-left transition-all hover:shadow-sm hover:border-primary/30 group"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Ticket className="h-3 w-3 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[10px] font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                          {sale.sale_number}
+                        </div>
+                        <div className="text-[8px] text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-2 w-2" />
+                          {new Date(sale.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-[11px] font-bold text-primary">
+                        {sale.total.toFixed(2)}€
+                      </div>
+                      <div className="text-[8px] text-muted-foreground uppercase">
+                        {sale.payment_method === 'cash' ? 'ESP' : sale.payment_method === 'card' ? 'CB' : 'MOB'}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+              {(!todaySales || todaySales.filter(s => !s.is_cancelled).length === 0) && (
+                <div className="text-center py-4 text-[9px] text-muted-foreground">
+                  Aucun ticket aujourd'hui
+                </div>
               )}
             </div>
           </Card>
