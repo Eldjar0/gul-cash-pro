@@ -247,15 +247,13 @@ const Index = () => {
   usePhysicalScanner({
     onScan: (barcode) => {
       console.log('[POS] Scanner physique - code-barres détecté:', barcode);
-      setScanInput(barcode);
-      scanInputRef.current?.focus();
-      setTimeout(() => {
-        handleBarcodeScan(barcode);
-      }, 100);
+      // Ne pas écrire dans la recherche, on ajoute directement au panier
+      handleBarcodeScan(barcode);
     },
     enabled: true,
     minLength: 8,
-    timeout: 150 // Augmenté pour capturer tous les caractères
+    timeout: 150, // Augmenté pour capturer tous les caractères
+    captureInInputs: true, // Intercepte même si un champ de saisie est focus
   });
 
   // Calculer les promotions automatiques quand le panier change

@@ -6,6 +6,7 @@ interface PhysicalScannerOptions {
   enabled?: boolean;
   minLength?: number;
   timeout?: number;
+  captureInInputs?: boolean;
 }
 
 const AZERTY_MAP: Record<string, string> = {
@@ -24,6 +25,7 @@ export const usePhysicalScanner = ({
   enabled = true,
   minLength = 3,
   timeout = 150, // Augmenté à 150ms pour capturer tous les caractères
+  captureInInputs = false,
 }: PhysicalScannerOptions) => {
   const normalizeBarcode = useCallback((raw: string): string => {
     return raw.split('').map(char => AZERTY_MAP[char] || char).join('').replace(/\D+/g, '').trim();
@@ -57,7 +59,7 @@ export const usePhysicalScanner = ({
     };
 
     const handler = (e: KeyboardEvent) => {
-      if (isEditableField(e.target)) return;
+      if (!captureInInputs && isEditableField(e.target)) return;
 
       const now = Date.now();
       const timeDiff = now - lastKeyTime;
