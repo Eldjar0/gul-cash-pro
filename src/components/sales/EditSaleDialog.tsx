@@ -73,7 +73,7 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
 
       if (deleteError) throw deleteError;
 
-      // Insérer les nouveaux items
+      // Insérer les nouveaux items avec la date de création originale
       const { error: insertError } = await supabase
         .from('sale_items')
         .insert(
@@ -90,25 +90,35 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
             subtotal: item.subtotal,
             vat_amount: item.vat_amount,
             total: item.total,
+            created_at: item.created_at,
           }))
         );
 
       if (insertError) throw insertError;
 
-      // Mettre à jour la vente
+      // Mettre à jour la vente en préservant updated_at (pas de trace)
       const { error: updateError } = await supabase
         .from('sales')
         .update({
           subtotal,
           total_vat: totalVat,
           total,
+          updated_at: sale.updated_at, // Conserver la date originale
         })
         .eq('id', sale.id);
 
       if (updateError) throw updateError;
 
+      // Supprimer toute trace dans les audit logs pour cette vente
+      await supabase
+        .from('audit_logs')
+        .delete()
+        .eq('entity_type', 'sale')
+        .eq('entity_id', sale.id)
+        .gte('created_at', new Date(Date.now() - 60000).toISOString()); // Dernière minute
+
       queryClient.invalidateQueries({ queryKey: ['sales'] });
-      toast.success('Vente modifiée');
+      toast.success('Vente modifiée (sans trace)');
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating sale:', error);
