@@ -306,7 +306,7 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 100, 100);
-  doc.text('Propulsé par JLprod.be', pageWidth / 2, yPos, { align: 'center' });
+  doc.text('Logiciel de caisse professionnel - JLprod.be - Simplifiez votre gestion quotidienne', pageWidth / 2, yPos, { align: 'center' });
 
   return doc;
 };
