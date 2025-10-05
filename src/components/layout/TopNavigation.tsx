@@ -81,22 +81,22 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
 
         {/* Navigation Menu - Toujours visible avec texte */}
         <div className="flex flex-1 justify-center gap-1">
-          {/* Bouton principal Documents */}
-          <Button
-            onClick={() => navigate("/documents")}
-            className="h-10 px-2 flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-semibold text-xs whitespace-nowrap border border-white/40"
-          >
-            <FileText className="h-4 w-4" />
-            <span>Documents</span>
-          </Button>
-          
-          {/* Bouton Caisse */}
+          {/* Bouton principal Caisse */}
           <Button
             onClick={() => navigate("/")}
-            className="h-10 px-2 flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs whitespace-nowrap"
+            className="h-10 px-2 flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-semibold text-xs whitespace-nowrap border border-white/40"
           >
             <ShoppingCart className="h-4 w-4" />
             <span>Caisse</span>
+          </Button>
+          
+          {/* Bouton Documents */}
+          <Button
+            onClick={() => navigate("/documents")}
+            className="h-10 px-2 flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs whitespace-nowrap"
+          >
+            <FileText className="h-4 w-4" />
+            <span>Documents</span>
           </Button>
 
           {/* Menus déroulants simplifiés */}
