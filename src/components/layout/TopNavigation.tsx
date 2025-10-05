@@ -63,7 +63,6 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
     ],
     clients: [
       { icon: Users, label: "Clients", path: "/customers" },
-      { icon: Gift, label: "Fidélité", path: "/loyalty" },
       { icon: Tags, label: "Promotions", path: "/promotions" },
     ],
   };
