@@ -103,7 +103,7 @@ export const usePhysicalScanner = ({
         console.log('[Scanner] Début du scan, premier caractère:', toAppend);
       }
 
-      if (toAppend && toAppend.length === 1) {
+      if (toAppend && typeof toAppend === 'string' && toAppend.length === 1) {
         buffer += toAppend;
         e.preventDefault();
         e.stopPropagation();

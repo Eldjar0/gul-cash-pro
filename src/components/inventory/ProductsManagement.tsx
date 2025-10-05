@@ -77,6 +77,7 @@ export const ProductsManagement = () => {
   const [labelTemplate, setLabelTemplate] = useState<string | null>(null);
 
   // Scanner physique pour remplir automatiquement le code-barres
+  // Désactivé par défaut pour permettre la saisie normale
   usePhysicalScanner({
     onScan: (barcode) => {
       if (productDialogOpen) {
@@ -87,7 +88,7 @@ export const ProductsManagement = () => {
     enabled: productDialogOpen, // Actif uniquement quand le dialogue est ouvert
     minLength: 8,
     timeout: 350,
-    captureInInputs: true, // Intercepte même dans les champs pour remplir automatiquement
+    captureInInputs: false, // Ne pas intercepter - laisser la saisie normale fonctionner
   });
 
   const filteredProducts = products.filter(p => {
