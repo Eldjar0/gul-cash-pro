@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCustomerCreditAccount, usePayCredit, useUpdateCreditLimit } from '@/hooks/useCustomerCredit';
+import { useCustomerCreditAccount, usePayCredit, useUpdateCreditLimit, useChargeCredit } from '@/hooks/useCustomerCredit';
 import { Euro, TrendingUp, TrendingDown, Receipt } from 'lucide-react';
 
 interface CustomerCreditManagementDialogProps {
@@ -24,10 +24,13 @@ export function CustomerCreditManagementDialog({
   const { data: creditAccount, isLoading } = useCustomerCreditAccount(customerId);
   const payCredit = usePayCredit();
   const updateLimit = useUpdateCreditLimit();
+  const chargeCredit = useChargeCredit();
 
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentNotes, setPaymentNotes] = useState('');
   const [newLimit, setNewLimit] = useState('');
+  const [debtAmount, setDebtAmount] = useState('');
+  const [debtNotes, setDebtNotes] = useState('');
 
   const handlePayment = async () => {
     const amount = parseFloat(paymentAmount);
@@ -75,6 +78,34 @@ export function CustomerCreditManagementDialog({
     }
   };
 
+  const handleAddDebt = async () => {
+    const amount = parseFloat(debtAmount);
+    if (!amount || amount <= 0) {
+      return;
+    }
+
+    if (!creditAccount) {
+      return;
+    }
+
+    const newBalance = creditAccount.current_balance + amount;
+    if (newBalance > creditAccount.credit_limit) {
+      return;
+    }
+
+    try {
+      await chargeCredit.mutateAsync({
+        customerId,
+        amount,
+        notes: debtNotes || 'Ajout manuel de dette',
+      });
+      setDebtAmount('');
+      setDebtNotes('');
+    } catch (error) {
+      // Error handled by mutation
+    }
+  };
+
   if (isLoading) {
     return null;
   }
@@ -110,14 +141,18 @@ export function CustomerCreditManagementDialog({
         )}
 
         <Tabs defaultValue="payment" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="payment">
               <Receipt className="w-4 h-4 mr-2" />
               Remboursement
             </TabsTrigger>
+            <TabsTrigger value="add">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Ajouter dette
+            </TabsTrigger>
             <TabsTrigger value="limit">
               <Euro className="w-4 h-4 mr-2" />
-              Limite de crédit
+              Limite
             </TabsTrigger>
           </TabsList>
 
@@ -166,6 +201,47 @@ export function CustomerCreditManagementDialog({
               >
                 <Receipt className="w-4 h-4 mr-2" />
                 Enregistrer le remboursement
+              </Button>
+            </DialogFooter>
+          </TabsContent>
+
+          <TabsContent value="add" className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="debtAmount">Montant à ajouter</Label>
+              <Input
+                id="debtAmount"
+                type="number"
+                step="0.01"
+                min="0"
+                max={creditAccount ? creditAccount.credit_limit - creditAccount.current_balance : 0}
+                value={debtAmount}
+                onChange={(e) => setDebtAmount(e.target.value)}
+                placeholder="0.00"
+              />
+              <p className="text-sm text-muted-foreground">
+                Maximum disponible: {creditAccount ? (creditAccount.credit_limit - creditAccount.current_balance).toFixed(2) : '0.00'}€
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="debtNotes">Raison (optionnel)</Label>
+              <Textarea
+                id="debtNotes"
+                value={debtNotes}
+                onChange={(e) => setDebtNotes(e.target.value)}
+                placeholder="Ex: Achat externe, ajustement manuel..."
+                rows={3}
+              />
+            </div>
+
+            <DialogFooter>
+              <Button
+                onClick={handleAddDebt}
+                disabled={!debtAmount || parseFloat(debtAmount) <= 0 || chargeCredit.isPending}
+                variant="destructive"
+              >
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Ajouter la dette
               </Button>
             </DialogFooter>
           </TabsContent>
