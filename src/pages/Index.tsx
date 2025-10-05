@@ -31,6 +31,7 @@ import { Customer, useCustomers } from '@/hooks/useCustomers';
 import { useCustomerCredit, useChargeCredit } from '@/hooks/useCustomerCredit';
 import { useTodayReport, useOpenDay, useCloseDay, getTodayReportData, ReportData } from '@/hooks/useDailyReports';
 import { useWeather } from '@/hooks/useWeather';
+import { useActivePromotions, calculateDiscount } from '@/hooks/usePromotions';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -79,6 +80,10 @@ const Index = () => {
     temperature,
     loading: weatherLoading
   } = useWeather();
+  
+  // Promotions automatiques
+  const { data: activePromotions } = useActivePromotions();
+  const [appliedAutoPromotion, setAppliedAutoPromotion] = useState<any>(null);
 
   // Get today's sales for statistics
   const today = new Date();
@@ -204,6 +209,8 @@ const Index = () => {
     let total = cart.reduce((sum, item) => sum + item.total, 0);
     let globalDiscountAmount = 0;
     let promoCodeAmount = 0;
+    let autoPromotionAmount = 0;
+    
     if (globalDiscount) {
       globalDiscountAmount = globalDiscount.type === 'percentage' ? total * globalDiscount.value / 100 : globalDiscount.value;
       total -= globalDiscountAmount;
@@ -213,12 +220,33 @@ const Index = () => {
       total -= promoCodeAmount;
     }
     
-    const totalDiscount = itemDiscounts + globalDiscountAmount + promoCodeAmount;
+    // Appliquer les promotions automatiques
+    if (activePromotions && cart.length > 0) {
+      const customerType = selectedCustomer ? 'professional' : null;
+      const cartForPromo = cart.map(item => ({
+        product_id: item.product.id,
+        quantity: item.quantity,
+        unit_price: item.custom_price ?? item.product.price,
+        total: item.total
+      }));
+      
+      const promoResult = calculateDiscount(cartForPromo, activePromotions, customerType);
+      if (promoResult.discount > 0) {
+        autoPromotionAmount = promoResult.discount;
+        total -= autoPromotionAmount;
+        setAppliedAutoPromotion(promoResult.appliedPromo);
+      } else {
+        setAppliedAutoPromotion(null);
+      }
+    }
+    
+    const totalDiscount = itemDiscounts + globalDiscountAmount + promoCodeAmount + autoPromotionAmount;
     return {
       subtotal,
       totalVat,
       totalDiscount,
-      total: Math.max(0, total)
+      total: Math.max(0, total),
+      autoPromotionAmount
     };
   };
 
@@ -892,6 +920,7 @@ const Index = () => {
       setCart([]);
       setGlobalDiscount(null);
       setAppliedPromoCode(null);
+      setAppliedAutoPromotion(null);
       setIsInvoiceMode(false);
       setSelectedCustomer(null);
       setPaymentDialogOpen(false);
@@ -917,6 +946,7 @@ const Index = () => {
       setCart([]);
       setGlobalDiscount(null);
       setAppliedPromoCode(null);
+      setAppliedAutoPromotion(null);
       setIsInvoiceMode(false);
       setSelectedCustomer(null);
 
@@ -1027,6 +1057,7 @@ const Index = () => {
       setCart([]);
       setGlobalDiscount(null);
       setAppliedPromoCode(null);
+      setAppliedAutoPromotion(null);
       setIsInvoiceMode(false);
       setSelectedCustomer(null);
       setMixedPaymentDialogOpen(false);
@@ -1421,6 +1452,17 @@ const Index = () => {
                   ×
                 </Button>
               </div>}
+            {appliedAutoPromotion && totals.autoPromotionAmount && totals.autoPromotionAmount > 0 && (
+              <div className="flex items-center justify-between text-[9px] bg-green-100 dark:bg-green-900/20 px-1.5 py-0.5 rounded border border-green-300 dark:border-green-700">
+                <span className="text-green-700 dark:text-green-400 font-semibold flex items-center gap-1">
+                  <Percent className="h-3 w-3" />
+                  🎁 {appliedAutoPromotion.name}
+                </span>
+                <span className="font-bold text-green-700 dark:text-green-400">
+                  -{totals.autoPromotionAmount.toFixed(2)}€
+                </span>
+              </div>
+            )}
             <div className="grid grid-cols-3 gap-1">
               <Button variant="outline" size="sm" onClick={() => {
               setDiscountTarget({
