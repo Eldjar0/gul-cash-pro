@@ -33,7 +33,6 @@ const Inventory = lazy(() => import("./pages/Inventory"));
 const Orders = lazy(() => import("./pages/Orders"));
 const Loyalty = lazy(() => import("./pages/Loyalty"));
 const Payments = lazy(() => import("./pages/Payments"));
-const RemoteScanner = lazy(() => import("./pages/RemoteScanner"));
 const DownloadApp = lazy(() => import("./pages/DownloadApp"));
 const MobileManagement = lazy(() => import("./pages/MobileManagement"));
 const MobileCategories = lazy(() => import("./pages/MobileCategories"));
@@ -64,7 +63,6 @@ const App = () => (
             {/* Public routes */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/customer-display" element={<CustomerDisplay />} />
-            <Route path="/remote-scanner/:sessionCode" element={<RemoteScanner />} />
             <Route path="/download-app" element={<DownloadApp />} />
             <Route path="/mobile" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
             <Route path="/mobile/management" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />

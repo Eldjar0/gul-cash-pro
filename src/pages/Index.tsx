@@ -42,7 +42,6 @@ import { Receipt } from '@/components/pos/Receipt';
 import { PinLockDialog } from '@/components/pos/PinLockDialog';
 import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
 import { RefundDialog } from '@/components/pos/RefundDialog';
-import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 import { PhysicalScanActionDialog } from '@/components/pos/PhysicalScanActionDialog';
 
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
@@ -51,7 +50,6 @@ import { ReportXDialog } from '@/components/pos/ReportXDialog';
 import { CloseDayDialog } from '@/components/pos/CloseDayDialog';
 import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
-import { useRealtimeScannedItems, useMarkItemProcessed } from '@/hooks/useRemoteScan';
 import { useCreateSale, useSales } from '@/hooks/useSales';
 import { useCategories } from '@/hooks/useCategories';
 import { Customer } from '@/hooks/useCustomers';
@@ -174,10 +172,6 @@ const Index = () => {
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  
-  // Remote scanning states
-  const [remoteScanSessionId, setRemoteScanSessionId] = useState<string | null>(null);
-  const markItemProcessed = useMarkItemProcessed();
 
   // Physical scan action dialog states
   const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
@@ -283,24 +277,6 @@ const Index = () => {
 
     updateCustomerDisplay();
   }, [cart, displayChannel, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer]);
-
-  // Traiter les items scannés à distance
-  useRealtimeScannedItems(remoteScanSessionId ?? undefined, (newItem) => {
-    console.log('New remote scanned item:', newItem);
-    
-    // Find product by barcode
-    const product = products?.find(p => p.barcode === newItem.barcode);
-    if (product) {
-      handleProductSelect(product, newItem.quantity);
-      toast.success(`Produit ajouté: ${product.name}`);
-      // Mark item as processed
-      markItemProcessed.mutate(newItem.id);
-    } else {
-      toast.error(`Produit non trouvé: ${newItem.barcode}`);
-      // Still mark as processed to avoid retry
-      markItemProcessed.mutate(newItem.id);
-    }
-  });
 
   // Ouvrir l'affichage client dans une nouvelle fenêtre
   const openCustomerDisplay = () => {
@@ -959,22 +935,6 @@ const Index = () => {
     }
   };
 
-  const handlePhysicalScanAddToRemote = () => {
-    if (scannedProduct && remoteScanSessionId) {
-      // Ajouter le produit à la session de scan à distance
-      const { useAddScannedItem } = require('@/hooks/useRemoteScan');
-      const addScannedItem = useAddScannedItem();
-      addScannedItem.mutate({
-        session_id: remoteScanSessionId,
-        barcode: scannedBarcode,
-        quantity: 1,
-      });
-      toast.success('Produit ajouté au scanner à distance');
-    } else if (!remoteScanSessionId) {
-      toast.error('Aucune session de scan à distance active');
-    }
-  };
-
   const handlePhysicalScanViewProduct = () => {
     if (scannedProduct) {
       navigate(`/products?id=${scannedProduct.id}`);
@@ -1331,13 +1291,6 @@ const Index = () => {
             <Eye className="h-3 w-3 mr-1" />
             <span>Affichage</span>
           </Button>
-          
-          <RemoteScanDialog 
-            onSessionCreated={(sessionId, sessionCode) => {
-              setRemoteScanSessionId(sessionId);
-              toast.success(`Session créée: ${sessionCode}`);
-            }}
-          />
         </div>
       </div>
       
@@ -1972,7 +1925,6 @@ const Index = () => {
         barcode={scannedBarcode}
         product={scannedProduct}
         onAddToCart={handlePhysicalScanAddToCart}
-        onAddToRemoteScan={handlePhysicalScanAddToRemote}
         onViewProduct={handlePhysicalScanViewProduct}
         onCreateProduct={handlePhysicalScanCreateProduct}
       />

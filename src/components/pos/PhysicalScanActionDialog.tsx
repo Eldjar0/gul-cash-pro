@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Smartphone, Eye, Plus, X } from 'lucide-react';
+import { ShoppingCart, Eye, Plus, X } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 
 interface PhysicalScanActionDialogProps {
@@ -16,7 +16,6 @@ interface PhysicalScanActionDialogProps {
   barcode: string;
   product: Product | null;
   onAddToCart: () => void;
-  onAddToRemoteScan: () => void;
   onViewProduct: () => void;
   onCreateProduct: () => void;
 }
@@ -27,7 +26,6 @@ export function PhysicalScanActionDialog({
   barcode,
   product,
   onAddToCart,
-  onAddToRemoteScan,
   onViewProduct,
   onCreateProduct,
 }: PhysicalScanActionDialogProps) {
@@ -92,16 +90,6 @@ export function PhysicalScanActionDialog({
               >
                 <ShoppingCart className="h-6 w-6" />
                 Ajouter au Panier POS
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full gap-2 h-14"
-                onClick={() => handleAction(onAddToRemoteScan)}
-              >
-                <Smartphone className="h-5 w-5" />
-                Envoyer au Scanner à Distance
               </Button>
 
               <Button
