@@ -1267,7 +1267,7 @@ const Index = () => {
       
       {/* Info bar avec date, météo, recherche et boutons */}
       <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-2 py-1 flex items-center justify-between gap-1.5 flex-shrink-0">
-        {/* Gauche: Date/Heure + Météo - Toujours visible */}
+        {/* Gauche: Date/Heure + Météo */}
         <div className="flex items-center gap-1">
           <div className="flex items-center gap-1 px-1.5 py-1 bg-background rounded-md border border-border">
             <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -1321,43 +1321,12 @@ const Index = () => {
           </form>
         </div>
         
-        {/* Droite: Boutons - Toujours avec texte */}
+        {/* Droite: Bouton Affichage uniquement */}
         <div className="flex items-center gap-0.5">
-          {/* Boutons gestion de journée */}
-          {!isDayOpenEffective ? (
-            <Button
-              onClick={() => setOpenDayDialogOpen(true)}
-              size="sm"
-              className="h-7 px-2 text-xs bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md whitespace-nowrap"
-            >
-              <Calendar className="h-3 w-3 mr-1" />
-              <span>Ouvrir</span>
-            </Button>
-          ) : (
-            <>
-              <Button
-                onClick={handleReportX}
-                size="sm"
-                className="h-7 px-2 text-xs bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md whitespace-nowrap"
-              >
-                <FileText className="h-3 w-3 mr-1" />
-                <span>Rapport X</span>
-              </Button>
-              <Button
-                onClick={() => setCloseDayDialogOpen(true)}
-                size="sm"
-                className="h-7 px-2 text-xs bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md whitespace-nowrap"
-              >
-                <CalendarX className="h-3 w-3 mr-1" />
-                <span>Fermer</span>
-              </Button>
-            </>
-          )}
-          
           <Button
             onClick={openCustomerDisplay}
             size="sm"
-            className="h-7 px-2 text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md whitespace-nowrap"
+            className="h-6 px-2 text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md whitespace-nowrap"
           >
             <Eye className="h-3 w-3 mr-1" />
             <span>Affichage</span>
@@ -1839,6 +1808,38 @@ const Index = () => {
                 </div>
               </div>
             )}
+          </Card>
+
+          {/* Boutons gestion de journée - Carrés */}
+          <Card className="bg-background border-2 border-border p-2 flex-shrink-0">
+            <div className="grid grid-cols-3 gap-1">
+              {!isDayOpenEffective ? (
+                <Button
+                  onClick={() => setOpenDayDialogOpen(true)}
+                  className="h-12 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md font-semibold"
+                >
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-[10px]">Ouvrir</span>
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    onClick={handleReportX}
+                    className="h-12 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md font-semibold"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span className="text-[10px]">Rapport X</span>
+                  </Button>
+                  <Button
+                    onClick={() => setCloseDayDialogOpen(true)}
+                    className="h-12 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md font-semibold"
+                  >
+                    <CalendarX className="h-4 w-4" />
+                    <span className="text-[10px]">Fermer</span>
+                  </Button>
+                </>
+              )}
+            </div>
           </Card>
         </div>
 
