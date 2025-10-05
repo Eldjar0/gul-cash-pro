@@ -40,6 +40,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { createSafeBroadcastChannel } from '@/lib/safeBroadcast';
+import { useCartPersistence } from '@/hooks/useCartPersistence';
+import { usePhysicalScanner } from '@/hooks/usePhysicalScanner';
+
 type DiscountType = 'percentage' | 'amount';
 interface CartItem {
   product: Product;
@@ -128,16 +131,9 @@ const Index = () => {
   useEffect(() => {
     setIsDayOpenLocal(null);
   }, [todayReport?.id, todayReport?.closing_amount]);
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    try {
-      const raw = localStorage.getItem(CART_STORAGE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  });
+  
+  const { loadCart, saveCart } = useCartPersistence();
+  const [cart, setCart] = useState<CartItem[]>(() => loadCart());
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [currentSale, setCurrentSale] = useState<any>(null);
@@ -169,18 +165,12 @@ const Index = () => {
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
 
-  // Persistance du panier en localStorage
+  // Persistance du panier
   useEffect(() => {
-    try {
-      if (cart.length) {
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-      } else {
-        localStorage.removeItem(CART_STORAGE_KEY);
-      }
-    } catch {}
-  }, [cart]);
+    saveCart(cart);
+  }, [cart, saveCart]);
   const [customerDisplayWindow, setCustomerDisplayWindow] = useState<Window | null>(null);
-  const [displayChannel] = useState(() => createSafeBroadcastChannel('customer_display'));
+  const displayChannelRef = useRef(createSafeBroadcastChannel('customer_display'));
 
   // Daily reports states
   const [openDayDialogOpen, setOpenDayDialogOpen] = useState(false);
@@ -346,20 +336,19 @@ const Index = () => {
           name: selectedCustomer.name
         } : undefined
       };
-      console.log('[POS] Sending to customer display:', state);
 
       // Envoyer via BroadcastChannel
       try {
-        displayChannel.postMessage(state);
+        displayChannelRef.current.postMessage(state);
       } catch (e) {
-        console.error('[POS] BroadcastChannel error:', e);
+        // Erreur silencieuse, BroadcastChannel optional
       }
 
       // Sauvegarder dans localStorage pour persistance
       localStorage.setItem('customer_display_state', JSON.stringify(state));
     };
     updateCustomerDisplay();
-  }, [cart, displayChannel, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer]);
+  }, [cart, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer]);
 
   // Ouvrir l'affichage client dans une nouvelle fenêtre
   const openCustomerDisplay = () => {
@@ -379,9 +368,9 @@ const Index = () => {
   // Nettoyer à la fermeture
   useEffect(() => {
     return () => {
-      displayChannel.close();
+      displayChannelRef.current.close();
     };
-  }, [displayChannel]);
+  }, []);
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -517,14 +506,9 @@ const Index = () => {
 
   // Traitement du code-barres scanné (utilisé pour les scans manuels)
   const handleBarcodeScan = (raw: string) => {
-    const DEBUG_SCAN = false; // Mettre à true pour debug
-
     const normalized = normalizeBarcode(raw.trim());
     const normalizedDigits = normalized.replace(/\D+/g, ''); // Fallback: chiffres uniquement
 
-    if (DEBUG_SCAN) {
-      console.log('[SCAN] Raw:', raw, '| Normalized:', normalized, '| Digits:', normalizedDigits);
-    }
     if (!normalized || normalized.length < 3) return;
 
     // 1. Recherche exacte sur le code-barres normalisé
@@ -535,7 +519,6 @@ const Index = () => {
       found = products?.find(p => p.barcode && p.barcode.replace(/\D+/g, '') === normalizedDigits);
     }
     if (found) {
-      if (DEBUG_SCAN) console.log('[SCAN] Product found:', found.name);
       handleProductSelect(found);
       setScanInput("");
       setSearchResults([]);
@@ -544,7 +527,6 @@ const Index = () => {
 
     // Si inconnu, afficher un toast avec action pour créer
     const barcodeToUse = normalizedDigits.length >= 3 ? normalizedDigits : normalized;
-    if (DEBUG_SCAN) console.log('[SCAN] Unknown barcode:', barcodeToUse);
     toast.error('Code-barres inconnu', {
       description: `Aucun produit lié à ${barcodeToUse}`,
       action: {
@@ -557,7 +539,6 @@ const Index = () => {
 
   // Détection ultra-robuste des scans de lecteur code-barres (HID)
   useEffect(() => {
-    const DEBUG_SCAN = true; // ACTIVÉ pour debug
     let buffer = "";
     let lastKeyTime = 0;
     let isScanning = false;
@@ -608,8 +589,6 @@ const Index = () => {
     };
     const processScan = () => {
       if (buffer.length >= 3) {
-        const duration = Date.now() - scanStartTime;
-        console.log('[SCAN] 🔍 Processing:', buffer, `(${duration}ms, ${buffer.length} chars)`);
         handlePhysicalScan(buffer);
       }
       buffer = "";
@@ -638,7 +617,6 @@ const Index = () => {
       if (e.key.length === 1) {
         // Pas de reset en cours de scan; on laisse le timeout finaliser
         if (!isScanning && delta > 400 && buffer.length > 0) {
-          if (DEBUG_SCAN) console.log('[SCAN] Reset: delta trop grand hors scan', delta);
           buffer = "";
           isScanning = false;
           scanStartTime = 0;
@@ -657,7 +635,6 @@ const Index = () => {
             isScanning = true;
             e.preventDefault();
             e.stopPropagation();
-            console.log('[SCAN] 🚀 Start detected, code:', e.code, '→ digit:', digit);
             buffer += digit;
           } else {
             // Pas un chiffre → ignorer
@@ -669,9 +646,7 @@ const Index = () => {
             // Deuxième touche: si < 50ms, on confirme le scan
             if (buffer.length === 1 && delta < 50) {
               isScanning = true;
-              console.log('[SCAN] ✓ Confirmed (fast typing)');
             }
-            console.log('[SCAN] 📥 Adding digit:', digit, 'from code:', e.code);
             buffer += digit;
             // Empêcher toute écriture à l'écran pendant le scan
             e.preventDefault();
@@ -687,11 +662,8 @@ const Index = () => {
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
           if (buffer.length >= 8) {
-            console.log('[SCAN] ⏱️ Auto-finalize (timeout)');
             processScan();
           } else if (buffer.length > 0) {
-            // Trop court, probablement pas un scan
-            console.log('[SCAN] ❌ Reset: trop court', buffer);
             buffer = "";
             isScanning = false;
             scanStartTime = 0;
@@ -929,7 +901,6 @@ const Index = () => {
             notes: `Vente ${sale.sale_number}`
           });
         } catch (creditError) {
-          console.error('Error charging credit:', creditError);
           // Ne pas bloquer la vente, juste avertir
           toast.warning('Vente enregistrée, mais erreur lors de l\'enregistrement du crédit', {
             description: 'La transaction de crédit devra être ajoutée manuellement'
@@ -961,7 +932,7 @@ const Index = () => {
         status: 'completed',
         timestamp: Date.now()
       };
-      displayChannel.postMessage(completedState);
+      displayChannelRef.current.postMessage(completedState);
       localStorage.setItem('customer_display_state', JSON.stringify(completedState));
 
       // Retour à "idle" après 5 secondes
@@ -971,7 +942,7 @@ const Index = () => {
           status: 'idle',
           timestamp: Date.now()
         };
-        displayChannel.postMessage(idleState);
+        displayChannelRef.current.postMessage(idleState);
         localStorage.setItem('customer_display_state', JSON.stringify(idleState));
       }, 5000);
       setCart([]);
@@ -992,7 +963,6 @@ const Index = () => {
             : 'Paiement validé'
       );
     } catch (error) {
-      console.error('Error creating sale:', error);
       toast.error('Erreur lors de la création de la vente', {
         description: 'Veuillez réessayer'
       });
@@ -1013,7 +983,7 @@ const Index = () => {
         status: 'idle',
         timestamp: Date.now()
       };
-      displayChannel.postMessage(idleState);
+      displayChannelRef.current.postMessage(idleState);
       localStorage.setItem('customer_display_state', JSON.stringify(idleState));
       toast.info('Panier vidé');
     }
@@ -1108,7 +1078,7 @@ const Index = () => {
           status: 'idle',
           timestamp: Date.now()
         };
-        displayChannel.postMessage(idleState);
+        displayChannelRef.current.postMessage(idleState);
         localStorage.setItem('customer_display_state', JSON.stringify(idleState));
       }, 5000);
       setCart([]);
@@ -1121,7 +1091,6 @@ const Index = () => {
       setPrintConfirmDialogOpen(true);
       toast.success('Paiement mixte validé');
     } catch (error) {
-      console.error('Error creating sale:', error);
       toast.error('Erreur paiement mixte');
     }
   };
@@ -1283,9 +1252,6 @@ const Index = () => {
     });
 
     // L'archivage et la suppression sont déjà gérés dans CloseDayDialog
-    if (archiveAndDelete) {
-      console.log('Archive créée et ventes anciennes supprimées');
-    }
   };
   const handleReportX = async () => {
     const data = await getTodayReportData();
