@@ -13,7 +13,6 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Stats = lazy(() => import("./pages/Stats"));
-const Sales = lazy(() => import("./pages/Sales"));
 const Documents = lazy(() => import("./pages/Documents"));
 const Promotions = lazy(() => import("./pages/Promotions"));
 const Suppliers = lazy(() => import("./pages/Suppliers"));
@@ -72,7 +71,6 @@ const App = () => (
             {/* Protected routes with navigation */}
             <Route path="/" element={<ProtectedRoute><ProtectedLayout><Index /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/stats" element={<ProtectedRoute><ProtectedLayout><Stats /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/sales" element={<ProtectedRoute><ProtectedLayout><Sales /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/documents" element={<ProtectedRoute><ProtectedLayout><Documents /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/invoices/create" element={<ProtectedRoute><ProtectedLayout><InvoiceCreate /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/promotions" element={<ProtectedRoute><ProtectedLayout><Promotions /></ProtectedLayout></ProtectedRoute>} />

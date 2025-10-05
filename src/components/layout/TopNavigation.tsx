@@ -54,7 +54,6 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
   const menuItems = {
     ventes: [
       { icon: ShoppingCart, label: "Caisse", path: "/" },
-      { icon: Receipt, label: "Ventes", path: "/sales" },
       { icon: FileText, label: "Documents", path: "/documents" },
     ],
     gestion: [
