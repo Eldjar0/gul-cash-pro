@@ -335,5 +335,18 @@ export const previewInvoicePDF = (invoice: InvoiceData) => {
   const doc = generateInvoicePDF(invoice);
   const pdfBlob = doc.output('blob');
   const pdfUrl = URL.createObjectURL(pdfBlob);
-  window.open(pdfUrl, '_blank');
+  
+  // Créer un lien temporaire pour éviter le blocage par le navigateur
+  const link = document.createElement('a');
+  link.href = pdfUrl;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  
+  // Ajouter au DOM, cliquer, puis supprimer
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Nettoyer l'URL après un délai
+  setTimeout(() => URL.revokeObjectURL(pdfUrl), 100);
 };
