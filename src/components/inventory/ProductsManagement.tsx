@@ -163,9 +163,9 @@ export const ProductsManagement = () => {
     if (!printWindow) return;
 
     const labelSizes = {
-      small: { width: '50mm', height: '30mm', fontSize: '9px', barcodeHeight: '18mm', nameSize: '11px', priceSize: '10px' },
-      medium: { width: '70mm', height: '45mm', fontSize: '11px', barcodeHeight: '25mm', nameSize: '14px', priceSize: '13px' },
-      large: { width: '90mm', height: '55mm', fontSize: '13px', barcodeHeight: '30mm', nameSize: '16px', priceSize: '15px' }
+      small: { width: '50mm', height: '30mm', nameSize: '12px', priceSize: '14px', barcodeHeight: '12mm', fontSize: '8px' },
+      medium: { width: '70mm', height: '45mm', nameSize: '16px', priceSize: '18px', barcodeHeight: '15mm', fontSize: '9px' },
+      large: { width: '90mm', height: '55mm', nameSize: '20px', priceSize: '22px', barcodeHeight: '18mm', fontSize: '10px' }
     };
 
     const size = labelSizes[labelSize];
@@ -194,55 +194,42 @@ export const ProductsManagement = () => {
               padding: 3mm;
               display: flex;
               flex-direction: column;
-              justify-content: space-between;
+              justify-content: center;
+              align-items: center;
+              text-align: center;
               page-break-inside: avoid;
               background: white;
-            }
-            .header-row {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 2mm;
               gap: 2mm;
             }
             .product-name {
               font-size: ${size.nameSize};
               font-weight: bold;
-              text-align: left;
-              flex: 1;
               line-height: 1.2;
-              max-height: 3em;
-              overflow: hidden;
+              max-width: 100%;
               word-wrap: break-word;
-            }
-            .price-container {
-              text-align: right;
-              min-width: 30%;
             }
             .price {
               font-size: ${size.priceSize};
               font-weight: bold;
-              white-space: nowrap;
+              margin: 1mm 0;
             }
             .unit {
-              font-size: calc(${size.fontSize} - 1px);
+              font-size: ${size.fontSize};
               color: #666;
-              margin-top: 1px;
+              margin-bottom: 2mm;
             }
             .barcode-section {
-              text-align: center;
-              margin-top: auto;
+              margin-top: 2mm;
             }
             .barcode {
               font-family: "Libre Barcode 128", monospace;
               font-size: ${size.barcodeHeight};
               line-height: ${size.barcodeHeight};
-              margin: 2mm 0;
             }
             .barcode-text {
               font-size: ${size.fontSize};
               font-family: monospace;
-              letter-spacing: 1px;
+              letter-spacing: 0.5px;
               margin-top: 1mm;
             }
             @media print {
@@ -258,25 +245,21 @@ export const ProductsManagement = () => {
     selectedProductsList.forEach(product => {
       const copies = labelCount[product.id] || 1;
       const unitText = product.unit || 'unité';
-      const pricePerUnit = product.type === 'weight' ? 'le kg' : unitText === 'carton' ? 'le carton' : 'la pièce';
+      const pricePerUnit = product.type === 'weight' ? 'le kilo' : unitText === 'carton' ? 'le carton' : 'la pièce';
       
       for (let i = 0; i < copies; i++) {
         htmlContent += `
           <div class="label">
-            <div class="header-row">
-              <div class="product-name">${product.name}</div>
-              ${showPrice ? `
-                <div class="price-container">
-                  <div class="price">${product.price.toFixed(2)} €</div>
-                  <div class="unit">${pricePerUnit}</div>
-                </div>
-              ` : ''}
-            </div>
+            <div class="product-name">${product.name}</div>
+            ${showPrice ? `
+              <div class="price">${product.price.toFixed(2)} €</div>
+              <div class="unit">${pricePerUnit}</div>
+            ` : ''}
             <div class="barcode-section">
               ${product.barcode ? `
                 <div class="barcode">*${product.barcode}*</div>
                 <div class="barcode-text">${product.barcode}</div>
-              ` : '<div style="font-size: 9px; color: #999;">Aucun code-barres</div>'}
+              ` : '<div style="font-size: 8px; color: #999;">Aucun code-barres</div>'}
             </div>
           </div>
         `;
