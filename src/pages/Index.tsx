@@ -747,10 +747,10 @@ const Index = () => {
     setPrefixQuantity(null); // Réinitialiser la quantité préfixe
   }, [products, handleProductSelect, prefixQuantity]);
 
-  // Physical barcode scanner using dedicated hook
+  // Physical barcode scanner using dedicated hook - Always enabled
   usePhysicalScanner({
     onScan: handleBarcodeScan,
-    enabled: isDayOpenEffective,
+    enabled: true, // Toujours actif, l'ouverture du jour se fait dans handleProductSelect
     minLength: 3,
     timeout: 350,
   });
@@ -937,19 +937,28 @@ const Index = () => {
     toast.success(newIsGift ? 'Article offert' : 'Cadeau annulé');
   };
   const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check', amountPaid?: number, metadata?: any) => {
-    // 1. Vérification panier
+    // 1. Vérification panier uniquement
     if (cart.length === 0) {
       toast.error('Panier vide');
       setPaymentDialogOpen(false);
       return;
     }
 
-    // 2. Mode facture - vérifier qu'un client est sélectionné
+    // 2. Ouvrir automatiquement la journée si fermée
+    if (!isDayOpenEffective) {
+      try {
+        await openDay.mutateAsync(0);
+        setIsDayOpenLocal(true);
+      } catch (error) {
+        console.error('Erreur ouverture jour:', error);
+        // Continue quand même
+      }
+    }
+
+    // 3. Si mode facture sans client, convertir en ticket
+    let finalIsInvoiceMode = isInvoiceMode;
     if (isInvoiceMode && !selectedCustomer) {
-      toast.info('Sélectionnez un client pour la facture');
-      setPaymentDialogOpen(false);
-      setCustomerDialogOpen(true);
-      return;
+      finalIsInvoiceMode = false;
     }
     
     // Map payment methods to DB enum types
@@ -967,9 +976,9 @@ const Index = () => {
       payment_method: dbPaymentMethod,
       amount_paid: amountPaid || totals.total,
       change_amount: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
-      is_invoice: method === 'customer_credit' ? false : isInvoiceMode,
+      is_invoice: method === 'customer_credit' ? false : finalIsInvoiceMode,
       is_cancelled: false,
-      cashier_id: user?.id || null,
+      cashier_id: user?.id,
       customer_id: selectedCustomer?.id,
       items: cart.map(item => ({
         product_id: item.product.id,
@@ -1016,7 +1025,7 @@ const Index = () => {
         paymentMethod: method,
         amountPaid: amountPaid || totals.total,
         change: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
-        is_invoice: method === 'customer_credit' ? false : isInvoiceMode, // Crédit = toujours ticket
+        is_invoice: method === 'customer_credit' ? false : finalIsInvoiceMode, // Crédit = toujours ticket
         customer: selectedCustomer
       };
       setCurrentSale(saleForReceipt);
@@ -1059,7 +1068,7 @@ const Index = () => {
       toast.success(
         method === 'customer_credit' 
           ? `Paiement à crédit enregistré`
-          : isInvoiceMode 
+          : finalIsInvoiceMode 
             ? 'Facture créée' 
             : 'Paiement validé'
       );
@@ -1156,42 +1165,42 @@ const Index = () => {
     method: 'cash' | 'card' | 'mobile';
     amount: number;
   }>) => {
-    if (!user) {
-      toast.error('Connectez-vous pour encaisser');
-      setMixedPaymentDialogOpen(false);
-      return;
-    }
-
-    // Validation du panier
+    // Validation du panier uniquement
     if (cart.length === 0) {
       toast.error('Le panier est vide');
       setMixedPaymentDialogOpen(false);
       return;
     }
 
-    // Validation des paiements
+    // Ouvrir automatiquement la journée si fermée
+    if (!isDayOpenEffective) {
+      try {
+        await openDay.mutateAsync(0);
+        setIsDayOpenLocal(true);
+      } catch (error) {
+        console.error('Erreur ouverture jour:', error);
+        // Continue quand même
+      }
+    }
+
+    // Si mode facture sans client, convertir en ticket
+    let finalIsInvoiceMode = isInvoiceMode;
+    if (isInvoiceMode && !selectedCustomer) {
+      finalIsInvoiceMode = false;
+    }
+
+    // Validation basique des paiements
     if (!payments || !Array.isArray(payments) || payments.length === 0) {
       toast.error('Aucun paiement fourni');
       return;
     }
 
-    // Vérifier que tous les montants sont valides
-    const hasInvalidAmount = payments.some(p => 
-      typeof p.amount !== 'number' || isNaN(p.amount) || p.amount <= 0
-    );
-    if (hasInvalidAmount) {
-      toast.error('Montants de paiement invalides');
-      return;
-    }
-
-    // Vérifier que le total correspond
-    const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
-    if (Math.abs(totalPaid - totals.total) > 0.01) {
-      toast.error('Le total des paiements ne correspond pas au montant dû', {
-        description: `Payé: ${totalPaid.toFixed(2)}€ / Dû: ${totals.total.toFixed(2)}€`
-      });
-      return;
-    }
+    // Calculer le total payé et ajuster automatiquement si nécessaire
+    const totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+    const difference = totalPaid - totals.total;
+    
+    // Si différence, calculer la monnaie automatiquement
+    const changeAmount = difference > 0 ? difference : 0;
 
     // Calculer le montant espèces pour le tiroir-caisse
     const cashAmount = payments.filter(p => p.method === 'cash').reduce((sum, p) => sum + p.amount, 0);
@@ -1208,12 +1217,12 @@ const Index = () => {
         ...acc,
         [p.method]: p.amount
       }), {}),
-      amount_paid: totals.total,
-      change_amount: 0,
-      is_invoice: isInvoiceMode,
+      amount_paid: totalPaid,
+      change_amount: changeAmount,
+      is_invoice: finalIsInvoiceMode,
       is_cancelled: false,
-      cashier_id: user.id,
-      customer_id: isInvoiceMode ? selectedCustomer?.id : undefined,
+      cashier_id: user?.id,
+      customer_id: finalIsInvoiceMode ? selectedCustomer?.id : undefined,
       items: cart.map(item => ({
         product_id: item.product.id,
         product_name: item.product.name,
