@@ -255,7 +255,7 @@ const Index = () => {
     },
     enabled: isOnMainPage, // Actif uniquement sur la page principale
     minLength: 8,
-    timeout: 250, // Augmenté à 250ms pour capturer tous les caractères
+    timeout: 350, // Augmenté à 350ms pour capturer tous les caractères
     captureInInputs: true, // Intercepte même si un champ de saisie est focus
   });
 
@@ -699,7 +699,7 @@ const Index = () => {
     onScan: handleBarcodeScan,
     enabled: isDayOpenEffective,
     minLength: 3,
-    timeout: 100,
+    timeout: 350,
   });
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-pos-display">

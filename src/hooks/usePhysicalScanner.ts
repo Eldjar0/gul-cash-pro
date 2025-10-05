@@ -24,7 +24,7 @@ export const usePhysicalScanner = ({
   onScan,
   enabled = true,
   minLength = 3,
-  timeout = 250, // Augmenté à 250ms pour capturer TOUS les caractères du scan
+  timeout = 350, // Augmenté à 350ms pour capturer tous les caractères (y compris le "6")
   captureInInputs = false,
 }: PhysicalScannerOptions) => {
   const normalizeBarcode = useCallback((raw: string): string => {
