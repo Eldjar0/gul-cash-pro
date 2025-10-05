@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useBlocker } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -36,6 +36,7 @@ import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { createSafeBroadcastChannel } from '@/lib/safeBroadcast';
@@ -194,6 +195,37 @@ const Index = () => {
   const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
   const [scannedBarcode, setScannedBarcode] = useState<string>('');
   const [scannedProduct, setScannedProduct] = useState<Product | null>(null);
+
+  // Protection contre la perte du panier en cours
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+
+  // Bloquer la navigation si panier non vide
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      cart.length > 0 && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  // Gérer le blocage de navigation
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      setLeaveConfirmOpen(true);
+      setPendingNavigation(() => () => blocker.proceed?.());
+    }
+  }, [blocker]);
+
+  // Bloquer la fermeture de fenêtre/onglet
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (cart.length > 0) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [cart.length]);
 
   // Calculer les promotions automatiques quand le panier change
   useEffect(() => {
@@ -2196,6 +2228,45 @@ const Index = () => {
           customerName={creditManagementCustomer.name}
         />
       )}
+
+      {/* Confirmation avant de quitter avec panier */}
+      <AlertDialog open={leaveConfirmOpen} onOpenChange={setLeaveConfirmOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Panier en cours
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              Vous avez <strong>{cart.length} article{cart.length > 1 ? 's' : ''}</strong> dans le panier.
+              <br />
+              Voulez-vous vraiment quitter cette page ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              blocker.reset?.();
+              setLeaveConfirmOpen(false);
+              setPendingNavigation(null);
+            }}>
+              Rester ici
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setCart([]);
+              setGlobalDiscount(null);
+              setAppliedPromoCode(null);
+              setSelectedCustomer(null);
+              setLeaveConfirmOpen(false);
+              if (pendingNavigation) {
+                pendingNavigation();
+                setPendingNavigation(null);
+              }
+            }} className="bg-destructive hover:bg-destructive/90">
+              Quitter et annuler
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>;
 };
 export default Index;
