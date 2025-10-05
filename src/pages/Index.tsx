@@ -1000,15 +1000,7 @@ const Index = () => {
             : 'Paiement validé'
       );
     } catch (error: any) {
-      // Gestion spéciale pour problèmes de stock
-      if (error?.message === 'STOCK_INSUFFICIENT' && error?.stockIssues) {
-        setStockIssues(error.stockIssues);
-        setPendingSaleData(saleData);
-        setStockOverrideDialogOpen(true);
-        setPaymentDialogOpen(false);
-        return;
-      }
-      
+      // Erreur lors de la création de la vente
       const errorMsg = error instanceof Error ? error.message : 'Erreur inconnue';
       
       // Messages d'erreur spécifiques avec solutions

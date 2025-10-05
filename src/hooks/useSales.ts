@@ -76,12 +76,8 @@ export const useCreateSale = () => {
         }
       }
       
-      // Si problèmes de stock et pas de forçage, lancer une erreur spéciale
-      if (stockIssues.length > 0 && !forceStockOverride) {
-        const error = new Error('STOCK_INSUFFICIENT');
-        (error as any).stockIssues = stockIssues;
-        throw error;
-      }
+      // Permettre les ventes avec stock négatif automatiquement
+      // Les avertissements de stock sont affichés visuellement dans le panier
 
       // Get sale number with correct format (ticket or invoice)
       const { data: saleNumber, error: numberError } = await supabase
