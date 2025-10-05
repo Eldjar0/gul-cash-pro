@@ -14,15 +14,10 @@ const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Sales = lazy(() => import("./pages/Sales"));
-const Refunds = lazy(() => import("./pages/Refunds"));
-const Analytics = lazy(() => import("./pages/Analytics"));
-const Promotions = lazy(() => import("./pages/Promotions"));
-const Suppliers = lazy(() => import("./pages/Suppliers"));
-const StockHistory = lazy(() => import("./pages/StockHistory"));
 const Products = lazy(() => import("./pages/Products"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Customers = lazy(() => import("./pages/Customers"));
-const Invoices = lazy(() => import("./pages/Invoices"));
+const Documents = lazy(() => import("./pages/Documents"));
 const CustomerDisplay = lazy(() => import("./pages/CustomerDisplay"));
 const LegalInfo = lazy(() => import("./pages/LegalInfo"));
 const GettingStarted = lazy(() => import("./pages/GettingStarted"));
@@ -30,7 +25,6 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const InvoiceCreate = lazy(() => import("./pages/InvoiceCreate"));
 const ClientsManagement = lazy(() => import("./pages/ClientsManagement"));
 const StockManagement = lazy(() => import("./pages/StockManagement"));
-const ReportsAnalytics = lazy(() => import("./pages/ReportsAnalytics"));
 const RemoteScanner = lazy(() => import("./pages/RemoteScanner"));
 const DownloadApp = lazy(() => import("./pages/DownloadApp"));
 const MobileManagement = lazy(() => import("./pages/MobileManagement"));
@@ -82,8 +76,7 @@ const App = () => (
             <Route path="/customers" element={<ProtectedRoute><ProtectedLayout><Customers /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/clients-management" element={<ProtectedRoute><ProtectedLayout><ClientsManagement /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/stock-management" element={<ProtectedRoute><ProtectedLayout><StockManagement /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/reports-analytics" element={<ProtectedRoute><ProtectedLayout><ReportsAnalytics /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/invoices" element={<ProtectedRoute><ProtectedLayout><Invoices /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/documents" element={<ProtectedRoute><ProtectedLayout><Documents /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/invoices/create" element={<ProtectedRoute><ProtectedLayout><InvoiceCreate /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><ProtectedLayout><Settings /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/legal-info" element={<ProtectedRoute><ProtectedLayout><LegalInfo /></ProtectedLayout></ProtectedRoute>} />

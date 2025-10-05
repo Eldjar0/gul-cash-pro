@@ -57,13 +57,13 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
     { icon: Receipt, label: "Ventes", path: "/sales" },
     { icon: Package, label: "Produits", path: "/products" },
     { icon: TrendingUp, label: "Dashboard", path: "/dashboard" },
-    { icon: FileText, label: "Factures", path: "/invoices" },
+    { icon: FileText, label: "Documents", path: "/documents" },
   ];
 
   const bottomMenuItems = [
     { icon: Truck, label: "Stock & Fournisseurs", path: "/stock-management" },
-    { icon: Users, label: "Clients & Fidélité", path: "/clients-management" },
-    { icon: BarChart3, label: "Analyses & Rapports", path: "/reports-analytics" },
+    { icon: Users, label: "Clients", path: "/customers" },
+    { icon: Tags, label: "Promotions & Remb.", path: "/clients-management" },
     { icon: Settings, label: "Configuration", path: "/settings" },
   ];
 
