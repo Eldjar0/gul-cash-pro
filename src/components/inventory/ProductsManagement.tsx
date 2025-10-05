@@ -10,6 +10,7 @@ import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } fro
 import { useCategories } from '@/hooks/useCategories';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
 import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
+import { ProductBarcodesManager } from '@/components/products/ProductBarcodesManager';
 import { usePhysicalScanner } from '@/hooks/usePhysicalScanner';
 import { PRODUCT_UNITS } from '@/data/units';
 import { useToast } from '@/hooks/use-toast';
@@ -606,6 +607,13 @@ export const ProductsManagement = () => {
               <Input id="min_stock" type="number" step="0.01" value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: e.target.value })} />
             </div>
           </div>
+          
+          {editingProduct && (
+            <div className="mt-4">
+              <ProductBarcodesManager productId={editingProduct.id} />
+            </div>
+          )}
+          
           <DialogFooter>
             <Button variant="secondary" onClick={() => setProductDialogOpen(false)}>Annuler</Button>
             <Button onClick={handleSaveProduct}>{editingProduct ? 'Enregistrer' : 'Créer'}</Button>

@@ -207,6 +207,28 @@ export const useSearchProducts = (search: string) => {
     queryFn: async () => {
       const trimmedSearch = search.trim();
       
+      // First try exact barcode match in product_barcodes table
+      const { data: barcodeMatch, error: barcodeError } = await supabase
+        .from('product_barcodes')
+        .select('product_id')
+        .eq('barcode', trimmedSearch)
+        .limit(1);
+
+      if (barcodeError) throw barcodeError;
+
+      if (barcodeMatch && barcodeMatch.length > 0) {
+        const { data: product, error: productError } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', barcodeMatch[0].product_id)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (productError) throw productError;
+        if (product) return [product];
+      }
+
+      // If no exact barcode match, do fuzzy search
       // Check if search is a number (for price search)
       const isNumber = !isNaN(Number(trimmedSearch)) && trimmedSearch !== '';
       
@@ -221,9 +243,8 @@ export const useSearchProducts = (search: string) => {
       // Build search conditions
       const conditions = [];
       
-      // Always search in name and barcode
+      // Always search in name
       conditions.push(`name.ilike.%${trimmedSearch}%`);
-      conditions.push(`barcode.ilike.%${trimmedSearch}%`);
       
       // If it's a number, also search by price
       if (isNumber) {
@@ -234,6 +255,18 @@ export const useSearchProducts = (search: string) => {
       // If it's a UUID, also search by ID
       if (isUUID) {
         conditions.push(`id.eq.${trimmedSearch}`);
+      }
+
+      // Search in product_barcodes table for fuzzy barcode matches
+      const { data: fuzzyBarcodes } = await supabase
+        .from('product_barcodes')
+        .select('product_id')
+        .ilike('barcode', `%${trimmedSearch}%`)
+        .limit(20);
+
+      if (fuzzyBarcodes && fuzzyBarcodes.length > 0) {
+        const productIds = fuzzyBarcodes.map(b => b.product_id);
+        conditions.push(`id.in.(${productIds.join(',')})`);
       }
       
       query = query.or(conditions.join(','));
