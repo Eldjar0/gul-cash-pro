@@ -21,6 +21,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Label } from '@/components/ui/label';
 import { generateStockPDF } from '@/utils/generateStockPDF';
 import JsBarcode from 'jsbarcode';
+import { LabelDesignEditor } from '@/components/inventory/LabelDesignEditor';
 
 const normalizeBarcodeInput = (raw: string) => {
   const map: Record<string, string> = {
@@ -63,6 +64,8 @@ export const ProductsManagement = () => {
   const [labelCount, setLabelCount] = useState<Record<string, number>>({});
   const [showPrice, setShowPrice] = useState(true);
   const [labelSize, setLabelSize] = useState<'small' | 'medium' | 'large' | '3x7cm'>('3x7cm');
+  const [designEditorOpen, setDesignEditorOpen] = useState(false);
+  const [labelTemplate, setLabelTemplate] = useState<string | null>(null);
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -545,14 +548,25 @@ export const ProductsManagement = () => {
 
               <div className="flex items-end">
                 <Button 
-                  onClick={generateLabels} 
-                  disabled={selectedProducts.size === 0}
+                  onClick={() => setDesignEditorOpen(true)}
+                  variant="outline"
                   className="w-full"
                 >
-                  <Printer className="h-4 w-4 mr-2" />
-                  Imprimer ({selectedProducts.size} produit{selectedProducts.size > 1 ? 's' : ''})
+                  <Edit className="h-4 w-4 mr-2" />
+                  Personnaliser le design
                 </Button>
               </div>
+            </div>
+
+            <div className="flex gap-2 mb-6">
+              <Button 
+                onClick={generateLabels} 
+                disabled={selectedProducts.size === 0}
+                className="flex-1"
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                Imprimer ({selectedProducts.size} produit{selectedProducts.size > 1 ? 's' : ''})
+              </Button>
             </div>
 
             <div className="relative mb-4">
@@ -681,6 +695,14 @@ export const ProductsManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <LabelDesignEditor
+        open={designEditorOpen}
+        onOpenChange={setDesignEditorOpen}
+        labelSize={labelSize}
+        onSaveTemplate={(template) => setLabelTemplate(template)}
+        currentTemplate={labelTemplate ? JSON.parse(labelTemplate) : null}
+      />
     </Tabs>
   );
 };
