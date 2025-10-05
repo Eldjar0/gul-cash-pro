@@ -62,7 +62,7 @@ export const ProductsManagement = () => {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [labelCount, setLabelCount] = useState<Record<string, number>>({});
   const [showPrice, setShowPrice] = useState(true);
-  const [labelSize, setLabelSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [labelSize, setLabelSize] = useState<'small' | 'medium' | 'large' | '3x7cm'>('3x7cm');
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -166,7 +166,8 @@ export const ProductsManagement = () => {
     const labelSizes = {
       small: { width: '60mm', height: '40mm', topSize: '7px', nameSize: '13px', priceSize: '24px', barcodeHeight: '40', barcodeNumSize: '8px' },
       medium: { width: '80mm', height: '50mm', topSize: '8px', nameSize: '16px', priceSize: '32px', barcodeHeight: '50', barcodeNumSize: '9px' },
-      large: { width: '100mm', height: '60mm', topSize: '9px', nameSize: '19px', priceSize: '40px', barcodeHeight: '60', barcodeNumSize: '10px' }
+      large: { width: '100mm', height: '60mm', topSize: '9px', nameSize: '19px', priceSize: '40px', barcodeHeight: '60', barcodeNumSize: '10px' },
+      '3x7cm': { width: '30mm', height: '70mm', topSize: '6px', nameSize: '11px', priceSize: '20px', barcodeHeight: '35', barcodeNumSize: '7px' }
     };
 
     const size = labelSizes[labelSize];
@@ -525,6 +526,7 @@ export const ProductsManagement = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="3x7cm">3x7cm (30x70mm)</SelectItem>
                     <SelectItem value="small">Petite (40×25mm)</SelectItem>
                     <SelectItem value="medium">Moyenne (60×40mm)</SelectItem>
                     <SelectItem value="large">Grande (80×50mm)</SelectItem>
