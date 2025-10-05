@@ -34,7 +34,7 @@ export const printGiftCardReceipt = (
       <meta charset="UTF-8">
       <title>Carte Cadeau - ${card.card_number}</title>
       <style>
-        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;600;700;800;900&display=swap');
         
         * {
           margin: 0;
@@ -48,212 +48,185 @@ export const printGiftCardReceipt = (
         }
 
         body {
-          font-family: 'Lato', sans-serif;
+          font-family: 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif;
           width: 80mm;
+          max-width: 302px;
           margin: 0 auto;
-          padding: 8mm 4mm;
+          padding: 8px;
+          padding-right: 24px;
           background: white;
-        }
-
-        .card-container {
-          background: white;
-          padding: 0;
+          font-size: 16.4px;
+          line-height: 1.3;
+          font-weight: 900;
+          overflow: hidden;
         }
 
         .header {
           text-align: center;
-          margin-bottom: 12px;
-          padding-bottom: 8px;
-          border-bottom: 2px dashed #333;
+          margin-bottom: 6px;
         }
 
         .gift-icon {
           font-size: 48px;
-          margin-bottom: 5px;
+          margin-bottom: 4px;
         }
 
         .company-name {
-          font-family: 'Playfair Display', serif;
-          font-size: 16px;
-          font-weight: 700;
-          color: #333;
-          margin-bottom: 3px;
+          font-size: 12.3px;
+          font-weight: 900;
+          line-height: 1.2;
+          margin-bottom: 2px;
         }
 
         .title {
-          font-family: 'Dancing Script', cursive;
-          font-size: 24px;
-          color: #000;
-          margin: 8px 0;
+          font-size: 16.4px;
+          font-weight: 900;
+          margin: 6px 0;
+        }
+
+        .divider {
+          border-top: 1.4px dashed #000;
+          margin: 6px 0;
         }
 
         .amount-section {
           text-align: center;
           background: #f5f5f5;
-          padding: 15px;
-          border-radius: 8px;
-          margin: 12px 0;
+          padding: 12px 8px;
+          margin: 6px 0;
         }
 
         .amount-label {
-          font-size: 11px;
-          color: #666;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          margin-bottom: 5px;
+          font-size: 12.3px;
+          font-weight: 900;
+          margin-bottom: 4px;
         }
 
         .amount {
-          font-family: 'Playfair Display', serif;
-          font-size: 36px;
-          font-weight: 700;
-          color: #000;
+          font-size: 24px;
+          font-weight: 900;
         }
 
         .card-info {
-          background: #f9f9f9;
-          padding: 12px;
-          border-radius: 6px;
-          margin: 12px 0;
-          border-left: 3px solid #333;
+          font-size: 12.3px;
+          font-weight: 900;
+          margin: 6px 0;
         }
 
         .info-row {
           display: flex;
           justify-content: space-between;
-          margin: 6px 0;
-          font-size: 10pt;
-          color: #333;
-        }
-
-        .info-label {
-          font-weight: 600;
-          color: #666;
+          margin: 2px 0;
         }
 
         .card-number {
           text-align: center;
           font-family: 'Courier New', monospace;
           font-size: 14px;
-          font-weight: 700;
-          color: #000;
-          background: #fff;
-          padding: 10px;
-          border-radius: 6px;
-          margin: 12px 0;
-          border: 2px dashed #333;
+          font-weight: 900;
+          background: #f5f5f5;
+          padding: 8px;
+          margin: 6px 0;
           letter-spacing: 2px;
         }
 
         .sender-section {
           background: #f9f9f9;
-          padding: 12px;
-          border-radius: 6px;
-          margin: 12px 0;
-          border-left: 3px solid #000;
+          padding: 8px;
+          margin: 6px 0;
+          font-size: 12.3px;
         }
 
         .sender-label {
-          font-size: 9px;
-          color: #666;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          margin-bottom: 5px;
-          font-weight: 600;
+          font-size: 10.9px;
+          font-weight: 900;
+          margin-bottom: 4px;
         }
 
         .sender-name {
-          font-family: 'Dancing Script', cursive;
-          font-size: 18px;
-          color: #000;
-          margin-bottom: 8px;
+          font-size: 14px;
+          font-weight: 900;
+          margin-bottom: 6px;
         }
 
         .message {
-          font-family: 'Lato', sans-serif;
-          font-size: 10pt;
-          color: #333;
-          line-height: 1.4;
+          font-size: 12.3px;
+          font-weight: 600;
+          line-height: 1.3;
           font-style: italic;
         }
 
         .footer {
           text-align: center;
-          margin-top: 15px;
-          padding-top: 12px;
-          border-top: 2px dashed #333;
+          margin-top: 8px;
+          padding-top: 6px;
+          border-top: 1.4px dashed #000;
         }
 
         .footer-text {
-          font-size: 9px;
-          color: #666;
-          line-height: 1.4;
-        }
-
-        .divider {
-          border-top: 1px dashed #ccc;
-          margin: 8px 0;
+          font-size: 10.9px;
+          font-weight: 900;
+          line-height: 1.3;
         }
 
         @media print {
           body {
-            padding: 4mm;
+            padding: 8px;
+            padding-right: 24px;
           }
         }
       </style>
     </head>
     <body>
-      <div class="card-container">
-        <div class="header">
-          <div class="gift-icon">🎁</div>
-          <div class="company-name">${COMPANY_INFO.name}</div>
-          <div class="title">Carte Cadeau</div>
-        </div>
+      <div class="header">
+        <div class="gift-icon">🎁</div>
+        <div class="company-name">${COMPANY_INFO.name}</div>
+        <div class="title">CARTE CADEAU</div>
+      </div>
 
+      <div class="divider"></div>
+
+      <div class="amount-section">
+        <div class="amount-label">SOLDE ACTUEL</div>
+        <div class="amount">${card.current_balance.toFixed(2)} €</div>
+      </div>
+
+      <div class="card-number">
+        ${card.card_number}
+      </div>
+
+      <div class="card-info">
+        <div class="info-row">
+          <span>DATE EMISSION:</span>
+          <span>${currentDate}</span>
+        </div>
         <div class="divider"></div>
-
-        <div class="amount-section">
-          <div class="amount-label">Solde Actuel</div>
-          <div class="amount">${card.current_balance.toFixed(2)}€</div>
+        <div class="info-row">
+          <span>VALEUR INITIALE:</span>
+          <span>${card.initial_balance.toFixed(2)} €</span>
         </div>
+      </div>
 
-        <div class="card-number">
-          ${card.card_number}
+      ${senderName || message ? `
+        <div class="divider"></div>
+        <div class="sender-section">
+          ${senderName ? `
+            <div class="sender-label">OFFERT PAR</div>
+            <div class="sender-name">${senderName}</div>
+          ` : ''}
+          ${message ? `
+            <div class="message">"${message}"</div>
+          ` : ''}
         </div>
+      ` : ''}
 
-        <div class="card-info">
-          <div class="info-row">
-            <span class="info-label">Date émission:</span>
-            <span>${currentDate}</span>
-          </div>
-          <div class="divider"></div>
-          <div class="info-row">
-            <span class="info-label">Valeur initiale:</span>
-            <span>${card.initial_balance.toFixed(2)}€</span>
-          </div>
-        </div>
-
-        ${senderName || message ? `
-          <div class="sender-section">
-            ${senderName ? `
-              <div class="sender-label">Offert par</div>
-              <div class="sender-name">${senderName}</div>
-            ` : ''}
-            ${message ? `
-              <div class="message">"${message}"</div>
-            ` : ''}
-          </div>
-        ` : ''}
-
-        <div class="footer">
-          <div class="footer-text">
-            <strong>Conservez cette carte</strong><br>
-            Valable jusqu'à épuisement du solde<br>
-            <br>
-            ${COMPANY_INFO.name}<br>
-            ${COMPANY_INFO.address}<br>
-            ${COMPANY_INFO.postalCode} ${COMPANY_INFO.city}
-          </div>
+      <div class="footer">
+        <div class="footer-text">
+          CONSERVEZ CETTE CARTE<br>
+          VALABLE JUSQU'A EPUISEMENT<br>
+          <br>
+          ${COMPANY_INFO.address}<br>
+          ${COMPANY_INFO.postalCode} ${COMPANY_INFO.city}
         </div>
       </div>
 
