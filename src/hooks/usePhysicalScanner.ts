@@ -23,7 +23,7 @@ export const usePhysicalScanner = ({
   onScan,
   enabled = true,
   minLength = 3,
-  timeout = 100,
+  timeout = 150, // Augmenté à 150ms pour capturer tous les caractères
 }: PhysicalScannerOptions) => {
   const normalizeBarcode = useCallback((raw: string): string => {
     return raw.split('').map(char => AZERTY_MAP[char] || char).join('').replace(/\D+/g, '').trim();
@@ -48,6 +48,7 @@ export const usePhysicalScanner = ({
       if (buffer.length >= minLength) {
         const normalized = normalizeBarcode(buffer);
         if (normalized.length >= minLength) {
+          console.log('[Scanner] Buffer brut:', buffer, '→ Normalisé:', normalized);
           onScan(normalized);
         }
       }
@@ -61,10 +62,10 @@ export const usePhysicalScanner = ({
       const now = Date.now();
       const timeDiff = now - lastKeyTime;
 
-      // Réinitialiser si trop de temps écoulé
-      if (timeDiff > timeout && buffer.length > 0) {
+      // Réinitialiser uniquement si vraiment trop de temps (500ms) et pas en scan actif
+      if (timeDiff > 500 && buffer.length > 0 && !isScanning) {
+        console.log('[Scanner] Reset buffer après inactivité:', buffer);
         buffer = '';
-        isScanning = false;
       }
 
       // Mettre à jour le timestamp
@@ -94,9 +95,10 @@ export const usePhysicalScanner = ({
         toAppend = AZERTY_MAP[e.key] || e.key;
       }
 
-      // Démarrer le scan si nécessaire et ajouter le premier caractère
-      if (!isScanning) {
+      // Démarrer le scan et ajouter le caractère
+      if (!isScanning && toAppend && toAppend.length === 1) {
         isScanning = true;
+        console.log('[Scanner] Début du scan, premier caractère:', toAppend);
       }
 
       if (toAppend && toAppend.length === 1) {
@@ -104,7 +106,7 @@ export const usePhysicalScanner = ({
         e.preventDefault();
         e.stopPropagation();
 
-        // Auto-traiter après timeout de silence
+        // Auto-traiter après timeout de silence (150ms)
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(processScan, timeout);
       }

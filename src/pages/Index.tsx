@@ -255,7 +255,7 @@ const Index = () => {
     },
     enabled: true,
     minLength: 8,
-    timeout: 100
+    timeout: 150 // Augmenté pour capturer tous les caractères
   });
 
   // Calculer les promotions automatiques quand le panier change
