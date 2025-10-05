@@ -47,9 +47,9 @@ export default function ContactInfo() {
               </p>
               
               <p className="text-justify">
-                La société <strong>JLprod</strong> certifie par la présente que le logiciel de caisse 
-                professionnel actuellement utilisé a été <strong>vendu définitivement</strong> à 
-                <strong> Gül Reyhan</strong>.
+                La société <strong>JLprod (TVA BE0784435238)</strong> certifie par la présente 
+                que le logiciel de caisse professionnel actuellement utilisé a été <strong>vendu 
+                définitivement</strong> à <strong> Gül Reyhan</strong>.
               </p>
               
               <p className="text-justify">
@@ -64,6 +64,30 @@ export default function ContactInfo() {
                 de modification et d&apos;exploitation sont transférés intégralement à 
                 <strong> Gül Reyhan</strong>.
               </p>
+
+              <div className="bg-blue-50 p-3 rounded border border-blue-200 my-3">
+                <p className="font-semibold text-blue-900 mb-2">🌐 Hébergement et Accès Serveur</p>
+                <p className="text-justify text-blue-900">
+                  L&apos;application web est actuellement <strong>hébergée chez JLprod</strong>. 
+                  Cependant, <strong>Gül Reyhan dispose d&apos;un accès complet au serveur</strong> 
+                  et possède tous les droits d&apos;administration.
+                </p>
+                <p className="text-justify text-blue-900 mt-2">
+                  <strong>Gül Reyhan est totalement libre</strong> de :
+                </p>
+                <ul className="mt-2 space-y-1 ml-4 text-blue-900">
+                  <li>• Accéder au code source complet de l&apos;application</li>
+                  <li>• Modifier le code source selon ses besoins</li>
+                  <li>• Changer d&apos;hébergeur à tout moment</li>
+                  <li>• Migrer l&apos;application vers un autre serveur</li>
+                  <li>• Gérer l&apos;infrastructure comme il le souhaite</li>
+                  <li>• Faire appel à d&apos;autres développeurs</li>
+                </ul>
+                <p className="text-justify text-blue-900 mt-2 font-semibold">
+                  Aucune restriction n&apos;est imposée par JLprod concernant l&apos;hébergement, 
+                  la modification ou le transfert de l&apos;application.
+                </p>
+              </div>
               
               <div className="pt-3 border-t mt-4">
                 <p className="text-xs text-muted-foreground text-center">
