@@ -74,6 +74,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { InvoiceEditor } from '@/components/invoices/InvoiceEditor';
 
 export default function Documents() {
   const navigate = useNavigate();
@@ -96,6 +97,8 @@ export default function Documents() {
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [invoiceToUpdate, setInvoiceToUpdate] = useState<any>(null);
   const [newStatus, setNewStatus] = useState<string>('');
+  const [invoiceEditorOpen, setInvoiceEditorOpen] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | undefined>(undefined);
 
   const { data: sales = [], isLoading } = useSales();
   const { data: refunds = [], isLoading: refundsLoading } = useRefunds();
@@ -650,7 +653,7 @@ export default function Documents() {
                       <p className="text-sm text-muted-foreground">{filteredInvoices.length} facture{filteredInvoices.length > 1 ? 's' : ''}</p>
                     </div>
                   </div>
-                  <Button onClick={() => navigate('/invoices/create')} size="sm">
+                  <Button onClick={() => { setEditingInvoiceId(undefined); setInvoiceEditorOpen(true); }} size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Nouvelle Facture
                   </Button>
@@ -733,7 +736,7 @@ export default function Documents() {
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  onClick={() => { setSaleToEdit(invoice); setEditDialogOpen(true); }} 
+                                  onClick={() => { setEditingInvoiceId(invoice.id); setInvoiceEditorOpen(true); }} 
                                   className="h-8 text-orange-600"
                                 >
                                   <Edit className="h-4 w-4" />
@@ -1005,6 +1008,12 @@ export default function Documents() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <InvoiceEditor 
+        open={invoiceEditorOpen} 
+        onOpenChange={setInvoiceEditorOpen}
+        invoiceId={editingInvoiceId}
+      />
     </div>
   );
 }
