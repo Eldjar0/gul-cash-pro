@@ -195,6 +195,28 @@ const Index = () => {
   const [scannedBarcode, setScannedBarcode] = useState<string>('');
   const [scannedProduct, setScannedProduct] = useState<Product | null>(null);
 
+  // Calculer les promotions automatiques quand le panier change
+  useEffect(() => {
+    if (activePromotions && cart.length > 0) {
+      const customerType = selectedCustomer ? 'professional' : null;
+      const cartForPromo = cart.map(item => ({
+        product_id: item.product.id,
+        quantity: item.quantity,
+        unit_price: item.custom_price ?? item.product.price,
+        total: item.total
+      }));
+      
+      const promoResult = calculateDiscount(cartForPromo, activePromotions, customerType);
+      if (promoResult.discount > 0) {
+        setAppliedAutoPromotion(promoResult.appliedPromo);
+      } else {
+        setAppliedAutoPromotion(null);
+      }
+    } else {
+      setAppliedAutoPromotion(null);
+    }
+  }, [cart, activePromotions, selectedCustomer]);
+
   // Calculate totals - defined before useEffect to avoid initialization errors
   const getTotals = () => {
     const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
@@ -221,7 +243,7 @@ const Index = () => {
     }
     
     // Appliquer les promotions automatiques
-    if (activePromotions && cart.length > 0) {
+    if (appliedAutoPromotion && cart.length > 0) {
       const customerType = selectedCustomer ? 'professional' : null;
       const cartForPromo = cart.map(item => ({
         product_id: item.product.id,
@@ -230,14 +252,9 @@ const Index = () => {
         total: item.total
       }));
       
-      const promoResult = calculateDiscount(cartForPromo, activePromotions, customerType);
-      if (promoResult.discount > 0) {
-        autoPromotionAmount = promoResult.discount;
-        total -= autoPromotionAmount;
-        setAppliedAutoPromotion(promoResult.appliedPromo);
-      } else {
-        setAppliedAutoPromotion(null);
-      }
+      const promoResult = calculateDiscount(cartForPromo, [appliedAutoPromotion], customerType);
+      autoPromotionAmount = promoResult.discount;
+      total -= autoPromotionAmount;
     }
     
     const totalDiscount = itemDiscounts + globalDiscountAmount + promoCodeAmount + autoPromotionAmount;
