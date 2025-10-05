@@ -424,37 +424,62 @@ const Index = () => {
 
   // Calcul du total d'un article avec TVA TTC
   const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount'], customPrice?: number, isGift?: boolean) => {
+    // Validation des inputs
+    if (!product || typeof quantity !== 'number' || isNaN(quantity) || quantity <= 0) {
+      return { subtotal: 0, vatAmount: 0, total: 0 };
+    }
+    
     const unitPriceTTC = customPrice ?? product.price;
+    if (typeof unitPriceTTC !== 'number' || isNaN(unitPriceTTC) || unitPriceTTC < 0) {
+      return { subtotal: 0, vatAmount: 0, total: 0 };
+    }
 
     // Prix TTC → HT : diviser par (1 + taux_TVA/100)
-    const unitPriceHT = unitPriceTTC / (1 + product.vat_rate / 100);
+    const vatRate = product.vat_rate || 0;
+    const unitPriceHT = unitPriceTTC / (1 + vatRate / 100);
     const subtotal = unitPriceHT * quantity;
-    const vatAmount = subtotal * (product.vat_rate / 100);
+    const vatAmount = subtotal * (vatRate / 100);
+    
     let discountAmount = 0;
-    if (discount) {
+    if (discount && typeof discount.value === 'number' && !isNaN(discount.value)) {
       const totalTTC = unitPriceTTC * quantity;
-      discountAmount = discount.type === 'percentage' ? totalTTC * discount.value / 100 : discount.value;
+      discountAmount = discount.type === 'percentage' 
+        ? totalTTC * Math.min(discount.value, 100) / 100 
+        : Math.min(discount.value, totalTTC);
     }
     
     // Si c'est un cadeau, le total est 0
-    const total = isGift ? 0 : (unitPriceTTC * quantity - discountAmount);
+    const total = isGift ? 0 : Math.max(0, unitPriceTTC * quantity - discountAmount);
     
     return {
-      subtotal: isGift ? 0 : subtotal,
-      vatAmount: isGift ? 0 : vatAmount,
-      total
+      subtotal: isGift ? 0 : Math.max(0, subtotal),
+      vatAmount: isGift ? 0 : Math.max(0, vatAmount),
+      total: Math.max(0, total)
     };
   };
 
   // Gestion de la sélection de produit - MUST BE BEFORE handleBarcodeScan
   const handleProductSelect = (product: Product, quantity?: number) => {
+    if (!product || !product.id) {
+      toast.error('Produit invalide');
+      return;
+    }
+    
     const qty = quantity || parseFloat(quantityInput) || 1;
+    if (isNaN(qty) || qty <= 0) {
+      toast.error('Quantité invalide');
+      return;
+    }
+    
+    const maxQuantity = 10000;
+    const validQty = Math.min(qty, maxQuantity);
+    
     setCart(prevCart => {
       const existingItemIndex = prevCart.findIndex(item => item.product.id === product.id);
       if (existingItemIndex !== -1) {
         const newCart = [...prevCart];
         const existingItem = newCart[existingItemIndex];
-        const newQuantity = existingItem.quantity + qty;
+        const newQuantity = existingItem.quantity + validQty;
         const totals = calculateItemTotal(product, newQuantity, existingItem.discount, existingItem.custom_price);
         newCart[existingItemIndex] = {
           ...existingItem,
@@ -463,10 +488,10 @@ const Index = () => {
         };
         return newCart;
       } else {
-        const totals = calculateItemTotal(product, qty);
+        const totals = calculateItemTotal(product, validQty);
         const newItem: CartItem = {
           product,
-          quantity: qty,
+          quantity: validQty,
           ...totals
         };
         return [...prevCart, newItem];
@@ -878,23 +903,48 @@ const Index = () => {
 
   // Gestionnaire pour charger un panier sauvegardé
   const handleLoadCart = (cartData: any) => {
+    if (!cartData || !Array.isArray(cartData)) {
+      toast.error('Données de panier invalides');
+      return;
+    }
+    
+    // Valider que les items ont les propriétés nécessaires
+    const validCart = cartData.every(item => 
+      item && 
+      item.product && 
+      typeof item.quantity === 'number' && 
+      item.quantity > 0
+    );
+    
+    if (!validCart) {
+      toast.error('Le panier contient des données invalides');
+      return;
+    }
+    
     setCart(cartData);
     toast.success('Panier chargé');
   };
 
   // Gestionnaires pour le dialog de scan physique
   const handlePhysicalScanAddToCart = () => {
-    if (scannedProduct) {
+    if (scannedProduct && scannedProduct.id) {
       handleProductSelect(scannedProduct);
+      setPhysicalScanDialogOpen(false);
     }
   };
+  
   const handlePhysicalScanViewProduct = () => {
-    if (scannedProduct) {
+    if (scannedProduct && scannedProduct.id) {
       navigate(`/products?id=${scannedProduct.id}`);
+      setPhysicalScanDialogOpen(false);
     }
   };
+  
   const handlePhysicalScanCreateProduct = () => {
-    navigate(`/products?new=1&barcode=${encodeURIComponent(scannedBarcode)}`);
+    if (scannedBarcode && scannedBarcode.length >= 3) {
+      navigate(`/products?new=1&barcode=${encodeURIComponent(scannedBarcode)}`);
+      setPhysicalScanDialogOpen(false);
+    }
   };
 
   // Gestionnaire pour paiement mixte
@@ -1007,21 +1057,43 @@ const Index = () => {
     setReceiptDialogOpen(true);
   };
   const handleApplyPromoCode = (code: string, type: 'percentage' | 'amount', value: number) => {
+    if (!code || typeof code !== 'string' || typeof value !== 'number' || isNaN(value)) {
+      toast.error('Code promo invalide');
+      return;
+    }
+    
+    const sanitizedCode = code.trim().slice(0, 50);
+    const maxValue = type === 'percentage' ? 100 : 10000;
+    const validValue = Math.min(Math.max(0, value), maxValue);
+    
     setAppliedPromoCode({
-      code,
+      code: sanitizedCode,
       type,
-      value
+      value: validValue
     });
+    toast.success(`Code promo "${sanitizedCode}" appliqué`);
   };
   const handleApplyDiscount = (type: DiscountType, value: number) => {
     if (!discountTarget) return;
+    
+    // Validation
+    if (typeof value !== 'number' || isNaN(value) || value < 0) {
+      toast.error('Valeur de remise invalide');
+      return;
+    }
+    
+    const maxValue = type === 'percentage' ? 100 : 10000;
+    const validValue = Math.min(value, maxValue);
+    
     if (discountTarget.type === 'item' && discountTarget.index !== undefined) {
       // Remise sur un article
       const newCart = [...cart];
       const item = newCart[discountTarget.index];
+      if (!item) return;
+      
       const discount = {
         type,
-        value
+        value: validValue
       };
       const {
         subtotal,
@@ -1041,7 +1113,7 @@ const Index = () => {
       // Remise globale
       setGlobalDiscount({
         type,
-        value
+        value: validValue
       });
       toast.success('Remise globale appliquée');
     }
@@ -1049,8 +1121,12 @@ const Index = () => {
     setDiscountTarget(null);
   };
   const handleRemoveDiscount = (index: number) => {
+    if (typeof index !== 'number' || index < 0) return;
+    
     const newCart = [...cart];
     const item = newCart[index];
+    if (!item) return;
+    
     const {
       subtotal,
       vatAmount,
@@ -1142,33 +1218,71 @@ const Index = () => {
     }
   };
   const handleOpenDay = (openingAmount: number) => {
+    if (typeof openingAmount !== 'number' || isNaN(openingAmount) || openingAmount < 0) {
+      toast.error('Montant d\'ouverture invalide');
+      return;
+    }
+    
     openDay.mutate(openingAmount, {
       onSuccess: () => {
         setIsDayOpenLocal(true);
         setOpenDayDialogOpen(false);
+        toast.success('Journée ouverte');
+      },
+      onError: (error) => {
+        toast.error('Erreur lors de l\'ouverture', {
+          description: 'Veuillez réessayer'
+        });
       }
     });
   };
   const handleCloseDay = async (closingAmount: number, archiveAndDelete?: boolean) => {
-    if (!todayReport) return;
-    const data = await getTodayReportData();
-    closeDay.mutate({
-      reportId: todayReport.id,
-      closingAmount,
-      reportData: data
-    }, {
-      onSuccess: () => {
-        setIsDayOpenLocal(false);
-        setCloseDayDialogOpen(false);
-      }
-    });
-
-    // L'archivage et la suppression sont déjà gérés dans CloseDayDialog
+    if (!todayReport) {
+      toast.error('Aucun rapport à clôturer');
+      return;
+    }
+    
+    if (typeof closingAmount !== 'number' || isNaN(closingAmount) || closingAmount < 0) {
+      toast.error('Montant de clôture invalide');
+      return;
+    }
+    
+    try {
+      const data = await getTodayReportData();
+      closeDay.mutate({
+        reportId: todayReport.id,
+        closingAmount,
+        reportData: data
+      }, {
+        onSuccess: () => {
+          setIsDayOpenLocal(false);
+          setCloseDayDialogOpen(false);
+          toast.success('Journée clôturée');
+        },
+        onError: (error) => {
+          toast.error('Erreur lors de la clôture', {
+            description: 'Veuillez réessayer'
+          });
+        }
+      });
+    } catch (error) {
+      toast.error('Erreur lors de la récupération des données');
+    }
   };
   const handleReportX = async () => {
-    const data = await getTodayReportData();
-    setReportData(data);
-    setReportXDialogOpen(true);
+    try {
+      const data = await getTodayReportData();
+      if (data) {
+        setReportData(data);
+        setReportXDialogOpen(true);
+      } else {
+        toast.error('Aucune donnée disponible pour le rapport');
+      }
+    } catch (error) {
+      toast.error('Erreur lors de la génération du rapport', {
+        description: 'Veuillez réessayer'
+      });
+    }
   };
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   return <div className="h-full flex flex-col bg-background overflow-hidden">
