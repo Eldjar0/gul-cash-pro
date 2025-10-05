@@ -30,6 +30,7 @@ import {
   FolderOpen,
   Undo2,
   Split,
+  UserCog,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -1857,17 +1858,48 @@ const Index = () => {
                 </div>
               </>
             ) : (
-              <>
+              <div className="flex flex-col h-full">
                 <h2 className="text-foreground font-bold text-sm mb-4 px-2 flex items-center gap-2">
                   <div className="h-1 w-1 rounded-full bg-primary"></div>
                   CATÉGORIES
                 </h2>
-                <CategoryGrid 
-                  onProductSelect={handleProductSelect} 
-                  onCategorySelect={setSelectedCategory}
-                  selectedCategory={selectedCategory}
-                />
-              </>
+                <div className="flex-1 overflow-hidden">
+                  <CategoryGrid 
+                    onProductSelect={handleProductSelect} 
+                    onCategorySelect={setSelectedCategory}
+                    selectedCategory={selectedCategory}
+                  />
+                </div>
+                
+                {/* Info Caissier et Stats en bas */}
+                <div className="mt-2 p-2 bg-gradient-to-br from-primary/5 to-secondary/5 border-t-2 border-primary/20 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <UserCog className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground font-medium">Caissier</div>
+                        <div className="text-xs font-bold text-foreground">{user?.email?.split('@')[0] || 'Utilisateur'}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] text-muted-foreground font-medium">Session</div>
+                      <div className="text-xs font-bold text-primary">{isDayOpenEffective ? 'OUVERTE' : 'FERMÉE'}</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-[10px]">
+                    <div className="bg-white/50 rounded p-1.5 text-center">
+                      <div className="text-muted-foreground">Ventes</div>
+                      <div className="font-bold text-primary">{todaySales?.filter(s => !s.is_cancelled).length || 0}</div>
+                    </div>
+                    <div className="bg-white/50 rounded p-1.5 text-center">
+                      <div className="text-muted-foreground">CA Jour</div>
+                      <div className="font-bold text-green-600">{(todaySales?.filter(s => !s.is_cancelled).reduce((sum, s) => sum + s.total, 0) || 0).toFixed(2)}€</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
