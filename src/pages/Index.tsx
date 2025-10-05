@@ -1400,7 +1400,7 @@ const Index = () => {
           {/* Payment buttons - Modern JL Prod style */}
           <div className="bg-background p-1.5 space-y-1.5 border-t-2 border-border flex-shrink-0">
             {/* Nouveaux boutons fonctionnalités */}
-            <div className="grid grid-cols-3 gap-1 mb-1">
+            <div className="grid grid-cols-4 gap-1 mb-1">
               <Button variant="outline" size="sm" onClick={() => setSavedCartsDialogOpen(true)} className="h-7 text-[9px] border-blue-500 text-blue-500 hover:bg-blue-500/10" title="Paniers sauvegardés">
                 <FolderOpen className="h-3 w-3 mr-0.5" />
                 Charger
@@ -1416,6 +1416,10 @@ const Index = () => {
               <Button variant="outline" size="sm" onClick={() => setRefundDialogOpen(true)} className="h-7 text-[9px] border-orange-500 text-orange-500 hover:bg-orange-500/10" title="Créer un remboursement">
                 <Undo2 className="h-3 w-3 mr-0.5" />
                 Rembour.
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/payments')} className="h-7 text-[9px] border-pink-500 text-pink-500 hover:bg-pink-500/10" title="Gérer les cartes cadeaux">
+                <Gift className="h-3 w-3 mr-0.5" />
+                Cartes
               </Button>
             </div>
             
