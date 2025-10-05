@@ -818,7 +818,7 @@ const Index = () => {
       cashier_id: user.id,
       customer_id: isInvoiceMode ? selectedCustomer?.id : undefined,
       items: cart.map(item => ({
-        product_id: item.product.id,
+        product_id: item.is_gift_card ? null : item.product.id,
         product_name: item.product.name,
         product_barcode: item.product.barcode,
         quantity: item.quantity,
@@ -832,6 +832,32 @@ const Index = () => {
       }))
     };
     try {
+      // Créer les cartes cadeaux qui sont dans le panier
+      const giftCardItems = cart.filter(item => item.is_gift_card && item.gift_card_data);
+      const createdGiftCards: any[] = [];
+      
+      for (const giftCardItem of giftCardItems) {
+        try {
+          const newCard = await createGiftCard.mutateAsync({
+            card_number: giftCardItem.gift_card_data!.cardNumber,
+            initial_balance: giftCardItem.total,
+            current_balance: giftCardItem.total,
+            card_type: 'gift_card',
+            sender_name: giftCardItem.gift_card_data!.senderName,
+            message: giftCardItem.gift_card_data!.message
+          });
+          createdGiftCards.push({
+            card: newCard,
+            senderName: giftCardItem.gift_card_data!.senderName,
+            message: giftCardItem.gift_card_data!.message
+          });
+        } catch (error) {
+          console.error('Error creating gift card:', error);
+          toast.error('Erreur lors de la création de la carte cadeau');
+          return;
+        }
+      }
+
       const sale = await createSale.mutateAsync(saleData);
 
       // Si une carte cadeau est appliquée, l'utiliser
@@ -871,6 +897,17 @@ const Index = () => {
         } : undefined
       };
       setCurrentSale(saleForReceipt);
+      
+      // Imprimer les reçus des cartes cadeaux créées
+      if (createdGiftCards.length > 0) {
+        setTimeout(() => {
+          createdGiftCards.forEach(({ card, senderName, message }) => {
+            printGiftCardReceipt(card, senderName, message, () => {
+              console.log('Gift card receipt printed');
+            });
+          });
+        }, 500);
+      }
 
       // Mettre à jour l'affichage client avec statut "completed"
       const completedState = {
