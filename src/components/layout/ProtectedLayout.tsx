@@ -4,6 +4,7 @@ import { PinLockDialog } from '../pos/PinLockDialog';
 import { useStockAlerts } from '@/hooks/useStockAlerts';
 import { usePromotionAlerts } from '@/hooks/usePromotionAlerts';
 import { useDailyReportReminder } from '@/hooks/useDailyReportReminder';
+import { useCustomerMilestoneAlerts } from '@/hooks/useCustomerMilestoneAlerts';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ export function ProtectedLayout({ children }: ProtectedLayoutProps) {
   useStockAlerts();
   usePromotionAlerts();
   useDailyReportReminder();
+  useCustomerMilestoneAlerts();
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">

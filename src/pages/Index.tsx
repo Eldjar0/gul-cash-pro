@@ -40,6 +40,7 @@ import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { Receipt } from '@/components/pos/Receipt';
 import { PinLockDialog } from '@/components/pos/PinLockDialog';
+import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 import { PhysicalScanActionDialog } from '@/components/pos/PhysicalScanActionDialog';
@@ -169,6 +170,7 @@ const Index = () => {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   
   // New features states
+  const [savedCartsDialogOpen, setSavedCartsDialogOpen] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -355,8 +357,8 @@ const Index = () => {
   // Normalisation AZERTY → chiffres pour les codes-barres
   const normalizeBarcode = (raw: string): string => {
     const azertyMap: Record<string, string> = {
-      '&': '1', '!': '1', 'é': '2', '@': '2', '\"': '3', '#': '3', 
-      '\'': '4', '$': '4', '(': '5', '%': '5', '-': '6', '^': '6',
+      '&': '1', '!': '1', 'é': '2', '@': '2', '"': '3', '#': '3', 
+      "'": '4', '$': '4', '(': '5', '%': '5', '-': '6', '^': '6',
       'è': '7', '_': '8', '*': '8', 'ç': '9', 
       'à': '0', ')': '0', '§': '6'
     };
@@ -478,249 +480,772 @@ const Index = () => {
     }
 
     if (found) {
+      if (DEBUG_SCAN) console.log('[SCAN] Product found:', found.name);
       handleProductSelect(found);
-      toast.success(`${found.name} ajouté`);
-      if (DEBUG_SCAN) {
-        console.log('[SCAN] Product found:', found.name, found.barcode);
-      }
-    } else {
-      toast.error('Produit non trouvé');
-      if (DEBUG_SCAN) {
-        console.warn('[SCAN] Product not found for:', normalized, normalizedDigits);
-      }
-    }
-  };
-
-  // Fonction de recherche (externaliser pour pouvoir être appelée)
-  const handleSearch = () => {
-    const q = scanInput.trim().toLowerCase();
-    if (!q) {
+      setScanInput("");
       setSearchResults([]);
       return;
     }
 
-    const results = products?.filter((p) => {
-      const catName = categories?.find((c) => c.id === p.category_id)?.name?.toLowerCase() || '';
-      return (
-        p.name.toLowerCase().includes(q) ||
-        p.barcode?.toLowerCase().includes(q) ||
-        catName.includes(q)
+    // Si inconnu, afficher un toast avec action pour créer
+    const barcodeToUse = normalizedDigits.length >= 3 ? normalizedDigits : normalized;
+    if (DEBUG_SCAN) console.log('[SCAN] Unknown barcode:', barcodeToUse);
+    toast.error('Code-barres inconnu', {
+      description: `Aucun produit lié à ${barcodeToUse}`,
+      action: {
+        label: 'Créer produit',
+        onClick: () => navigate(`/products?new=1&barcode=${encodeURIComponent(barcodeToUse)}`),
+      },
+    });
+    setScanInput("");
+  };
+
+  // Détection ultra-robuste des scans de lecteur code-barres (HID)
+  useEffect(() => {
+    const DEBUG_SCAN = true; // ACTIVÉ pour debug
+    let buffer = "";
+    let lastKeyTime = 0;
+    let isScanning = false;
+    let timeoutId: NodeJS.Timeout | null = null;
+    let scanStartTime = 0;
+
+    const isEditableField = (target: EventTarget | null): boolean => {
+      if (!target || !(target instanceof HTMLElement)) return false;
+      
+      // Si un dialogue est ouvert, ignorer TOUS les scans
+      const hasOpenDialog = document.querySelector('[role="dialog"]') !== null;
+      if (hasOpenDialog) return true;
+      
+      // Vérifier si l'élément ou un parent a l'attribut data-scan-ignore
+      let element: HTMLElement | null = target;
+      while (element) {
+        if (element.hasAttribute('data-scan-ignore')) {
+          return true;
+        }
+        element = element.parentElement;
+      }
+      
+      const tagName = target.tagName.toLowerCase();
+      const isContentEditable = target.isContentEditable;
+      const isInput = tagName === 'input' || tagName === 'textarea' || tagName === 'select';
+      
+      return isInput || isContentEditable;
+    };
+
+    // Convertit un événement clavier en chiffre fiable, indépendamment du layout (AZERTY/Numpad)
+    const mapEventToDigit = (e: KeyboardEvent): string | null => {
+      const code = e.code;
+
+      // 1) Rangée de chiffres physique (Digit0..Digit9) - PRIORITÉ ABSOLUE
+      if (code && code.startsWith('Digit')) {
+        const d = code.replace('Digit', '');
+        return /^[0-9]$/.test(d) ? d : null;
+      }
+
+      // 2) Pavé numérique (Numpad0..Numpad9)
+      if (code && code.startsWith('Numpad')) {
+        const d = code.replace('Numpad', '');
+        return /^[0-9]$/.test(d) ? d : null;
+      }
+
+      // 3) UNIQUEMENT si code n'est pas disponible (très rare)
+      if (!code && /^[0-9]$/.test(e.key)) {
+        return e.key;
+      }
+
+      return null;
+    };
+
+    const processScan = () => {
+      if (buffer.length >= 3) {
+        const duration = Date.now() - scanStartTime;
+        console.log('[SCAN] 🔍 Processing:', buffer, `(${duration}ms, ${buffer.length} chars)`);
+        handlePhysicalScan(buffer);
+      }
+      buffer = "";
+      isScanning = false;
+      scanStartTime = 0;
+    };
+
+    const handler = (e: KeyboardEvent) => {
+      // Ignorer si fenêtre inactive
+      if (document.hidden) return;
+
+      const now = Date.now();
+      const delta = now - lastKeyTime;
+      lastKeyTime = now;
+
+      // Touches de finalisation envoyées par certains lecteurs
+      if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'NumpadEnter') {
+        if (isScanning && buffer.length >= 3) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (timeoutId) clearTimeout(timeoutId);
+          processScan();
+        }
+        return;
+      }
+
+      // On ne s'intéresse qu'aux touches imprimables pour les chiffres
+      if (e.key.length === 1) {
+        // Pas de reset en cours de scan; on laisse le timeout finaliser
+        if (!isScanning && delta > 400 && buffer.length > 0) {
+          if (DEBUG_SCAN) console.log('[SCAN] Reset: delta trop grand hors scan', delta);
+          buffer = "";
+          isScanning = false;
+          scanStartTime = 0;
+        }
+
+        const digit = mapEventToDigit(e);
+
+        // Première touche: démarrer le scan SI PAS dans un champ éditable
+        if (buffer.length === 0) {
+          if (isEditableField(e.target)) {
+            // Laisser l'utilisateur taper normalement dans les champs
+            return;
+          }
+          // Démarre un scan uniquement si on reçoit bien un chiffre
+          if (digit !== null) {
+            scanStartTime = now;
+            isScanning = true;
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('[SCAN] 🚀 Start detected, code:', e.code, '→ digit:', digit);
+            buffer += digit;
+          } else {
+            // Pas un chiffre → ignorer
+            return;
+          }
+        } else {
+          // Déjà en cours de scan
+          if (digit !== null) {
+            // Deuxième touche: si < 50ms, on confirme le scan
+            if (buffer.length === 1 && delta < 50) {
+              isScanning = true;
+              console.log('[SCAN] ✓ Confirmed (fast typing)');
+            }
+            console.log('[SCAN] 📥 Adding digit:', digit, 'from code:', e.code);
+            buffer += digit;
+            // Empêcher toute écriture à l'écran pendant le scan
+            e.preventDefault();
+            e.stopPropagation();
+          } else {
+            // Non chiffre au milieu d'un scan → ignorer mais ne pas casser le flux
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
+
+        // Timeout: finaliser si pas de nouvelle touche après 500ms
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (buffer.length >= 8) {
+            console.log('[SCAN] ⏱️ Auto-finalize (timeout)');
+            processScan();
+          } else if (buffer.length > 0) {
+            // Trop court, probablement pas un scan
+            console.log('[SCAN] ❌ Reset: trop court', buffer);
+            buffer = "";
+            isScanning = false;
+            scanStartTime = 0;
+          }
+        }, 500);
+      }
+    };
+
+    // Utiliser seulement keydown pour éviter les doublons (keypress est obsolète)
+    window.addEventListener('keydown', handler, { capture: true });
+
+    return () => {
+      window.removeEventListener('keydown', handler, { capture: true } as any);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [products]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-pos-display">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pos-success mx-auto mb-4"></div>
+          <p className="text-white font-medium">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleSearch = () => {
+    if (!scanInput.trim() || !products) {
+      setSearchResults([]);
+      return;
+    }
+
+    const strip = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const normalizedInput = normalizeBarcode(scanInput);
+    const searchTerm = strip(scanInput);
+    const trimmedSearch = scanInput.trim();
+    const hasDigits = normalizedInput.length > 0;
+    
+    // Détection du type de recherche
+    const isNumber = !isNaN(Number(trimmedSearch)) && trimmedSearch !== '';
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedSearch);
+    
+    // Recherche exacte par code-barres normalisé d'abord
+    const exactBarcode = products.find(p => 
+      p.barcode && normalizeBarcode(p.barcode) === normalizedInput
+    );
+    if (exactBarcode) {
+      // Ajout direct au panier
+      handleProductSelect(exactBarcode);
+      return;
+    }
+
+    // Si pas de correspondance exacte, recherche générale multi-critères
+    let results = products.filter((p) => {
+      const normalizedBarcode = p.barcode ? normalizeBarcode(p.barcode) : '';
+      const name = strip(p.name);
+      const desc = p.description ? strip(p.description) : '';
+      const idStr = strip(p.id);
+      
+      // Recherche de base (nom, code-barres, description)
+      let matches = (
+        (hasDigits && normalizedBarcode.includes(normalizedInput)) ||
+        (p.barcode && strip(p.barcode).includes(searchTerm)) ||
+        name.includes(searchTerm) ||
+        idStr.includes(searchTerm) ||
+        desc.includes(searchTerm)
       );
+      
+      // Recherche par prix si c'est un nombre
+      if (isNumber && !matches) {
+        const numValue = Number(trimmedSearch);
+        matches = Math.abs(p.price - numValue) < 0.01; // Comparaison avec tolérance
+      }
+      
+      // Recherche par UUID si c'est un UUID
+      if (isUUID && !matches) {
+        matches = p.id === trimmedSearch;
+      }
+      
+      return matches;
     });
 
-    setSearchResults(results?.slice(0, 10) || []);
+    // Recherche par catégorie (accent-insensible)
+    if (categories && categories.length > 0) {
+      const matchingCategories = categories.filter((cat) =>
+        strip(cat.name).includes(searchTerm)
+      );
+      
+      if (matchingCategories.length > 0) {
+        const categoryIds = matchingCategories.map((cat) => cat.id);
+        const productsByCategory = products.filter((p) =>
+          p.category_id && categoryIds.includes(p.category_id)
+        );
+        results = [...results, ...productsByCategory].filter(
+          (product, index, self) => self.findIndex((p) => p.id === product.id) === index
+        );
+      }
+    }
+
+    setSearchResults(results);
   };
 
-  const handleQuantityChange = (value: string) => {
-    setQuantityInput(value);
-  };
-
-  const handleCalculator = (input: string) => {
-    if (calcMode === 'input') {
-      // Mode input direct
-      if (input === 'C') {
-        setCurrentValue(null);
-        setOperation(null);
-        setWaitingForOperand(false);
-      } else if (input === '+' || input === '-' || input === '*' || input === '/') {
-        if (currentValue !== null) {
-          setOperation(input);
-          setWaitingForOperand(true);
-        }
-      } else if (input === '=') {
-        setCalcMode('math');
-      } else {
-        // Chiffres
-        if (waitingForOperand) {
-          setCurrentValue(parseFloat(input));
-          setWaitingForOperand(false);
-        } else {
-          const newValue = currentValue !== null ? parseFloat('' + currentValue + input) : parseFloat(input);
-          setCurrentValue(newValue);
-        }
-      }
-    } else {
-      // Mode math evaluation
-      try {
-        // eslint-disable-next-line no-eval
-        const result = eval(input);
-        setCurrentValue(result);
-        setCalcMode('input');
-        setOperation(null);
-        setWaitingForOperand(false);
-      } catch {
-        toast.error('Expression invalide');
-      }
+  const handleProductLinked = (productId: string) => {
+    const product = products?.find(p => p.id === productId);
+    if (product) {
+      handleProductSelect(product);
     }
   };
 
-  const handleItemAction = (index: number, action: 'increase' | 'decrease' | 'edit') => {
+  const handleScanSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSearch();
+  };
+
+  const handleSelectSearchResult = (product: Product) => {
+    handleProductSelect(product);
+    setScanInput('');
+    setSearchResults([]);
+  };
+
+  const handleRemoveItem = (index: number) => {
+    const newCart = cart.filter((_, i) => i !== index);
+    setCart(newCart);
+    toast.info('Article retiré');
+  };
+
+  const handleUpdateQuantity = (index: number, quantity: number) => {
     const newCart = [...cart];
-    if (action === 'increase') {
-      newCart[index].quantity += 1;
-    } else if (action === 'decrease' && newCart[index].quantity > 1) {
-      newCart[index].quantity -= 1;
-    }
-    const totals = calculateItemTotal(
-      newCart[index].product,
-      newCart[index].quantity,
-      newCart[index].discount,
-      newCart[index].custom_price
-    );
-    newCart[index] = { ...newCart[index], ...totals };
+    const item = newCart[index];
+    const { subtotal, vatAmount, total } = calculateItemTotal(item.product, quantity, item.discount, item.custom_price);
+    
+    newCart[index] = {
+      ...item,
+      quantity,
+      subtotal,
+      vatAmount,
+      total,
+    };
+    
     setCart(newCart);
   };
 
-  const handleRemoveFromCart = (index: number) => {
-    setCart(prev => prev.filter((_, i) => i !== index));
+  const handleUpdatePrice = (index: number, newPrice: number) => {
+    const newCart = [...cart];
+    const item = newCart[index];
+    const { subtotal, vatAmount, total } = calculateItemTotal(item.product, item.quantity, item.discount, newPrice);
+    
+    newCart[index] = {
+      ...item,
+      custom_price: newPrice,
+      subtotal,
+      vatAmount,
+      total,
+    };
+    
+    setCart(newCart);
+    toast.success('Prix modifié');
   };
 
-  const handleApplyDiscount = (type: DiscountType, value: number) => {
-    if (discountTarget?.type === 'item' && discountTarget.index !== undefined) {
-      const newCart = [...cart];
-      newCart[discountTarget.index].discount = { type, value };
-      const totals = calculateItemTotal(
-        newCart[discountTarget.index].product,
-        newCart[discountTarget.index].quantity,
-        { type, value },
-        newCart[discountTarget.index].custom_price
-      );
-      newCart[discountTarget.index] = { ...newCart[discountTarget.index], ...totals };
-      setCart(newCart);
-    } else if (discountTarget?.type === 'global') {
-      setGlobalDiscount({ type, value });
+
+  const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check', amountPaid?: number, metadata?: any) => {
+    if (!user) {
+      toast.error('Connectez-vous pour encaisser', {
+        description: 'Vous devez être connecté pour enregistrer une vente',
+        action: {
+          label: 'Se connecter',
+          onClick: () => navigate('/auth'),
+        },
+      });
+      setPaymentDialogOpen(false);
+      return;
     }
+
+    // Si mode facture, vérifier qu'un client est sélectionné
+    if (isInvoiceMode && !selectedCustomer) {
+      toast.error('Client requis', {
+        description: 'Veuillez sélectionner un client pour créer une facture',
+      });
+      setPaymentDialogOpen(false);
+      setCustomerDialogOpen(true);
+      return;
+    }
+
+    const totals = getTotals();
+    
+    // Map payment methods to DB enum types
+    let dbPaymentMethod: 'cash' | 'card' | 'mobile' | 'check' | 'voucher' = 'cash';
+    if (method === 'customer_credit' || method === 'gift_card') {
+      dbPaymentMethod = 'voucher';
+    } else {
+      dbPaymentMethod = method as 'cash' | 'card' | 'mobile' | 'check';
+    }
+    
+    const saleData = {
+      subtotal: totals.subtotal,
+      total_vat: totals.totalVat,
+      total_discount: totals.totalDiscount,
+      total: totals.total,
+      payment_method: dbPaymentMethod,
+      amount_paid: amountPaid,
+      change_amount: amountPaid ? amountPaid - totals.total : 0,
+      is_invoice: isInvoiceMode,
+      is_cancelled: false,
+      cashier_id: user.id,
+      customer_id: isInvoiceMode ? selectedCustomer?.id : undefined,
+      items: cart.map(item => ({
+        product_id: item.product.id,
+        product_name: item.product.name,
+        product_barcode: item.product.barcode,
+        quantity: item.quantity,
+        unit_price: item.custom_price ?? item.product.price,
+        vat_rate: item.product.vat_rate,
+        discount_type: item.discount?.type,
+        discount_value: item.discount?.value || 0,
+        subtotal: item.subtotal,
+        vat_amount: item.vatAmount,
+        total: item.total,
+      })),
+    };
+
+    try {
+      const sale = await createSale.mutateAsync(saleData);
+      
+      // Préparer les données de vente pour le reçu
+      const saleForReceipt = {
+        ...sale,
+        saleNumber: sale.sale_number,
+        date: sale.date,
+        items: cart,
+        subtotal: totals.subtotal,
+        totalVat: totals.totalVat,
+        totalDiscount: totals.totalDiscount,
+        total: totals.total,
+        paymentMethod: method,
+        amountPaid: amountPaid,
+        change: amountPaid ? amountPaid - totals.total : 0,
+        is_invoice: isInvoiceMode,
+        customer: isInvoiceMode ? selectedCustomer : undefined,
+      };
+      
+      setCurrentSale(saleForReceipt);
+      
+      // Mettre à jour l'affichage client avec statut "completed"
+      const completedState = {
+        items: [],
+        status: 'completed',
+        timestamp: Date.now(),
+      };
+      displayChannel.postMessage(completedState);
+      localStorage.setItem('customer_display_state', JSON.stringify(completedState));
+      
+      // Retour à "idle" après 5 secondes
+      setTimeout(() => {
+        const idleState = {
+          items: [],
+          status: 'idle',
+          timestamp: Date.now(),
+        };
+        displayChannel.postMessage(idleState);
+        localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+      }, 5000);
+      
+      setCart([]);
+      setGlobalDiscount(null);
+      setAppliedPromoCode(null);
+      setIsInvoiceMode(false);
+      setSelectedCustomer(null);
+      setPaymentDialogOpen(false);
+      
+      // Demander si l'utilisateur veut imprimer
+      setPrintConfirmDialogOpen(true);
+      toast.success(isInvoiceMode ? 'Facture créée' : 'Paiement validé');
+    } catch (error) {
+      console.error('Error creating sale:', error);
+      toast.error('Erreur paiement');
+    }
+  };
+
+  const handleClearCart = () => {
+    if (cart.length > 0) {
+      setCart([]);
+      setGlobalDiscount(null);
+      setAppliedPromoCode(null);
+      setIsInvoiceMode(false);
+      setSelectedCustomer(null);
+      
+      // Retour à l'état "idle" sur l'affichage client
+      const idleState = {
+        items: [],
+        status: 'idle',
+        timestamp: Date.now(),
+      };
+      displayChannel.postMessage(idleState);
+      localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+      
+      toast.info('Panier vidé');
+    }
+  };
+
+  // Gestionnaire pour charger un panier sauvegardé
+  const handleLoadCart = (cartData: any) => {
+    setCart(cartData);
+    toast.success('Panier chargé');
+  };
+
+  // Gestionnaires pour le dialog de scan physique
+  const handlePhysicalScanAddToCart = () => {
+    if (scannedProduct) {
+      handleProductSelect(scannedProduct);
+    }
+  };
+
+  const handlePhysicalScanAddToRemote = () => {
+    if (scannedProduct && remoteScanSessionId) {
+      // Ajouter le produit à la session de scan à distance
+      const { useAddScannedItem } = require('@/hooks/useRemoteScan');
+      const addScannedItem = useAddScannedItem();
+      addScannedItem.mutate({
+        session_id: remoteScanSessionId,
+        barcode: scannedBarcode,
+        quantity: 1,
+      });
+      toast.success('Produit ajouté au scanner à distance');
+    } else if (!remoteScanSessionId) {
+      toast.error('Aucune session de scan à distance active');
+    }
+  };
+
+  const handlePhysicalScanViewProduct = () => {
+    if (scannedProduct) {
+      navigate(`/products?id=${scannedProduct.id}`);
+    }
+  };
+
+  const handlePhysicalScanCreateProduct = () => {
+    navigate(`/products?new=1&barcode=${encodeURIComponent(scannedBarcode)}`);
+  };
+
+  // Gestionnaire pour paiement mixte
+  const handleMixedPayment = async (payments: Array<{ method: 'cash' | 'card' | 'mobile'; amount: number }>) => {
+    if (!user) {
+      toast.error('Connectez-vous pour encaisser');
+      setMixedPaymentDialogOpen(false);
+      return;
+    }
+
+    const totals = getTotals();
+    
+    // Calculer le montant espèces pour le tiroir-caisse
+    const cashAmount = payments
+      .filter(p => p.method === 'cash')
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    const saleData = {
+      subtotal: totals.subtotal,
+      total_vat: totals.totalVat,
+      total_discount: totals.totalDiscount,
+      total: totals.total,
+      payment_method: 'cash' as const, // Méthode principale pour compatibilité
+      payment_methods: payments, // Détails des paiements
+      payment_split: payments.reduce((acc, p) => ({ ...acc, [p.method]: p.amount }), {}),
+      amount_paid: totals.total,
+      change_amount: 0,
+      is_invoice: isInvoiceMode,
+      is_cancelled: false,
+      cashier_id: user.id,
+      customer_id: isInvoiceMode ? selectedCustomer?.id : undefined,
+      items: cart.map(item => ({
+        product_id: item.product.id,
+        product_name: item.product.name,
+        product_barcode: item.product.barcode,
+        quantity: item.quantity,
+        unit_price: item.custom_price ?? item.product.price,
+        vat_rate: item.product.vat_rate,
+        discount_type: item.discount?.type,
+        discount_value: item.discount?.value || 0,
+        subtotal: item.subtotal,
+        vat_amount: item.vatAmount,
+        total: item.total,
+      })),
+    };
+
+    try {
+      const sale = await createSale.mutateAsync(saleData);
+      
+      const saleForReceipt = {
+        ...sale,
+        saleNumber: sale.sale_number,
+        date: sale.date,
+        items: cart,
+        subtotal: totals.subtotal,
+        totalVat: totals.totalVat,
+        totalDiscount: totals.totalDiscount,
+        total: totals.total,
+        paymentMethod: 'mixed',
+        payments: payments,
+      };
+
+      setCurrentSale(saleForReceipt);
+      
+      setTimeout(() => {
+        const idleState = {
+          items: [],
+          status: 'idle',
+          timestamp: Date.now(),
+        };
+        displayChannel.postMessage(idleState);
+        localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+      }, 5000);
+      
+      setCart([]);
+      setGlobalDiscount(null);
+      setAppliedPromoCode(null);
+      setIsInvoiceMode(false);
+      setSelectedCustomer(null);
+      setMixedPaymentDialogOpen(false);
+      setPrintConfirmDialogOpen(true);
+      
+      toast.success('Paiement mixte validé');
+    } catch (error) {
+      console.error('Error creating sale:', error);
+      toast.error('Erreur paiement mixte');
+    }
+  };
+
+  const handleSelectCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setIsInvoiceMode(true);
+    toast.success(`Client sélectionné: ${customer.name}`);
+  };
+
+  const handlePreviewReceipt = () => {
+    if (cart.length === 0) return;
+
+    const totals = getTotals();
+    
+    const previewSale = {
+      saleNumber: 'PREVIEW-' + Date.now(),
+      date: new Date(),
+      items: cart,
+      subtotal: totals.subtotal,
+      totalVat: totals.totalVat,
+      totalDiscount: totals.totalDiscount,
+      total: totals.total,
+      paymentMethod: 'cash' as const,
+      is_invoice: isInvoiceMode,
+      customer: isInvoiceMode ? selectedCustomer : undefined,
+    };
+    
+    setCurrentSale(previewSale);
+    setReceiptDialogOpen(true);
+  };
+
+  const handleApplyPromoCode = (code: string, type: 'percentage' | 'amount', value: number) => {
+    setAppliedPromoCode({ code, type, value });
+  };
+
+
+  const handleApplyDiscount = (type: DiscountType, value: number) => {
+    if (!discountTarget) return;
+    
+    if (discountTarget.type === 'item' && discountTarget.index !== undefined) {
+      // Remise sur un article
+      const newCart = [...cart];
+      const item = newCart[discountTarget.index];
+      const discount = { type, value };
+      const { subtotal, vatAmount, total } = calculateItemTotal(
+        item.product,
+        item.quantity,
+        discount,
+        item.custom_price
+      );
+      
+      newCart[discountTarget.index] = {
+        ...item,
+        discount,
+        subtotal,
+        vatAmount,
+        total,
+      };
+      
+      setCart(newCart);
+      toast.success('Remise appliquée');
+    } else {
+      // Remise globale
+      setGlobalDiscount({ type, value });
+      toast.success('Remise globale appliquée');
+    }
+    
     setDiscountDialogOpen(false);
     setDiscountTarget(null);
   };
 
-  const handleApplyPromo = (code: string, type: 'percentage' | 'amount', value: number) => {
-    setAppliedPromoCode({ code, type, value });
-    setPromoDialogOpen(false);
-    toast.success(`Code promo "${code}" appliqué`);
+  const handleRemoveDiscount = (index: number) => {
+    const newCart = [...cart];
+    const item = newCart[index];
+    const { subtotal, vatAmount, total } = calculateItemTotal(
+      item.product,
+      item.quantity,
+      undefined,
+      item.custom_price
+    );
+    
+    newCart[index] = {
+      ...item,
+      discount: undefined,
+      subtotal,
+      vatAmount,
+      total,
+    };
+    
+    setCart(newCart);
+    toast.info('Remise retirée');
   };
 
-  const handleOpenCustomerDisplay = () => {
-    openCustomerDisplay();
-  };
-
-  const handleCompletePayment = (paymentType: 'cash' | 'card' | 'mobile' | 'mixed') => {
-    if (cart.length === 0) {
-      toast.error('Le panier est vide');
-      return;
-    }
-
-    if (paymentType === 'mixed') {
-      setMixedPaymentDialogOpen(true);
+  const handleNumberClick = (num: string) => {
+    if (calcMode === 'math' && waitingForOperand) {
+      setQuantityInput(num);
+      setWaitingForOperand(false);
     } else {
-      setPaymentDialogOpen(true);
+      setQuantityInput(prev => prev === '1' ? num : prev + num);
     }
   };
 
-  // Payment confirmation handler for regular payment dialog
-  const handleConfirmPaymentDialog = async (
-    method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check',
-    amountPaid?: number
-  ) => {
-    const totals = getTotals();
-    const paymentMethodMapped = method === 'gift_card' ? 'voucher' : (method === 'customer_credit' ? 'card' : method);
-    const items = cart.map(item => ({
-      product_id: item.product.id,
-      product_name: item.product.name,
-      product_barcode: item.product.barcode,
-      quantity: item.quantity,
-      unit_price: item.custom_price ?? item.product.price,
-      vat_rate: item.product.vat_rate,
-      discount_type: item.discount?.type,
-      discount_value: item.discount?.value,
-      subtotal: item.subtotal,
-      vat_amount: item.vatAmount,
-      total: item.total,
-    }));
+  const handleClearQuantity = () => {
+    setQuantityInput('1');
+    setCurrentValue(null);
+    setOperation(null);
+    setWaitingForOperand(false);
+  };
 
-    const sale = {
-      subtotal: totals.subtotal,
-      total_vat: totals.totalVat,
-      total_discount: totals.totalDiscount,
-      total: totals.total,
-      payment_method: paymentMethodMapped as any,
-      amount_paid: method === 'cash' ? amountPaid : undefined,
-      change_amount: method === 'cash' && amountPaid ? Math.max(0, amountPaid - totals.total) : undefined,
-      is_invoice: isInvoiceMode,
-      is_cancelled: false,
-      notes: undefined,
-      customer_id: selectedCustomer?.id as any,
-      cashier_id: user?.id as any,
-      items,
-    };
+  const handleOperation = (op: string) => {
+    const inputValue = parseFloat(quantityInput || '0');
+    if (currentValue === null) {
+      setCurrentValue(inputValue);
+    } else if (operation) {
+      const newValue = performCalculation(currentValue, inputValue, operation);
+      setQuantityInput(String(newValue));
+      setCurrentValue(newValue);
+    }
+    setWaitingForOperand(true);
+    setOperation(op);
+  };
 
-    try {
-      const created = await createSale.mutateAsync(sale as any);
-      setCurrentSale(created);
-      setReceiptDialogOpen(true);
-      handleClearCart();
-      setPaymentDialogOpen(false);
-    } catch (e) {
-      console.error(e);
+  const performCalculation = (first: number, second: number, op: string): number => {
+    switch (op) {
+      case '+':
+        return first + second;
+      case '-':
+        return first - second;
+      case '*':
+        return first * second;
+      case '/':
+        return second !== 0 ? first / second : 0;
+      case '%':
+        return first * (second / 100);
+      default:
+        return second;
     }
   };
 
-  const handleConfirmMixedPayment = async (
-    splits: { method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'check' | 'customer_credit'; amount: number; }[]
-  ) => {
-    const totals = getTotals();
-    const hasNonCash = splits.some(s => s.method !== 'cash');
-    const primaryMethod = hasNonCash ? 'card' : 'cash';
-
-    const items = cart.map(item => ({
-      product_id: item.product.id,
-      product_name: item.product.name,
-      product_barcode: item.product.barcode,
-      quantity: item.quantity,
-      unit_price: item.custom_price ?? item.product.price,
-      vat_rate: item.product.vat_rate,
-      discount_type: item.discount?.type,
-      discount_value: item.discount?.value,
-      subtotal: item.subtotal,
-      vat_amount: item.vatAmount,
-      total: item.total,
-    }));
-
-    const noteDetails = splits.map(s => `${s.method}:${s.amount.toFixed(2)}€`).join(' | ');
-
-    const sale = {
-      subtotal: totals.subtotal,
-      total_vat: totals.totalVat,
-      total_discount: totals.totalDiscount,
-      total: totals.total,
-      payment_method: primaryMethod as any,
-      is_invoice: isInvoiceMode,
-      is_cancelled: false,
-      notes: `Paiement mixte (${noteDetails})`,
-      customer_id: selectedCustomer?.id as any,
-      cashier_id: user?.id as any,
-      items,
-    };
-
-    try {
-      const created = await createSale.mutateAsync(sale as any);
-      setCurrentSale(created);
-      setReceiptDialogOpen(true);
-      handleClearCart();
-      setMixedPaymentDialogOpen(false);
-    } catch (e) {
-      console.error(e);
+  const handleEqualsCalc = () => {
+    const inputValue = parseFloat(quantityInput || '0');
+    if (currentValue !== null && operation) {
+      const result = performCalculation(currentValue, inputValue, operation);
+      setQuantityInput(String(result));
+      setCurrentValue(null);
+      setOperation(null);
+      setWaitingForOperand(true);
     }
   };
-
-  const handleOpenDay = (amount: number) => {
-    openDay.mutate(amount, {
+  const handleOpenDay = (openingAmount: number) => {
+    openDay.mutate(openingAmount, {
       onSuccess: () => {
         setIsDayOpenLocal(true);
         setOpenDayDialogOpen(false);
-        toast.success('Journée ouverte');
-      }
+      },
     });
+  };
+
+  const handleCloseDay = async (closingAmount: number, archiveAndDelete?: boolean) => {
+    if (!todayReport) return;
+    
+    const data = await getTodayReportData();
+    closeDay.mutate({
+      reportId: todayReport.id,
+      closingAmount,
+      reportData: data,
+    }, {
+      onSuccess: () => {
+        setIsDayOpenLocal(false);
+        setCloseDayDialogOpen(false);
+      },
+    });
+    
+    // L'archivage et la suppression sont déjà gérés dans CloseDayDialog
+    if (archiveAndDelete) {
+      console.log('Archive créée et ventes anciennes supprimées');
+    }
   };
 
   const handleReportX = async () => {
@@ -729,334 +1254,690 @@ const Index = () => {
     setReportXDialogOpen(true);
   };
 
-  const handleOpenCloseDayDialog = async () => {
-    const data = await getTodayReportData();
-    setReportData(data);
-    setCloseDayDialogOpen(true);
-  };
-
-  const handleCloseDay = (closingAmount: number) => {
-    if (!todayReport || !reportData) return;
-    
-    closeDay.mutate(
-      { 
-        reportId: todayReport.id, 
-        closingAmount,
-        reportData
-      },
-      {
-        onSuccess: () => {
-          setIsDayOpenLocal(false);
-          setCloseDayDialogOpen(false);
-          toast.success('Journée clôturée');
-        }
-      }
-    );
-  };
-
-  const handleClearCart = () => {
-    setCart([]);
-    setGlobalDiscount(null);
-    setAppliedPromoCode(null);
-    setSelectedCustomer(null);
-    setIsInvoiceMode(false);
-  };
+  const totals = getTotals();
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
-      {/* Header with stats */}
-      <div className="bg-gradient-to-r from-primary via-primary-glow to-primary border-b-2 border-primary/20 shadow-xl">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <img src={logoMarket} alt="Logo" className="h-12 w-12 rounded-lg shadow-lg" />
-              <div>
-                <h1 className="text-2xl font-black text-white tracking-tight">CAISSE</h1>
-                <p className="text-white/80 text-sm">{currentTime.toLocaleTimeString('fr-FR')}</p>
-              </div>
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Pin Lock Dialog */}
+      <PinLockDialog 
+        open={isLocked} 
+        onUnlock={() => setIsLocked(false)} 
+      />
+      
+      {/* Info bar avec date, météo, recherche et boutons */}
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-2 py-1.5 flex items-center justify-between gap-2 flex-shrink-0">
+        {/* Gauche: Date/Heure + Météo */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-background rounded-lg border border-border">
+            <Clock className="h-3 w-3 text-primary" />
+            <div className="text-[10px]">
+              <span className="font-bold">{currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
+              <span className="text-muted-foreground ml-1">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
-
-            {/* Stats */}
-            <div className="hidden lg:flex items-center gap-3">
-              <Card className="px-4 py-2 bg-white/95 border-0 shadow-lg">
-                <div className="flex items-center gap-2">
-                  <Euro className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">CA Jour</p>
-                    <p className="text-xl font-black text-primary">{todayTotal.toFixed(0)}€</p>
-                  </div>
-                  {totalPercentChange !== 0 && (
-                    <div className={`flex items-center ${totalPercentChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {totalPercentChange > 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                      <span className="text-sm font-bold ml-1">{Math.abs(totalPercentChange).toFixed(0)}%</span>
-                    </div>
-                  )}
-                </div>
-              </Card>
-
-              <Card className="px-4 py-2 bg-white/95 border-0 shadow-lg">
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="h-5 w-5 text-accent" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Ventes</p>
-                    <p className="text-xl font-black text-accent">{todayCount}</p>
-                  </div>
-                </div>
-              </Card>
+          </div>
+          
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-background rounded-lg border border-border">
+            <CloudSun className="h-3 w-3 text-primary" />
+            <div className="text-[10px] font-bold">
+              {weatherLoading ? '...' : `${temperature}°C`}
             </div>
+          </div>
+        </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleOpenCustomerDisplay}
-                variant="outline"
-                size="icon"
-                className="bg-white/10 border-white/30 text-white hover:bg-white/20"
-              >
-                <Eye className="h-5 w-5" />
-              </Button>
-              
+        {/* Centre: Barre de recherche */}
+        <div className="flex-1 max-w-sm">
+          <form onSubmit={handleScanSubmit}>
+            <div className="relative">
+              <Scan className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-primary" />
+              <Input
+                ref={scanInputRef}
+                value={scanInput}
+                onChange={(e) => {
+                  setScanInput(e.target.value);
+                  if (!e.target.value.trim()) {
+                    setSearchResults([]);
+                  }
+                }}
+                placeholder="Rechercher..."
+                autoComplete="off"
+                className="h-7 pl-8 pr-7 text-xs bg-background border-input text-foreground"
+              />
+              {scanInput && (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setScanInput('');
+                    setSearchResults([]);
+                    scanInputRef.current?.focus();
+                  }}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 p-0 bg-transparent hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                  variant="ghost"
+                >
+                  ×
+                </Button>
+              )}
+            </div>
+          </form>
+        </div>
+        
+        {/* Droite: Boutons */}
+        <div className="flex items-center gap-1">
+          {/* Boutons gestion de journée */}
+          {!isDayOpenEffective ? (
+            <Button
+              onClick={() => setOpenDayDialogOpen(true)}
+              size="sm"
+              className="h-7 text-xs bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md"
+            >
+              <Calendar className="h-3 w-3 mr-1" />
+              Ouvrir
+            </Button>
+          ) : (
+            <>
               <Button
                 onClick={handleReportX}
-                variant="outline"
-                size="icon"
-                className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+                size="sm"
+                className="h-7 text-xs bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md"
               >
-                <FileText className="h-5 w-5" />
+                <FileText className="h-3 w-3 mr-1" />
+                Rapport X
               </Button>
-            </div>
-          </div>
+              <Button
+                onClick={() => setCloseDayDialogOpen(true)}
+                size="sm"
+                className="h-7 text-xs bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md"
+              >
+                <CalendarX className="h-3 w-3 mr-1" />
+                Fermer
+              </Button>
+            </>
+          )}
+          
+          <Button
+            onClick={openCustomerDisplay}
+            size="sm"
+            className="h-7 text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md"
+          >
+            <Eye className="h-3 w-3 mr-1" />
+            Affichage
+          </Button>
+          
+          <RemoteScanDialog 
+            onSessionCreated={(sessionId, sessionCode) => {
+              setRemoteScanSessionId(sessionId);
+              toast.success(`Session créée: ${sessionCode}`);
+            }}
+          />
         </div>
       </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex gap-4 p-4 overflow-hidden">
-        {/* Left: Products */}
-        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
-          {/* Search */}
-          <Card className="p-3 bg-white shadow-lg border-2 border-primary/20">
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <Scan className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
-                <Input
-                  ref={scanInputRef}
-                  placeholder="Scanner ou rechercher..."
-                  value={scanInput}
-                  onChange={(e) => setScanInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleBarcodeScan(scanInput);
-                    }
-                  }}
-                  className="pl-11 h-12 text-lg border-2 border-primary/30 focus:border-primary"
-                />
+      
+      {/* Hidden input to capture scanner input without stealing focus */}
+      <input
+        type="text"
+        aria-hidden="true"
+        tabIndex={-1}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          width: '1px',
+          height: '1px',
+          opacity: 0,
+          pointerEvents: 'none'
+        }}
+        autoFocus={false}
+      />
+      {/* Main content - Toujours 3 colonnes (proportions adaptées mobile) */}
+      <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
+        {/* LEFT PANEL - Ticket (col-span adapté: 6 sur mobile, 5 sur desktop) */}
+        <div className="col-span-6 md:col-span-5 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
+          {/* Ticket header - Clean gradient */}
+          <div className="bg-gradient-to-r from-primary to-primary-glow p-2 flex-shrink-0 shadow-lg">
+            <div className="flex items-center justify-between text-white">
+              <div className="flex items-center gap-1">
+                <ShoppingBag className="h-4 w-4" />
+                <h2 className="font-bold text-sm">Ticket</h2>
               </div>
-              <Button
-                onClick={() => navigate('/camera-scanner')}
-                size="lg"
-                className="bg-accent hover:bg-accent/90 h-12 px-6"
-              >
-                <Scan className="h-5 w-5 mr-2" />
-                Scanner
-              </Button>
-            </div>
-          </Card>
-
-          {/* Category Grid */}
-          <div className="flex-1 overflow-hidden">
-            <CategoryGrid
-               onProductSelect={handleProductSelect}
-               selectedCategory={selectedCategory}
-               onCategorySelect={setSelectedCategory}
-            />
-          </div>
-
-          {/* Day Actions */}
-          <div className="flex gap-2">
-            {!isDayOpenEffective ? (
-              <Button
-                onClick={() => setOpenDayDialogOpen(true)}
-                size="lg"
-                className="flex-1 h-14 bg-green-600 hover:bg-green-700"
-              >
-                <Calendar className="h-5 w-5 mr-2" />
-                OUVRIR LA JOURNÉE
-              </Button>
-            ) : (
-              <Button
-                onClick={handleOpenCloseDayDialog}
-                size="lg"
-                className="flex-1 h-14 bg-red-600 hover:bg-red-700"
-              >
-                <CalendarX className="h-5 w-5 mr-2" />
-                CLÔTURER
-              </Button>
-            )}
-            
-            <Button
-              onClick={() => setRefundDialogOpen(true)}
-              variant="outline"
-              size="lg"
-              className="h-14"
-            >
-              Remboursement
-            </Button>
-          </div>
-        </div>
-
-        {/* Right: Cart */}
-        <Card className="w-[420px] flex flex-col bg-white shadow-xl border-2 border-primary/30">
-          <div className="bg-gradient-to-r from-accent to-accent/80 p-4 text-white">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-black flex items-center gap-2">
-                <ShoppingBag className="h-6 w-6" />
-                PANIER
-              </h2>
-              <div className="bg-white text-accent font-bold text-lg px-3 py-1 rounded-lg">
-                {cart.reduce((sum, item) => sum + item.quantity, 0)}
+              <div className="bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                <span className="text-xs font-bold">{totalItems} articles</span>
               </div>
             </div>
           </div>
 
-          <ScrollArea className="flex-1 p-4">
+          {/* Items list - Modern cards */}
+          <ScrollArea className="flex-1 p-1.5 bg-background/50 h-[calc(100vh-370px)]">
             {cart.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <ShoppingBag className="h-16 w-16 text-muted-foreground/30 mb-4" />
-                <p className="text-muted-foreground">Panier vide</p>
+              <div className="text-center py-6">
+                <div className="p-3 bg-muted/50 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
+                  <ShoppingBag className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground font-medium text-[10px]">Panier vide</p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {cart.map((item, index) => (
-                  <Card key={index} className="p-3 border-2 hover:border-primary/30">
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="font-bold">{item.product.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {item.quantity} × {(item.custom_price ?? item.product.price).toFixed(2)}€
-                          </p>
+                  <div
+                    key={index}
+                    className="bg-white border border-border p-1.5 rounded-lg hover:border-primary/40 transition-all group"
+                  >
+                    <div className="flex justify-between items-start mb-0.5">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-foreground font-bold text-[10px] truncate">{item.product.name}</div>
+                        <div className="flex items-center gap-0.5 mt-0.5">
+                          <Input
+                            data-scan-ignore="true"
+                            type="text"
+                            key={`price-${index}-${item.custom_price ?? item.product.price}`}
+                            defaultValue={item.custom_price ?? item.product.price}
+                            onBlur={(e) => {
+                              const value = e.target.value.replace(',', '.');
+                              const newPrice = parseFloat(value);
+                              if (!isNaN(newPrice) && newPrice > 0) {
+                                handleUpdatePrice(index, newPrice);
+                              } else {
+                                e.target.value = (item.custom_price ?? item.product.price).toString();
+                              }
+                            }}
+                            className="h-4 w-10 text-[9px] px-0.5 text-center bg-background"
+                          />
+                          <span className="text-muted-foreground text-[9px]">€/{item.product.unit || 'u'} × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}</span>
                         </div>
+                        {item.discount && (
+                          <div className="flex items-center gap-0.5 mt-0.5">
+                            <span className="text-[9px] bg-accent/20 text-accent px-1 py-0.5 rounded">
+                              -{item.discount.type === 'percentage' ? `${item.discount.value}%` : `${item.discount.value}€`}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveDiscount(index)}
+                              className="h-3 w-3 p-0 text-muted-foreground hover:text-destructive"
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-0.5 items-end ml-1">
                         <Button
-                          onClick={() => handleRemoveFromCart(index)}
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive"
+                          onClick={() => handleRemoveItem(index)}
+                          className="h-4 w-4 hover:bg-destructive/20 text-destructive flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-2.5 w-2.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setDiscountTarget({ type: 'item', index });
+                            setDiscountDialogOpen(true);
+                          }}
+                          className="h-4 w-4 hover:bg-accent/20 text-accent flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Percent className="h-2.5 w-2.5" />
                         </Button>
                       </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex gap-1">
-                          <Button
-                            onClick={() => handleItemAction(index, 'decrease')}
-                            size="sm"
-                            variant="outline"
-                            className="h-8 w-8 p-0"
-                          >
-                            -
-                          </Button>
-                          <Button
-                            onClick={() => handleItemAction(index, 'increase')}
-                            size="sm"
-                            variant="outline"
-                            className="h-8 w-8 p-0"
-                          >
-                            +
-                          </Button>
-                        </div>
-                        
-                        <p className="text-lg font-black text-primary">{item.total.toFixed(2)}€</p>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-0.5 bg-muted/50 p-0.5 rounded-lg">
+                        <Button
+                          size="sm"
+                          onClick={() => handleUpdateQuantity(index, Math.max(0.1, item.quantity - 1))}
+                          className="h-5 w-5 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-[10px]"
+                        >
+                          -
+                        </Button>
+                        <Input
+                          data-scan-ignore="true"
+                          type="text"
+                          key={`qty-${index}-${item.quantity}`}
+                          defaultValue={item.quantity.toFixed(3)}
+                          onBlur={(e) => {
+                            const value = e.target.value.replace(',', '.');
+                            const newQty = parseFloat(value);
+                            if (!isNaN(newQty) && newQty > 0) {
+                              handleUpdateQuantity(index, newQty);
+                            } else {
+                              e.target.value = item.quantity.toFixed(3);
+                            }
+                          }}
+                          className="h-5 w-12 text-[10px] px-0.5 text-center bg-white font-bold"
+                        />
+                        <span className="text-[10px] text-muted-foreground self-center">{item.product.unit || 'u'}</span>
+                        <Button
+                          size="sm"
+                          onClick={() => handleUpdateQuantity(index, item.quantity + 1)}
+                          className="h-5 w-5 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-[10px]"
+                        >
+                          +
+                        </Button>
+                      </div>
+                      <div className="text-primary text-xs font-bold">
+                        {item.total.toFixed(2)}€
                       </div>
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
             )}
           </ScrollArea>
 
-          {cart.length > 0 && (
-            <div className="border-t-2 p-4 space-y-3 bg-muted/30">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Sous-total</span>
-                  <span className="font-semibold">{getTotals().subtotal.toFixed(2)}€</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">TVA</span>
-                  <span className="font-semibold">{getTotals().totalVat.toFixed(2)}€</span>
-                </div>
-                {getTotals().totalDiscount > 0 && (
-                  <div className="flex justify-between text-sm text-green-600">
-                    <span>Remise</span>
-                    <span className="font-semibold">-{getTotals().totalDiscount.toFixed(2)}€</span>
+          {/* Totals - Modern design */}
+          <div className="bg-white border-t-2 border-border p-1.5 space-y-1 flex-shrink-0">
+            {/* Ticket/Facture toggle */}
+            <div className="flex items-center justify-between p-1.5 bg-muted/50 rounded-lg border border-border">
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="invoice-mode" className="text-[10px] font-semibold cursor-pointer">
+                  {isInvoiceMode ? 'Facture' : 'Ticket'}
+                </Label>
+                {isInvoiceMode && selectedCustomer && (
+                  <div className="text-[9px] text-muted-foreground truncate max-w-[80px]">
+                    {selectedCustomer.name}
                   </div>
                 )}
-                <div className="flex justify-between pt-2 border-t-2">
-                  <span className="text-xl font-black">TOTAL</span>
-                  <span className="text-3xl font-black text-primary">{getTotals().total.toFixed(2)}€</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {isInvoiceMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCustomerDialogOpen(true)}
+                    className="h-5 text-[9px] px-1"
+                  >
+                    <Edit className="h-2.5 w-2.5 mr-0.5" />
+                    {selectedCustomer ? 'Modif' : 'Client'}
+                  </Button>
+                )}
+                <Switch
+                  id="invoice-mode"
+                  checked={isInvoiceMode}
+                  onCheckedChange={(checked) => {
+                    setIsInvoiceMode(checked);
+                    if (checked && !selectedCustomer) {
+                      setCustomerDialogOpen(true);
+                    } else if (!checked) {
+                      setSelectedCustomer(null);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            <div className="flex justify-between text-muted-foreground text-[10px]">
+              <span>Sous-total HT</span>
+              <span className="font-medium">{totals.subtotal.toFixed(2)}€</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground text-[10px]">
+              <span>TVA</span>
+              <span className="font-medium">{totals.totalVat.toFixed(2)}€</span>
+            </div>
+            {totals.totalDiscount > 0 && (
+              <div className="flex justify-between text-accent text-[10px]">
+                <span>Remise totale</span>
+                <span className="font-medium">-{totals.totalDiscount.toFixed(2)}€</span>
+              </div>
+            )}
+            {globalDiscount && (
+              <div className="flex items-center justify-between text-[9px] bg-accent/10 px-1.5 py-0.5 rounded">
+                <span className="text-accent">
+                  Remise globale: {globalDiscount.type === 'percentage' ? `${globalDiscount.value}%` : `${globalDiscount.value}€`}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setGlobalDiscount(null)}
+                  className="h-4 w-4 p-0 text-muted-foreground hover:text-destructive"
+                >
+                  ×
+                </Button>
+              </div>
+            )}
+            {appliedPromoCode && (
+              <div className="flex items-center justify-between text-[9px] bg-primary/10 px-1.5 py-0.5 rounded">
+                <span className="text-primary flex items-center gap-0.5">
+                  <Ticket className="h-2.5 w-2.5" />
+                  Code {appliedPromoCode.code}: {appliedPromoCode.type === 'percentage' ? `${appliedPromoCode.value}%` : `${appliedPromoCode.value}€`}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAppliedPromoCode(null)}
+                  className="h-4 w-4 p-0 text-muted-foreground hover:text-destructive"
+                >
+                  ×
+                </Button>
+              </div>
+            )}
+            <div className="grid grid-cols-3 gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setDiscountTarget({ type: 'global' });
+                  setDiscountDialogOpen(true);
+                }}
+                disabled={cart.length === 0}
+                className="h-6 text-[9px] border-accent text-accent hover:bg-accent/10"
+              >
+                <Percent className="mr-0.5 h-2.5 w-2.5" />
+                Remise
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPromoDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-6 text-[9px] border-primary text-primary hover:bg-primary/10"
+              >
+                <Ticket className="mr-0.5 h-2.5 w-2.5" />
+                Code
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreviewReceipt}
+                disabled={cart.length === 0}
+                className="h-6 text-[9px] border-muted-foreground text-muted-foreground hover:bg-muted/50"
+              >
+                <Eye className="mr-0.5 h-2.5 w-2.5" />
+                Aperçu
+              </Button>
+            </div>
+            <div className="flex justify-between items-center text-primary text-base font-bold pt-1 border-t-2 border-border">
+              <span>TOTAL</span>
+              <span>{totals.total.toFixed(2)}€</span>
+            </div>
+          </div>
+
+          {/* Payment buttons - Modern JL Prod style */}
+          <div className="bg-background p-1.5 space-y-1.5 border-t-2 border-border flex-shrink-0">
+            {/* Nouveaux boutons fonctionnalités */}
+            <div className="grid grid-cols-4 gap-1 mb-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSavedCartsDialogOpen(true)}
+                className="h-7 text-[9px] border-blue-500 text-blue-500 hover:bg-blue-500/10"
+                title="Paniers sauvegardés"
+              >
+                <FolderOpen className="h-3 w-3 mr-0.5" />
+                Charger
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (cart.length > 0) {
+                    setSavedCartsDialogOpen(true);
+                  }
+                }}
+                disabled={cart.length === 0}
+                className="h-7 text-[9px] border-green-500 text-green-500 hover:bg-green-500/10"
+                title="Sauvegarder le panier"
+              >
+                <Save className="h-3 w-3 mr-0.5" />
+                Sauver
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setMixedPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-7 text-[9px] border-purple-500 text-purple-500 hover:bg-purple-500/10"
+                title="Paiement mixte"
+              >
+                <Split className="h-3 w-3 mr-0.5" />
+                Mixte
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRefundDialogOpen(true)}
+                className="h-7 text-[9px] border-orange-500 text-orange-500 hover:bg-orange-500/10"
+                title="Créer un remboursement"
+              >
+                <Undo2 className="h-3 w-3 mr-0.5" />
+                Rembour.
+              </Button>
+            </div>
+            
+            <Button
+              onClick={() => setPaymentDialogOpen(true)}
+              disabled={cart.length === 0}
+              className="w-full h-10 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Euro className="mr-1.5 h-4 w-4" />
+              PAYER {cart.length > 0 && `${totals.total.toFixed(2)}€`}
+            </Button>
+            <div className="grid grid-cols-3 gap-1">
+              <Button
+                onClick={() => setPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-8 text-[10px] bg-white hover:bg-primary/5 text-primary border-2 border-primary font-semibold shadow-sm"
+              >
+                <CreditCard className="mr-0.5 h-2.5 w-2.5" />
+                CB
+              </Button>
+              <Button
+                onClick={() => setPaymentDialogOpen(true)}
+                disabled={cart.length === 0}
+                className="h-8 text-[10px] bg-white hover:bg-accent/5 text-accent border-2 border-accent font-semibold shadow-sm"
+              >
+                <Banknote className="mr-0.5 h-2.5 w-2.5" />
+                ESP
+              </Button>
+              <Button
+                onClick={handleClearCart}
+                disabled={cart.length === 0}
+                className="h-8 text-[10px] bg-white hover:bg-destructive/5 text-destructive border-2 border-destructive font-semibold shadow-sm"
+              >
+                <Trash2 className="mr-0.5 h-2.5 w-2.5" />
+                ANN
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* COLONNE CENTRE - Calculatrice (col-span adapté: 4 sur mobile, 4 sur desktop) */}
+        <div className="col-span-4 bg-background p-1 flex flex-col gap-1 overflow-hidden h-full">
+
+          {/* Statistiques rapides */}
+          <Card className="bg-gradient-to-br from-background to-muted/20 border-2 border-border/50 p-2 flex-shrink-0 shadow-md">
+            <h3 className="text-[9px] font-bold text-primary uppercase tracking-wide mb-2">Statistiques du jour</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-primary/5 rounded-lg p-2 border border-primary/10">
+                <div className="text-[9px] text-muted-foreground mb-0.5">Total ventes</div>
+                <div className="text-lg font-bold text-primary mb-0.5">
+                  {todayTotal.toFixed(2)}€
+                </div>
+                <div className={`flex items-center gap-0.5 text-[9px] font-semibold ${totalPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {totalPercentChange >= 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                  {totalPercentChange >= 0 ? '+' : ''}{totalPercentChange.toFixed(1)}%
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  onClick={() => {
-                    setDiscountTarget({ type: 'global' });
-                    setDiscountDialogOpen(true);
-                  }}
-                  variant="outline"
-                  className="h-12"
-                >
-                  <Percent className="h-4 w-4 mr-2" />
-                  Remise
-                </Button>
-                <Button
-                  onClick={handleClearCart}
-                  variant="outline"
-                  className="h-12 text-destructive"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Vider
-                </Button>
+              <div className="bg-secondary/5 rounded-lg p-2 border border-secondary/10">
+                <div className="text-[9px] text-muted-foreground mb-0.5">Nb tickets</div>
+                <div className="text-lg font-bold text-secondary mb-0.5">
+                  {todayCount}
+                </div>
+                <div className={`flex items-center gap-0.5 text-[9px] font-semibold ${countPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {countPercentChange >= 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                  {countPercentChange >= 0 ? '+' : ''}{countPercentChange.toFixed(1)}%
+                </div>
               </div>
+            </div>
+          </Card>
 
-              <div className="grid grid-cols-3 gap-2">
+          {/* Calculatrice moderne */}
+          <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 p-2 flex-shrink-0 shadow-lg">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="text-center flex-1">
+                <div className="text-[9px] font-semibold text-primary uppercase tracking-wide mb-0.5">Calculette</div>
+                <div className="text-[9px] text-muted-foreground">{calcMode === 'input' ? 'Poids / Quantité / Prix' : 'Calcul'}</div>
+              </div>
+              <div className="flex gap-0.5">
                 <Button
-                  onClick={() => handleCompletePayment('cash')}
-                  size="lg"
-                  className="h-16 bg-green-600 hover:bg-green-700 flex flex-col gap-1"
+                  variant={calcMode === 'input' ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setCalcMode('input')}
                 >
-                  <Banknote className="h-6 w-6" />
-                  <span className="text-xs font-bold">ESPÈCES</span>
+                  <Scale className="h-2.5 w-2.5" />
                 </Button>
                 <Button
-                  onClick={() => handleCompletePayment('card')}
-                  size="lg"
-                  className="h-16 bg-blue-600 hover:bg-blue-700 flex flex-col gap-1"
+                  variant={calcMode === 'math' ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setCalcMode('math')}
                 >
-                  <CreditCard className="h-6 w-6" />
-                  <span className="text-xs font-bold">CARTE</span>
-                </Button>
-                <Button
-                  onClick={() => handleCompletePayment('mixed')}
-                  size="lg"
-                  className="h-16 bg-purple-600 hover:bg-purple-700 flex flex-col gap-1"
-                >
-                  <Split className="h-6 w-6" />
-                  <span className="text-xs font-bold">MIXTE</span>
+                  <Calculator className="h-2.5 w-2.5" />
                 </Button>
               </div>
             </div>
-          )}
-        </Card>
+            
+            {/* Affichage */}
+            <div className="bg-gradient-to-br from-primary to-primary-glow p-2 rounded-xl mb-2 border-2 border-primary shadow-inner">
+              <div className="text-white text-xl font-bold text-center font-mono tracking-wider drop-shadow-lg">
+                {quantityInput}
+              </div>
+            </div>
+            
+            {/* Clavier */}
+            <div className="grid grid-cols-3 gap-1">
+              {['7', '8', '9', '4', '5', '6', '1', '2', '3', '.', '0', 'C'].map((key) => (
+                <Button
+                  key={key}
+                  onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)}
+                  className={`h-8 text-sm font-bold transition-all active:scale-95 shadow-sm ${
+                    key === 'C' 
+                      ? 'bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0' 
+                      : key === '.' 
+                      ? 'bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white border-0'
+                      : 'bg-gradient-to-br from-white to-gray-50 hover:from-primary/10 hover:to-primary/5 text-foreground border-2 border-border'
+                  }`}
+                >
+                  {key}
+                </Button>
+              ))}
+            </div>
+            {calcMode === 'math' ? (
+              <div className="mt-2">
+                <div className="grid grid-cols-4 gap-1">
+                  <Button onClick={() => handleOperation('+')} className="h-8 text-sm bg-primary/10 font-bold">+</Button>
+                  <Button onClick={() => handleOperation('-')} className="h-8 text-sm bg-primary/10 font-bold"><Minus className="h-3.5 w-3.5" /></Button>
+                  <Button onClick={() => handleOperation('*')} className="h-8 text-sm bg-primary/10 font-bold"><X className="h-3.5 w-3.5" /></Button>
+                  <Button onClick={() => handleOperation('/')} className="h-8 text-sm bg-primary/10 font-bold"><Divide className="h-3.5 w-3.5" /></Button>
+                  <Button onClick={() => handleOperation('%')} className="h-8 text-sm bg-primary/10 font-bold col-span-2"><Percent className="h-3.5 w-3.5 mr-0.5" />%</Button>
+                  <Button onClick={handleEqualsCalc} disabled={!quantityInput} className="h-8 text-sm bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-md col-span-2">=</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-2 pt-2 border-t border-border">
+                <div className="text-[9px] text-center text-muted-foreground">
+                  Tapez la quantité avant d'ajouter un article
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
+
+        {/* RIGHT PANEL - Articles/Catégories (col-span adapté: 2 sur mobile, 3 sur desktop) */}
+        <div className="col-span-2 md:col-span-3 bg-white border-l border-border overflow-hidden h-full">
+          <div className="p-1 h-full overflow-y-auto">
+            {scanInput.trim() && searchResults.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="p-4 bg-muted/50 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                  <Scan className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground font-medium text-[10px]">Aucun résultat</p>
+              </div>
+            ) : searchResults.length > 0 ? (
+              <>
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <h2 className="text-foreground font-bold text-[10px] flex items-center gap-1">
+                    <div className="h-1 w-1 rounded-full bg-primary"></div>
+                    RÉSULTATS ({searchResults.length})
+                  </h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setScanInput('');
+                      setSearchResults([]);
+                    }}
+                    className="h-5 text-[9px] px-1"
+                  >
+                    Effacer
+                  </Button>
+                </div>
+                <div className="space-y-1">
+                  {searchResults.map((product) => (
+                    <button
+                      key={product.id}
+                      onClick={() => handleSelectSearchResult(product)}
+                      className="w-full p-3 bg-muted/50 hover:bg-primary/10 border border-border rounded-lg text-left transition-all hover:shadow-md group"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <div className="font-bold text-foreground group-hover:text-primary transition-colors text-sm">
+                            {product.name}
+                          </div>
+                          {product.barcode && (
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              Code: {product.barcode}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <div className="text-xs text-muted-foreground">
+                          {product.type === 'weight' ? 'au kg' : 'unité'}
+                        </div>
+                        <div className="text-lg font-bold text-primary">
+                          {product.price.toFixed(2)}€
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-foreground font-bold text-sm mb-4 px-2 flex items-center gap-2">
+                  <div className="h-1 w-1 rounded-full bg-primary"></div>
+                  CATÉGORIES
+                </h2>
+                <CategoryGrid 
+                  onProductSelect={handleProductSelect} 
+                  onCategorySelect={setSelectedCategory}
+                  selectedCategory={selectedCategory}
+                />
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Dialogs */}
+      <DiscountDialog
+        open={discountDialogOpen}
+        onOpenChange={setDiscountDialogOpen}
+        onApply={handleApplyDiscount}
+        title={discountTarget?.type === 'global' ? 'Remise globale' : 'Remise sur article'}
+      />
+
+      <PromoCodeDialog
+        open={promoDialogOpen}
+        onOpenChange={setPromoDialogOpen}
+        onApply={handleApplyPromoCode}
+      />
+
       <PaymentDialog
         open={paymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
-        total={getTotals().total}
-        onConfirmPayment={handleConfirmPaymentDialog}
+        total={totals.total}
+        onConfirmPayment={handleConfirmPayment}
         onMixedPayment={() => {
           setPaymentDialogOpen(false);
           setMixedPaymentDialogOpen(true);
@@ -1067,66 +1948,21 @@ const Index = () => {
       <MixedPaymentDialog
         open={mixedPaymentDialogOpen}
         onOpenChange={setMixedPaymentDialogOpen}
-        total={getTotals().total}
-        onConfirmPayment={handleConfirmMixedPayment}
+        total={totals.total}
+        onConfirmPayment={handleMixedPayment}
         customerId={selectedCustomer?.id}
       />
 
-      <DiscountDialog
-        open={discountDialogOpen}
-        onOpenChange={setDiscountDialogOpen}
-        onApply={handleApplyDiscount}
+      <SavedCartsDialog
+        open={savedCartsDialogOpen}
+        onOpenChange={setSavedCartsDialogOpen}
+        currentCart={cart}
+        onLoadCart={handleLoadCart}
       />
 
-      <PromoCodeDialog
-        open={promoDialogOpen}
-        onOpenChange={setPromoDialogOpen}
-        onApply={handleApplyPromo}
-      />
-
-      <CustomerDialog
-        open={customerDialogOpen}
-        onOpenChange={setCustomerDialogOpen}
-        onSelectCustomer={(customer) => {
-          setSelectedCustomer(customer);
-          setCustomerDialogOpen(false);
-        }}
-      />
-
-      <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
-        <DialogContent className="max-w-sm p-0">
-          <DialogHeader className="p-4 pb-0">
-            <DialogTitle className="text-center">TICKET DE CAISSE</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[70vh] overflow-y-auto">
-            {currentSale && <ThermalReceipt sale={currentSale} />}
-          </div>
-          <div className="p-4 border-t flex gap-2">
-            <Button variant="outline" onClick={() => setReceiptDialogOpen(false)} className="flex-1">
-              Fermer
-            </Button>
-            <Button
-              onClick={() => {
-                printThermalReceipt();
-                setTimeout(() => setReceiptDialogOpen(false), 500);
-              }}
-              className="flex-1 bg-accent"
-            >
-              IMPRIMER
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <PinLockDialog open={isLocked} onUnlock={() => setIsLocked(false)} />
-
-      <RefundDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen} />
-
-      <RemoteScanDialog
-        onSessionCreated={(id, code) => {
-          setRemoteScanSessionId(id);
-          toast.success(`Session distante ${code} démarrée`);
-        }}
+      <RefundDialog
+        open={refundDialogOpen}
+        onOpenChange={setRefundDialogOpen}
       />
 
       <PhysicalScanActionDialog
@@ -1134,50 +1970,113 @@ const Index = () => {
         onOpenChange={setPhysicalScanDialogOpen}
         barcode={scannedBarcode}
         product={scannedProduct}
-        onAddToCart={() => {
-          if (scannedProduct) {
-            handleProductSelect(scannedProduct);
-          }
-          setPhysicalScanDialogOpen(false);
-        }}
-        onAddToRemoteScan={() => {
-          if (!scannedProduct) return;
-          if (!remoteScanSessionId) {
-            toast.error("Ouvrez d'abord le scanner à distance");
-            return;
-          }
-          toast.success('Envoyé au scanner à distance');
-        }}
-        onViewProduct={() => {
-          if (scannedProduct) {
-            navigate(`/products?highlight=${scannedProduct.id}`);
-          }
-        }}
-        onCreateProduct={() => {
-          navigate(`/products?create&barcode=${scannedBarcode}`);
-        }}
+        onAddToCart={handlePhysicalScanAddToCart}
+        onAddToRemoteScan={handlePhysicalScanAddToRemote}
+        onViewProduct={handlePhysicalScanViewProduct}
+        onCreateProduct={handlePhysicalScanCreateProduct}
       />
 
+      <CustomerDialog
+        open={customerDialogOpen}
+        onOpenChange={setCustomerDialogOpen}
+        onSelectCustomer={handleSelectCustomer}
+      />
+
+
+      {/* Confirmation d'impression */}
+      <Dialog open={printConfirmDialogOpen} onOpenChange={setPrintConfirmDialogOpen}>
+        <DialogContent className="max-w-md bg-white border-2 border-primary">
+          <DialogHeader>
+            <DialogTitle className="text-primary text-xl font-bold">Voulez-vous imprimer le ticket?</DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-4">
+            <p className="text-muted-foreground mb-6">
+              Impression sur imprimante thermique POS80
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setPrintConfirmDialogOpen(false);
+                  setCurrentSale(null);
+                }}
+                className="flex-1 h-14 text-base font-semibold"
+              >
+                Non, merci
+              </Button>
+              <Button
+                onClick={() => {
+                  setPrintConfirmDialogOpen(false);
+                  setReceiptDialogOpen(true);
+                }}
+                className="flex-1 h-14 bg-primary hover:bg-primary/90 text-white text-base font-bold"
+              >
+                Oui, imprimer
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog d'impression thermique */}
+      <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
+        <DialogContent className="max-w-sm bg-white border-2 border-primary p-0">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle className="text-primary font-bold text-center">TICKET DE CAISSE</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[70vh] overflow-y-auto">
+            {currentSale && <ThermalReceipt sale={currentSale} />}
+          </div>
+          <div className="p-4 border-t bg-muted/30 flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setReceiptDialogOpen(false);
+                setCurrentSale(null);
+              }}
+              className="flex-1 h-12 font-semibold"
+            >
+              Fermer
+            </Button>
+            <Button
+              onClick={() => {
+                printThermalReceipt();
+                setTimeout(() => {
+                  setReceiptDialogOpen(false);
+                  setCurrentSale(null);
+                }, 500);
+              }}
+              className="flex-1 h-12 bg-accent hover:bg-accent/90 text-white font-bold"
+            >
+              IMPRIMER
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Daily Reports Dialogs */}
       <OpenDayDialog
         open={openDayDialogOpen}
         onOpenChange={setOpenDayDialogOpen}
         onConfirm={handleOpenDay}
       />
 
-      <ReportXDialog
-        open={reportXDialogOpen}
-        onOpenChange={setReportXDialogOpen}
-        reportData={reportData}
-        todayReport={todayReport}
-      />
-
       <CloseDayDialog
         open={closeDayDialogOpen}
         onOpenChange={setCloseDayDialogOpen}
         onConfirm={handleCloseDay}
-        reportData={reportData!}
+        reportData={reportData || { totalSales: 0, totalCash: 0, totalCard: 0, totalMobile: 0, salesCount: 0, vatByRate: {} }}
         todayReport={todayReport}
       />
+
+      {reportData && (
+        <ReportXDialog
+          open={reportXDialogOpen}
+          onOpenChange={setReportXDialogOpen}
+          reportData={reportData}
+          todayReport={todayReport}
+        />
+      )}
     </div>
   );
 };

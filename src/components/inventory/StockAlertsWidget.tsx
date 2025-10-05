@@ -2,22 +2,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
-import { AlertTriangle, Package, ExternalLink } from 'lucide-react';
+import { useProductBatches } from '@/hooks/useProductBatches';
+import { AlertTriangle, Package, Calendar, ExternalLink } from 'lucide-react';
+import { differenceInDays, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
 export function StockAlertsWidget() {
   const { data: products } = useProducts();
+  const { data: batches } = useProductBatches();
   const navigate = useNavigate();
 
   const lowStockProducts = products?.filter(p => 
     p.stock !== null && p.min_stock !== null && p.stock <= p.min_stock && p.is_active
   ) || [];
 
+  const expiringBatches = batches?.filter(batch => {
+    if (!batch.expiry_date) return false;
+    const daysUntilExpiry = differenceInDays(parseISO(batch.expiry_date), new Date());
+    return daysUntilExpiry >= 0 && daysUntilExpiry <= 30;
+  }) || [];
+
   const outOfStockProducts = products?.filter(p => 
     p.stock !== null && p.stock <= 0 && p.is_active
   ) || [];
 
-  const totalAlerts = lowStockProducts.length + outOfStockProducts.length;
+  const totalAlerts = lowStockProducts.length + expiringBatches.length + outOfStockProducts.length;
 
   if (totalAlerts === 0) {
     return (
@@ -91,6 +100,33 @@ export function StockAlertsWidget() {
               {lowStockProducts.length > 3 && (
                 <p className="text-xs text-muted-foreground">
                   +{lowStockProducts.length - 3} autres produits
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {expiringBatches.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-yellow-600 font-medium">
+              <Calendar className="h-4 w-4" />
+              Lots proches expiration ({expiringBatches.length})
+            </div>
+            <div className="space-y-1 pl-6">
+              {expiringBatches.slice(0, 3).map(batch => {
+                const daysLeft = differenceInDays(parseISO(batch.expiry_date!), new Date());
+                return (
+                  <div key={batch.id} className="text-sm text-muted-foreground flex items-center justify-between">
+                    <span>{batch.batch_number}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {daysLeft}j restants
+                    </Badge>
+                  </div>
+                );
+              })}
+              {expiringBatches.length > 3 && (
+                <p className="text-xs text-muted-foreground">
+                  +{expiringBatches.length - 3} autres lots
                 </p>
               )}
             </div>

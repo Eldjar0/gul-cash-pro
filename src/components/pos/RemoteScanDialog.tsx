@@ -1,27 +1,34 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Smartphone, QrCode } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useCreateScanSession, useCloseScanSession } from '@/hooks/useRemoteScan';
+
 interface RemoteScanDialogProps {
   onSessionCreated: (sessionId: string, sessionCode: string) => void;
 }
-export function RemoteScanDialog({
-  onSessionCreated
-}: RemoteScanDialogProps) {
+
+export function RemoteScanDialog({ onSessionCreated }: RemoteScanDialogProps) {
   const [open, setOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
-  const [currentSession, setCurrentSession] = useState<{
-    id: string;
-    code: string;
-  } | null>(null);
+  const [currentSession, setCurrentSession] = useState<{ id: string; code: string } | null>(null);
+  
   const createSession = useCreateScanSession();
   const closeSession = useCloseScanSession();
+
   const handleOpenChange = (isOpen: boolean) => {
     // Ne pas fermer automatiquement la session
     setOpen(isOpen);
   };
+  
   const handleCloseSession = () => {
     if (currentSession) {
       closeSession.mutate(currentSession.id);
@@ -30,15 +37,13 @@ export function RemoteScanDialog({
     }
     setOpen(false);
   };
+
   const handleCreateSession = async () => {
     try {
       const session = await createSession.mutateAsync();
-      setCurrentSession({
-        id: session.id,
-        code: session.session_code
-      });
+      setCurrentSession({ id: session.id, code: session.session_code });
       onSessionCreated(session.id, session.session_code);
-
+      
       // Generate QR code with scanner URL
       const scannerUrl = `${window.location.origin}/remote-scanner/${session.session_code}`;
       const qrUrl = await QRCode.toDataURL(scannerUrl, {
@@ -46,22 +51,27 @@ export function RemoteScanDialog({
         margin: 2,
         color: {
           dark: '#000000',
-          light: '#FFFFFF'
-        }
+          light: '#FFFFFF',
+        },
       });
       setQrCodeUrl(qrUrl);
     } catch (error) {
       console.error('Error creating session:', error);
     }
   };
+
   useEffect(() => {
     if (open && !currentSession) {
       handleCreateSession();
     }
   }, [open]);
-  return <Dialog open={open} onOpenChange={handleOpenChange}>
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        
+        <Button variant="outline" size="icon">
+          <Smartphone className="h-4 w-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -75,7 +85,8 @@ export function RemoteScanDialog({
         </DialogHeader>
         
         <div className="flex flex-col items-center gap-4 py-4">
-          {qrCodeUrl ? <>
+          {qrCodeUrl ? (
+            <>
               <div className="p-4 bg-white rounded-lg border-4 border-primary">
                 <img src={qrCodeUrl} alt="QR Code" className="w-full h-auto" />
               </div>
@@ -97,15 +108,23 @@ export function RemoteScanDialog({
                 </ol>
               </div>
               
-              <Button variant="destructive" className="w-full" onClick={handleCloseSession}>
+              <Button 
+                variant="destructive" 
+                className="w-full"
+                onClick={handleCloseSession}
+              >
                 Fermer la session
               </Button>
-            </> : <div className="flex items-center justify-center h-64">
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-64">
               <div className="animate-pulse text-muted-foreground">
                 Génération du QR code...
               </div>
-            </div>}
+            </div>
+          )}
         </div>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 }

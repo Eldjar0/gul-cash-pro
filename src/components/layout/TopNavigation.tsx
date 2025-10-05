@@ -22,7 +22,6 @@ import {
   UserCog,
   Truck,
 } from 'lucide-react';
-import logoGulReyhan from '@/assets/logo-gul-reyhan-2.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadNotificationsCount } from '@/hooks/useNotifications';
 import { NotificationPanel } from '@/components/notifications/NotificationPanel';
@@ -52,106 +51,203 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
     navigate('/auth');
   };
 
-  const topMenuItems = [
-    { icon: ShoppingCart, label: "Caisse", path: "/" },
-    { icon: Receipt, label: "Ventes", path: "/sales" },
-    { icon: Package, label: "Produits", path: "/products" },
-    { icon: TrendingUp, label: "Dashboard", path: "/dashboard" },
-    { icon: FileText, label: "Documents", path: "/documents" },
-  ];
-
-  const bottomMenuItems = [
-    { icon: Truck, label: "Stock & Fournisseurs", path: "/stock-management" },
-    { icon: Users, label: "Clients", path: "/customers" },
-    { icon: Tags, label: "Promotions & Remb.", path: "/clients-management" },
-    { icon: Settings, label: "Configuration", path: "/settings" },
-  ];
+  const menuItems = {
+    ventes: [
+      { icon: ShoppingCart, label: "Caisse", path: "/" },
+      { icon: Receipt, label: "Ventes", path: "/sales" },
+      { icon: FileText, label: "Factures", path: "/invoices" },
+      { icon: FileText, label: "Commandes", path: "/orders" },
+      { icon: AlertTriangle, label: "Remboursements", path: "/refunds" },
+    ],
+    gestion: [
+      { icon: Package, label: "Produits", path: "/products" },
+      { icon: Truck, label: "Stock", path: "/inventory" },
+      { icon: Clock, label: "Historique", path: "/stock-history" },
+      { icon: Users, label: "Fournisseurs", path: "/suppliers" },
+    ],
+    clients: [
+      { icon: Users, label: "Clients", path: "/customers" },
+      { icon: Gift, label: "Fidélité", path: "/loyalty" },
+      { icon: Tags, label: "Promotions", path: "/promotions" },
+      { icon: CreditCard, label: "Paiements", path: "/payments" },
+    ],
+    rapports: [
+      { icon: TrendingUp, label: "Dashboard", path: "/dashboard" },
+      { icon: BarChart3, label: "Analyses", path: "/analytics" },
+      { icon: FileBarChart, label: "Rapports", path: "/reports-history" },
+    ],
+  };
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-gradient-to-r from-primary to-primary-glow shadow-lg">
-      <div className="flex flex-col">
-        {/* Première ligne - Principaux */}
-        <div className="flex h-14 items-center gap-4 px-6">
-          {/* Logo */}
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="shrink-0 gap-2 font-semibold hover:bg-white/10 text-white"
-          >
-            <img src={logoGulReyhan} alt="Gül Reyhan" className="h-8 w-8" />
-            <span className="hidden xl:inline">Gül Reyhan Market</span>
-          </Button>
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-16 items-center gap-4 px-4">
+        {/* Logo */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/")}
+          className="shrink-0"
+        >
+          <Home className="h-5 w-5" />
+        </Button>
 
-          {/* Boutons principaux */}
-          <div className="hidden lg:flex flex-1 gap-1 overflow-x-auto">
-            {topMenuItems.map((item) => (
-              <Button
-                key={item.path}
-                variant="ghost"
-                onClick={() => navigate(item.path)}
-                className="h-9 px-3 text-sm font-medium text-white hover:bg-white/10 gap-2 whitespace-nowrap"
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Button>
-            ))}
-          </div>
+        {/* Navigation Menu - Hidden on mobile */}
+        <div className="hidden lg:flex flex-1">
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="gap-2">
+                  <ShoppingCart className="h-4 w-4" />
+                  Ventes
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[400px] gap-3 p-4">
+                    {menuItems.ventes.map((item) => (
+                      <li key={item.path}>
+                        <NavigationMenuLink asChild>
+                          <button
+                            onClick={() => navigate(item.path)}
+                            className="flex items-center gap-3 w-full rounded-md p-3 text-sm leading-none hover:bg-accent transition-colors"
+                          >
+                            <item.icon className="h-5 w-5 text-primary" />
+                            <span className="font-medium">{item.label}</span>
+                          </button>
+                        </NavigationMenuLink>
+                      </li>
+                    ))}
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="h-9 w-9 text-white hover:bg-white/10"
-              >
-                <Bell className="h-4 w-4" />
-                {unreadCount > 0 && (
-                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-xs">
-                    {unreadCount}
-                  </Badge>
-                )}
-              </Button>
-              <NotificationPanel 
-                isOpen={showNotifications} 
-                onClose={() => setShowNotifications(false)} 
-              />
-            </div>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="gap-2">
+                  <Package className="h-4 w-4" />
+                  Gestion
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[400px] gap-3 p-4">
+                    {menuItems.gestion.map((item) => (
+                      <li key={item.path}>
+                        <NavigationMenuLink asChild>
+                          <button
+                            onClick={() => navigate(item.path)}
+                            className="flex items-center gap-3 w-full rounded-md p-3 text-sm leading-none hover:bg-accent transition-colors"
+                          >
+                            <item.icon className="h-5 w-5 text-primary" />
+                            <span className="font-medium">{item.label}</span>
+                          </button>
+                        </NavigationMenuLink>
+                      </li>
+                    ))}
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onLockScreen}
-              className="h-9 w-9 text-white hover:bg-white/10"
-            >
-              <Lock className="h-4 w-4" />
-            </Button>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="gap-2">
+                  <Users className="h-4 w-4" />
+                  Clients
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[400px] gap-3 p-4">
+                    {menuItems.clients.map((item) => (
+                      <li key={item.path}>
+                        <NavigationMenuLink asChild>
+                          <button
+                            onClick={() => navigate(item.path)}
+                            className="flex items-center gap-3 w-full rounded-md p-3 text-sm leading-none hover:bg-accent transition-colors"
+                          >
+                            <item.icon className="h-5 w-5 text-primary" />
+                            <span className="font-medium">{item.label}</span>
+                          </button>
+                        </NavigationMenuLink>
+                      </li>
+                    ))}
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleSignOut}
-              className="h-9 w-9 text-white hover:bg-white/10"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Rapports
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[400px] gap-3 p-4">
+                    {menuItems.rapports.map((item) => (
+                      <li key={item.path}>
+                        <NavigationMenuLink asChild>
+                          <button
+                            onClick={() => navigate(item.path)}
+                            className="flex items-center gap-3 w-full rounded-md p-3 text-sm leading-none hover:bg-accent transition-colors"
+                          >
+                            <item.icon className="h-5 w-5 text-primary" />
+                            <span className="font-medium">{item.label}</span>
+                          </button>
+                        </NavigationMenuLink>
+                      </li>
+                    ))}
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/settings")}
+                  className="gap-2"
+                >
+                  <Settings className="h-4 w-4" />
+                  Paramètres
+                </Button>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
         </div>
 
-        {/* Deuxième ligne - Stock, Clients, Promos */}
-        <div className="hidden lg:flex h-12 items-center gap-1 px-6 bg-white/5 border-t border-white/10 overflow-x-auto">
-          {bottomMenuItems.map((item) => (
+        {/* Actions */}
+        <div className="flex items-center gap-2 ml-auto">
+          <div className="relative">
             <Button
-              key={item.path}
               variant="ghost"
-              onClick={() => navigate(item.path)}
-              className="h-8 px-3 text-xs font-medium text-white hover:bg-white/10 gap-2 whitespace-nowrap"
+              size="icon"
+              onClick={() => setShowNotifications(!showNotifications)}
             >
-              <item.icon className="h-3.5 w-3.5" />
-              <span>{item.label}</span>
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  {unreadCount}
+                </Badge>
+              )}
             </Button>
-          ))}
+            <NotificationPanel 
+              isOpen={showNotifications} 
+              onClose={() => setShowNotifications(false)} 
+            />
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onLockScreen}
+          >
+            <Lock className="h-5 w-5" />
+          </Button>
+
+          <div className="hidden md:flex items-center gap-2 pl-2 border-l">
+            <UserCog className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">{user?.email}</span>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleSignOut}
+            className="text-destructive hover:text-destructive"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
         </div>
       </div>
     </nav>

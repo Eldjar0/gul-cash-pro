@@ -13,12 +13,8 @@ interface ReportXDialogProps {
 }
 
 export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: ReportXDialogProps) {
-  const expectedCash = todayReport && reportData ? todayReport.opening_amount + reportData.totalCash : (reportData?.totalCash || 0);
+  const expectedCash = todayReport ? todayReport.opening_amount + reportData.totalCash : reportData.totalCash;
   const { settings } = useCompanySettings();
-
-  if (!reportData) {
-    return null;
-  }
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');

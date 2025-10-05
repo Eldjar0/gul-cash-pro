@@ -528,10 +528,6 @@ export function CloseDayDialog({ open, onOpenChange, onConfirm, reportData, toda
   const [archiveAndDelete, setArchiveAndDelete] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
 
-  if (!reportData) {
-    return null;
-  }
-
   const expectedCash = todayReport ? todayReport.opening_amount + reportData.totalCash : reportData.totalCash;
   const difference = amount ? parseFloat(amount) - expectedCash : 0;
 
