@@ -81,7 +81,7 @@ const Index = () => {
   } = useCategories();
   const createSale = useCreateSale();
   const createGiftCard = useCreateGiftCard();
-  const useGiftCard = useUseGiftCard();
+  const useGiftCardMutation = useUseGiftCard();
   const scanInputRef = useRef<HTMLInputElement>(null);
   const {
     temperature,
@@ -834,6 +834,21 @@ const Index = () => {
     try {
       const sale = await createSale.mutateAsync(saleData);
 
+      // Si une carte cadeau est appliquée, l'utiliser
+      if (appliedGiftCard) {
+        const amountToUse = Math.min(appliedGiftCard.availableBalance, totals.total);
+        try {
+          await useGiftCardMutation.mutateAsync({
+            cardId: appliedGiftCard.cardId,
+            amount: amountToUse,
+            saleId: sale.id
+          });
+        } catch (error) {
+          console.error('Error using gift card:', error);
+          toast.error('Erreur lors de l\'utilisation de la carte cadeau');
+        }
+      }
+
       // Préparer les données de vente pour le reçu
       const saleForReceipt = {
         ...sale,
@@ -950,13 +965,30 @@ const Index = () => {
   };
 
   // Handler pour appliquer une carte cadeau comme moyen de paiement
-  const handleApplyGiftCard = (cardNumber: string, cardId: string, availableBalance: number) => {
-    setAppliedGiftCard({
-      cardNumber,
-      cardId,
-      availableBalance
-    });
-    toast.success(`Carte cadeau ${cardNumber} appliquée (${availableBalance.toFixed(2)}€)`);
+  const handleApplyGiftCard = async (cardNumber: string, cardId: string, availableBalance: number) => {
+    const totals = getTotals();
+    
+    if (availableBalance >= totals.total) {
+      // Solde suffisant - Paiement complet par carte cadeau
+      setAppliedGiftCard({
+        cardNumber,
+        cardId,
+        availableBalance
+      });
+      
+      // Valider automatiquement le paiement
+      await handleConfirmPayment('gift_card');
+    } else {
+      // Solde insuffisant - Appliquer la carte et ouvrir le paiement mixte
+      setAppliedGiftCard({
+        cardNumber,
+        cardId,
+        availableBalance
+      });
+      
+      // Ouvrir le dialogue de paiement mixte
+      setMixedPaymentDialogOpen(true);
+    }
   };
 
   // Gestionnaire pour charger un panier sauvegardé
@@ -1840,6 +1872,7 @@ const Index = () => {
         onOpenChange={setGiftCardDialogOpen}
         onAddGiftCardToCart={handleAddGiftCardToCart}
         onApplyGiftCard={handleApplyGiftCard}
+        cartTotal={totals.total}
       />
 
       {selectedCustomer && (

@@ -20,9 +20,10 @@ interface GiftCardDialogProps {
   onOpenChange: (open: boolean) => void;
   onAddGiftCardToCart?: (cardNumber: string, amount: number, senderName: string, message: string) => void;
   onApplyGiftCard?: (cardNumber: string, cardId: string, availableBalance: number) => void;
+  cartTotal: number;
 }
 
-export const GiftCardDialog = ({ open, onOpenChange, onAddGiftCardToCart, onApplyGiftCard }: GiftCardDialogProps) => {
+export const GiftCardDialog = ({ open, onOpenChange, onAddGiftCardToCart, onApplyGiftCard, cartTotal }: GiftCardDialogProps) => {
   const { data: giftCards } = useGiftCards();
   const { data: customers } = useCustomers();
   
@@ -69,7 +70,17 @@ export const GiftCardDialog = ({ open, onOpenChange, onAddGiftCardToCart, onAppl
 
   const handleApplyToCart = () => {
     if (verifiedCard && onApplyGiftCard) {
-      onApplyGiftCard(verifiedCard.card_number, verifiedCard.id, verifiedCard.current_balance);
+      const cardBalance = verifiedCard.current_balance;
+      
+      if (cardBalance >= cartTotal) {
+        // Solde suffisant - paiement complet
+        toast.success(`Paiement complet par carte cadeau (${cardBalance.toFixed(2)}€)`);
+      } else {
+        // Solde insuffisant - paiement mixte nécessaire
+        toast.info(`Solde de ${cardBalance.toFixed(2)}€ appliqué, paiement du reste requis`);
+      }
+      
+      onApplyGiftCard(verifiedCard.card_number, verifiedCard.id, cardBalance);
       onOpenChange(false);
     }
   };
@@ -167,9 +178,32 @@ export const GiftCardDialog = ({ open, onOpenChange, onAddGiftCardToCart, onAppl
                   <span className="font-medium">{format(new Date(verifiedCard.issued_date), 'dd/MM/yyyy')}</span>
                 </div>
                 
-                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mt-3">
-                  <p className="text-sm text-blue-800">
-                    <strong>Info:</strong> Le montant de la carte sera déduit du total lors du paiement.
+                {cartTotal > 0 && (
+                  <>
+                    <div className="border-t border-border my-3" />
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Total panier:</span>
+                      <span className="font-bold">{cartTotal.toFixed(2)} €</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Montant utilisé:</span>
+                      <span className="font-bold text-green-600">-{Math.min(verifiedCard.current_balance, cartTotal).toFixed(2)} €</span>
+                    </div>
+                    {verifiedCard.current_balance < cartTotal && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Reste à payer:</span>
+                        <span className="font-bold text-orange-600">{(cartTotal - verifiedCard.current_balance).toFixed(2)} €</span>
+                      </div>
+                    )}
+                  </>
+                )}
+                
+                <div className={`${verifiedCard.current_balance >= cartTotal ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'} border p-3 rounded-lg mt-3`}>
+                  <p className={`text-sm ${verifiedCard.current_balance >= cartTotal ? 'text-green-800' : 'text-orange-800'}`}>
+                    <strong>{verifiedCard.current_balance >= cartTotal ? '✓ Paiement complet' : '⚠ Paiement partiel'}:</strong> 
+                    {verifiedCard.current_balance >= cartTotal 
+                      ? ' Le solde de la carte couvre le total. Le paiement sera validé automatiquement.'
+                      : ' Le solde de la carte ne couvre pas le total. Le montant de la carte sera déduit et vous devrez payer le reste.'}
                   </p>
                 </div>
 
