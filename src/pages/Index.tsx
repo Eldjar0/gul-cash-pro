@@ -1177,8 +1177,25 @@ const Index = () => {
           </form>
         </div>
         
-        {/* Droite: Bouton Affichage uniquement */}
+        {/* Droite: Boutons Affichage et Gestion */}
         <div className="flex items-center gap-0.5">
+          {!isDayOpenEffective ? (
+            <Button onClick={() => setOpenDayDialogOpen(true)} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md whitespace-nowrap">
+              <Calendar className="h-3 w-3 mr-1" />
+              <span>Ouvrir</span>
+            </Button>
+          ) : (
+            <>
+              <Button onClick={handleReportX} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md whitespace-nowrap">
+                <FileText className="h-3 w-3 mr-1" />
+                <span>Rapport X</span>
+              </Button>
+              <Button onClick={() => setCloseDayDialogOpen(true)} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md whitespace-nowrap">
+                <CalendarX className="h-3 w-3 mr-1" />
+                <span>Fermer</span>
+              </Button>
+            </>
+          )}
           <Button onClick={openCustomerDisplay} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md whitespace-nowrap">
             <Eye className="h-3 w-3 mr-1" />
             <span>Affichage</span>
@@ -1483,24 +1500,6 @@ const Index = () => {
               </div>}
           </Card>
 
-          {/* Boutons gestion de journée - Carrés */}
-          <Card className="bg-background border-2 border-border p-2 flex-shrink-0">
-            <div className="grid grid-cols-3 gap-1">
-              {!isDayOpenEffective ? <Button onClick={() => setOpenDayDialogOpen(true)} className="h-12 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md font-semibold">
-                  <Calendar className="h-4 w-4" />
-                  <span className="text-[10px]">Ouvrir</span>
-                </Button> : <>
-                  <Button onClick={handleReportX} className="h-12 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md font-semibold">
-                    <FileText className="h-4 w-4" />
-                    <span className="text-[10px]">Rapport X</span>
-                  </Button>
-                  <Button onClick={() => setCloseDayDialogOpen(true)} className="h-12 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md font-semibold">
-                    <CalendarX className="h-4 w-4" />
-                    <span className="text-[10px]">Fermer</span>
-                  </Button>
-                </>}
-            </div>
-          </Card>
 
           {/* Historique des derniers tickets */}
           <Card className="bg-gradient-to-br from-background to-muted/10 border-2 border-border/50 p-2 flex-shrink-0 shadow-md">
