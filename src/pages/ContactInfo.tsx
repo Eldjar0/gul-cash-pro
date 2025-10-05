@@ -74,43 +74,130 @@ export default function ContactInfo() {
           </div>
         </Card>
 
-        {/* Décharge de responsabilité */}
-        <Card className="p-6 bg-amber-50 border-amber-200">
+        {/* Décharge de responsabilité renforcée */}
+        <Card className="p-6 bg-amber-50 border-amber-200 border-2">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <ShieldAlert className="h-6 w-6 text-amber-600" />
-              <h3 className="text-lg font-bold text-amber-900">Décharge de Responsabilité</h3>
+              <ShieldAlert className="h-7 w-7 text-amber-600" />
+              <h3 className="text-xl font-bold text-amber-900">Décharge Complète de Responsabilité</h3>
             </div>
             
-            <div className="space-y-3 text-sm text-amber-900 leading-relaxed">
-              <p className="text-justify">
-                <strong>JLprod</strong> retire toute responsabilité quant à l&apos;utilisation 
-                de ce logiciel. Le logiciel est fourni <strong>&quot;tel quel&quot;</strong>, sans garantie 
-                d&apos;aucune sorte, explicite ou implicite.
-              </p>
-              
-              <p className="text-justify">
-                <strong>JLprod</strong> ne pourra être tenu responsable de tout dommage direct ou 
-                indirect résultant de l&apos;utilisation de ce logiciel, y compris mais sans s&apos;y limiter : 
-                pertes de données, pertes financières, interruptions d&apos;activité, ou tout autre 
-                préjudice commercial.
-              </p>
-              
-              <p className="text-justify">
-                L&apos;utilisateur assume l&apos;entière responsabilité de l&apos;utilisation du logiciel et 
-                s&apos;engage à vérifier la conformité de son utilisation avec les lois et réglementations 
-                en vigueur.
-              </p>
+            <div className="space-y-4 text-sm text-amber-900 leading-relaxed">
+              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+                <p className="font-bold text-base mb-2">📋 Développement sur mesure</p>
+                <p className="text-justify">
+                  Ce logiciel a été développé <strong>sur mesure</strong> par <strong>JLprod 
+                  (TVA BE0784435238)</strong> selon les <strong>spécifications, exigences et 
+                  besoins spécifiques</strong> fournis par <strong>Gül Reyhan</strong>. Le 
+                  développement a été réalisé conformément aux demandes du client.
+                </p>
+              </div>
+
+              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+                <p className="font-bold text-base mb-2">⚠️ Limitation de responsabilité générale</p>
+                <p className="text-justify">
+                  <strong>JLprod (TVA BE0784435238)</strong> retire <strong>TOUTE 
+                  responsabilité</strong> quant à l&apos;utilisation de ce logiciel. Le logiciel 
+                  est fourni <strong>&quot;tel quel&quot;</strong> et <strong>&quot;tel que 
+                  demandé&quot;</strong> par le client, sans garantie d&apos;aucune sorte, 
+                  explicite ou implicite, notamment concernant :
+                </p>
+                <ul className="mt-2 space-y-1 ml-4">
+                  <li>• La conformité aux législations actuelles ou futures</li>
+                  <li>• L&apos;adéquation à un usage commercial particulier</li>
+                  <li>• La fiabilité ou la disponibilité continue du logiciel</li>
+                  <li>• L&apos;absence d&apos;erreurs ou de bugs</li>
+                  <li>• La sécurité des données</li>
+                </ul>
+              </div>
+
+              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+                <p className="font-bold text-base mb-2">📜 Évolution des lois et réglementations</p>
+                <p className="text-justify">
+                  <strong>JLprod</strong> ne peut être tenu responsable des <strong>évolutions 
+                  législatives, réglementaires ou normatives</strong> futures qui pourraient 
+                  affecter l&apos;utilisation du logiciel. Il appartient à <strong>Gül Reyhan</strong> 
+                  de s&apos;assurer que l&apos;utilisation du logiciel reste conforme aux lois 
+                  belges, européennes et internationales en vigueur, présentes et futures.
+                </p>
+                <p className="text-justify mt-2">
+                  Toute modification nécessaire pour assurer la conformité légale future 
+                  constituerait un <strong>nouveau développement</strong> distinct de la vente 
+                  initiale et ferait l&apos;objet d&apos;une nouvelle facturation.
+                </p>
+              </div>
+
+              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+                <p className="font-bold text-base mb-2">💼 Responsabilité de l&apos;utilisateur</p>
+                <p className="text-justify">
+                  <strong>Gül Reyhan</strong>, en tant que propriétaire et utilisateur final 
+                  du logiciel, assume <strong>l&apos;entière responsabilité</strong> de :
+                </p>
+                <ul className="mt-2 space-y-1 ml-4">
+                  <li>• L&apos;utilisation conforme aux lois et réglementations</li>
+                  <li>• La vérification de la conformité légale de ses pratiques</li>
+                  <li>• Les déclarations fiscales et comptables (TVA, impôts, etc.)</li>
+                  <li>• La protection des données personnelles (RGPD)</li>
+                  <li>• La sécurité et les sauvegardes des données</li>
+                  <li>• L&apos;utilisation appropriée des fonctionnalités</li>
+                  <li>• Les conséquences de toute utilisation inappropriée</li>
+                </ul>
+              </div>
+
+              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+                <p className="font-bold text-base mb-2">🚫 Exclusion de dommages</p>
+                <p className="text-justify">
+                  <strong>JLprod (TVA BE0784435238)</strong> ne pourra en aucun cas être tenu 
+                  responsable de tout dommage direct, indirect, accessoire, spécial ou consécutif 
+                  résultant de l&apos;utilisation ou de l&apos;impossibilité d&apos;utiliser ce 
+                  logiciel, y compris mais sans s&apos;y limiter :
+                </p>
+                <ul className="mt-2 space-y-1 ml-4">
+                  <li>• Pertes de données ou corruption de données</li>
+                  <li>• Pertes financières ou manque à gagner</li>
+                  <li>• Interruptions d&apos;activité commerciale</li>
+                  <li>• Amendes ou sanctions administratives</li>
+                  <li>• Litiges avec des tiers (clients, fournisseurs, autorités)</li>
+                  <li>• Non-conformité aux obligations légales futures</li>
+                  <li>• Tout autre préjudice commercial ou personnel</li>
+                </ul>
+              </div>
+
+              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+                <p className="font-bold text-base mb-2">⚖️ Obligation de l&apos;acquéreur</p>
+                <p className="text-justify">
+                  En acceptant ce logiciel, <strong>Gül Reyhan</strong> reconnaît et accepte 
+                  que :
+                </p>
+                <ul className="mt-2 space-y-1 ml-4">
+                  <li>• Le logiciel a été développé selon ses propres spécifications</li>
+                  <li>• Il lui appartient de vérifier la conformité légale de son utilisation</li>
+                  <li>• Il doit consulter des experts comptables et juridiques si nécessaire</li>
+                  <li>• Il assume tous les risques liés à l&apos;exploitation du logiciel</li>
+                  <li>• JLprod ne fournit aucune garantie de conformité légale continue</li>
+                  <li>• Aucune maintenance ou mise à jour n&apos;est incluse dans la vente</li>
+                </ul>
+              </div>
+
+              <div className="bg-red-100 p-4 rounded-lg border-2 border-red-400 mt-4">
+                <p className="font-bold text-base text-red-900 mb-2">⚠️ AVERTISSEMENT IMPORTANT</p>
+                <p className="text-justify text-red-900">
+                  L&apos;utilisation de ce logiciel se fait aux <strong>risques et périls</strong> de 
+                  l&apos;utilisateur. <strong>JLprod</strong> décline toute responsabilité 
+                  concernant les conséquences de son utilisation, que ce soit dans le présent ou 
+                  dans le futur, quelle que soit l&apos;évolution des lois et réglementations.
+                </p>
+              </div>
             </div>
           </div>
         </Card>
 
         {/* Contact Information */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6">
           <Card className="p-4 space-y-4">
             <h3 className="font-semibold text-lg flex items-center gap-2">
               <Info className="h-5 w-5 text-primary" />
-              Informations de contact
+              Informations de contact JLprod
             </h3>
             
             <div className="space-y-3">
@@ -161,6 +248,26 @@ export default function ContactInfo() {
                   <p className="text-sm font-medium">Localisation</p>
                   <p className="text-sm text-muted-foreground">
                     Belgique
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 pt-2 border-t">
+                <Info className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">Numéro de TVA</p>
+                  <p className="text-sm font-mono font-bold">
+                    BE0784435238
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Info className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">Représentant légal</p>
+                  <p className="text-sm text-muted-foreground">
+                    Jordan Lallemand
                   </p>
                 </div>
               </div>
