@@ -19,6 +19,7 @@ import { PinLockDialog } from '@/components/pos/PinLockDialog';
 import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { PhysicalScanActionDialog } from '@/components/pos/PhysicalScanActionDialog';
+import { UnknownBarcodeDialog } from '@/components/pos/UnknownBarcodeDialog';
 import { WeightInputDialog } from '@/components/pos/WeightInputDialog';
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
@@ -230,6 +231,10 @@ const Index = () => {
   const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
   const [scannedBarcode, setScannedBarcode] = useState<string>('');
   const [scannedProduct, setScannedProduct] = useState<Product | null>(null);
+
+  // Unknown barcode dialog for creating products on the fly
+  const [unknownBarcodeDialogOpen, setUnknownBarcodeDialogOpen] = useState(false);
+  const [unknownBarcode, setUnknownBarcode] = useState<string>('');
 
   // Protection contre la perte du panier en cours
   useEffect(() => {
@@ -673,7 +678,7 @@ const Index = () => {
       return;
     }
 
-    // Si inconnu, afficher un toast avec action pour créer
+    // Si inconnu, ouvrir le dialog de création de produit
     console.log('[POS] ✗ Aucun produit trouvé pour:', normalized);
     
     // Ajouter à l'historique - non trouvé (limité à 5)
@@ -683,16 +688,12 @@ const Index = () => {
       timestamp: Date.now()
     }, ...prev].slice(0, 5));
     
-    toast.error('Code-barres inconnu', {
-      description: `Aucun produit lié à ${normalized}`,
-      action: {
-        label: 'Créer produit',
-        onClick: () => navigate(`/products?new=1&barcode=${encodeURIComponent(normalized)}`)
-      }
-    });
+    // Ouvrir le dialog pour créer le produit directement
+    setUnknownBarcode(normalized);
+    setUnknownBarcodeDialogOpen(true);
     setScanInput("");
     setPrefixQuantity(null); // Réinitialiser la quantité préfixe
-  }, [products, navigate, handleProductSelect, prefixQuantity]);
+  }, [products, handleProductSelect, prefixQuantity]);
 
   // Physical barcode scanner using dedicated hook
   usePhysicalScanner({
@@ -1145,6 +1146,20 @@ const Index = () => {
       setPhysicalScanDialogOpen(false);
     }
   };
+
+  // Handler pour quand un produit est créé/lié depuis le UnknownBarcodeDialog
+  const handleUnknownBarcodeProductLinked = useCallback((productId: string) => {
+    // Trouver le produit créé/lié
+    const product = products?.find(p => p.id === productId);
+    if (product) {
+      // Utiliser la quantité préfixe si elle existe
+      const qtyToUse = prefixQuantity && prefixQuantity > 0 ? prefixQuantity : undefined;
+      handleProductSelect(product, qtyToUse);
+      toast.success(`${product.name} ajouté au panier`);
+      setPrefixQuantity(null);
+    }
+    setUnknownBarcodeDialogOpen(false);
+  }, [products, handleProductSelect, prefixQuantity]);
 
   // Gestionnaire pour paiement mixte
   const handleMixedPayment = async (payments: Array<{
@@ -2431,6 +2446,13 @@ const Index = () => {
       />
 
       <PhysicalScanActionDialog open={physicalScanDialogOpen} onOpenChange={setPhysicalScanDialogOpen} barcode={scannedBarcode} product={scannedProduct} onAddToCart={handlePhysicalScanAddToCart} onViewProduct={handlePhysicalScanViewProduct} onCreateProduct={handlePhysicalScanCreateProduct} />
+
+      <UnknownBarcodeDialog 
+        open={unknownBarcodeDialogOpen} 
+        onClose={() => setUnknownBarcodeDialogOpen(false)} 
+        barcode={unknownBarcode}
+        onProductLinked={handleUnknownBarcodeProductLinked}
+      />
 
       <CustomerDialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen} onSelectCustomer={handleSelectCustomer} />
 
