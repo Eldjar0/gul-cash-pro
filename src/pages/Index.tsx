@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, Gift, AlertCircle } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, Gift, AlertCircle, Smartphone } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
@@ -1598,6 +1598,17 @@ const Index = () => {
                 {todaySales?.filter(s => !s.is_cancelled).slice(0, 10).map(sale => {
                   const itemCount = sale.sale_items?.length || 0;
                   
+                  // Icône selon le moyen de paiement
+                  const PaymentIcon = sale.payment_method === 'card' ? CreditCard :
+                                     sale.payment_method === 'cash' ? Banknote :
+                                     sale.payment_method === 'mobile' ? Smartphone :
+                                     sale.payment_method === 'voucher' ? UserCog : Ticket;
+                  
+                  const iconColor = sale.payment_method === 'card' ? 'text-blue-500' :
+                                   sale.payment_method === 'cash' ? 'text-green-500' :
+                                   sale.payment_method === 'mobile' ? 'text-purple-500' :
+                                   sale.payment_method === 'voucher' ? 'text-cyan-500' : 'text-primary';
+                  
                   return (
                     <button 
                       key={sale.id} 
@@ -1626,7 +1637,7 @@ const Index = () => {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                          <Ticket className="h-3 w-3 text-primary flex-shrink-0" />
+                          <PaymentIcon className={`h-3 w-3 ${iconColor} flex-shrink-0`} />
                           <div className="flex-1 min-w-0">
                             <div className="text-[9px] font-bold text-foreground truncate group-hover:text-primary transition-colors">
                               {sale.sale_number}
