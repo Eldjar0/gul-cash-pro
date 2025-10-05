@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database } from 'lucide-react';
+import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,6 +14,18 @@ import { FiscalSettings } from '@/components/settings/FiscalSettings';
 import { BackupSettings } from '@/components/settings/BackupSettings';
 import UserManagement from './UserManagement';
 import ContactInfo from './ContactInfo';
+import { useDataCleanup } from '@/hooks/useDataCleanup';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface BankAccount {
   id: string;
@@ -44,6 +56,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { deleteAllData, isDeleting } = useDataCleanup();
 
   const [settings, setSettings] = useState<InvoiceSettings>({
     is_company: true,
@@ -219,7 +232,7 @@ export default function Settings() {
 
       <div className="container mx-auto px-6 py-8">
         <Tabs defaultValue="billing" className="w-full space-y-6">
-          <TabsList className="grid w-full grid-cols-5 mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-6 mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
             <TabsTrigger value="billing" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               <Building className="h-4 w-4" />
               Facturation
@@ -231,6 +244,10 @@ export default function Settings() {
             <TabsTrigger value="backup" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               <Database className="h-4 w-4" />
               Sauvegarde
+            </TabsTrigger>
+            <TabsTrigger value="cleanup" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-orange-600 data-[state=active]:text-white">
+              <Trash2 className="h-4 w-4" />
+              Nettoyage
             </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               <Users className="h-4 w-4" />
@@ -594,6 +611,130 @@ export default function Settings() {
 
           <TabsContent value="backup">
             <BackupSettings />
+          </TabsContent>
+
+          <TabsContent value="cleanup" className="space-y-6">
+            <Card className="p-8 bg-gradient-to-br from-red-50 to-orange-50 dark:from-gray-800 dark:to-red-900/20 border-2 border-red-200 dark:border-red-800 shadow-xl">
+              <div className="flex items-start gap-6 mb-8">
+                <div className="p-4 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl text-white">
+                  <AlertTriangle className="h-8 w-8" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold mb-2 text-red-900 dark:text-red-100">
+                    Zone dangereuse - Nettoyage des données
+                  </h2>
+                  <p className="text-base text-red-700 dark:text-red-300 mb-6">
+                    Cette action supprimera définitivement toutes les données de test de votre base de données. 
+                    <strong> Cette action est irréversible !</strong>
+                  </p>
+                  
+                  <div className="bg-white/80 dark:bg-gray-900/50 rounded-lg p-6 mb-6 space-y-3">
+                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                      <Database className="h-5 w-5" />
+                      Données qui seront supprimées :
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span>Tous les produits</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span>Tous les clients</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span>Toutes les ventes/factures</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span>Toutes les commandes</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span>Tous les devis</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span>Toutes les promotions</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span>Tous les rapports journaliers</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span>Tous les mouvements de stock</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span>Toutes les catégories</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span>Et toutes les autres données...</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg p-4 mb-6">
+                    <div className="flex gap-3">
+                      <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-yellow-900 dark:text-yellow-200 mb-1">
+                          ⚠️ Attention
+                        </p>
+                        <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                          Assurez-vous d'avoir créé une sauvegarde avant de procéder au nettoyage. 
+                          Les paramètres de l'entreprise et les utilisateurs ne seront pas supprimés.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="destructive"
+                        size="lg"
+                        className="w-full h-14 text-lg bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="h-5 w-5 mr-2" />
+                        {isDeleting ? 'Suppression en cours...' : 'Supprimer toutes les données de test'}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                          <AlertTriangle className="h-6 w-6" />
+                          Êtes-vous absolument sûr ?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="space-y-2">
+                          <p className="font-semibold">Cette action ne peut pas être annulée.</p>
+                          <p>
+                            Toutes vos données seront définitivement supprimées de nos serveurs. 
+                            Seuls les paramètres de l'entreprise et les utilisateurs seront conservés.
+                          </p>
+                          <p className="text-red-600 font-semibold">
+                            Avez-vous créé une sauvegarde ?
+                          </p>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={deleteAllData}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Oui, supprimer tout
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            </Card>
           </TabsContent>
 
           <TabsContent value="users">
