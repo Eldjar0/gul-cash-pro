@@ -38,7 +38,7 @@ import {
 } from 'recharts';
 import { cn } from '@/lib/utils';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#3B82F6', '#14B8A6'];
 
@@ -212,7 +212,7 @@ export default function Stats() {
       sale.total.toFixed(2) + '€'
     ]);
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: 82,
       head: [['N° Vente', 'Date', 'Paiement', 'HT', 'TVA', 'TTC']],
       body: salesData,
