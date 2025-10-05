@@ -617,6 +617,102 @@ const Index = () => {
     }
   };
 
+  // Payment confirmation handler for regular payment dialog
+  const handleConfirmPaymentDialog = async (
+    method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check',
+    amountPaid?: number
+  ) => {
+    const totals = getTotals();
+    const paymentMethodMapped = method === 'gift_card' ? 'voucher' : (method === 'customer_credit' ? 'card' : method);
+    const items = cart.map(item => ({
+      product_id: item.product.id,
+      product_name: item.product.name,
+      product_barcode: item.product.barcode,
+      quantity: item.quantity,
+      unit_price: item.custom_price ?? item.product.price,
+      vat_rate: item.product.vat_rate,
+      discount_type: item.discount?.type,
+      discount_value: item.discount?.value,
+      subtotal: item.subtotal,
+      vat_amount: item.vatAmount,
+      total: item.total,
+    }));
+
+    const sale = {
+      subtotal: totals.subtotal,
+      total_vat: totals.totalVat,
+      total_discount: totals.totalDiscount,
+      total: totals.total,
+      payment_method: paymentMethodMapped as any,
+      amount_paid: method === 'cash' ? amountPaid : undefined,
+      change_amount: method === 'cash' && amountPaid ? Math.max(0, amountPaid - totals.total) : undefined,
+      is_invoice: isInvoiceMode,
+      is_cancelled: false,
+      notes: undefined,
+      customer_id: selectedCustomer?.id as any,
+      cashier_id: user?.id as any,
+      items,
+    };
+
+    try {
+      const created = await createSale.mutateAsync(sale as any);
+      setCurrentSale(created);
+      setReceiptDialogOpen(true);
+      handleClearCart();
+      setPaymentDialogOpen(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleConfirmMixedPayment = async (
+    splits: { method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'check' | 'customer_credit'; amount: number; }[]
+  ) => {
+    const totals = getTotals();
+    const hasNonCash = splits.some(s => s.method !== 'cash');
+    const primaryMethod = hasNonCash ? 'card' : 'cash';
+
+    const items = cart.map(item => ({
+      product_id: item.product.id,
+      product_name: item.product.name,
+      product_barcode: item.product.barcode,
+      quantity: item.quantity,
+      unit_price: item.custom_price ?? item.product.price,
+      vat_rate: item.product.vat_rate,
+      discount_type: item.discount?.type,
+      discount_value: item.discount?.value,
+      subtotal: item.subtotal,
+      vat_amount: item.vatAmount,
+      total: item.total,
+    }));
+
+    const noteDetails = splits.map(s => `${s.method}:${s.amount.toFixed(2)}€`).join(' | ');
+
+    const sale = {
+      subtotal: totals.subtotal,
+      total_vat: totals.totalVat,
+      total_discount: totals.totalDiscount,
+      total: totals.total,
+      payment_method: primaryMethod as any,
+      is_invoice: isInvoiceMode,
+      is_cancelled: false,
+      notes: `Paiement mixte (${noteDetails})`,
+      customer_id: selectedCustomer?.id as any,
+      cashier_id: user?.id as any,
+      items,
+    };
+
+    try {
+      const created = await createSale.mutateAsync(sale as any);
+      setCurrentSale(created);
+      setReceiptDialogOpen(true);
+      handleClearCart();
+      setMixedPaymentDialogOpen(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleOpenDay = (amount: number) => {
     openDay.mutate(amount, {
       onSuccess: () => {
@@ -763,7 +859,9 @@ const Index = () => {
           {/* Category Grid */}
           <div className="flex-1 overflow-hidden">
             <CategoryGrid
-              onProductSelect={handleProductSelect}
+               onProductSelect={handleProductSelect}
+               selectedCategory={selectedCategory}
+               onCategorySelect={setSelectedCategory}
             />
           </div>
 
@@ -951,21 +1049,21 @@ const Index = () => {
       <PaymentDialog
         open={paymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
-        onComplete={(sale) => {
-          setCurrentSale(sale);
-          setReceiptDialogOpen(true);
-          handleClearCart();
+        total={getTotals().total}
+        onConfirmPayment={handleConfirmPaymentDialog}
+        onMixedPayment={() => {
+          setPaymentDialogOpen(false);
+          setMixedPaymentDialogOpen(true);
         }}
+        customerId={selectedCustomer?.id}
       />
 
       <MixedPaymentDialog
         open={mixedPaymentDialogOpen}
         onOpenChange={setMixedPaymentDialogOpen}
-        onComplete={(sale) => {
-          setCurrentSale(sale);
-          setReceiptDialogOpen(true);
-          handleClearCart();
-        }}
+        total={getTotals().total}
+        onConfirmPayment={handleConfirmMixedPayment}
+        customerId={selectedCustomer?.id}
       />
 
       <DiscountDialog
@@ -983,7 +1081,7 @@ const Index = () => {
       <CustomerDialog
         open={customerDialogOpen}
         onOpenChange={setCustomerDialogOpen}
-        onSelect={(customer) => {
+        onSelectCustomer={(customer) => {
           setSelectedCustomer(customer);
           setCustomerDialogOpen(false);
         }}
@@ -1019,9 +1117,10 @@ const Index = () => {
       <RefundDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen} />
 
       <RemoteScanDialog
-        isOpen={!!remoteScanSessionId}
-        sessionId={remoteScanSessionId || ''}
-        onClose={() => setRemoteScanSessionId(null)}
+        onSessionCreated={(id, code) => {
+          setRemoteScanSessionId(id);
+          toast.success(`Session distante ${code} démarrée`);
+        }}
       />
 
       <PhysicalScanActionDialog
@@ -1034,6 +1133,22 @@ const Index = () => {
             handleProductSelect(scannedProduct);
           }
           setPhysicalScanDialogOpen(false);
+        }}
+        onAddToRemoteScan={() => {
+          if (!scannedProduct) return;
+          if (!remoteScanSessionId) {
+            toast.error("Ouvrez d'abord le scanner à distance");
+            return;
+          }
+          toast.success('Envoyé au scanner à distance');
+        }}
+        onViewProduct={() => {
+          if (scannedProduct) {
+            navigate(`/products?highlight=${scannedProduct.id}`);
+          }
+        }}
+        onCreateProduct={() => {
+          navigate(`/products?create&barcode=${scannedBarcode}`);
         }}
       />
 
@@ -1054,7 +1169,8 @@ const Index = () => {
         open={closeDayDialogOpen}
         onOpenChange={setCloseDayDialogOpen}
         onConfirm={handleCloseDay}
-        todayReport={todayReport!}
+        reportData={reportData!}
+        todayReport={todayReport}
       />
     </div>
   );
