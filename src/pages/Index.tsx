@@ -1831,7 +1831,7 @@ const Index = () => {
               </Button>
             </div>
             <div className="space-y-1 max-h-[200px] overflow-y-auto">
-              {todaySales?.filter(s => !s.is_cancelled).slice(0, 4).map((sale) => (
+              {todaySales?.filter(s => !s.is_cancelled).slice(0, 3).map((sale) => (
                 <button
                   key={sale.id}
                   onClick={() => {
