@@ -601,7 +601,14 @@ const Index = () => {
       return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     };
     
-    const normalizedInput = normalizeBarcode(scanInput);
+    // Convertir les caractères AZERTY en chiffres d'abord
+    const AZERTY_MAP: Record<string, string> = {
+      '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5',
+      '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0',
+    };
+    const convertedInput = scanInput.split('').map(char => AZERTY_MAP[char] || char).join('');
+    
+    const normalizedInput = normalizeBarcode(convertedInput);
     const searchTerm = strip(scanInput);
     const trimmedSearch = scanInput.trim();
     const hasDigits = normalizedInput.length > 0;
