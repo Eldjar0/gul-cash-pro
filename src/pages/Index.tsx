@@ -729,14 +729,20 @@ const Index = () => {
     setReportXDialogOpen(true);
   };
 
+  const handleOpenCloseDayDialog = async () => {
+    const data = await getTodayReportData();
+    setReportData(data);
+    setCloseDayDialogOpen(true);
+  };
+
   const handleCloseDay = (closingAmount: number) => {
-    if (!todayReport) return;
+    if (!todayReport || !reportData) return;
     
     closeDay.mutate(
       { 
         reportId: todayReport.id, 
         closingAmount,
-        reportData: reportData!
+        reportData
       },
       {
         onSuccess: () => {
@@ -878,7 +884,7 @@ const Index = () => {
               </Button>
             ) : (
               <Button
-                onClick={() => setCloseDayDialogOpen(true)}
+                onClick={handleOpenCloseDayDialog}
                 size="lg"
                 className="flex-1 h-14 bg-red-600 hover:bg-red-700"
               >
