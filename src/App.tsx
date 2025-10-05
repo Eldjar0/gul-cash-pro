@@ -15,8 +15,6 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Stats = lazy(() => import("./pages/Stats"));
 const Documents = lazy(() => import("./pages/Documents"));
 const Promotions = lazy(() => import("./pages/Promotions"));
-// Products, Suppliers removed - unified in InventoryManagement
-// StockHistory page removed - unified into Inventory page
 const InventoryManagement = lazy(() => import("./pages/InventoryManagement"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Customers = lazy(() => import("./pages/Customers"));
@@ -74,6 +72,9 @@ const App = () => (
             <Route path="/documents" element={<ProtectedRoute><ProtectedLayout><Documents /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/invoices/create" element={<ProtectedRoute><ProtectedLayout><InvoiceCreate /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/inventory-management" element={<ProtectedRoute><ProtectedLayout><InventoryManagement /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/promotions" element={<ProtectedRoute><ProtectedLayout><Promotions /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><ProtectedLayout><Settings /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/customers" element={<ProtectedRoute><ProtectedLayout><Customers /></ProtectedLayout></ProtectedRoute>} />
             {/* Old routes redirected to new unified page */}
             <Route path="/products" element={<ProtectedRoute><ProtectedLayout><InventoryManagement /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/suppliers" element={<ProtectedRoute><ProtectedLayout><InventoryManagement /></ProtectedLayout></ProtectedRoute>} />

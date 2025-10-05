@@ -106,11 +106,6 @@ export const ProductsManagement = () => {
 
       <CategoryDialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen} />
       <ImportProductsDialog open={importDialogOpen} onOpenChange={setImportDialogOpen} />
-      <BarcodeLabelDialog
-        open={barcodeLabelDialogOpen}
-        onOpenChange={setBarcodeLabelDialogOpen}
-        selectedProductIds={selectedProducts}
-      />
     </div>
   );
 };
