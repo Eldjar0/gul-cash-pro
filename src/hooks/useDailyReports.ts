@@ -76,16 +76,36 @@ export function useOpenDay() {
         .eq('report_date', today)
         .maybeSingle();
 
+      const { data: user } = await supabase.auth.getUser();
+
       if (existing) {
         if (existing.closing_amount === null) {
           throw new Error('La journée est déjà ouverte');
         } else {
-          throw new Error('La journée a déjà été ouverte et fermée');
+          // Rouvrir la journée en réinitialisant les données
+          const { data, error } = await supabase
+            .from('daily_reports')
+            .update({
+              opening_amount: openingAmount,
+              closing_amount: null,
+              total_sales: 0,
+              total_cash: 0,
+              total_card: 0,
+              total_mobile: 0,
+              sales_count: 0,
+              serial_number: null,
+              cashier_id: user.user?.id,
+            })
+            .eq('id', existing.id)
+            .select()
+            .single();
+
+          if (error) throw error;
+          return data;
         }
       }
 
-      const { data: user } = await supabase.auth.getUser();
-
+      // Créer un nouveau rapport si aucun n'existe
       const { data, error } = await supabase
         .from('daily_reports')
         .insert({
