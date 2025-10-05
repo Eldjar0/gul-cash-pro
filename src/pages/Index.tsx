@@ -205,11 +205,6 @@ const Index = () => {
     timestamp: number;
   }>>([]);
   
-  // Stock override dialog
-  const [stockOverrideDialogOpen, setStockOverrideDialogOpen] = useState(false);
-  const [stockIssues, setStockIssues] = useState<Array<{ productName: string; available: number; requested: number }>>([]);
-  const [pendingSaleData, setPendingSaleData] = useState<any>(null);
-  
   // Weight input dialog
   const [weightInputDialogOpen, setWeightInputDialogOpen] = useState(false);
   const [weightProduct, setWeightProduct] = useState<Product | null>(null);
@@ -959,17 +954,6 @@ const Index = () => {
       }))
     };
     try {
-      // Vérifier le stock avant la vente pour informer l'utilisateur
-      const lowStockProducts: string[] = [];
-      for (const item of cart) {
-        if (item.product.stock !== null && item.product.stock !== undefined) {
-          const availableStock = item.product.stock;
-          if (availableStock < item.quantity) {
-            lowStockProducts.push(item.product.name);
-          }
-        }
-      }
-
       const sale = await createSale.mutateAsync({ sale: saleData });
 
       // Si paiement par crédit client, créer la transaction de crédit
@@ -1049,14 +1033,6 @@ const Index = () => {
             ? 'Facture créée' 
             : 'Paiement validé'
       );
-
-      // Avertissement si des produits étaient hors stock
-      if (lowStockProducts.length > 0) {
-        toast.warning('⚠️ Stock insuffisant détecté', {
-          description: `Vérifiez le stock de: ${lowStockProducts.join(', ')}`,
-          duration: 8000,
-        });
-      }
     } catch (error: any) {
       // Erreur lors de la création de la vente
       const errorMsg = error instanceof Error ? error.message : 'Erreur inconnue';
@@ -2470,142 +2446,6 @@ const Index = () => {
           }}
         />
       )}
-
-
-      {/* Stock Override Confirmation Dialog */}
-      <AlertDialog open={stockOverrideDialogOpen} onOpenChange={setStockOverrideDialogOpen}>
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-5 w-5" />
-              Stock insuffisant
-            </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-4">
-              <p className="font-medium">Les produits suivants ont un stock insuffisant :</p>
-              <div className="space-y-2 bg-muted p-3 rounded-md">
-                {stockIssues.map((issue, index) => (
-                  <div key={index} className="text-sm">
-                    <p className="font-medium">{issue.productName}</p>
-                    <p className="text-muted-foreground">
-                      Disponible: <span className="text-destructive font-bold">{issue.available}</span> • 
-                      Demandé: <span className="font-bold">{issue.requested}</span>
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <p className="text-sm font-medium text-orange-600">
-                ⚠️ Il faut corriger le stock dans la gestion des produits
-              </p>
-              <p className="text-sm">
-                Vous pouvez quand même valider cette vente, mais le stock deviendra négatif.
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setStockOverrideDialogOpen(false);
-              setStockIssues([]);
-              setPendingSaleData(null);
-            }}>
-              Annuler
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                if (pendingSaleData) {
-                  try {
-                    const sale = await createSale.mutateAsync({ 
-                      sale: pendingSaleData,
-                      forceStockOverride: true 
-                    });
-
-                    // Si paiement par crédit client, créer la transaction de crédit
-                    if (pendingSaleData.payment_method === 'voucher' && selectedCustomer) {
-                      try {
-                        await chargeCredit.mutateAsync({
-                          customerId: selectedCustomer.id,
-                          amount: pendingSaleData.total,
-                          saleId: sale.id,
-                          notes: `Vente ${sale.sale_number}`
-                        });
-                      } catch (creditError) {
-                        // Erreur silencieuse pour ne pas bloquer
-                      }
-                    }
-
-                    // Préparer les données de vente pour le reçu
-                    const saleForReceipt = {
-                      ...sale,
-                      saleNumber: sale.sale_number,
-                      date: sale.date,
-                      items: cart,
-                      subtotal: totals.subtotal,
-                      totalVat: totals.totalVat,
-                      totalDiscount: totals.totalDiscount,
-                      total: totals.total,
-                      paymentMethod: pendingSaleData.payment_method === 'voucher' ? 'customer_credit' : 'cash',
-                      amountPaid: pendingSaleData.amount_paid,
-                      change: pendingSaleData.change_amount,
-                      is_invoice: pendingSaleData.is_invoice,
-                      customer: selectedCustomer
-                    };
-                    setCurrentSale(saleForReceipt);
-
-                    // Mettre à jour l'affichage client
-                    const completedState = {
-                      items: [],
-                      status: 'completed',
-                      timestamp: Date.now()
-                    };
-                    try {
-                      displayChannelRef.current.postMessage(completedState);
-                      localStorage.setItem('customer_display_state', JSON.stringify(completedState));
-                    } catch (e) {
-                      // Erreur silencieuse
-                    }
-
-                    setTimeout(() => {
-                      const idleState = {
-                        items: [],
-                        status: 'idle',
-                        timestamp: Date.now()
-                      };
-                      try {
-                        displayChannelRef.current.postMessage(idleState);
-                        localStorage.setItem('customer_display_state', JSON.stringify(idleState));
-                      } catch (e) {
-                        // Erreur silencieuse
-                      }
-                    }, 5000);
-                    
-                    setCart([]);
-                    setGlobalDiscount(null);
-                    setAppliedPromoCode(null);
-                    setAppliedAutoPromotion(null);
-                    setIsInvoiceMode(false);
-                    setSelectedCustomer(null);
-                    setStockOverrideDialogOpen(false);
-                    setStockIssues([]);
-                    setPendingSaleData(null);
-                    setPrintConfirmDialogOpen(true);
-                    
-                    toast.success('Vente validée avec stock négatif', {
-                      description: '⚠️ Pensez à corriger le stock',
-                      duration: 7000,
-                    });
-                  } catch (error) {
-                    toast.error('Erreur lors de la vente forcée', {
-                      description: error instanceof Error ? error.message : 'Erreur inconnue'
-                    });
-                  }
-                }
-              }}
-              className="bg-orange-600 hover:bg-orange-700"
-            >
-              Valider quand même
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Confirmation d'impression */}
       <Dialog open={printConfirmDialogOpen} onOpenChange={setPrintConfirmDialogOpen}>
