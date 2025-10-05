@@ -191,6 +191,14 @@ const Index = () => {
   const [creditManagementDialogOpen, setCreditManagementDialogOpen] = useState(false);
   const [creditManagementCustomer, setCreditManagementCustomer] = useState<{ id: string; name: string } | null>(null);
   
+  // Historique des scans
+  const [scanHistory, setScanHistory] = useState<Array<{
+    barcode: string;
+    product?: string;
+    status: 'success' | 'not_found';
+    timestamp: number;
+  }>>([]);
+  
   // Stock override dialog
   const [stockOverrideDialogOpen, setStockOverrideDialogOpen] = useState(false);
   const [stockIssues, setStockIssues] = useState<Array<{ productName: string; available: number; requested: number }>>([]);
@@ -557,6 +565,15 @@ const Index = () => {
 
     if (found) {
       console.log('[POS] Produit trouvé, ajout au panier:', found.name);
+      
+      // Ajouter à l'historique - succès
+      setScanHistory(prev => [{
+        barcode: normalized,
+        product: found.name,
+        status: 'success' as const,
+        timestamp: Date.now()
+      }, ...prev].slice(0, 6));
+      
       handleProductSelect(found);
       setScanInput("");
       setSearchResults([]);
@@ -565,6 +582,14 @@ const Index = () => {
 
     // Si inconnu, afficher un toast avec action pour créer
     console.log('[POS] ✗ Aucun produit trouvé pour:', normalized);
+    
+    // Ajouter à l'historique - non trouvé
+    setScanHistory(prev => [{
+      barcode: normalized,
+      status: 'not_found' as const,
+      timestamp: Date.now()
+    }, ...prev].slice(0, 6));
+    
     toast.error('Code-barres inconnu', {
       description: `Aucun produit lié à ${normalized}`,
       action: {
@@ -1756,6 +1781,57 @@ const Index = () => {
                   {(todaySales?.filter(s => !s.is_cancelled && s.payment_method === 'voucher').reduce((sum, s) => sum + s.total, 0) || 0).toFixed(2)}€
                 </div>
               </div>
+            </div>
+          </Card>
+
+          {/* Historique des scans */}
+          <Card className="bg-background border border-border p-1.5 flex-shrink-0">
+            <div className="flex items-center gap-1 mb-1">
+              <Scan className="h-2.5 w-2.5 text-primary" />
+              <h3 className="text-[9px] font-bold text-foreground uppercase tracking-wide">
+                Derniers Scans
+              </h3>
+            </div>
+            <div className="space-y-0.5">
+              {scanHistory.length === 0 ? (
+                <div className="text-[8px] text-muted-foreground text-center py-1">
+                  Aucun scan récent
+                </div>
+              ) : (
+                scanHistory.map((scan, idx) => (
+                  <div 
+                    key={`${scan.barcode}-${scan.timestamp}`}
+                    className={`flex items-center justify-between p-1 rounded text-[8px] ${
+                      scan.status === 'success' 
+                        ? 'bg-green-50 border border-green-200' 
+                        : 'bg-red-50 border border-red-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1 flex-1 min-w-0">
+                      {scan.status === 'success' ? (
+                        <CheckCircle className="h-2.5 w-2.5 text-green-600 shrink-0" />
+                      ) : (
+                        <AlertCircle className="h-2.5 w-2.5 text-red-600 shrink-0" />
+                      )}
+                      <span className={`font-mono font-semibold ${
+                        scan.status === 'success' ? 'text-green-700' : 'text-red-700'
+                      }`}>
+                        {scan.barcode}
+                      </span>
+                    </div>
+                    {scan.product && (
+                      <span className="text-green-600 font-medium truncate ml-1">
+                        {scan.product}
+                      </span>
+                    )}
+                    {scan.status === 'not_found' && (
+                      <span className="text-red-600 font-medium ml-1">
+                        Inconnu
+                      </span>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </Card>
 
