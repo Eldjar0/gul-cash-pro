@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Settings as SettingsIcon } from 'lucide-react';
+import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Settings as SettingsIcon, Download, Database, Coins, Calculator, FileBarChart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { useFullExport } from '@/hooks/useFullExport';
 import UserManagement from './UserManagement';
 import ContactInfo from './ContactInfo';
 
@@ -42,6 +43,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { exportFullData } = useFullExport();
 
   const [settings, setSettings] = useState<InvoiceSettings>({
     is_company: true,
@@ -217,10 +219,18 @@ export default function Settings() {
 
       <div className="container mx-auto px-6 py-8">
         <Tabs defaultValue="billing" className="w-full space-y-6">
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-5 mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
             <TabsTrigger value="billing" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               <Building className="h-4 w-4" />
               Facturation
+            </TabsTrigger>
+            <TabsTrigger value="fiscal" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
+              <Calculator className="h-4 w-4" />
+              Fiscalité
+            </TabsTrigger>
+            <TabsTrigger value="backup" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
+              <Database className="h-4 w-4" />
+              Sauvegarde
             </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               <Users className="h-4 w-4" />
@@ -575,6 +585,219 @@ export default function Settings() {
                 <Save className="h-5 w-5 mr-2" />
                 {saving ? 'Enregistrement en cours...' : 'Enregistrer tous les paramètres'}
               </Button>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="fiscal" className="space-y-6">
+            {/* Paramètres TVA */}
+            <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl text-white">
+                  <Calculator className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold">Paramètres TVA</h2>
+                  <p className="text-sm text-muted-foreground">Configuration des taux de TVA applicables</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="p-4 bg-white/80 dark:bg-gray-800/80">
+                  <Label className="text-base font-medium mb-3 block">Taux TVA standard</Label>
+                  <Input 
+                    type="number" 
+                    defaultValue="21" 
+                    className="h-12"
+                    placeholder="21%"
+                  />
+                </Card>
+                <Card className="p-4 bg-white/80 dark:bg-gray-800/80">
+                  <Label className="text-base font-medium mb-3 block">Taux TVA réduit</Label>
+                  <Input 
+                    type="number" 
+                    defaultValue="6" 
+                    className="h-12"
+                    placeholder="6%"
+                  />
+                </Card>
+              </div>
+            </Card>
+
+            {/* Comptabilité */}
+            <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl text-white">
+                  <FileBarChart className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold">Comptabilité</h3>
+                  <p className="text-sm text-muted-foreground">Gestion des comptes et exports comptables</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <Label className="text-base font-medium">Plan comptable</Label>
+                  <Input 
+                    placeholder="Code plan comptable (optionnel)"
+                    className="h-12"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-base font-medium">Exercice fiscal</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input 
+                      type="date"
+                      placeholder="Date de début"
+                      className="h-12"
+                    />
+                    <Input 
+                      type="date"
+                      placeholder="Date de fin"
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Journal de caisse */}
+            <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl text-white">
+                  <Coins className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold">Journal de caisse</h3>
+                  <p className="text-sm text-muted-foreground">Configuration du journal de caisse officiel</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-700 dark:to-gray-800 rounded-lg">
+                  <div>
+                    <p className="font-medium">Numérotation automatique</p>
+                    <p className="text-sm text-muted-foreground">Génération automatique des numéros de journaux</p>
+                  </div>
+                  <Checkbox defaultChecked />
+                </div>
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-700 dark:to-gray-800 rounded-lg">
+                  <div>
+                    <p className="font-medium">Export automatique</p>
+                    <p className="text-sm text-muted-foreground">Export mensuel des journaux comptables</p>
+                  </div>
+                  <Checkbox />
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="backup" className="space-y-6">
+            {/* Sauvegarde complète */}
+            <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl text-white">
+                  <Database className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold">Sauvegarde complète de la caisse</h2>
+                  <p className="text-sm text-muted-foreground">Exportez toutes vos données: ventes, produits, clients, factures, tickets, historiques...</p>
+                </div>
+              </div>
+              
+              <div className="grid gap-4 mb-6">
+                <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Badge className="bg-gradient-to-r from-purple-500 to-blue-500">Inclus</Badge>
+                    <span className="font-semibold">Données de vente</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground ml-16">Tickets, factures, remboursements, historique complet</p>
+                </div>
+                
+                <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500">Inclus</Badge>
+                    <span className="font-semibold">Inventaire & Stock</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground ml-16">Produits, catégories, mouvements de stock, lots</p>
+                </div>
+                
+                <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border-2 border-green-200 dark:border-green-800">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-500">Inclus</Badge>
+                    <span className="font-semibold">Clients & Commandes</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground ml-16">Base clients, commandes, devis, crédits</p>
+                </div>
+                
+                <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500">Inclus</Badge>
+                    <span className="font-semibold">Rapports & Comptabilité</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground ml-16">Rapports journaliers, bons de commande, mouvements de caisse</p>
+                </div>
+              </div>
+
+              <Button 
+                onClick={exportFullData}
+                size="lg"
+                className="w-full h-14 text-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              >
+                <Download className="h-5 w-5 mr-2" />
+                Télécharger la sauvegarde complète (.JSON)
+              </Button>
+              
+              <p className="text-xs text-muted-foreground text-center mt-4">
+                💾 La sauvegarde sera téléchargée en format JSON avec horodatage
+              </p>
+            </Card>
+
+            {/* Export par catégorie */}
+            <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl text-white">
+                  <FileBarChart className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold">Exports spécifiques</h3>
+                  <p className="text-sm text-muted-foreground">Exportez des données spécifiques au format CSV</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" className="h-12 justify-start">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exporter les ventes
+                </Button>
+                <Button variant="outline" className="h-12 justify-start">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exporter les produits
+                </Button>
+                <Button variant="outline" className="h-12 justify-start">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exporter les clients
+                </Button>
+                <Button variant="outline" className="h-12 justify-start">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exporter le stock
+                </Button>
+              </div>
+            </Card>
+
+            {/* Avertissement */}
+            <Card className="p-6 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-2 border-orange-300 dark:border-orange-700">
+              <div className="flex gap-4">
+                <div className="text-orange-600 dark:text-orange-400">
+                  <Info className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-orange-900 dark:text-orange-100 mb-2">⚠️ Important - Sécurité des données</h4>
+                  <ul className="text-sm text-orange-800 dark:text-orange-200 space-y-1">
+                    <li>• Effectuez des sauvegardes régulières (quotidiennes recommandées)</li>
+                    <li>• Conservez vos sauvegardes dans un lieu sécurisé (cloud, disque externe)</li>
+                    <li>• Ne partagez jamais vos fichiers de sauvegarde publiquement</li>
+                    <li>• Vérifiez régulièrement l'intégrité de vos sauvegardes</li>
+                  </ul>
+                </div>
+              </div>
             </Card>
           </TabsContent>
 
