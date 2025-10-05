@@ -9,6 +9,7 @@ import { Search, Package, Upload, Tag, Edit, Trash2, Plus, FileText, Printer } f
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
 import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
+import { usePhysicalScanner } from '@/hooks/usePhysicalScanner';
 import {
   Select,
   SelectContent,
@@ -74,6 +75,20 @@ export const ProductsManagement = () => {
   const [customHeight, setCustomHeight] = useState(30);
   const [designEditorOpen, setDesignEditorOpen] = useState(false);
   const [labelTemplate, setLabelTemplate] = useState<string | null>(null);
+
+  // Scanner physique pour remplir automatiquement le code-barres
+  usePhysicalScanner({
+    onScan: (barcode) => {
+      if (productDialogOpen) {
+        console.log('[ProductsManagement] Scanner physique - code-barres détecté:', barcode);
+        setForm((prev) => ({ ...prev, barcode }));
+      }
+    },
+    enabled: productDialogOpen, // Actif uniquement quand le dialogue est ouvert
+    minLength: 8,
+    timeout: 350,
+    captureInInputs: true, // Intercepte même dans les champs pour remplir automatiquement
+  });
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
