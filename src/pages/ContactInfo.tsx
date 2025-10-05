@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Mail, Globe, Phone, MapPin, Info, Award, ShieldAlert } from 'lucide-react';
 import logoJlprod from '@/assets/logo-jlprod-signature.png';
-import logoGulReyhan from '@/assets/logo-gul-reyhan-new.png';
+import logoGulReyhan from '@/assets/logo-gul-reyhan-market.png';
 
 export default function ContactInfo() {
   return (
@@ -11,21 +11,21 @@ export default function ContactInfo() {
         <div className="text-center space-y-6">
           <div className="flex justify-center items-center gap-8">
             <img 
-              src={logoGulReyhan} 
-              alt="Gül Reyhan Logo" 
-              className="h-20 w-auto"
+              src={logoJlprod} 
+              alt="JLprod Logo" 
+              className="h-16 w-auto"
             />
             <div className="text-4xl text-muted-foreground">→</div>
             <img 
-              src={logoJlprod} 
-              alt="JLprod Logo" 
+              src={logoGulReyhan} 
+              alt="Gül Reyhan Logo" 
               className="h-20 w-auto"
             />
           </div>
           <div>
             <h2 className="text-2xl font-bold">Logiciel de Caisse Professionnel</h2>
             <p className="text-lg text-muted-foreground mt-2">
-              Développé par <span className="font-semibold text-primary">JLprod</span>
+              Développé en 2025 par <span className="font-semibold text-primary">JLprod</span>
             </p>
             <p className="text-sm text-muted-foreground">
               Propriété exclusive de <span className="font-semibold">Gül Reyhan</span>
@@ -67,7 +67,7 @@ export default function ContactInfo() {
               
               <div className="pt-3 border-t mt-4">
                 <p className="text-xs text-muted-foreground text-center">
-                  Date du transfert : 2024 • Vendeur : JLprod • Acquéreur : Gül Reyhan
+                  Date du transfert : 05/10/2025 • Vendeur : JLprod • Acquéreur : Gül Reyhan
                 </p>
               </div>
             </div>
@@ -205,8 +205,8 @@ export default function ContactInfo() {
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground pt-4 border-t space-y-1">
           <p className="font-semibold text-foreground">Logiciel propriété de Gül Reyhan</p>
-          <p>Développé par JLprod © 2024</p>
-          <p>Version 1.0 • Tous droits transférés à Gül Reyhan</p>
+          <p>Développé par JLprod © 2025</p>
+          <p>Version 1.0 • Tous droits transférés à Gül Reyhan le 05/10/2025</p>
         </div>
       </div>
     </Card>
