@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -54,6 +54,7 @@ interface CartItem {
   vatAmount: number;
   total: number;
 }
+const CART_STORAGE_KEY = 'pos_active_cart_v1';
 const Index = () => {
   const navigate = useNavigate();
   const {
@@ -127,7 +128,16 @@ const Index = () => {
   useEffect(() => {
     setIsDayOpenLocal(null);
   }, [todayReport?.id, todayReport?.closing_amount]);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const raw = localStorage.getItem(CART_STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [currentSale, setCurrentSale] = useState<any>(null);
@@ -158,6 +168,17 @@ const Index = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
+
+  // Persistance du panier en localStorage
+  useEffect(() => {
+    try {
+      if (cart.length) {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      } else {
+        localStorage.removeItem(CART_STORAGE_KEY);
+      }
+    } catch {}
+  }, [cart]);
   const [customerDisplayWindow, setCustomerDisplayWindow] = useState<Window | null>(null);
   const [displayChannel] = useState(() => createSafeBroadcastChannel('customer_display'));
 
