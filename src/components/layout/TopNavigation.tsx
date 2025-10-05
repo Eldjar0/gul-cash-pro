@@ -55,9 +55,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
     ventes: [
       { icon: ShoppingCart, label: "Caisse", path: "/" },
       { icon: Receipt, label: "Ventes", path: "/sales" },
-      { icon: FileText, label: "Factures", path: "/invoices" },
-      { icon: FileText, label: "Commandes", path: "/orders" },
-      { icon: AlertTriangle, label: "Remboursements", path: "/refunds" },
+      { icon: FileText, label: "Documents", path: "/documents" },
     ],
     gestion: [
       { icon: Package, label: "Produits", path: "/products" },
