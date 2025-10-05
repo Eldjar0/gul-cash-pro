@@ -15,6 +15,7 @@ export interface Customer {
   is_active?: boolean;
   loyalty_points?: number;
   notes?: string;
+  credit_blocked?: boolean;
   created_at?: string;
   updated_at?: string;
 }

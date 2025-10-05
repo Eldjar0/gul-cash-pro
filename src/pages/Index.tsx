@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -26,6 +27,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCreateSale, useSales } from '@/hooks/useSales';
 import { useCategories } from '@/hooks/useCategories';
 import { Customer, useCustomers } from '@/hooks/useCustomers';
+import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 import { useTodayReport, useOpenDay, useCloseDay, getTodayReportData, ReportData } from '@/hooks/useDailyReports';
 import { useWeather } from '@/hooks/useWeather';
 import { toast } from 'sonner';
@@ -166,9 +168,18 @@ const Index = () => {
   const [cancelCartDialogOpen, setCancelCartDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectCustomerDialogOpen, setSelectCustomerDialogOpen] = useState(false);
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('');
   
   // Fetch customers
   const { data: customers } = useCustomers();
+  const { data: creditAccounts } = useCustomerCredit();
+  
+  // Filter customers based on search term
+  const filteredCustomers = customers?.filter(customer => 
+    customer.name.toLowerCase().includes(customerSearchTerm.toLowerCase()) ||
+    customer.email?.toLowerCase().includes(customerSearchTerm.toLowerCase()) ||
+    customer.phone?.toLowerCase().includes(customerSearchTerm.toLowerCase())
+  );
 
   // Physical scan action dialog states
   const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
@@ -1750,12 +1761,37 @@ const Index = () => {
       <SavedCartsDialog open={savedCartsDialogOpen} onOpenChange={setSavedCartsDialogOpen} currentCart={cart} onLoadCart={handleLoadCart} />
 
       {/* Dialogue de sélection client */}
-      <Dialog open={selectCustomerDialogOpen} onOpenChange={setSelectCustomerDialogOpen}>
-        <DialogContent className="max-w-2xl">
+      <Dialog open={selectCustomerDialogOpen} onOpenChange={(open) => {
+        setSelectCustomerDialogOpen(open);
+        if (!open) setCustomerSearchTerm('');
+      }}>
+        <DialogContent className="max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">Sélectionner un client</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="h-[400px] pr-4">
+          
+          {/* Search and Create */}
+          <div className="flex gap-2 mb-4">
+            <Input
+              placeholder="Rechercher un client (nom, email, téléphone)..."
+              value={customerSearchTerm}
+              onChange={(e) => setCustomerSearchTerm(e.target.value)}
+              className="flex-1"
+            />
+            <Button
+              onClick={() => {
+                setSelectCustomerDialogOpen(false);
+                setCustomerDialogOpen(true);
+              }}
+              variant="default"
+              className="whitespace-nowrap"
+            >
+              <User className="h-4 w-4 mr-2" />
+              Créer Client
+            </Button>
+          </div>
+
+          <ScrollArea className="h-[500px] pr-4">
             <div className="space-y-2">
               {/* Option pour désélectionner */}
               {selectedCustomer && (
@@ -1777,38 +1813,96 @@ const Index = () => {
               )}
 
               {/* Liste des clients */}
-              {customers?.map((customer) => (
-                <Card
-                  key={customer.id}
-                  className={`p-4 cursor-pointer hover:bg-primary/10 border-2 transition-all ${
-                    selectedCustomer?.id === customer.id ? 'border-primary bg-primary/5' : 'border-border'
-                  }`}
-                  onClick={() => {
-                    setSelectedCustomer(customer);
-                    setSelectCustomerDialogOpen(false);
-                    toast.success(`Client sélectionné: ${customer.name}`);
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-lg">{customer.name}</div>
-                      {customer.email && (
-                        <div className="text-sm text-muted-foreground">{customer.email}</div>
+              {filteredCustomers?.map((customer) => {
+                const creditAccount = creditAccounts?.find(acc => acc.customer_id === customer.id);
+                const isCreditBlocked = customer.credit_blocked;
+                const currentBalance = creditAccount?.current_balance || 0;
+                
+                return (
+                  <Card
+                    key={customer.id}
+                    className={`p-4 border-2 transition-all ${
+                      isCreditBlocked 
+                        ? 'border-destructive bg-destructive/5 opacity-75 cursor-not-allowed' 
+                        : selectedCustomer?.id === customer.id 
+                          ? 'border-primary bg-primary/5 cursor-pointer hover:bg-primary/10' 
+                          : 'border-border cursor-pointer hover:bg-muted/50'
+                    }`}
+                    onClick={() => {
+                      if (isCreditBlocked) {
+                        toast.error(`Client ${customer.name} bloqué pour le crédit`);
+                        return;
+                      }
+                      setSelectedCustomer(customer);
+                      setSelectCustomerDialogOpen(false);
+                      toast.success(`Client sélectionné: ${customer.name}`);
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className="font-bold text-lg">{customer.name}</div>
+                          {isCreditBlocked && (
+                            <Badge variant="destructive" className="text-xs">
+                              Crédit Bloqué
+                            </Badge>
+                          )}
+                        </div>
+                        {customer.email && (
+                          <div className="text-sm text-muted-foreground">{customer.email}</div>
+                        )}
+                        {customer.phone && (
+                          <div className="text-sm text-muted-foreground">{customer.phone}</div>
+                        )}
+                        
+                        {/* Solde crédit */}
+                        {creditAccount && (
+                          <div className="mt-2 flex items-center gap-4">
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">Limite crédit: </span>
+                              <span className="font-semibold">{creditAccount.credit_limit.toFixed(2)}€</span>
+                            </div>
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">Solde dû: </span>
+                              <span className={`font-semibold ${currentBalance > 0 ? 'text-orange-500' : 'text-green-500'}`}>
+                                {currentBalance.toFixed(2)}€
+                              </span>
+                            </div>
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">Crédit disponible: </span>
+                              <span className="font-semibold text-blue-500">
+                                {Math.max(0, creditAccount.credit_limit - currentBalance).toFixed(2)}€
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {selectedCustomer?.id === customer.id && !isCreditBlocked && (
+                        <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
                       )}
-                      {customer.phone && (
-                        <div className="text-sm text-muted-foreground">{customer.phone}</div>
+                      {isCreditBlocked && (
+                        <AlertCircle className="h-6 w-6 text-destructive flex-shrink-0" />
                       )}
                     </div>
-                    {selectedCustomer?.id === customer.id && (
-                      <CheckCircle className="h-6 w-6 text-primary" />
-                    )}
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
 
-              {(!customers || customers.length === 0) && (
-                <div className="text-center py-8 text-muted-foreground">
-                  Aucun client disponible
+              {(!filteredCustomers || filteredCustomers.length === 0) && (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">
+                    {customerSearchTerm ? 'Aucun client trouvé' : 'Aucun client disponible'}
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setSelectCustomerDialogOpen(false);
+                      setCustomerDialogOpen(true);
+                    }}
+                    variant="outline"
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Créer un nouveau client
+                  </Button>
                 </div>
               )}
             </div>
