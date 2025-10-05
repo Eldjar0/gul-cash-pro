@@ -23,7 +23,6 @@ const LegalInfo = lazy(() => import("./pages/LegalInfo"));
 const GettingStarted = lazy(() => import("./pages/GettingStarted"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const InvoiceCreate = lazy(() => import("./pages/InvoiceCreate"));
-const ClientsManagement = lazy(() => import("./pages/ClientsManagement"));
 const StockManagement = lazy(() => import("./pages/StockManagement"));
 const RemoteScanner = lazy(() => import("./pages/RemoteScanner"));
 const DownloadApp = lazy(() => import("./pages/DownloadApp"));
@@ -74,7 +73,6 @@ const App = () => (
             <Route path="/sales" element={<ProtectedRoute><ProtectedLayout><Sales /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/products" element={<ProtectedRoute><ProtectedLayout><Products /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/customers" element={<ProtectedRoute><ProtectedLayout><Customers /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/clients-management" element={<ProtectedRoute><ProtectedLayout><ClientsManagement /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/stock-management" element={<ProtectedRoute><ProtectedLayout><StockManagement /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/documents" element={<ProtectedRoute><ProtectedLayout><Documents /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/invoices/create" element={<ProtectedRoute><ProtectedLayout><InvoiceCreate /></ProtectedLayout></ProtectedRoute>} />

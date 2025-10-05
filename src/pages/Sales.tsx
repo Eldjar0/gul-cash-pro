@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -6,47 +6,20 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
-  ArrowLeft,
-  Search,
-  Eye,
-  FileText,
-  Calendar,
-  Euro,
-  User,
-  CreditCard,
-  Receipt,
-  Trash2,
-  Edit,
-  AlertTriangle,
+  Search, Eye, Euro, Receipt, Trash2, TrendingUp, TrendingDown,
+  CreditCard, Calendar, ShoppingBag, BarChart3, Clock
 } from 'lucide-react';
 import { useSales, useDeleteSalePermanently } from '@/hooks/useSales';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { format } from 'date-fns';
+import { format, startOfHour, endOfHour, isWithinInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export default function Sales() {
   const navigate = useNavigate();
@@ -60,22 +33,60 @@ export default function Sales() {
   const { data: sales = [], isLoading } = useSales();
   const deleteSale = useDeleteSalePermanently();
 
-  const handleDeleteClick = (saleId: string) => {
-    setSaleToDelete(saleId);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (saleToDelete) {
-      deleteSale.mutate({ 
-        saleId: saleToDelete, 
-        reason: cancelReason || 'Aucune raison fournie' 
+  // Stats calculations
+  const stats = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todaySales = sales.filter(s => {
+      const saleDate = new Date(s.date);
+      saleDate.setHours(0, 0, 0, 0);
+      return saleDate.getTime() === today.getTime() && !s.is_cancelled;
+    });
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdaySales = sales.filter(s => {
+      const saleDate = new Date(s.date);
+      saleDate.setHours(0, 0, 0, 0);
+      return saleDate.getTime() === yesterday.getTime() && !s.is_cancelled;
+    });
+    
+    const totalToday = todaySales.reduce((sum, s) => sum + s.total, 0);
+    const countToday = todaySales.length;
+    const avgBasket = countToday > 0 ? totalToday / countToday : 0;
+    
+    const totalYesterday = yesterdaySales.reduce((sum, s) => sum + s.total, 0);
+    const countYesterday = yesterdaySales.length;
+    
+    const totalChange = totalYesterday > 0 ? ((totalToday - totalYesterday) / totalYesterday) * 100 : 0;
+    const countChange = countYesterday > 0 ? ((countToday - countYesterday) / countYesterday) * 100 : 0;
+    
+    // Hourly sales
+    const hourlySales = Array.from({ length: 24 }, (_, hour) => {
+      const hourSales = todaySales.filter(s => {
+        const saleDate = new Date(s.date);
+        return saleDate.getHours() === hour;
       });
-      setDeleteDialogOpen(false);
-      setSaleToDelete(null);
-      setCancelReason('');
-    }
-  };
+      return {
+        hour: `${hour}h`,
+        total: hourSales.reduce((sum, s) => sum + s.total, 0),
+        count: hourSales.length
+      };
+    }).filter(h => h.count > 0);
+    
+    // Payment methods
+    const paymentMethods = [
+      { name: 'Espèces', value: todaySales.filter(s => s.payment_method === 'cash').length, color: '#10b981' },
+      { name: 'Carte', value: todaySales.filter(s => s.payment_method === 'card').length, color: '#3b82f6' },
+      { name: 'Mobile', value: todaySales.filter(s => s.payment_method === 'mobile').length, color: '#8b5cf6' },
+    ].filter(p => p.value > 0);
+    
+    return {
+      totalToday, countToday, avgBasket, totalChange, countChange,
+      hourlySales, paymentMethods
+    };
+  }, [sales]);
 
   const filteredSales = sales.filter((sale) => {
     const searchLower = searchTerm.toLowerCase();
@@ -86,7 +97,6 @@ export default function Sales() {
   });
 
   const handleViewReceipt = (sale: any) => {
-    // Transform sale data to match Receipt component format
     const saleForReceipt = {
       ...sale,
       saleNumber: sale.sale_number,
@@ -120,142 +130,205 @@ export default function Sales() {
     setReceiptDialogOpen(true);
   };
 
-  const getTotalsByDate = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Exclure les ventes annulées (conformité légale belge)
-    const todaySales = sales.filter((sale) => {
-      const saleDate = new Date(sale.date);
-      saleDate.setHours(0, 0, 0, 0);
-      return saleDate.getTime() === today.getTime() && !sale.is_cancelled;
-    });
-
-    const totalToday = todaySales.reduce((sum, sale) => sum + sale.total, 0);
-    const countToday = todaySales.length;
-
-    // Exclure également les ventes annulées du total général
-    const activeSales = sales.filter((sale) => !sale.is_cancelled);
-    const totalAll = activeSales.reduce((sum, sale) => sum + sale.total, 0);
-    const countAll = activeSales.length;
-
-    return { totalToday, countToday, totalAll, countAll };
-  };
-
-  const { totalToday, countToday, totalAll, countAll } = getTotalsByDate();
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto mb-4"></div>
+          <p className="text-lg text-muted-foreground font-medium">Chargement des ventes...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-        {/* Header - Simplified since navigation is in TopNavigation */}
-        <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-3">
-          <div className="flex items-center gap-2 md:gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/')}
-              className="text-white hover:bg-white/20 shrink-0"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="min-w-0">
-              <h1 className="text-lg md:text-2xl font-bold text-white truncate">Historique des Ventes</h1>
-              <p className="text-xs md:text-sm text-white/80">Tickets et factures</p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Page Header */}
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-xl">
+            <ShoppingBag className="h-10 w-10 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-black text-foreground">Historique Ventes</h1>
+            <p className="text-muted-foreground text-lg">Activité du jour et statistiques</p>
           </div>
         </div>
 
-      <div className="p-4 md:p-6 max-w-7xl mx-auto">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
-          <Card className="p-3 md:p-4 bg-white">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 md:p-3 bg-primary/10 rounded-lg shrink-0">
-                <Euro className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="p-6 bg-gradient-to-br from-primary to-primary-glow text-white border-0 shadow-lg">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <p className="text-white/80 text-sm font-medium">CA Aujourd'hui</p>
+                <p className="text-3xl font-black">{stats.totalToday.toFixed(2)}€</p>
+                <div className="flex items-center gap-1 text-white/80 text-sm">
+                  {stats.totalChange >= 0 ? (
+                    <TrendingUp className="h-4 w-4" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4" />
+                  )}
+                  <span>{Math.abs(stats.totalChange).toFixed(1)}% vs hier</span>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Total Aujourd'hui</p>
-                <p className="text-sm md:text-xl font-bold text-primary truncate">{totalToday.toFixed(2)}€</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-3 md:p-4 bg-white">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 md:p-3 bg-accent/10 rounded-lg shrink-0">
-                <Receipt className="h-4 w-4 md:h-5 md:w-5 text-accent" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Ventes Aujourd'hui</p>
-                <p className="text-sm md:text-xl font-bold truncate">{countToday}</p>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <Euro className="h-6 w-6" />
               </div>
             </div>
           </Card>
 
-          <Card className="p-3 md:p-4 bg-white">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 md:p-3 bg-primary/10 rounded-lg shrink-0">
-                <Euro className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+          <Card className="p-6 bg-gradient-to-br from-accent to-accent/80 text-white border-0 shadow-lg">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <p className="text-white/80 text-sm font-medium">Ventes Aujourd'hui</p>
+                <p className="text-3xl font-black">{stats.countToday}</p>
+                <div className="flex items-center gap-1 text-white/80 text-sm">
+                  {stats.countChange >= 0 ? (
+                    <TrendingUp className="h-4 w-4" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4" />
+                  )}
+                  <span>{Math.abs(stats.countChange).toFixed(1)}% vs hier</span>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Total Global</p>
-                <p className="text-sm md:text-xl font-bold text-primary truncate">{totalAll.toFixed(2)}€</p>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <Receipt className="h-6 w-6" />
               </div>
             </div>
           </Card>
 
-          <Card className="p-3 md:p-4 bg-white">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 md:p-3 bg-accent/10 rounded-lg shrink-0">
-                <Receipt className="h-4 w-4 md:h-5 md:w-5 text-accent" />
+          <Card className="p-6 bg-gradient-to-br from-category-orange to-category-orange/80 text-white border-0 shadow-lg">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <p className="text-white/80 text-sm font-medium">Panier Moyen</p>
+                <p className="text-3xl font-black">{stats.avgBasket.toFixed(2)}€</p>
+                <p className="text-white/60 text-xs">Par transaction</p>
               </div>
-              <div className="min-w-0">
-                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Total Ventes</p>
-                <p className="text-sm md:text-xl font-bold truncate">{countAll}</p>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <BarChart3 className="h-6 w-6" />
               </div>
             </div>
+          </Card>
+
+          <Card className="p-6 bg-gradient-to-br from-category-green to-category-green/80 text-white border-0 shadow-lg">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <p className="text-white/80 text-sm font-medium">En Cours</p>
+                <p className="text-3xl font-black">{stats.hourlySales.length > 0 ? stats.hourlySales[stats.hourlySales.length - 1].count : 0}</p>
+                <p className="text-white/60 text-xs">Ventes cette heure</p>
+              </div>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <Clock className="h-6 w-6" />
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Hourly Sales Chart */}
+          <Card className="lg:col-span-2 p-6 bg-white border-0 shadow-lg">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              Ventes par Heure
+            </h3>
+            {stats.hourlySales.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={stats.hourlySales}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="hour" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Line type="monotone" dataKey="total" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ fill: 'hsl(var(--primary))' }} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                Aucune vente aujourd'hui
+              </div>
+            )}
+          </Card>
+
+          {/* Payment Methods */}
+          <Card className="p-6 bg-white border-0 shadow-lg">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-primary" />
+              Modes de Paiement
+            </h3>
+            {stats.paymentMethods.length > 0 ? (
+              <div className="space-y-4">
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={stats.paymentMethods}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {stats.paymentMethods.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-2">
+                  {stats.paymentMethods.map((method, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: method.color }} />
+                        <span className="text-sm text-muted-foreground">{method.name}</span>
+                      </div>
+                      <span className="font-bold">{method.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                Aucune donnée
+              </div>
+            )}
           </Card>
         </div>
 
         {/* Search */}
-        <Card className="p-4 bg-white mb-4">
+        <Card className="p-4 bg-white border-0 shadow-lg">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               placeholder="Rechercher par numéro ou date..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-11 h-12 text-base"
             />
           </div>
         </Card>
 
-        {/* Sales List */}
-        <Card className="bg-white overflow-hidden">
-          <div className="overflow-x-auto">
-            <ScrollArea className="h-[calc(100vh-400px)]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="min-w-[120px]">Numéro</TableHead>
-                    <TableHead className="min-w-[140px]">Date</TableHead>
-                    <TableHead className="min-w-[100px]">Type</TableHead>
-                    <TableHead className="min-w-[80px]">Articles</TableHead>
-                    <TableHead className="min-w-[100px]">Paiement</TableHead>
-                    <TableHead className="text-right min-w-[80px]">Total</TableHead>
-                    <TableHead className="text-right min-w-[80px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
+        {/* Sales Table */}
+        <Card className="bg-white border-0 shadow-lg overflow-hidden">
+          <ScrollArea className="h-[400px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Numéro</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Articles</TableHead>
+                  <TableHead>Paiement</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
               <TableBody>
                 {filteredSales.map((sale) => (
                   <TableRow key={sale.id} className={sale.is_cancelled ? 'bg-red-50 opacity-60' : ''}>
@@ -263,9 +336,7 @@ export default function Sales() {
                       <div className="flex flex-col gap-1">
                         <span>{sale.sale_number}</span>
                         {sale.is_cancelled && (
-                          <Badge variant="destructive" className="text-xs w-fit">
-                            ANNULÉE
-                          </Badge>
+                          <Badge variant="destructive" className="text-xs w-fit">ANNULÉE</Badge>
                         )}
                       </div>
                     </TableCell>
@@ -279,33 +350,19 @@ export default function Sales() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={sale.is_invoice ? 'default' : 'secondary'}>
-                        {sale.is_invoice ? (
-                          <><FileText className="h-3 w-3 mr-1" /> Facture</>
-                        ) : (
-                          <><Receipt className="h-3 w-3 mr-1" /> Ticket</>
-                        )}
+                        {sale.is_invoice ? 'Facture' : 'Ticket'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm text-muted-foreground">
-                          {sale.sale_items?.length || 0} article{(sale.sale_items?.length || 0) > 1 ? 's' : ''}
-                        </span>
-                        {sale.is_cancelled && sale.notes && (
-                          <span className="text-xs text-destructive italic">
-                            {sale.notes}
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {sale.sale_items?.length || 0} article{(sale.sale_items?.length || 0) > 1 ? 's' : ''}
+                      </span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm capitalize">
-                          {sale.payment_method === 'cash' ? 'Espèces' : 
-                           sale.payment_method === 'card' ? 'Carte' : 'Mobile'}
-                        </span>
-                      </div>
+                      <span className="text-sm capitalize">
+                        {sale.payment_method === 'cash' ? 'Espèces' : 
+                         sale.payment_method === 'card' ? 'Carte' : 'Mobile'}
+                      </span>
                     </TableCell>
                     <TableCell className="text-right font-bold text-primary">
                       {sale.is_cancelled ? (
@@ -332,10 +389,12 @@ export default function Sales() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteClick(sale.id)}
-                          className="h-8 text-destructive hover:text-destructive"
+                          onClick={() => {
+                            setSaleToDelete(sale.id);
+                            setDeleteDialogOpen(true);
+                          }}
+                          className="h-8 text-destructive hover:bg-destructive/10"
                           disabled={sale.is_cancelled}
-                          title={sale.is_cancelled ? 'Cette vente est déjà annulée' : 'Annuler cette vente'}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -343,49 +402,35 @@ export default function Sales() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {filteredSales.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      Aucune vente trouvée
-                    </TableCell>
-                  </TableRow>
-                )}
               </TableBody>
             </Table>
           </ScrollArea>
-          </div>
         </Card>
       </div>
 
       {/* Receipt Dialog */}
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
-        <DialogContent className="max-w-sm bg-white border-2 border-primary p-0">
+        <DialogContent className="max-w-sm bg-white p-0">
           <DialogHeader className="p-4 pb-0">
             <DialogTitle className="text-primary font-bold text-center">TICKET DE CAISSE</DialogTitle>
           </DialogHeader>
           <div className="max-h-[70vh] overflow-y-auto">
             {selectedSale && <ThermalReceipt sale={selectedSale} />}
           </div>
-          <div className="p-4 border-t bg-muted/30 flex gap-2">
+          <div className="p-4 border-t flex gap-2">
             <Button
               variant="outline"
-              onClick={() => {
-                setReceiptDialogOpen(false);
-                setSelectedSale(null);
-              }}
-              className="flex-1 h-12 font-semibold"
+              onClick={() => setReceiptDialogOpen(false)}
+              className="flex-1"
             >
               Fermer
             </Button>
             <Button
               onClick={() => {
                 printThermalReceipt();
-                setTimeout(() => {
-                  setReceiptDialogOpen(false);
-                  setSelectedSale(null);
-                }, 500);
+                setTimeout(() => setReceiptDialogOpen(false), 500);
               }}
-              className="flex-1 h-12 bg-accent hover:bg-accent/90 text-white font-bold"
+              className="flex-1 bg-accent hover:bg-accent/90"
             >
               IMPRIMER
             </Button>
@@ -393,85 +438,40 @@ export default function Sales() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => {
-        setDeleteDialogOpen(open);
-        if (!open) setCancelReason('');
-      }}>
-        <AlertDialogContent className="max-w-2xl">
+      {/* Delete Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-destructive text-xl">
-              <Trash2 className="h-6 w-6" />
-              Supprimer définitivement cette vente
-            </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-4 pt-4">
-              <div className="bg-amber-50 border-2 border-amber-500 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
-                  <div className="space-y-2">
-                    <p className="text-sm font-bold text-amber-900">
-                      ⚠️ AVERTISSEMENT IMPORTANT - RESPONSABILITÉ LÉGALE
-                    </p>
-                    <p className="text-xs text-amber-800">
-                      Cette vente sera <strong>définitivement supprimée</strong> de la base de données et ne pourra pas être récupérée.
-                    </p>
-                    <p className="text-xs text-amber-800 font-semibold">
-                      Cette action ne doit être effectuée que dans les cas suivants :
-                    </p>
-                    <ul className="text-xs text-amber-800 list-disc list-inside space-y-1 ml-2">
-                      <li>Annulation par le client avec remboursement</li>
-                      <li>Erreur de saisie majeure nécessitant une suppression</li>
-                      <li>Produit retourné et remboursé intégralement</li>
-                      <li>Autre raison légalement justifiable</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-6 w-6 text-red-600 shrink-0 mt-0.5" />
-                  <div className="space-y-2">
-                    <p className="text-sm font-bold text-red-900">
-                      ⚖️ CLAUSE DE RESPONSABILITÉ
-                    </p>
-                    <p className="text-xs text-red-800 font-semibold">
-                      En supprimant cette vente, vous confirmez que cette action est justifiée et conforme à la législation en vigueur.
-                    </p>
-                    <p className="text-xs text-red-800">
-                      <strong>JLprod décline toute responsabilité</strong> concernant l'utilisation abusive de cette fonction de suppression. L'utilisateur est seul responsable du respect des obligations fiscales et comptables, notamment la conservation des documents pendant 7 ans conformément à la loi belge.
-                    </p>
-                    <p className="text-xs text-red-800 italic">
-                      Note : La suppression volontaire de ventes pour dissimuler des revenus constitue une fraude fiscale passible de sanctions pénales.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <label className="text-sm font-medium text-foreground">
-                  Raison de la suppression (obligatoire pour traçabilité) :
-                </label>
+            <AlertDialogTitle>Supprimer cette vente ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className="space-y-4">
+                <p>Cette action est irréversible. La vente sera définitivement supprimée.</p>
                 <Input
+                  placeholder="Raison de la suppression (obligatoire)"
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
-                  placeholder="Ex: Remboursement client après retour produit, erreur de caisse..."
-                  className="mt-2"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Cette raison sera enregistrée dans les logs système pour audit.
-                </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2">
+          <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeleteConfirm}
+              onClick={() => {
+                if (saleToDelete) {
+                  deleteSale.mutate({ 
+                    saleId: saleToDelete, 
+                    reason: cancelReason || 'Aucune raison fournie' 
+                  });
+                  setDeleteDialogOpen(false);
+                  setSaleToDelete(null);
+                  setCancelReason('');
+                }
+              }}
               disabled={!cancelReason.trim()}
               className="bg-destructive hover:bg-destructive/90"
             >
-              Je comprends et je supprime définitivement
+              Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
