@@ -711,13 +711,13 @@ const Index = () => {
       const qtyToUse = prefixQuantity && prefixQuantity > 0 ? prefixQuantity : undefined;
       console.log('[POS] Quantité utilisée:', qtyToUse || 'défaut');
       
-      // Ajouter à l'historique - succès
+      // Ajouter à l'historique - succès (limité à 5)
       setScanHistory(prev => [{
         barcode: normalized,
         product: found.name,
         status: 'success' as const,
         timestamp: Date.now()
-      }, ...prev].slice(0, 6));
+      }, ...prev].slice(0, 5));
       
       handleProductSelect(found, qtyToUse);
       setScanInput("");
@@ -729,12 +729,12 @@ const Index = () => {
     // Si inconnu, afficher un toast avec action pour créer
     console.log('[POS] ✗ Aucun produit trouvé pour:', normalized);
     
-    // Ajouter à l'historique - non trouvé
+    // Ajouter à l'historique - non trouvé (limité à 5)
     setScanHistory(prev => [{
       barcode: normalized,
       status: 'not_found' as const,
       timestamp: Date.now()
-    }, ...prev].slice(0, 6));
+    }, ...prev].slice(0, 5));
     
     toast.error('Code-barres inconnu', {
       description: `Aucun produit lié à ${normalized}`,
