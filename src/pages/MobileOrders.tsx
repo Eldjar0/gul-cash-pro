@@ -158,20 +158,10 @@ export default function MobileOrders() {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
-    // Check for applicable promotions
-    const applicablePromo = promotions.find(promo => 
-      promo.is_active &&
-      promo.type === 'percentage' &&
-      (!promo.applicable_products || promo.applicable_products.includes(product.id))
-    );
-
+    // Promotions now handled at cart level, not per product
     const qty = 1;
     const unitPrice = product.price;
     let discountPercent = 0;
-
-    if (applicablePromo) {
-      discountPercent = applicablePromo.value || 0;
-    }
 
     const discountAmount = (unitPrice * qty * discountPercent) / 100;
     const totalPrice = (unitPrice * qty) - discountAmount;

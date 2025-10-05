@@ -1276,6 +1276,54 @@ export type Database = {
         }
         Relationships: []
       }
+      promotions: {
+        Row: {
+          conditions: Json
+          created_at: string | null
+          customer_type: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          priority: number | null
+          schedule_config: Json | null
+          schedule_type: string | null
+          show_on_display: boolean | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          conditions?: Json
+          created_at?: string | null
+          customer_type?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          priority?: number | null
+          schedule_config?: Json | null
+          schedule_type?: string | null
+          show_on_display?: boolean | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          conditions?: Json
+          created_at?: string | null
+          customer_type?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          priority?: number | null
+          schedule_config?: Json | null
+          schedule_type?: string | null
+          show_on_display?: boolean | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       purchase_order_items: {
         Row: {
           created_at: string | null

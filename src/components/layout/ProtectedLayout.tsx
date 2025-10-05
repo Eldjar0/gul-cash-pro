@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { TopNavigation } from './TopNavigation';
 import { PinLockDialog } from '../pos/PinLockDialog';
 import { useStockAlerts } from '@/hooks/useStockAlerts';
-import { usePromotionAlerts } from '@/hooks/usePromotionAlerts';
 import { useDailyReportReminder } from '@/hooks/useDailyReportReminder';
 import { useCustomerMilestoneAlerts } from '@/hooks/useCustomerMilestoneAlerts';
 
@@ -15,7 +14,6 @@ export function ProtectedLayout({ children }: ProtectedLayoutProps) {
   
   // Monitor and create intelligent alerts
   useStockAlerts();
-  usePromotionAlerts();
   useDailyReportReminder();
   useCustomerMilestoneAlerts();
 

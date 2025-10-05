@@ -2,60 +2,138 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export interface PromotionConditions {
+  buy_product_id?: string;
+  buy_quantity?: number;
+  get_product_id?: string;
+  get_quantity?: number;
+  min_amount?: number;
+  discount_value?: number;
+  discount_type?: 'percentage' | 'fixed';
+}
+
+export interface PromotionSchedule {
+  dates?: string[];
+  days?: number[];
+  time_start?: string;
+  time_end?: string;
+  date_start?: string;
+  date_end?: string;
+}
+
 export interface Promotion {
   id: string;
   name: string;
-  type: 'percentage' | 'fixed' | 'buy_x_get_y';
-  value: number;
-  min_purchase?: number;
-  applicable_products?: string[];
-  applicable_categories?: string[];
-  start_date: string;
-  end_date: string;
+  description?: string;
+  type: 'buy_x_get_y' | 'spend_amount_get_discount' | 'cart_percentage' | 'cart_fixed' | 'product_discount';
+  conditions: PromotionConditions;
   is_active: boolean;
+  show_on_display: boolean;
+  customer_type: 'all' | 'professional' | 'individual';
+  schedule_type: 'always' | 'specific_dates' | 'recurring_days' | 'date_range';
+  schedule_config: PromotionSchedule;
+  priority: number;
   created_at: string;
+  updated_at: string;
 }
 
 export const usePromotions = () => {
   return useQuery({
     queryKey: ['promotions'],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'promotions')
-        .maybeSingle();
+      const { data, error } = await supabase
+        .from('promotions')
+        .select('*')
+        .order('priority', { ascending: false })
+        .order('created_at', { ascending: false });
 
-      if (data?.value) {
-        return (data.value as any).promotions as Promotion[];
-      }
-
-      return [];
+      if (error) throw error;
+      return data as Promotion[];
     },
   });
 };
 
-export const useSavePromotions = () => {
+export const useCreatePromotion = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (promotions: Promotion[]) => {
+    mutationFn: async (promotion: Omit<Promotion, 'id' | 'created_at' | 'updated_at'>) => {
+      const { data, error } = await supabase
+        .from('promotions')
+        .insert({
+          ...promotion,
+          conditions: promotion.conditions as any,
+          schedule_config: promotion.schedule_config as any,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['promotions'] });
+      queryClient.invalidateQueries({ queryKey: ['active-promotions'] });
+      toast.success('Promotion créée avec succès');
+    },
+    onError: (error: Error) => {
+      console.error('Error creating promotion:', error);
+      toast.error('Erreur lors de la création');
+    },
+  });
+};
+
+export const useUpdatePromotion = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<Promotion> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('promotions')
+        .update({
+          ...updates,
+          conditions: updates.conditions as any,
+          schedule_config: updates.schedule_config as any,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['promotions'] });
+      queryClient.invalidateQueries({ queryKey: ['active-promotions'] });
+      toast.success('Promotion mise à jour');
+    },
+    onError: (error: Error) => {
+      console.error('Error updating promotion:', error);
+      toast.error('Erreur lors de la mise à jour');
+    },
+  });
+};
+
+export const useDeletePromotion = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('settings')
-        .upsert({
-          key: 'promotions',
-          value: { promotions } as any,
-        });
+        .from('promotions')
+        .delete()
+        .eq('id', id);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['promotions'] });
-      toast.success('Promotions enregistrées');
+      queryClient.invalidateQueries({ queryKey: ['active-promotions'] });
+      toast.success('Promotion supprimée');
     },
     onError: (error: Error) => {
-      console.error('Error saving promotions:', error);
-      toast.error('Erreur lors de l\'enregistrement');
+      console.error('Error deleting promotion:', error);
+      toast.error('Erreur lors de la suppression');
     },
   });
 };
@@ -64,77 +142,124 @@ export const useActivePromotions = () => {
   return useQuery({
     queryKey: ['active-promotions'],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'promotions')
-        .maybeSingle();
+      const { data, error } = await supabase
+        .from('promotions')
+        .select('*')
+        .eq('is_active', true)
+        .order('priority', { ascending: false });
 
-      if (!data?.value) return [];
+      if (error) throw error;
 
-      const promotions = (data.value as any).promotions as Promotion[];
       const now = new Date();
+      const currentDay = now.getDay();
+      const currentTime = now.toTimeString().slice(0, 5);
+      const currentDate = now.toISOString().split('T')[0];
 
-      return promotions.filter(promo => 
-        promo.is_active &&
-        new Date(promo.start_date) <= now &&
-        new Date(promo.end_date) >= now
-      );
+      return (data as Promotion[]).filter(promo => {
+        const config = promo.schedule_config as PromotionSchedule;
+        
+        // Check schedule
+        if (promo.schedule_type === 'specific_dates' && config.dates) {
+          if (!config.dates.includes(currentDate)) return false;
+        }
+
+        if (promo.schedule_type === 'recurring_days' && config.days) {
+          if (!config.days.includes(currentDay)) return false;
+        }
+
+        if (promo.schedule_type === 'date_range') {
+          const start = config.date_start;
+          const end = config.date_end;
+          if (start && currentDate < start) return false;
+          if (end && currentDate > end) return false;
+        }
+
+        // Check time
+        if (config.time_start && currentTime < config.time_start) return false;
+        if (config.time_end && currentTime > config.time_end) return false;
+
+        return true;
+      });
     },
-    refetchInterval: 60000, // Refresh every minute
+    refetchInterval: 60000,
   });
 };
 
 export const calculateDiscount = (
   cartItems: any[],
   promotions: Promotion[],
-  categories: any[]
-): { discount: number; appliedPromo: Promotion | null } => {
+  customerType: 'professional' | 'individual' | null
+): { discount: number; appliedPromo: Promotion | null; freeItems: any[] } => {
   let bestDiscount = 0;
   let appliedPromo: Promotion | null = null;
+  let freeItems: any[] = [];
 
   const cartTotal = cartItems.reduce((sum, item) => sum + item.total, 0);
 
   for (const promo of promotions) {
+    // Check customer type
+    if (promo.customer_type === 'professional' && customerType !== 'professional') continue;
+    if (promo.customer_type === 'individual' && customerType !== 'individual') continue;
+
+    const conditions = promo.conditions as PromotionConditions;
     let discount = 0;
 
-    // Check minimum purchase requirement
-    if (promo.min_purchase && cartTotal < promo.min_purchase) {
-      continue;
-    }
-
     switch (promo.type) {
-      case 'percentage':
-        if (promo.applicable_products && promo.applicable_products.length > 0) {
-          // Discount on specific products
-          const eligibleTotal = cartItems
-            .filter(item => promo.applicable_products?.includes(item.product_id))
-            .reduce((sum, item) => sum + item.total, 0);
-          discount = (eligibleTotal * promo.value) / 100;
-        } else if (promo.applicable_categories && promo.applicable_categories.length > 0) {
-          // Discount on specific categories
-          const eligibleTotal = cartItems
-            .filter(item => {
-              const product = item.product_id;
-              // Find product category
-              return promo.applicable_categories?.includes(item.category_id);
-            })
-            .reduce((sum, item) => sum + item.total, 0);
-          discount = (eligibleTotal * promo.value) / 100;
-        } else {
-          // Discount on entire cart
-          discount = (cartTotal * promo.value) / 100;
+      case 'buy_x_get_y':
+        // Buy X get Y promotion
+        if (conditions.buy_product_id && conditions.buy_quantity && conditions.get_product_id && conditions.get_quantity) {
+          const buyItem = cartItems.find(item => item.product_id === conditions.buy_product_id);
+          if (buyItem && buyItem.quantity >= conditions.buy_quantity) {
+            // Add free item
+            const freeProduct = cartItems.find(item => item.product_id === conditions.get_product_id);
+            if (freeProduct) {
+              const freeQty = Math.floor(buyItem.quantity / conditions.buy_quantity) * conditions.get_quantity;
+              discount = freeProduct.unit_price * freeQty;
+              freeItems = [{
+                product_id: conditions.get_product_id,
+                quantity: freeQty,
+                unit_price: freeProduct.unit_price
+              }];
+            }
+          }
         }
         break;
 
-      case 'fixed':
-        discount = promo.value;
+      case 'spend_amount_get_discount':
+        // Spend X get discount
+        if (conditions.min_amount && cartTotal >= conditions.min_amount && conditions.discount_value) {
+          discount = conditions.discount_type === 'percentage' 
+            ? (cartTotal * conditions.discount_value) / 100
+            : conditions.discount_value;
+        }
         break;
 
-      case 'buy_x_get_y':
-        // Simple buy X get Y logic (needs more sophisticated implementation)
-        // For now, just apply percentage discount if conditions are met
-        discount = (cartTotal * promo.value) / 100;
+      case 'cart_percentage':
+        // Percentage discount on entire cart
+        if (conditions.discount_value) {
+          if (conditions.min_amount && cartTotal < conditions.min_amount) continue;
+          discount = (cartTotal * conditions.discount_value) / 100;
+        }
+        break;
+
+      case 'cart_fixed':
+        // Fixed amount discount on cart
+        if (conditions.discount_value) {
+          if (conditions.min_amount && cartTotal < conditions.min_amount) continue;
+          discount = conditions.discount_value;
+        }
+        break;
+
+      case 'product_discount':
+        // Discount on specific product
+        if (conditions.buy_product_id && conditions.discount_value) {
+          const productItem = cartItems.find(item => item.product_id === conditions.buy_product_id);
+          if (productItem) {
+            discount = conditions.discount_type === 'percentage'
+              ? (productItem.total * conditions.discount_value) / 100
+              : conditions.discount_value * productItem.quantity;
+          }
+        }
         break;
     }
 
@@ -144,5 +269,5 @@ export const calculateDiscount = (
     }
   }
 
-  return { discount: bestDiscount, appliedPromo };
+  return { discount: bestDiscount, appliedPromo, freeItems };
 };

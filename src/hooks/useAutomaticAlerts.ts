@@ -71,29 +71,7 @@ export const useAutomaticAlerts = () => {
       }
     });
 
-    // Check expiring promotions (within 3 days)
-    const threeDaysFromNow = addDays(now, 3);
-    
-    promotions.forEach((promotion) => {
-      if (!promotion.is_active || !promotion.end_date) return;
-
-      const endDate = parseISO(promotion.end_date);
-      const notificationKey = `expiring-promo-${promotion.id}`;
-
-      if (
-        isWithinInterval(endDate, { start: now, end: threeDaysFromNow }) &&
-        !notifiedItemsRef.current.has(notificationKey)
-      ) {
-        notifiedItemsRef.current.add(notificationKey);
-        
-        createNotification.mutate({
-          user_id: user.id,
-          title: '⏰ Promotion bientôt expirée',
-          message: `"${promotion.name}" expire bientôt`,
-          type: 'info',
-          action_url: '/promotions',
-        });
-      }
-    });
+    // Promotions are now managed with schedule_type and schedule_config
+    // No need for end_date alerts anymore
   }, [products, batches, promotions, user, createNotification]);
 };

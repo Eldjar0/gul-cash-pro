@@ -30,7 +30,7 @@ const DownloadApp = lazy(() => import("./pages/DownloadApp"));
 const UserManagement = lazy(() => import("./pages/UserManagement"));
 const MobileManagement = lazy(() => import("./pages/MobileManagement"));
 const MobileCategories = lazy(() => import("./pages/MobileCategories"));
-const MobilePromotions = lazy(() => import("./pages/MobilePromotions"));
+// MobilePromotions page has been removed - use desktop Promotions page instead
 const MobileOrders = lazy(() => import("./pages/MobileOrders"));
 const MobileCalculator = lazy(() => import("./pages/MobileCalculator"));
 const MobileProducts = lazy(() => import("./pages/MobileProducts"));
@@ -62,7 +62,7 @@ const App = () => (
             <Route path="/mobile/management" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
             <Route path="/mobile/products" element={<ProtectedRoute><MobileProducts /></ProtectedRoute>} />
             <Route path="/mobile/categories" element={<ProtectedRoute><MobileCategories /></ProtectedRoute>} />
-            <Route path="/mobile/promotions" element={<ProtectedRoute><MobilePromotions /></ProtectedRoute>} />
+            <Route path="/mobile/promotions" element={<ProtectedRoute><Promotions /></ProtectedRoute>} />
             <Route path="/mobile/orders" element={<ProtectedRoute><MobileOrders /></ProtectedRoute>} />
             <Route path="/mobile/calculator" element={<ProtectedRoute><MobileCalculator /></ProtectedRoute>} />
             <Route path="/camera-scanner" element={<ProtectedRoute><DirectCameraScanner /></ProtectedRoute>} />
