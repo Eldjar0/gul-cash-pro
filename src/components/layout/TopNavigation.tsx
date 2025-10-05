@@ -71,9 +71,8 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
       { icon: Tags, label: "Promotions", path: "/promotions" },
     ],
     rapports: [
-      { icon: TrendingUp, label: "Dashboard", path: "/dashboard" },
-      { icon: BarChart3, label: "Analyses", path: "/analytics" },
-      { icon: FileBarChart, label: "Rapports", path: "/reports-history" },
+      { icon: BarChart3, label: "Statistiques", path: "/stats" },
+      { icon: FileBarChart, label: "Rapports Z", path: "/reports-history" },
     ],
   };
 

@@ -12,10 +12,9 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Stats = lazy(() => import("./pages/Stats"));
 const Sales = lazy(() => import("./pages/Sales"));
 const Refunds = lazy(() => import("./pages/Refunds"));
-const Analytics = lazy(() => import("./pages/Analytics"));
 const Promotions = lazy(() => import("./pages/Promotions"));
 const Suppliers = lazy(() => import("./pages/Suppliers"));
 const StockHistory = lazy(() => import("./pages/StockHistory"));
@@ -75,10 +74,9 @@ const App = () => (
             
             {/* Protected routes with navigation */}
             <Route path="/" element={<ProtectedRoute><ProtectedLayout><Index /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><ProtectedLayout><Dashboard /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/stats" element={<ProtectedRoute><ProtectedLayout><Stats /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/sales" element={<ProtectedRoute><ProtectedLayout><Sales /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/refunds" element={<ProtectedRoute><ProtectedLayout><Refunds /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/analytics" element={<ProtectedRoute><ProtectedLayout><Analytics /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/promotions" element={<ProtectedRoute><ProtectedLayout><Promotions /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/suppliers" element={<ProtectedRoute><ProtectedLayout><Suppliers /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/stock-history" element={<ProtectedRoute><ProtectedLayout><StockHistory /></ProtectedLayout></ProtectedRoute>} />
