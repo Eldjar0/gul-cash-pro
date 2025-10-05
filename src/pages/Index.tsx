@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -63,6 +63,7 @@ interface CartItem {
 const CART_STORAGE_KEY = 'pos_active_cart_v1';
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     user,
     loading: authLoading
@@ -244,13 +245,15 @@ const Index = () => {
   }, [cart.length]);
 
   // Utilisation du hook usePhysicalScanner pour capturer les scans
+  // Désactivé si on n'est pas sur la page principale
+  const isOnMainPage = location.pathname === '/';
   usePhysicalScanner({
     onScan: (barcode) => {
       console.log('[POS] Scanner physique - code-barres détecté:', barcode);
       // Ne pas écrire dans la recherche, on ajoute directement au panier
       handleBarcodeScan(barcode);
     },
-    enabled: true,
+    enabled: isOnMainPage, // Actif uniquement sur la page principale
     minLength: 8,
     timeout: 150, // Augmenté pour capturer tous les caractères
     captureInInputs: true, // Intercepte même si un champ de saisie est focus
