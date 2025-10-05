@@ -163,9 +163,9 @@ export const ProductsManagement = () => {
     if (!printWindow) return;
 
     const labelSizes = {
-      small: { width: '40mm', height: '25mm', fontSize: '8px', barcodeHeight: '15mm' },
-      medium: { width: '60mm', height: '40mm', fontSize: '10px', barcodeHeight: '20mm' },
-      large: { width: '80mm', height: '50mm', fontSize: '12px', barcodeHeight: '25mm' }
+      small: { width: '50mm', height: '30mm', fontSize: '9px', barcodeHeight: '18mm', nameSize: '11px', priceSize: '10px' },
+      medium: { width: '70mm', height: '45mm', fontSize: '11px', barcodeHeight: '25mm', nameSize: '14px', priceSize: '13px' },
+      large: { width: '90mm', height: '55mm', fontSize: '13px', barcodeHeight: '30mm', nameSize: '16px', priceSize: '15px' }
     };
 
     const size = labelSizes[labelSize];
@@ -185,45 +185,69 @@ export const ProductsManagement = () => {
               flex-wrap: wrap;
               gap: 5mm;
               padding: 5mm;
+              background: white;
             }
             .label {
               width: ${size.width};
               height: ${size.height};
-              border: 1px solid #333;
-              padding: 2mm;
+              border: 2px solid #000;
+              padding: 3mm;
               display: flex;
               flex-direction: column;
               justify-content: space-between;
               page-break-inside: avoid;
+              background: white;
+            }
+            .header-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 2mm;
+              gap: 2mm;
             }
             .product-name {
-              font-size: ${size.fontSize};
+              font-size: ${size.nameSize};
               font-weight: bold;
-              text-align: center;
-              margin-bottom: 1mm;
+              text-align: left;
+              flex: 1;
+              line-height: 1.2;
+              max-height: 3em;
               overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
+              word-wrap: break-word;
             }
-            .barcode {
-              text-align: center;
-              font-family: 'Libre Barcode 128', monospace;
-              font-size: ${size.barcodeHeight};
-              line-height: ${size.barcodeHeight};
-            }
-            .barcode-text {
-              text-align: center;
-              font-size: calc(${size.fontSize} - 1px);
-              margin-top: 1mm;
+            .price-container {
+              text-align: right;
+              min-width: 30%;
             }
             .price {
-              text-align: center;
-              font-size: calc(${size.fontSize} + 2px);
+              font-size: ${size.priceSize};
               font-weight: bold;
-              margin-top: 2mm;
+              white-space: nowrap;
+            }
+            .unit {
+              font-size: calc(${size.fontSize} - 1px);
+              color: #666;
+              margin-top: 1px;
+            }
+            .barcode-section {
+              text-align: center;
+              margin-top: auto;
+            }
+            .barcode {
+              font-family: "Libre Barcode 128", monospace;
+              font-size: ${size.barcodeHeight};
+              line-height: ${size.barcodeHeight};
+              margin: 2mm 0;
+            }
+            .barcode-text {
+              font-size: ${size.fontSize};
+              font-family: monospace;
+              letter-spacing: 1px;
+              margin-top: 1mm;
             }
             @media print {
               body { padding: 0; gap: 3mm; }
+              .label { border: 1.5px solid #000; }
             }
           </style>
           <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&display=swap" rel="stylesheet">
@@ -233,15 +257,27 @@ export const ProductsManagement = () => {
 
     selectedProductsList.forEach(product => {
       const copies = labelCount[product.id] || 1;
+      const unitText = product.unit || 'unité';
+      const pricePerUnit = product.type === 'weight' ? 'le kg' : unitText === 'carton' ? 'le carton' : 'la pièce';
+      
       for (let i = 0; i < copies; i++) {
         htmlContent += `
           <div class="label">
-            <div class="product-name">${product.name}</div>
-            ${product.barcode ? `
-              <div class="barcode">*${product.barcode}*</div>
-              <div class="barcode-text">${product.barcode}</div>
-            ` : '<div style="text-align: center; font-size: 8px; color: #999;">Aucun code-barres</div>'}
-            ${showPrice ? `<div class="price">${product.price.toFixed(2)} €</div>` : ''}
+            <div class="header-row">
+              <div class="product-name">${product.name}</div>
+              ${showPrice ? `
+                <div class="price-container">
+                  <div class="price">${product.price.toFixed(2)} €</div>
+                  <div class="unit">${pricePerUnit}</div>
+                </div>
+              ` : ''}
+            </div>
+            <div class="barcode-section">
+              ${product.barcode ? `
+                <div class="barcode">*${product.barcode}*</div>
+                <div class="barcode-text">${product.barcode}</div>
+              ` : '<div style="font-size: 9px; color: #999;">Aucun code-barres</div>'}
+            </div>
           </div>
         `;
       }
