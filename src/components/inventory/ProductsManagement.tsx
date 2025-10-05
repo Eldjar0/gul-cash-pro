@@ -783,64 +783,6 @@ export const ProductsManagement = () => {
         </Card>
       </TabsContent>
 
-      <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingProduct ? 'Modifier le produit' : 'Nouveau produit'}</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="name">Nom</Label>
-              <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="barcode">Code-barres</Label>
-              <Input id="barcode" value={form.barcode}
-                inputMode="numeric" pattern="[0-9]*" autoComplete="off" maxLength={32}
-                onChange={(e) => setForm({ ...form, barcode: normalizeBarcodeInput(e.target.value) })}
-                onPaste={(e) => { e.preventDefault(); const text = e.clipboardData.getData('text'); setForm({ ...form, barcode: normalizeBarcodeInput(text) }); }}
-                onKeyDown={(e) => {
-                  const allowed = ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'];
-                  if (allowed.includes(e.key)) return;
-                  const isDigit = /[0-9]/.test(e.key);
-                  const map: Record<string,string> = { '&':'1','é':'2','"':'3','\'':'4','(':'5','-':'6','è':'7','_':'8','ç':'9','à':'0','!':'8' };
-                  const mapped = map[e.key];
-                  if (!isDigit && !mapped) { e.preventDefault(); }
-                  if (mapped) {
-                    e.preventDefault();
-                    setForm((f) => ({ ...f, barcode: (f.barcode || '') + mapped }));
-                  }
-                }}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="price">Prix</Label>
-              <Input id="price" type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="stock">Stock</Label>
-              <Input id="stock" type="number" step="0.01" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="vat_rate">TVA %</Label>
-              <Input id="vat_rate" type="number" step="0.01" value={form.vat_rate} onChange={(e) => setForm({ ...form, vat_rate: e.target.value })} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="min_stock">Stock min.</Label>
-              <Input id="min_stock" type="number" step="0.01" value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: e.target.value })} />
-            </div>
-            <div className="space-y-1 md:col-span-2">
-              <Label htmlFor="unit">Unité</Label>
-              <Input id="unit" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setProductDialogOpen(false)}>Annuler</Button>
-            <Button onClick={handleSaveProduct}>{editingProduct ? 'Enregistrer' : 'Créer'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
