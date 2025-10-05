@@ -97,9 +97,9 @@ export const generateStockPDF = (products: Product[]) => {
     const vatRate = product.vat_rate || 0;
     const stockValue = stock * product.price;
     const margin = product.cost_price ? ((product.price - product.cost_price) / product.price * 100) : 0;
-    const stockStatus = stock === 0 ? '🔴 Rupture' : 
-                       stock <= (product.min_stock || 0) ? '🟠 Faible' : 
-                       '🟢 OK';
+    const stockStatus = stock === 0 ? 'Rupture' : 
+                       stock <= (product.min_stock || 0) ? 'Faible' : 
+                       'OK';
     
     return [
       product.name,
