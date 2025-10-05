@@ -34,8 +34,8 @@ interface InvoiceItem {
 
 export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorProps) {
   const { settings } = useCompanySettings();
-  const { customers } = useCustomers();
-  const { products } = useProducts();
+  const { data: customers } = useCustomers();
+  const { data: products } = useProducts();
   const [loading, setLoading] = useState(false);
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -104,8 +104,9 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       setNotes(data.notes || '');
       
       // Set due date if exists, otherwise default to +7 days
-      if (data.due_date) {
-        setDueDate(format(new Date(data.due_date), 'yyyy-MM-dd'));
+      const saleData = data as any;
+      if (saleData.due_date) {
+        setDueDate(format(new Date(saleData.due_date), 'yyyy-MM-dd'));
       } else {
         setDueDate(format(addDays(new Date(data.date), 7), 'yyyy-MM-dd'));
       }
@@ -299,6 +300,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
             invoice_status: 'brouillon',
             notes,
             date: new Date(invoiceDate),
+            due_date: new Date(dueDate),
           } as any)
           .select()
           .single();
