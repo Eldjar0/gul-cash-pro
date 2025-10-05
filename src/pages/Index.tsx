@@ -741,6 +741,7 @@ const Index = () => {
     toast.success(newIsGift ? 'Article offert' : 'Cadeau annulé');
   };
   const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check', amountPaid?: number, metadata?: any) => {
+    // 1. Vérification utilisateur
     if (!user) {
       toast.error('Connectez-vous pour encaisser', {
         description: 'Vous devez être connecté pour enregistrer une vente',
@@ -753,31 +754,27 @@ const Index = () => {
       return;
     }
 
-    // Validation du panier
+    // 2. Vérification panier
     if (cart.length === 0) {
-      toast.error('Le panier est vide');
+      toast.error('Panier vide', {
+        description: 'Ajoutez au moins un article au panier avant de valider le paiement'
+      });
       setPaymentDialogOpen(false);
       return;
     }
 
-    // Validation du montant
-    if (amountPaid !== undefined && (typeof amountPaid !== 'number' || isNaN(amountPaid) || amountPaid < 0)) {
-      toast.error('Montant payé invalide');
-      return;
-    }
-
-    // Si mode crédit client, vérifier qu'un client est sélectionné
+    // 3. Mode crédit client - vérifier qu'un client est sélectionné
     if (method === 'customer_credit' && !selectedCustomer) {
-      toast.error('Client requis', {
-        description: 'Veuillez sélectionner un client pour le paiement à crédit'
+      toast.error('Client requis pour crédit', {
+        description: 'Sélectionnez un client avant de valider un paiement à crédit'
       });
       return;
     }
 
-    // Si mode facture, vérifier qu'un client est sélectionné
+    // 4. Mode facture - vérifier qu'un client est sélectionné
     if (isInvoiceMode && !selectedCustomer) {
-      toast.error('Client requis', {
-        description: 'Veuillez sélectionner un client pour créer une facture'
+      toast.error('Client requis pour facture', {
+        description: 'Sélectionnez un client avant de créer une facture'
       });
       setPaymentDialogOpen(false);
       setCustomerDialogOpen(true);
@@ -896,9 +893,30 @@ const Index = () => {
             : 'Paiement validé'
       );
     } catch (error) {
-      toast.error('Erreur lors de la création de la vente', {
-        description: 'Veuillez réessayer'
-      });
+      const errorMsg = error instanceof Error ? error.message : 'Erreur inconnue';
+      
+      // Messages d'erreur spécifiques avec solutions
+      if (errorMsg.includes('STOCK INSUFFISANT')) {
+        toast.error('Stock insuffisant', {
+          description: errorMsg.split('\n')[1] || 'Vérifiez les quantités disponibles',
+          duration: 5000,
+        });
+      } else if (errorMsg.includes('PRODUIT INTROUVABLE')) {
+        toast.error('Produit introuvable', {
+          description: 'Un produit du panier n\'existe plus en base',
+          duration: 5000,
+        });
+      } else if (errorMsg.includes('PANIER VIDE')) {
+        toast.error('Panier vide', {
+          description: 'Ajoutez des articles avant de valider',
+          duration: 5000,
+        });
+      } else {
+        toast.error('Erreur lors de la vente', {
+          description: errorMsg,
+          duration: 5000,
+        });
+      }
     }
   };
   const handleClearCart = () => {

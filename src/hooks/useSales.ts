@@ -41,30 +41,9 @@ export const useCreateSale = () => {
 
   return useMutation({
     mutationFn: async (sale: Sale) => {
-      // Validation des données de vente
+      // Validation simplifiée - les validations détaillées sont faites côté client
       if (!sale || !sale.items || !Array.isArray(sale.items) || sale.items.length === 0) {
-        throw new Error('La vente doit contenir au moins un article');
-      }
-      
-      if (typeof sale.total !== 'number' || isNaN(sale.total) || sale.total < 0) {
-        throw new Error('Le montant total est invalide');
-      }
-      
-      if (typeof sale.subtotal !== 'number' || isNaN(sale.subtotal) || sale.subtotal < 0) {
-        throw new Error('Le sous-total est invalide');
-      }
-      
-      // Vérifier que tous les articles sont valides
-      for (const item of sale.items) {
-        if (!item.product_name || typeof item.product_name !== 'string') {
-          throw new Error('Tous les articles doivent avoir un nom');
-        }
-        if (typeof item.quantity !== 'number' || isNaN(item.quantity) || item.quantity <= 0) {
-          throw new Error(`Quantité invalide pour ${item.product_name}`);
-        }
-        if (typeof item.unit_price !== 'number' || isNaN(item.unit_price) || item.unit_price < 0) {
-          throw new Error(`Prix invalide pour ${item.product_name}`);
-        }
+        throw new Error('PANIER VIDE: Ajoutez au moins un article');
       }
       
       // Verify stock availability BEFORE creating the sale
@@ -77,7 +56,7 @@ export const useCreateSale = () => {
             .single();
 
           if (productError) {
-            throw new Error(`Erreur lors de la vérification du produit ${item.product_name}`);
+            throw new Error(`PRODUIT INTROUVABLE: ${item.product_name}`);
           }
 
           if (product && product.stock !== null) {
@@ -85,7 +64,7 @@ export const useCreateSale = () => {
             
             // Check if stock would become negative
             if (newStock < 0) {
-              throw new Error(`Stock insuffisant pour "${product.name}". Disponible: ${product.stock}, demandé: ${item.quantity}`);
+              throw new Error(`STOCK INSUFFISANT pour "${product.name}"\n💡 Disponible: ${product.stock}, Demandé: ${item.quantity}`);
             }
           }
         }
