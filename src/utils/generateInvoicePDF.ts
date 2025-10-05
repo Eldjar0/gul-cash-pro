@@ -2,13 +2,21 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import QRCode from 'qrcode';
 import logoInvoice from '../assets/logo-invoice.png';
+
+interface BankAccount {
+  bank_name: string;
+  account_number: string;
+}
 
 interface InvoiceData {
   saleNumber: string;
   date: Date;
   dueDate?: Date;
   structuredCommunication?: string;
+  isPaid?: boolean;
+  bankAccounts?: BankAccount[];
   company: {
     name: string;
     address: string;
@@ -40,7 +48,7 @@ interface InvoiceData {
   notes?: string;
 }
 
-export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
+export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -233,6 +241,75 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
 
   yPos = Math.max(yPos + refBoxHeight + 10, totalsY + 10);
 
+  // ============ STATUT DE PAIEMENT ============
+  if (invoice.isPaid) {
+    // Afficher "PAYÉ" en grand en bleu
+    yPos += 10;
+    doc.setFontSize(32);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 122, 204);
+    doc.text('PAYÉ', pageWidth / 2, yPos, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
+    yPos += 15;
+  } else {
+    // Facture impayée - Afficher les informations de paiement et QR code
+    yPos += 10;
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(204, 0, 0);
+    doc.text('FACTURE IMPAYÉE', pageWidth / 2, yPos, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
+    yPos += 10;
+
+    // Informations de paiement
+    if (invoice.bankAccounts && invoice.bankAccounts.length > 0) {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Informations de paiement :', 15, yPos);
+      yPos += 7;
+      
+      doc.setFont('helvetica', 'normal');
+      invoice.bankAccounts.forEach((account) => {
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Banque: ${account.bank_name}`, 15, yPos);
+        yPos += 5;
+        doc.setFont('helvetica', 'normal');
+        doc.text(`IBAN: ${account.account_number}`, 15, yPos);
+        yPos += 7;
+      });
+      
+      if (invoice.structuredCommunication) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Communication structurée:', 15, yPos);
+        yPos += 5;
+        doc.setFont('helvetica', 'normal');
+        doc.text(invoice.structuredCommunication, 15, yPos);
+        yPos += 7;
+      }
+      
+      // Générer QR code pour le paiement
+      if (invoice.bankAccounts[0]) {
+        const qrData = `BCD\n002\n1\nSCT\n\n${invoice.company.name}\n${invoice.bankAccounts[0].account_number}\nEUR${invoice.total.toFixed(2)}\n\n${invoice.structuredCommunication || invoice.saleNumber}\n${invoice.saleNumber}`;
+        
+        try {
+          const qrCodeDataUrl = await QRCode.toDataURL(qrData, { width: 300, margin: 1 });
+          const qrSize = 40;
+          const qrX = pageWidth - qrSize - 15;
+          const qrY = yPos - 50;
+          doc.addImage(qrCodeDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+          
+          doc.setFontSize(8);
+          doc.text('Scannez pour payer', qrX + qrSize / 2, qrY + qrSize + 5, { align: 'center' });
+        } catch (error) {
+          console.error('Error generating QR code:', error);
+        }
+      }
+    }
+    
+    yPos += 10;
+  }
+
   // ============ NOTES ============
   if (invoice.notes) {
     doc.setFontSize(9);
@@ -295,7 +372,11 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   doc.setFont('helvetica', 'bold');
   doc.text('Compte bancaire', col3X, yPos);
   doc.setFont('helvetica', 'normal');
-  doc.text('BE00 0000 0000 0000', col3X, yPos + 4);
+  if (invoice.bankAccounts && invoice.bankAccounts.length > 0) {
+    doc.text(invoice.bankAccounts[0].account_number, col3X, yPos + 4);
+  } else {
+    doc.text('BE00 0000 0000 0000', col3X, yPos + 4);
+  }
   
   // TVA
   doc.setFont('helvetica', 'bold');
@@ -313,14 +394,14 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   return doc;
 };
 
-export const downloadInvoicePDF = (invoice: InvoiceData) => {
-  const doc = generateInvoicePDF(invoice);
+export const downloadInvoicePDF = async (invoice: InvoiceData) => {
+  const doc = await generateInvoicePDF(invoice);
   const filename = `${invoice.saleNumber.replace(/\//g, '-')}.pdf`;
   doc.save(filename);
 };
 
-export const previewInvoicePDF = (invoice: InvoiceData) => {
-  const doc = generateInvoicePDF(invoice);
+export const previewInvoicePDF = async (invoice: InvoiceData) => {
+  const doc = await generateInvoicePDF(invoice);
   const pdfBlob = doc.output('blob');
   const pdfUrl = URL.createObjectURL(pdfBlob);
   

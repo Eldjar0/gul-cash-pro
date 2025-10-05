@@ -28,6 +28,7 @@ import { useCreateSale } from '@/hooks/useSales';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useToast } from '@/hooks/use-toast';
 import { downloadInvoicePDF } from '@/utils/generateInvoicePDF';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -130,10 +131,22 @@ export default function InvoiceCreate() {
     return { subtotal, vatByRate, totalVat, total };
   }, [lines]);
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
+    // Charger les comptes bancaires depuis les settings
+    const { data: settingsData } = await supabase
+      .from('settings')
+      .select('*')
+      .eq('key', 'invoice_settings')
+      .maybeSingle();
+    
+    const invoiceSettings = settingsData?.value as any;
+    const bankAccounts = invoiceSettings?.bank_accounts || [];
+    
     const invoiceData = {
       saleNumber: `FAC-${format(new Date(), 'yyyy-MM-dd-HHmmss')}`,
       date: new Date(),
+      isPaid: false,
+      bankAccounts,
       company: {
         name: companySettings.name,
         address: companySettings.address,
@@ -167,7 +180,7 @@ export default function InvoiceCreate() {
       notes,
     };
 
-    downloadInvoicePDF(invoiceData);
+    await downloadInvoicePDF(invoiceData);
     toast({
       title: 'PDF téléchargé',
       description: 'La facture a été téléchargée avec succès',

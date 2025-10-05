@@ -291,12 +291,27 @@ export default function Documents() {
     setReceiptDialogOpen(true);
   };
 
-  const handleViewInvoice = (sale: any) => {
+  const handleViewInvoice = async (sale: any) => {
     const saleData = sale as any;
+    
+    // Charger les comptes bancaires depuis les settings
+    const { data: settingsData } = await supabase
+      .from('settings')
+      .select('*')
+      .eq('key', 'invoice_settings')
+      .maybeSingle();
+    
+    const invoiceSettings = settingsData?.value as any;
+    const bankAccounts = invoiceSettings?.bank_accounts || [];
+    const isPaid = saleData.invoice_status === 'payée';
+    
     const invoiceData = {
       saleNumber: sale.sale_number,
       date: new Date(sale.date),
       dueDate: saleData.due_date ? new Date(saleData.due_date) : undefined,
+      structuredCommunication: saleData.structured_communication,
+      isPaid,
+      bankAccounts,
       company: {
         name: companySettings.name,
         address: companySettings.address,
@@ -327,15 +342,30 @@ export default function Documents() {
       total: sale.total,
       notes: sale.notes,
     };
-    previewInvoicePDF(invoiceData);
+    await previewInvoicePDF(invoiceData);
   };
 
-  const handleDownloadInvoice = (sale: any) => {
+  const handleDownloadInvoice = async (sale: any) => {
     const saleData = sale as any;
+    
+    // Charger les comptes bancaires depuis les settings
+    const { data: settingsData } = await supabase
+      .from('settings')
+      .select('*')
+      .eq('key', 'invoice_settings')
+      .maybeSingle();
+    
+    const invoiceSettings = settingsData?.value as any;
+    const bankAccounts = invoiceSettings?.bank_accounts || [];
+    const isPaid = saleData.invoice_status === 'payée';
+    
     const invoiceData = {
       saleNumber: sale.sale_number,
       date: new Date(sale.date),
       dueDate: saleData.due_date ? new Date(saleData.due_date) : undefined,
+      structuredCommunication: saleData.structured_communication,
+      isPaid,
+      bankAccounts,
       company: {
         name: companySettings.name,
         address: companySettings.address,
@@ -366,7 +396,7 @@ export default function Documents() {
       total: sale.total,
       notes: sale.notes,
     };
-    downloadInvoicePDF(invoiceData);
+    await downloadInvoicePDF(invoiceData);
   };
 
   const getTotalsByDate = useMemo(() => {
