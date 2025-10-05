@@ -5,7 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { useBackupConfig, useSaveBackupConfig, useCreateBackup, useExportCSV } from '@/hooks/useBackup';
+import { Badge } from '@/components/ui/badge';
+import { useBackupConfig, useSaveBackupConfig, useExportCSV } from '@/hooks/useBackup';
+import { useFullExport } from '@/hooks/useFullExport';
 import { Download, Database, FileText, Users, Package, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -13,8 +15,9 @@ import { fr } from 'date-fns/locale';
 export function BackupSettings() {
   const { data: config, isLoading } = useBackupConfig();
   const saveConfig = useSaveBackupConfig();
-  const createBackup = useCreateBackup();
+  const { exportFullData } = useFullExport();
   const exportCSV = useExportCSV();
+  const [isExporting, setIsExporting] = useState(false);
 
   const [enabled, setEnabled] = useState(false);
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
@@ -38,7 +41,12 @@ export function BackupSettings() {
   };
 
   const handleCreateBackup = async () => {
-    await createBackup.mutateAsync();
+    setIsExporting(true);
+    try {
+      await exportFullData();
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -118,29 +126,65 @@ export function BackupSettings() {
         </CardContent>
       </Card>
 
-      {/* Sauvegarde manuelle */}
-      <Card>
+      {/* Sauvegarde manuelle complète */}
+      <Card className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
-            Sauvegarde Manuelle
-          </CardTitle>
-          <CardDescription>
-            Créez une sauvegarde complète maintenant
-          </CardDescription>
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl text-white">
+              <Database className="h-6 w-6" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-xl">Sauvegarde complète de la caisse</CardTitle>
+              <CardDescription>Exportez TOUTES vos données: ventes, produits, clients, factures, tickets, historiques...</CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
+          <div className="grid gap-4 mb-6">
+            <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+              <div className="flex items-center gap-3 mb-2">
+                <Badge className="bg-gradient-to-r from-purple-500 to-blue-500">Inclus</Badge>
+                <span className="font-semibold">Données de vente</span>
+              </div>
+              <p className="text-sm text-muted-foreground ml-16">Tickets, factures, remboursements, historique complet</p>
+            </div>
+            
+            <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+              <div className="flex items-center gap-3 mb-2">
+                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500">Inclus</Badge>
+                <span className="font-semibold">Inventaire & Stock</span>
+              </div>
+              <p className="text-sm text-muted-foreground ml-16">Produits, catégories, mouvements de stock, lots</p>
+            </div>
+            
+            <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border-2 border-green-200 dark:border-green-800">
+              <div className="flex items-center gap-3 mb-2">
+                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500">Inclus</Badge>
+                <span className="font-semibold">Clients & Commandes</span>
+              </div>
+              <p className="text-sm text-muted-foreground ml-16">Base clients, commandes, devis, crédits</p>
+            </div>
+            
+            <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+              <div className="flex items-center gap-3 mb-2">
+                <Badge className="bg-gradient-to-r from-orange-500 to-red-500">Inclus</Badge>
+                <span className="font-semibold">Rapports & Comptabilité</span>
+              </div>
+              <p className="text-sm text-muted-foreground ml-16">Rapports journaliers, bons de commande, mouvements de caisse</p>
+            </div>
+          </div>
+
           <Button
             onClick={handleCreateBackup}
-            disabled={createBackup.isPending}
-            className="w-full"
+            disabled={isExporting}
+            className="w-full h-14 text-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             size="lg"
           >
-            <Database className="h-5 w-5 mr-2" />
-            {createBackup.isPending ? 'Création en cours...' : 'Créer une sauvegarde complète'}
+            <Download className="h-5 w-5 mr-2" />
+            {isExporting ? 'Création en cours...' : 'Télécharger la sauvegarde complète (.JSON)'}
           </Button>
-          <p className="text-xs text-muted-foreground mt-2">
-            Télécharge un fichier JSON avec toutes vos données (ventes, produits, clients, etc.)
+          <p className="text-xs text-muted-foreground text-center mt-4">
+            💾 La sauvegarde sera téléchargée en format JSON avec horodatage
           </p>
         </CardContent>
       </Card>
