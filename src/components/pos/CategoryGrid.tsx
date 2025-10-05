@@ -23,24 +23,24 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
   const selectedCategoryData = categories?.find(c => c.id === selectedCategory);
 
   return (
-    <div className="flex flex-col gap-2 h-full">
+    <div className="flex flex-col gap-1.5 xl:gap-2 h-full">
       {!selectedCategory ? (
         // Affichage des catégories
         <ScrollArea className="h-full">
-          <div className="grid grid-cols-3 gap-1.5 p-1">
+          <div className="grid grid-cols-3 gap-1 xl:gap-1.5 p-0.5 xl:p-1">
             {categories?.map((category) => (
               <Button
                 key={category.id}
                 onClick={() => onCategorySelect(category.id)}
-                className="h-20 flex flex-col items-center justify-center gap-1.5 p-2 text-white font-semibold transition-all hover:brightness-110"
+                className="min-h-[4.5rem] xl:min-h-[5rem] flex flex-col items-center justify-center gap-1 xl:gap-1.5 p-1.5 xl:p-2 text-white font-semibold transition-all hover:brightness-110"
                 style={{ 
                   backgroundColor: category.color,
                   borderColor: category.color,
                   borderWidth: '2px'
                 }}
               >
-                <Package className="h-5 w-5 shrink-0" />
-                <span className="text-xs font-medium text-center line-clamp-2 leading-tight">
+                <Package className="h-4 xl:h-5 w-4 xl:w-5 shrink-0" />
+                <span className="text-[10px] xl:text-xs font-medium text-center line-clamp-2 leading-tight">
                   {category.name}
                 </span>
               </Button>
@@ -74,27 +74,27 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
           <ScrollArea className="flex-1">
             {productsLoading ? (
               <div className="flex items-center justify-center h-32">
-                <div className="text-sm text-muted-foreground">Chargement...</div>
+                <div className="text-xs xl:text-sm text-muted-foreground">Chargement...</div>
               </div>
             ) : filteredProducts && filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-3 gap-1.5 p-1">
+              <div className="grid grid-cols-3 gap-1 xl:gap-1.5 p-0.5 xl:p-1">
                 {filteredProducts.map((product) => (
                   <Button
                     key={product.id}
                     variant="outline"
                     onClick={() => onProductSelect(product)}
-                    className="h-20 flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10"
+                    className="min-h-[4.5rem] xl:min-h-[5rem] flex flex-col items-center justify-center gap-0.5 xl:gap-1 p-1.5 xl:p-2 hover:bg-primary/10"
                     disabled={product.stock <= 0}
                   >
-                    <span className="text-[11px] font-medium text-center line-clamp-2 leading-tight">
+                    <span className="text-[10px] xl:text-[11px] font-medium text-center line-clamp-2 leading-tight">
                       {product.name}
                     </span>
                     <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-xs font-bold text-primary">
+                      <span className="text-[11px] xl:text-xs font-bold text-primary">
                         {product.price.toFixed(2)}€
                       </span>
                       {product.stock <= 0 && (
-                        <span className="text-[10px] text-destructive font-medium">
+                        <span className="text-[9px] xl:text-[10px] text-destructive font-medium">
                           Rupture
                         </span>
                       )}

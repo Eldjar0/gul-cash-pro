@@ -1266,27 +1266,28 @@ const Index = () => {
       />
       
       {/* Info bar avec date, météo, recherche et boutons */}
-      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-1.5 py-1 flex items-center justify-between gap-1.5 flex-shrink-0">
-        {/* Gauche: Date/Heure + Météo - Caché sur très petits écrans */}
-        <div className="hidden lg:flex items-center gap-1.5">
-          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-background rounded-md border border-border">
-            <Clock className="h-3 w-3 text-primary" />
-            <div className="text-[10px]">
-              <span className="font-bold">{currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
-              <span className="text-muted-foreground ml-1">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-1 xl:px-2 py-0.5 xl:py-1 flex items-center justify-between gap-1 xl:gap-1.5 flex-shrink-0">
+        {/* Gauche: Date/Heure + Météo - Compact et toujours visible */}
+        <div className="flex items-center gap-0.5 xl:gap-1">
+          <div className="flex items-center gap-0.5 xl:gap-1 px-1 xl:px-1.5 py-0.5 bg-background rounded-md border border-border">
+            <Clock className="h-2.5 xl:h-3 w-2.5 xl:w-3 text-primary shrink-0" />
+            <div className="text-[9px] xl:text-[10px] whitespace-nowrap">
+              <span className="font-bold hidden lg:inline">{currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
+              <span className="font-bold lg:hidden">{currentTime.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}</span>
+              <span className="text-muted-foreground ml-0.5 xl:ml-1">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-background rounded-md border border-border">
-            <CloudSun className="h-3 w-3 text-primary" />
-            <div className="text-[10px] font-bold">
+          <div className="flex items-center gap-0.5 xl:gap-1 px-1 xl:px-1.5 py-0.5 bg-background rounded-md border border-border">
+            <CloudSun className="h-2.5 xl:h-3 w-2.5 xl:w-3 text-primary shrink-0" />
+            <div className="text-[9px] xl:text-[10px] font-bold whitespace-nowrap">
               {weatherLoading ? '...' : `${temperature}°C`}
             </div>
           </div>
         </div>
 
-        {/* Centre: Barre de recherche - Réduite sur petits écrans */}
-        <div className="flex-1 max-w-xs lg:max-w-sm">
+        {/* Centre: Barre de recherche - Adaptative */}
+        <div className="flex-1 max-w-[200px] lg:max-w-xs xl:max-w-sm">
           <form onSubmit={handleScanSubmit}>
             <div className="relative">
               <Scan className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-primary" />
@@ -1301,7 +1302,7 @@ const Index = () => {
                 }}
                 placeholder="Rechercher..."
                 autoComplete="off"
-                className="h-7 pl-7 pr-6 text-xs bg-background border-input text-foreground"
+                className="h-6 xl:h-7 pl-6 xl:pl-7 pr-5 xl:pr-6 text-[11px] xl:text-xs bg-background border-input text-foreground"
               />
               {scanInput && (
                 <Button
@@ -1321,16 +1322,16 @@ const Index = () => {
           </form>
         </div>
         
-        {/* Droite: Boutons - Texte caché sur petits écrans */}
+        {/* Droite: Boutons - Adaptés */}
         <div className="flex items-center gap-0.5">
           {/* Boutons gestion de journée */}
           {!isDayOpenEffective ? (
             <Button
               onClick={() => setOpenDayDialogOpen(true)}
               size="sm"
-              className="h-7 px-2 text-xs bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md"
+              className="h-6 xl:h-7 px-1.5 xl:px-2 text-[10px] xl:text-xs bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md whitespace-nowrap"
             >
-              <Calendar className="h-3 w-3 lg:mr-1" />
+              <Calendar className="h-2.5 xl:h-3 w-2.5 xl:w-3 lg:mr-0.5 xl:lg:mr-1" />
               <span className="hidden lg:inline">Ouvrir</span>
             </Button>
           ) : (
@@ -1338,17 +1339,17 @@ const Index = () => {
               <Button
                 onClick={handleReportX}
                 size="sm"
-                className="h-7 px-2 text-xs bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md"
+                className="h-6 xl:h-7 px-1.5 xl:px-2 text-[10px] xl:text-xs bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md whitespace-nowrap"
               >
-                <FileText className="h-3 w-3 lg:mr-1" />
+                <FileText className="h-2.5 xl:h-3 w-2.5 xl:w-3 lg:mr-0.5 xl:lg:mr-1" />
                 <span className="hidden lg:inline">Rapport X</span>
               </Button>
               <Button
                 onClick={() => setCloseDayDialogOpen(true)}
                 size="sm"
-                className="h-7 px-2 text-xs bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md"
+                className="h-6 xl:h-7 px-1.5 xl:px-2 text-[10px] xl:text-xs bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md whitespace-nowrap"
               >
-                <CalendarX className="h-3 w-3 lg:mr-1" />
+                <CalendarX className="h-2.5 xl:h-3 w-2.5 xl:w-3 lg:mr-0.5 xl:lg:mr-1" />
                 <span className="hidden lg:inline">Fermer</span>
               </Button>
             </>
@@ -1357,9 +1358,9 @@ const Index = () => {
           <Button
             onClick={openCustomerDisplay}
             size="sm"
-            className="h-7 px-2 text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md"
+            className="h-6 xl:h-7 px-1.5 xl:px-2 text-[10px] xl:text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md whitespace-nowrap"
           >
-            <Eye className="h-3 w-3 lg:mr-1" />
+            <Eye className="h-2.5 xl:h-3 w-2.5 xl:w-3 lg:mr-0.5 xl:lg:mr-1" />
             <span className="hidden lg:inline">Affichage</span>
           </Button>
           
