@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
@@ -34,6 +34,7 @@ import { useTodayReport, useOpenDay, useCloseDay, getTodayReportData, ReportData
 import { useWeather } from '@/hooks/useWeather';
 import { useActivePromotions, calculateDiscount } from '@/hooks/usePromotions';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -82,6 +83,7 @@ const Index = () => {
     data: categories
   } = useCategories();
   const createSale = useCreateSale();
+  const queryClient = useQueryClient();
   const scanInputRef = useRef<HTMLInputElement>(null);
   const {
     temperature,
@@ -1497,6 +1499,19 @@ const Index = () => {
       });
     }
   };
+  
+  const handleSyncData = async () => {
+    try {
+      toast.loading('Synchronisation en cours...');
+      // Invalider toutes les requêtes pour forcer le rechargement
+      await queryClient.invalidateQueries();
+      // Recharger la page
+      window.location.reload();
+    } catch (error) {
+      toast.error('Erreur lors de la synchronisation');
+    }
+  };
+  
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   return <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Pin Lock Dialog */}
@@ -1572,6 +1587,10 @@ const Index = () => {
             </Button>
           ) : (
             <>
+              <Button onClick={handleSyncData} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-md whitespace-nowrap">
+                <RefreshCw className="h-3 w-3 mr-1" />
+                <span>Synchroniser</span>
+              </Button>
               <Button onClick={handleReportX} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md whitespace-nowrap">
                 <FileText className="h-3 w-3 mr-1" />
                 <span>Rapport X</span>
