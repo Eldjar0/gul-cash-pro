@@ -840,10 +840,12 @@ const Index = () => {
             saleId: sale.id,
             notes: `Vente ${sale.sale_number}`
           });
-          toast.success(`${metadata.creditAmount.toFixed(2)}€ ajouté au crédit client`);
-        } catch (error) {
-          console.error('Error charging credit:', error);
-          toast.error('Erreur lors de l\'enregistrement du crédit');
+        } catch (creditError) {
+          console.error('Error charging credit:', creditError);
+          // Ne pas bloquer la vente, juste avertir
+          toast.warning('Vente enregistrée, mais erreur lors de l\'enregistrement du crédit', {
+            description: 'La transaction de crédit devra être ajoutée manuellement'
+          });
         }
       }
 
@@ -895,14 +897,16 @@ const Index = () => {
       setPrintConfirmDialogOpen(true);
       toast.success(
         method === 'customer_credit' 
-          ? 'Paiement à crédit enregistré' 
+          ? `Paiement à crédit enregistré (${metadata?.creditAmount?.toFixed(2) || totals.total.toFixed(2)}€)`
           : isInvoiceMode 
             ? 'Facture créée' 
             : 'Paiement validé'
       );
     } catch (error) {
       console.error('Error creating sale:', error);
-      toast.error('Erreur paiement');
+      toast.error('Erreur lors de la création de la vente', {
+        description: 'Veuillez réessayer'
+      });
     }
   };
   const handleClearCart = () => {
