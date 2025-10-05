@@ -27,6 +27,26 @@ export function StockManagement() {
     }));
   };
 
+  const handleQuickAdjust = async (product: any, adjustment: number) => {
+    const currentStock = product.stock || 0;
+    const newStock = Math.max(0, currentStock + adjustment);
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ stock: newStock })
+        .eq('id', product.id);
+
+      if (error) throw error;
+
+      toast.success(`Stock ${adjustment > 0 ? 'augmenté' : 'diminué'} de ${Math.abs(adjustment)}`);
+      refetch();
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      toast.error('Erreur lors de la mise à jour du stock');
+    }
+  };
+
   const handleSaveStock = async (productId: string) => {
     const newStock = editingStocks[productId];
     if (newStock === undefined) return;
@@ -184,9 +204,9 @@ export function StockManagement() {
             {filteredProducts.map((product) => (
               <div 
                 key={product.id} 
-                className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors flex-wrap"
               >
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-[200px]">
                   <div className="flex items-center gap-2">
                     <p className="font-medium truncate">{product.name}</p>
                     {getStockBadge(product)}
@@ -196,19 +216,60 @@ export function StockManagement() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 flex-wrap">
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">Stock actuel</p>
-                    <p className="font-bold text-lg">{product.stock}</p>
+                    <p className="font-bold text-2xl">{product.stock || 0}</p>
+                  </div>
+
+                  {/* Boutons rapides +/- */}
+                  <div className="flex items-center gap-1">
+                    <Button
+                      onClick={() => handleQuickAdjust(product, -10)}
+                      size="sm"
+                      variant="outline"
+                      className="h-9 w-9 p-0 hover:bg-destructive hover:text-white"
+                      title="Enlever 10"
+                    >
+                      --
+                    </Button>
+                    <Button
+                      onClick={() => handleQuickAdjust(product, -1)}
+                      size="sm"
+                      variant="outline"
+                      className="h-9 w-9 p-0 hover:bg-destructive hover:text-white"
+                      title="Enlever 1"
+                    >
+                      -
+                    </Button>
+                    <Button
+                      onClick={() => handleQuickAdjust(product, 1)}
+                      size="sm"
+                      variant="outline"
+                      className="h-9 w-9 p-0 hover:bg-primary hover:text-white"
+                      title="Ajouter 1"
+                    >
+                      +
+                    </Button>
+                    <Button
+                      onClick={() => handleQuickAdjust(product, 10)}
+                      size="sm"
+                      variant="outline"
+                      className="h-9 w-9 p-0 hover:bg-primary hover:text-white"
+                      title="Ajouter 10"
+                    >
+                      ++
+                    </Button>
                   </div>
                   
+                  {/* Input manuel */}
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
                       placeholder="Nouveau stock"
                       value={editingStocks[product.id] ?? ''}
                       onChange={(e) => handleStockChange(product.id, parseFloat(e.target.value) || 0)}
-                      className="w-32"
+                      className="w-28"
                     />
                     <Button
                       size="sm"
@@ -217,7 +278,7 @@ export function StockManagement() {
                       className="gap-1"
                     >
                       <Save className="h-4 w-4" />
-                      Sauver
+                      OK
                     </Button>
                   </div>
                 </div>

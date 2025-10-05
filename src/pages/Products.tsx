@@ -178,25 +178,35 @@ export default function Products() {
     }
 
     const productData = {
-      ...formData,
+      barcode: formData.barcode || undefined,
+      name: formData.name,
+      description: formData.description || undefined,
       price: parseFloat(formData.price),
       cost_price: formData.cost_price ? parseFloat(formData.cost_price) : undefined,
+      type: formData.type,
+      unit: formData.unit,
       vat_rate: parseFloat(formData.vat_rate),
       stock: formData.stock ? parseFloat(formData.stock) : 0,
       min_stock: formData.min_stock ? parseFloat(formData.min_stock) : 0,
       category_id: formData.category_id || undefined,
+      supplier: formData.supplier || undefined,
+      image: formData.image || undefined,
       is_active: true,
     };
 
     try {
       if (editingProduct) {
         await updateProduct.mutateAsync({ id: editingProduct.id, ...productData });
+        toast.success('Produit modifié avec succès');
       } else {
         await createProduct.mutateAsync(productData);
+        toast.success('Produit créé avec succès');
       }
       setDialogOpen(false);
-    } catch (error) {
+      setEditingProduct(null);
+    } catch (error: any) {
       console.error('Error saving product:', error);
+      toast.error(error.message || 'Erreur lors de la sauvegarde');
     }
   };
 
