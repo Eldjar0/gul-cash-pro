@@ -40,7 +40,6 @@ import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { Receipt } from '@/components/pos/Receipt';
 import { PinLockDialog } from '@/components/pos/PinLockDialog';
-import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 import { PhysicalScanActionDialog } from '@/components/pos/PhysicalScanActionDialog';
@@ -170,7 +169,6 @@ const Index = () => {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   
   // New features states
-  const [savedCartsDialogOpen, setSavedCartsDialogOpen] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -946,12 +944,6 @@ const Index = () => {
     }
   };
 
-  // Gestionnaire pour charger un panier sauvegardé
-  const handleLoadCart = (cartData: any) => {
-    setCart(cartData);
-    toast.success('Panier chargé');
-  };
-
   // Gestionnaires pour le dialog de scan physique
   const handlePhysicalScanAddToCart = () => {
     if (scannedProduct) {
@@ -1653,32 +1645,7 @@ const Index = () => {
           {/* Payment buttons - Modern JL Prod style */}
           <div className="bg-background p-1.5 space-y-1.5 border-t-2 border-border flex-shrink-0">
             {/* Nouveaux boutons fonctionnalités */}
-            <div className="grid grid-cols-4 gap-1 mb-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSavedCartsDialogOpen(true)}
-                className="h-7 text-[9px] border-blue-500 text-blue-500 hover:bg-blue-500/10"
-                title="Paniers sauvegardés"
-              >
-                <FolderOpen className="h-3 w-3 mr-0.5" />
-                Charger
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (cart.length > 0) {
-                    setSavedCartsDialogOpen(true);
-                  }
-                }}
-                disabled={cart.length === 0}
-                className="h-7 text-[9px] border-green-500 text-green-500 hover:bg-green-500/10"
-                title="Sauvegarder le panier"
-              >
-                <Save className="h-3 w-3 mr-0.5" />
-                Sauver
-              </Button>
+            <div className="grid grid-cols-3 gap-1 mb-1">
               <Button
                 variant="outline"
                 size="sm"
@@ -1951,13 +1918,6 @@ const Index = () => {
         total={totals.total}
         onConfirmPayment={handleMixedPayment}
         customerId={selectedCustomer?.id}
-      />
-
-      <SavedCartsDialog
-        open={savedCartsDialogOpen}
-        onOpenChange={setSavedCartsDialogOpen}
-        currentCart={cart}
-        onLoadCart={handleLoadCart}
       />
 
       <RefundDialog

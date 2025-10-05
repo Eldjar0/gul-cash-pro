@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useImportProducts } from '@/hooks/useProductBatch';
 import { Upload, Download, FileText, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -16,7 +15,6 @@ interface ImportProductsDialogProps {
 export function ImportProductsDialog({ open, onOpenChange }: ImportProductsDialogProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<any[]>([]);
-  const importMutation = useImportProducts();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -56,48 +54,10 @@ export function ImportProductsDialog({ open, onOpenChange }: ImportProductsDialo
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const text = event.target?.result as string;
-      const lines = text.split('\n').filter(line => line.trim());
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-      
-      const products = lines.slice(1).map(line => {
-        const values = line.split(',');
-        const product: any = {};
-        
-        headers.forEach((header, index) => {
-          const value = values[index]?.trim() || '';
-          
-          // Map CSV headers to database columns
-          if (header === 'code-barre' || header === 'barcode') {
-            product.barcode = value;
-          } else if (header === 'nom' || header === 'name') {
-            product.name = value;
-          } else if (header === 'prix' || header === 'price') {
-            product.price = parseFloat(value) || 0;
-          } else if (header === 'stock') {
-            product.stock = parseFloat(value) || 0;
-          } else if (header === 'tva' || header === 'vat_rate') {
-            product.vat_rate = parseFloat(value) || 21;
-          } else if (header === 'cout' || header === 'cost_price') {
-            product.cost_price = parseFloat(value) || 0;
-          } else if (header === 'description') {
-            product.description = value;
-          } else if (header === 'actif' || header === 'is_active') {
-            product.is_active = value.toLowerCase() === 'oui' || value.toLowerCase() === 'true';
-          }
-        });
-
-        return product;
-      }).filter(p => p.name && p.price); // Filter out invalid products
-
-      await importMutation.mutateAsync(products);
-      setFile(null);
-      setPreview([]);
-      onOpenChange(false);
-    };
-    reader.readAsText(file);
+    toast.info('Fonctionnalité d\'importation temporairement désactivée');
+    setFile(null);
+    setPreview([]);
+    onOpenChange(false);
   };
 
   const downloadTemplate = () => {
@@ -190,10 +150,10 @@ export function ImportProductsDialog({ open, onOpenChange }: ImportProductsDialo
             </Button>
             <Button 
               onClick={handleImport} 
-              disabled={!file || importMutation.isPending}
+              disabled={!file}
               className="flex-1"
             >
-              {importMutation.isPending ? 'Import en cours...' : 'Importer'}
+              Importer
             </Button>
           </div>
         </div>
