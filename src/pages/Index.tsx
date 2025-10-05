@@ -432,6 +432,51 @@ const Index = () => {
     handleSearch();
   }, [debouncedSearchTerm]);
 
+  // Fermeture automatique de la journée après minuit
+  useEffect(() => {
+    const checkAndCloseDay = async () => {
+      if (!todayReport || todayReport.closing_amount !== null) return;
+      
+      const reportDate = new Date(todayReport.report_date);
+      reportDate.setHours(0, 0, 0, 0);
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      
+      // Si on est le jour suivant et la journée précédente est toujours ouverte
+      if (now.getTime() > reportDate.getTime()) {
+        try {
+          // Utiliser les données déjà collectées dans le rapport
+          const reportData: ReportData = {
+            totalSales: todayReport.total_sales,
+            totalCash: todayReport.total_cash,
+            totalCard: todayReport.total_card,
+            totalMobile: todayReport.total_mobile,
+            salesCount: todayReport.sales_count,
+            vatByRate: {} // Les données VAT ne sont pas stockées dans le rapport
+          };
+          
+          // Fermer automatiquement la journée avec le montant d'ouverture comme montant de clôture
+          await closeDay.mutateAsync({
+            reportId: todayReport.id,
+            closingAmount: todayReport.opening_amount,
+            reportData
+          });
+          
+          setIsDayOpenLocal(false);
+          toast.info('Journée précédente fermée automatiquement après minuit');
+        } catch (error) {
+          console.error('Erreur fermeture auto:', error);
+        }
+      }
+    };
+    
+    // Vérifier toutes les 30 secondes
+    const interval = setInterval(checkAndCloseDay, 30000);
+    checkAndCloseDay(); // Vérifier immédiatement au chargement
+    
+    return () => clearInterval(interval);
+  }, [todayReport, closeDay]);
+
   // Normalisation AZERTY → chiffres pour les codes-barres
   const normalizeBarcode = (raw: string): string => {
     const azertyMap: Record<string, string> = {
@@ -515,10 +560,22 @@ const Index = () => {
   };
 
   // Gestion de la sélection de produit - MUST BE BEFORE handleBarcodeScan
-  const handleProductSelect = useCallback((product: Product, quantity?: number) => {
+  const handleProductSelect = useCallback(async (product: Product, quantity?: number) => {
     if (!product || !product.id) {
       toast.error('Produit invalide');
       return;
+    }
+    
+    // Vérifier si la journée est ouverte, sinon l'ouvrir automatiquement
+    if (!isDayOpenEffective) {
+      try {
+        await openDay.mutateAsync(0);
+        setIsDayOpenLocal(true);
+        toast.success('Journée ouverte automatiquement');
+      } catch (error) {
+        toast.error('Impossible d\'ouvrir la journée');
+        return;
+      }
     }
     
     // Si le produit est au poids, ouvrir le dialog de saisie du poids
@@ -565,7 +622,7 @@ const Index = () => {
     setScanInput('');
     setSearchResults([]);
     toast.success(`${product.name} ajouté au panier`);
-  }, [quantityInput]);
+  }, [quantityInput, isDayOpenEffective, openDay]);
 
   // Handler pour confirmer le poids
   const handleWeightConfirm = (weight: number) => {
@@ -880,41 +937,16 @@ const Index = () => {
     toast.success(newIsGift ? 'Article offert' : 'Cadeau annulé');
   };
   const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check', amountPaid?: number, metadata?: any) => {
-    // 1. Vérification utilisateur
-    if (!user) {
-      toast.error('Connectez-vous pour encaisser', {
-        description: 'Vous devez être connecté pour enregistrer une vente',
-        action: {
-          label: 'Se connecter',
-          onClick: () => navigate('/auth')
-        }
-      });
-      setPaymentDialogOpen(false);
-      return;
-    }
-
-    // 2. Vérification panier
+    // 1. Vérification panier
     if (cart.length === 0) {
-      toast.error('Panier vide', {
-        description: 'Ajoutez au moins un article au panier avant de valider le paiement'
-      });
+      toast.error('Panier vide');
       setPaymentDialogOpen(false);
       return;
     }
 
-    // 3. Mode crédit client - vérifier qu'un client est sélectionné
-    if (method === 'customer_credit' && !selectedCustomer) {
-      toast.error('Client requis pour crédit', {
-        description: 'Sélectionnez un client avant de valider un paiement à crédit'
-      });
-      return;
-    }
-
-    // 4. Mode facture - vérifier qu'un client est sélectionné
+    // 2. Mode facture - vérifier qu'un client est sélectionné
     if (isInvoiceMode && !selectedCustomer) {
-      toast.error('Client requis pour facture', {
-        description: 'Sélectionnez un client avant de créer une facture'
-      });
+      toast.info('Sélectionnez un client pour la facture');
       setPaymentDialogOpen(false);
       setCustomerDialogOpen(true);
       return;
@@ -935,9 +967,9 @@ const Index = () => {
       payment_method: dbPaymentMethod,
       amount_paid: amountPaid || totals.total,
       change_amount: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
-      is_invoice: method === 'customer_credit' ? false : isInvoiceMode, // Crédit = toujours ticket
+      is_invoice: method === 'customer_credit' ? false : isInvoiceMode,
       is_cancelled: false,
-      cashier_id: user.id,
+      cashier_id: user?.id || null,
       customer_id: selectedCustomer?.id,
       items: cart.map(item => ({
         product_id: item.product.id,
@@ -966,10 +998,8 @@ const Index = () => {
             notes: `Vente ${sale.sale_number}`
           });
         } catch (creditError) {
-          // Ne pas bloquer la vente, juste avertir
-          toast.warning('Vente enregistrée, mais erreur lors de l\'enregistrement du crédit', {
-            description: 'La transaction de crédit devra être ajoutée manuellement'
-          });
+          // Ne pas bloquer la vente
+          console.error('Erreur crédit:', creditError);
         }
       }
 
@@ -1028,32 +1058,16 @@ const Index = () => {
       // Message de succès
       toast.success(
         method === 'customer_credit' 
-          ? `Paiement à crédit enregistré (${metadata?.creditAmount?.toFixed(2) || totals.total.toFixed(2)}€)`
+          ? `Paiement à crédit enregistré`
           : isInvoiceMode 
             ? 'Facture créée' 
             : 'Paiement validé'
       );
     } catch (error: any) {
-      // Erreur lors de la création de la vente
-      const errorMsg = error instanceof Error ? error.message : 'Erreur inconnue';
-      
-      // Messages d'erreur spécifiques avec solutions
-      if (errorMsg.includes('PRODUIT INTROUVABLE')) {
-        toast.error('Produit introuvable', {
-          description: 'Un produit du panier n\'existe plus en base',
-          duration: 5000,
-        });
-      } else if (errorMsg.includes('PANIER VIDE')) {
-        toast.error('Panier vide', {
-          description: 'Ajoutez des articles avant de valider',
-          duration: 5000,
-        });
-      } else {
-        toast.error('Erreur lors de la vente', {
-          description: errorMsg,
-          duration: 5000,
-        });
-      }
+      console.error('Erreur vente:', error);
+      toast.error('Erreur', {
+        description: error?.message || 'Erreur inconnue'
+      });
     }
   };
   const handleClearCart = () => {
