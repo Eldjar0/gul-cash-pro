@@ -195,10 +195,15 @@ export default function Sales() {
               <p className="text-xs md:text-sm text-white/80">Tickets et factures</p>
             </div>
             {devMode && (
-              <Badge variant="destructive" className="animate-pulse shrink-0">
-                <Settings className="h-3 w-3 mr-1" />
-                MODE DEV
-              </Badge>
+              <div className="flex flex-col gap-1 shrink-0">
+                <Badge variant="destructive" className="animate-pulse">
+                  <Settings className="h-3 w-3 mr-1" />
+                  MODE DEV - INTERDIT
+                </Badge>
+                <div className="text-[10px] text-destructive text-right">
+                  JLprod décline toute responsabilité
+                </div>
+              </div>
             )}
           </div>
         </div>

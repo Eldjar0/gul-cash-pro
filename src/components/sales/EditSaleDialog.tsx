@@ -162,8 +162,21 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
             <AlertTriangle className="h-5 w-5 text-destructive" />
             <DialogTitle className="text-destructive">MODE DEV - Édition de vente</DialogTitle>
           </div>
-          <DialogDescription className="text-destructive font-semibold">
-            ⚠️ ATTENTION: Modification des données de vente - ILLÉGAL en production
+          <DialogDescription className="space-y-2">
+            <div className="text-destructive font-bold text-base">
+              ⚠️ MENU INTERDIT EN PRODUCTION
+            </div>
+            <div className="text-sm text-destructive">
+              Ce menu est UNIQUEMENT utilisable en fin de test niveau développement.
+            </div>
+            <div className="text-sm text-destructive font-semibold">
+              La modification des données de vente est ILLÉGALE en environnement de production.
+            </div>
+            <div className="text-xs text-muted-foreground mt-3 p-2 bg-destructive/10 rounded border border-destructive/20">
+              <strong>Décharge de responsabilité :</strong> JLprod retire toute sa responsabilité 
+              en cas d'utilisation de ce menu. L'utilisateur est seul responsable des conséquences 
+              légales et fiscales de toute modification effectuée via ce mode développement.
+            </div>
           </DialogDescription>
         </DialogHeader>
 
