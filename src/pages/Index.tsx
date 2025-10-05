@@ -170,7 +170,6 @@ const Index = () => {
   const [isInvoiceMode, setIsInvoiceMode] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
-  const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
 
   // Persistance du panier
   useEffect(() => {
@@ -1061,8 +1060,11 @@ const Index = () => {
       setSelectedCustomer(null);
       setPaymentDialogOpen(false);
 
-      // Demander si l'utilisateur veut imprimer
-      setPrintConfirmDialogOpen(true);
+      // Ouvrir directement le reçu et imprimer
+      setReceiptDialogOpen(true);
+      setTimeout(() => {
+        printThermalReceipt();
+      }, 300);
       
       // Message de succès
       toast.success(
@@ -1279,7 +1281,13 @@ const Index = () => {
       setIsInvoiceMode(false);
       setSelectedCustomer(null);
       setMixedPaymentDialogOpen(false);
-      setPrintConfirmDialogOpen(true);
+      
+      // Ouvrir directement le reçu et imprimer
+      setReceiptDialogOpen(true);
+      setTimeout(() => {
+        printThermalReceipt();
+      }, 300);
+      
       toast.success('Paiement mixte validé');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
@@ -2469,34 +2477,6 @@ const Index = () => {
           }}
         />
       )}
-
-      {/* Confirmation d'impression */}
-      <Dialog open={printConfirmDialogOpen} onOpenChange={setPrintConfirmDialogOpen}>
-        <DialogContent className="max-w-md bg-white border-2 border-primary">
-          <DialogHeader>
-            <DialogTitle className="text-primary text-xl font-bold">Voulez-vous imprimer le ticket?</DialogTitle>
-          </DialogHeader>
-          <div className="text-center py-4">
-            <p className="text-muted-foreground mb-6">
-              Impression sur imprimante thermique POS80
-            </p>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => {
-              setPrintConfirmDialogOpen(false);
-              setCurrentSale(null);
-            }} className="flex-1 h-14 text-base font-semibold">
-                Non, merci
-              </Button>
-              <Button onClick={() => {
-              setPrintConfirmDialogOpen(false);
-              setReceiptDialogOpen(true);
-            }} className="flex-1 h-14 bg-primary hover:bg-primary/90 text-white text-base font-bold">
-                Oui, imprimer
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Confirmation d'annulation du ticket */}
       <Dialog open={cancelCartDialogOpen} onOpenChange={setCancelCartDialogOpen}>
