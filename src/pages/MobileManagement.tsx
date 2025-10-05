@@ -59,6 +59,8 @@ import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProd
 import { useCategories } from '@/hooks/useCategories';
 import { useWeather } from '@/hooks/useWeather';
 import { useAuth } from '@/hooks/useAuth';
+import { PRODUCT_UNITS } from '@/data/units';
+import { DialogDescription } from '@/components/ui/dialog';
 import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
 import { ProductSearchDialog } from '@/components/pos/ProductSearchDialog';
 import { toast } from 'sonner';
@@ -113,7 +115,7 @@ export default function MobileManagement() {
     price: '',
     cost_price: '',
     type: 'unit' as 'unit' | 'weight',
-    unit: 'unité',
+    unit: 'pièce',
     category_id: '',
     vat_rate: '21',
     stock: '',
@@ -290,9 +292,9 @@ export default function MobileManagement() {
         price: '',
         cost_price: '',
         type: 'unit',
-        unit: 'unité',
+        unit: 'pièce',
         category_id: '',
-        vat_rate: '6',
+        vat_rate: '21',
         stock: '',
         min_stock: '',
         supplier: '',
@@ -307,6 +309,11 @@ export default function MobileManagement() {
 
     if (!formData.name || !formData.price) {
       toast.error('Nom et prix requis');
+      return;
+    }
+
+    if (!formData.category_id) {
+      toast.error('La catégorie est obligatoire');
       return;
     }
 
@@ -1250,7 +1257,40 @@ export default function MobileManagement() {
             </div>
 
             <div className="space-y-2">
-              <Label>Catégorie</Label>
+              <Label>Type de produit</Label>
+              <Select
+                value={formData.type}
+                onValueChange={(value: 'unit' | 'weight') => setFormData(prev => ({ ...prev, type: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unit">Unité</SelectItem>
+                  <SelectItem value="weight">Poids</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Unité de mesure</Label>
+              <Select
+                value={formData.unit}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, unit: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRODUCT_UNITS.map((u) => (
+                    <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Catégorie *</Label>
               <Select
                 value={formData.category_id}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}

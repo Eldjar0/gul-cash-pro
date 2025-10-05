@@ -45,6 +45,8 @@ import { CategoryDialog } from '@/components/products/CategoryDialog';
 import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
 import { BarcodeLabelDialog } from '@/components/products/BarcodeLabelDialog';
 import { QuickStockAdjustDialog } from '@/components/products/QuickStockAdjustDialog';
+import { PRODUCT_UNITS } from '@/data/units';
+import { DialogDescription } from '@/components/ui/dialog';
 
 export default function Products() {
   const navigate = useNavigate();
@@ -127,7 +129,7 @@ export default function Products() {
         price: product.price.toString(),
         cost_price: product.cost_price?.toString() || '',
         type: product.type,
-        unit: product.unit || 'unité',
+        unit: product.unit || 'pièce',
         category_id: product.category_id || '',
         vat_rate: product.vat_rate.toString(),
         stock: product.stock?.toString() || '',
@@ -174,6 +176,11 @@ export default function Products() {
 
     if (!formData.name || !formData.price) {
       toast.error('Nom et prix requis');
+      return;
+    }
+
+    if (!formData.category_id) {
+      toast.error('La catégorie est obligatoire');
       return;
     }
 
@@ -596,6 +603,9 @@ export default function Products() {
             <DialogTitle className="text-2xl">
               {editingProduct ? 'Modifier le produit' : 'Nouveau produit'}
             </DialogTitle>
+            <DialogDescription>
+              Remplissez les informations du produit. Les champs marqués d'un * sont obligatoires.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4 py-4">
@@ -694,17 +704,9 @@ export default function Products() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pièce">pièce</SelectItem>
-                    <SelectItem value="kg">kg (kilogramme)</SelectItem>
-                    <SelectItem value="g">g (gramme)</SelectItem>
-                    <SelectItem value="L">L (litre)</SelectItem>
-                    <SelectItem value="mL">mL (millilitre)</SelectItem>
-                    <SelectItem value="m">m (mètre)</SelectItem>
-                    <SelectItem value="m²">m² (mètre carré)</SelectItem>
-                    <SelectItem value="paquet">paquet</SelectItem>
-                    <SelectItem value="boîte">boîte</SelectItem>
-                    <SelectItem value="carton">carton</SelectItem>
-                    <SelectItem value="lot">lot</SelectItem>
+                    {PRODUCT_UNITS.map((u) => (
+                      <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

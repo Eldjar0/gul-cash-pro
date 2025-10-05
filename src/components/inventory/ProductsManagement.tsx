@@ -7,9 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Search, Package, Upload, Tag, Trash2, Plus, FileText, Printer, Pencil } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
+import { useCategories } from '@/hooks/useCategories';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
 import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
 import { usePhysicalScanner } from '@/hooks/usePhysicalScanner';
+import { PRODUCT_UNITS } from '@/data/units';
+import { useToast } from '@/hooks/use-toast';
+import { DialogDescription } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -41,9 +45,11 @@ const normalizeBarcodeInput = (raw: string) => {
 
 export const ProductsManagement = () => {
   const { data: products = [] } = useProducts();
+  const { data: categories = [] } = useCategories();
   const { mutate: createProduct } = useCreateProduct();
   const { mutate: updateProduct } = useUpdateProduct();
   const { mutate: deleteProduct } = useDeleteProduct();
+  const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [stockFilter, setStockFilter] = useState<'all' | 'low' | 'out'>('all');
@@ -59,7 +65,9 @@ export const ProductsManagement = () => {
     stock: '',
     vat_rate: '21',
     min_stock: '0',
-    unit: 'unité',
+    unit: 'pièce',
+    type: 'unit' as 'unit' | 'weight',
+    category_id: '',
   });
 
   const [productToDelete, setProductToDelete] = useState<any | null>(null);
@@ -114,7 +122,17 @@ export const ProductsManagement = () => {
 
   const openNewProduct = () => {
     setEditingProduct(null);
-    setForm({ name: '', barcode: '', price: '', stock: '', vat_rate: '21', min_stock: '0', unit: 'unité' });
+    setForm({ 
+      name: '', 
+      barcode: '', 
+      price: '', 
+      stock: '', 
+      vat_rate: '21', 
+      min_stock: '0', 
+      unit: 'pièce',
+      type: 'unit',
+      category_id: '',
+    });
     setProductDialogOpen(true);
   };
 
@@ -127,7 +145,9 @@ export const ProductsManagement = () => {
       stock: (p.stock ?? '').toString(),
       vat_rate: (p.vat_rate ?? '21').toString(),
       min_stock: (p.min_stock ?? '0').toString(),
-      unit: p.unit || 'unité',
+      unit: p.unit || 'pièce',
+      type: p.type || 'unit',
+      category_id: p.category_id || '',
     });
     setProductDialogOpen(true);
   };
@@ -138,7 +158,24 @@ export const ProductsManagement = () => {
     const stock = parseFloat(form.stock || '0');
     const vat_rate = parseFloat(form.vat_rate || '21');
     const min_stock = parseFloat(form.min_stock || '0');
-    if (!name || isNaN(price)) return;
+    
+    if (!name || isNaN(price)) {
+      toast({
+        title: 'Erreur',
+        description: 'Le nom et le prix sont requis',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!form.category_id) {
+      toast({
+        title: 'Erreur',
+        description: 'La catégorie est obligatoire',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     const barcodeNormalized = normalizeBarcodeInput((form.barcode || '').trim());
 
@@ -149,7 +186,9 @@ export const ProductsManagement = () => {
       stock,
       vat_rate,
       min_stock,
-      unit: form.unit || 'unité',
+      unit: form.unit || 'pièce',
+      type: form.type,
+      category_id: form.category_id,
       is_active: true,
     };
 
@@ -483,10 +522,13 @@ export const ProductsManagement = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingProduct ? 'Modifier le produit' : 'Nouveau produit'}</DialogTitle>
+            <DialogDescription>
+              Remplissez les informations du produit. Les champs marqués d'un * sont obligatoires.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="name">Nom</Label>
+              <Label htmlFor="name">Nom *</Label>
               <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="space-y-1">
@@ -510,7 +552,45 @@ export const ProductsManagement = () => {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="price">Prix</Label>
+              <Label htmlFor="category">Catégorie *</Label>
+              <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Sélectionner..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="type">Type de produit</Label>
+              <Select value={form.type} onValueChange={(v: 'unit' | 'weight') => setForm({ ...form, type: v })}>
+                <SelectTrigger id="type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unit">Unité</SelectItem>
+                  <SelectItem value="weight">Poids</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="unit">Unité de mesure</Label>
+              <Select value={form.unit} onValueChange={(v) => setForm({ ...form, unit: v })}>
+                <SelectTrigger id="unit">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRODUCT_UNITS.map((u) => (
+                    <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="price">Prix *</Label>
               <Input id="price" type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
             </div>
             <div className="space-y-1">
@@ -524,10 +604,6 @@ export const ProductsManagement = () => {
             <div className="space-y-1">
               <Label htmlFor="min_stock">Stock min.</Label>
               <Input id="min_stock" type="number" step="0.01" value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: e.target.value })} />
-            </div>
-            <div className="space-y-1 md:col-span-2">
-              <Label htmlFor="unit">Unité</Label>
-              <Input id="unit" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
             </div>
           </div>
           <DialogFooter>
