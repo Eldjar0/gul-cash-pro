@@ -24,7 +24,7 @@ export const usePhysicalScanner = ({
   onScan,
   enabled = true,
   minLength = 3,
-  timeout = 150, // Augmenté à 150ms pour capturer tous les caractères
+  timeout = 250, // Augmenté à 250ms pour capturer TOUS les caractères du scan
   captureInInputs = false,
 }: PhysicalScannerOptions) => {
   const normalizeBarcode = useCallback((raw: string): string => {
@@ -108,7 +108,7 @@ export const usePhysicalScanner = ({
         e.preventDefault();
         e.stopPropagation();
 
-        // Auto-traiter après timeout de silence (150ms)
+        // Auto-traiter après timeout de silence
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(processScan, timeout);
       }

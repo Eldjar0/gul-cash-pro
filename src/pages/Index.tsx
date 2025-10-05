@@ -255,7 +255,7 @@ const Index = () => {
     },
     enabled: isOnMainPage, // Actif uniquement sur la page principale
     minLength: 8,
-    timeout: 150, // Augmenté pour capturer tous les caractères
+    timeout: 250, // Augmenté à 250ms pour capturer tous les caractères
     captureInInputs: true, // Intercepte même si un champ de saisie est focus
   });
 
