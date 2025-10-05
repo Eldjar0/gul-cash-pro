@@ -313,6 +313,18 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
       doc.setTextColor(0, 122, 204);
       doc.text(`${invoice.total.toFixed(2)} €`, leftColumnX + 35, yPos);
       doc.setTextColor(0, 0, 0);
+      yPos += 6;
+      
+      // Conditions de paiement
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      if (invoice.dueDate) {
+        const daysDiff = differenceInDays(new Date(invoice.dueDate), new Date(invoice.date));
+        const dueDateText = `Paiement à ${daysDiff} jours - Date d'échéance: ${format(new Date(invoice.dueDate), 'dd/MM/yyyy', { locale: fr })}`;
+        doc.text(dueDateText, leftColumnX, yPos);
+      } else {
+        doc.text('Paiement à 7 jours', leftColumnX, yPos);
+      }
       
       // SECTION DROITE - QR Code
       const qrData = `BCD\n002\n1\nSCT\n\n${invoice.company.name}\n${invoice.bankAccounts[0].account_number}\nEUR${invoice.total.toFixed(2)}\n\n${invoice.structuredCommunication || invoice.saleNumber}\n${invoice.saleNumber}`;
