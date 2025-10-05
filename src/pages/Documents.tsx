@@ -25,7 +25,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { useSales, useDeleteSalePermanently } from '@/hooks/useSales';
-import { useRefunds } from '@/hooks/useRefunds';
+import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { CustomerOrdersTab } from '@/components/orders/CustomerOrdersTab';
 import { QuotesTab } from '@/components/orders/QuotesTab';
@@ -79,10 +79,13 @@ export default function Documents() {
   const [showPinDialog, setShowPinDialog] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [deleteRefundDialogOpen, setDeleteRefundDialogOpen] = useState(false);
+  const [refundToDelete, setRefundToDelete] = useState<string | null>(null);
 
   const { data: sales = [], isLoading } = useSales();
   const { data: refunds = [], isLoading: refundsLoading } = useRefunds();
   const deleteSale = useDeleteSalePermanently();
+  const deleteRefund = useDeleteRefund();
   const { settings: companySettings } = useCompanySettings();
 
   // Activer le mode dev avec Ctrl+5 + code PIN
@@ -130,6 +133,19 @@ export default function Documents() {
       setDeleteDialogOpen(false);
       setSaleToDelete(null);
       setCancelReason('');
+    }
+  };
+
+  const handleDeleteRefundClick = (refundId: string) => {
+    setRefundToDelete(refundId);
+    setDeleteRefundDialogOpen(true);
+  };
+
+  const handleDeleteRefundConfirm = () => {
+    if (refundToDelete) {
+      deleteRefund.mutate(refundToDelete);
+      setDeleteRefundDialogOpen(false);
+      setRefundToDelete(null);
     }
   };
 
@@ -690,8 +706,16 @@ export default function Documents() {
                         </p>
                       </div>
 
-                      <div className="text-right">
+                      <div className="text-right space-y-2">
                         <p className="text-2xl font-bold text-red-600">-{refund.total.toFixed(2)}€</p>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleDeleteRefundClick(refund.id)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </Card>
@@ -803,6 +827,26 @@ export default function Documents() {
         open={refundDialogOpen}
         onOpenChange={setRefundDialogOpen}
       />
+
+      <AlertDialog open={deleteRefundDialogOpen} onOpenChange={setDeleteRefundDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer ce remboursement ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le remboursement sera supprimé et le stock sera ajusté.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteRefundConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

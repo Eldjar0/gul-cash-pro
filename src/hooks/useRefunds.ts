@@ -169,3 +169,85 @@ export const useRefund = (id: string) => {
     enabled: !!id,
   });
 };
+
+// Hook pour supprimer un remboursement
+export const useDeleteRefund = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (refundId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Récupérer les détails du remboursement
+      const { data: refund, error: refundError } = await supabase
+        .from('refunds')
+        .select('*, refund_items(*)')
+        .eq('id', refundId)
+        .single();
+
+      if (refundError) throw refundError;
+      if (!refund) throw new Error('Remboursement introuvable');
+
+      // Retirer le stock qui avait été rajouté lors du remboursement
+      for (const item of refund.refund_items) {
+        if (item.product_id) {
+          const { data: product } = await supabase
+            .from('products')
+            .select('stock')
+            .eq('id', item.product_id)
+            .single();
+
+          if (product && product.stock !== null) {
+            const newStock = product.stock - item.quantity;
+
+            await supabase
+              .from('products')
+              .update({ stock: Math.max(0, newStock) })
+              .eq('id', item.product_id);
+          }
+        }
+      }
+
+      // Supprimer les items du remboursement
+      const { error: itemsError } = await supabase
+        .from('refund_items')
+        .delete()
+        .eq('refund_id', refundId);
+
+      if (itemsError) throw itemsError;
+
+      // Supprimer le remboursement
+      const { error: deleteError } = await supabase
+        .from('refunds')
+        .delete()
+        .eq('id', refundId);
+
+      if (deleteError) throw deleteError;
+
+      // Créer un mouvement de caisse positif pour annuler le remboursement
+      if (refund.payment_method === 'cash') {
+        await supabase
+          .from('cash_movements')
+          .insert({
+            type: 'deposit',
+            amount: refund.total,
+            cashier_id: user.id,
+            notes: `Annulation remboursement ${refund.refund_number}`,
+          });
+      }
+
+      return refund;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['refunds'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['cash_movements'] });
+      toast.success('Remboursement supprimé avec succès');
+    },
+    onError: (error: Error) => {
+      console.error('Error deleting refund:', error);
+      toast.error('Erreur lors de la suppression du remboursement');
+    },
+  });
+};
