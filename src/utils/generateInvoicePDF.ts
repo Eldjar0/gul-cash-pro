@@ -197,7 +197,13 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
 
   // ============ RÉFÉRENCE DE PAIEMENT (BLEU) ============
   doc.setFillColor(0, 122, 204);
-  const refBoxHeight = 20;
+  let refBoxHeight = 20;
+  
+  // Si facture impayée, agrandir le carré pour les infos de paiement
+  if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
+    refBoxHeight = 55;
+  }
+  
   doc.roundedRect(15, yPos, 80, refBoxHeight, 2, 2, 'F');
   
   doc.setFontSize(8);
@@ -210,6 +216,39 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   if (invoice.structuredCommunication) {
     doc.setFontSize(9);
     doc.text(invoice.structuredCommunication, 18, yPos + 17);
+  }
+  
+  // Si facture impayée, ajouter les infos de paiement dans le carré bleu
+  if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
+    let infoY = yPos + 24;
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    
+    // Banque et IBAN
+    const account = invoice.bankAccounts[0];
+    doc.text(`Banque: ${account.bank_name}`, 18, infoY);
+    infoY += 4;
+    doc.text(`IBAN: ${account.account_number}`, 18, infoY);
+    infoY += 5;
+    
+    // Montant à payer
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text(`Montant: ${invoice.total.toFixed(2)} €`, 18, infoY);
+    infoY += 5;
+    
+    // Conditions de paiement
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    if (invoice.dueDate) {
+      const daysDiff = differenceInDays(new Date(invoice.dueDate), new Date(invoice.date));
+      const dueDateText = `Paiement à ${daysDiff} jours`;
+      doc.text(dueDateText, 18, infoY);
+      infoY += 4;
+      doc.text(`Échéance: ${format(new Date(invoice.dueDate), 'dd/MM/yyyy', { locale: fr })}`, 18, infoY);
+    } else {
+      doc.text('Paiement à 7 jours', 18, infoY);
+    }
   }
   
   doc.setTextColor(0, 0, 0);
@@ -251,110 +290,9 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     doc.text('PAYÉ', pageWidth / 2, yPos, { align: 'center' });
     doc.setTextColor(0, 0, 0);
     yPos += 15;
-  } else {
-    // Facture impayée - Section de paiement améliorée
-    yPos += 15;
-
-    if (invoice.bankAccounts && invoice.bankAccounts.length > 0) {
-      // Calculer la position de départ pour le QR code
-      const qrSize = 50;
-      const qrX = pageWidth - qrSize - 20;
-      const qrStartY = yPos;
-      
-      // SECTION GAUCHE - Informations de paiement
-      const leftColumnX = 15;
-      const leftColumnWidth = pageWidth - qrSize - 50;
-      
-      // Titre de section
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(0, 122, 204);
-      doc.text('INFORMATIONS DE PAIEMENT', leftColumnX, yPos);
-      doc.setTextColor(0, 0, 0);
-      yPos += 8;
-      
-      // Ligne de séparation
-      doc.setDrawColor(0, 122, 204);
-      doc.setLineWidth(0.5);
-      doc.line(leftColumnX, yPos, leftColumnX + leftColumnWidth, yPos);
-      yPos += 6;
-      
-      // Comptes bancaires
-      doc.setFontSize(9);
-      invoice.bankAccounts.forEach((account, index) => {
-        if (index > 0) yPos += 3;
-        
-        doc.setFont('helvetica', 'bold');
-        doc.text('Banque:', leftColumnX, yPos);
-        doc.setFont('helvetica', 'normal');
-        doc.text(account.bank_name, leftColumnX + 25, yPos);
-        yPos += 5;
-        
-        doc.setFont('helvetica', 'bold');
-        doc.text('IBAN:', leftColumnX, yPos);
-        doc.setFont('helvetica', 'normal');
-        doc.text(account.account_number, leftColumnX + 25, yPos);
-        yPos += 6;
-      });
-      
-      // Communication structurée
-      if (invoice.structuredCommunication) {
-        doc.setFont('helvetica', 'bold');
-        doc.text('Communication:', leftColumnX, yPos);
-        doc.setFont('helvetica', 'normal');
-        doc.text(invoice.structuredCommunication, leftColumnX + 25, yPos);
-        yPos += 6;
-      }
-      
-      // Montant à payer
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text('Montant à payer:', leftColumnX, yPos);
-      doc.setTextColor(0, 122, 204);
-      doc.text(`${invoice.total.toFixed(2)} €`, leftColumnX + 35, yPos);
-      doc.setTextColor(0, 0, 0);
-      yPos += 6;
-      
-      // Conditions de paiement
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      if (invoice.dueDate) {
-        const daysDiff = differenceInDays(new Date(invoice.dueDate), new Date(invoice.date));
-        const dueDateText = `Paiement à ${daysDiff} jours - Date d'échéance: ${format(new Date(invoice.dueDate), 'dd/MM/yyyy', { locale: fr })}`;
-        doc.text(dueDateText, leftColumnX, yPos);
-      } else {
-        doc.text('Paiement à 7 jours', leftColumnX, yPos);
-      }
-      
-      // SECTION DROITE - QR Code
-      const qrData = `BCD\n002\n1\nSCT\n\n${invoice.company.name}\n${invoice.bankAccounts[0].account_number}\nEUR${invoice.total.toFixed(2)}\n\n${invoice.structuredCommunication || invoice.saleNumber}\n${invoice.saleNumber}`;
-      
-      try {
-        const qrCodeDataUrl = await QRCode.toDataURL(qrData, { width: 400, margin: 1 });
-        
-        // Cadre autour du QR code
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.3);
-        doc.roundedRect(qrX - 3, qrStartY - 3, qrSize + 6, qrSize + 15, 2, 2);
-        
-        // QR Code
-        doc.addImage(qrCodeDataUrl, 'PNG', qrX, qrStartY, qrSize, qrSize);
-        
-        // Texte sous le QR
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 100, 100);
-        doc.text('Scannez pour payer', qrX + qrSize / 2, qrStartY + qrSize + 8, { align: 'center' });
-        doc.setTextColor(0, 0, 0);
-      } catch (error) {
-        console.error('Error generating QR code:', error);
-      }
-      
-      yPos = Math.max(yPos, qrStartY + qrSize + 20);
-    }
-    
-    yPos += 5;
   }
+
+  // Plus de section séparée pour les infos de paiement, tout est dans le carré bleu
 
   // ============ NOTES ============
   if (invoice.notes) {
