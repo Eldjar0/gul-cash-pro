@@ -70,10 +70,6 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
       { icon: Gift, label: "Fidélité", path: "/loyalty" },
       { icon: Tags, label: "Promotions", path: "/promotions" },
     ],
-    rapports: [
-      { icon: BarChart3, label: "Statistiques", path: "/stats" },
-      { icon: FileBarChart, label: "Rapports Z", path: "/reports-history" },
-    ],
   };
 
   return (
@@ -101,28 +97,15 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           {/* Menus déroulants simplifiés */}
           <NavigationMenu>
             <NavigationMenuList className="gap-1">
+              {/* Statistiques - Bouton direct */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-10 px-2 flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white font-semibold data-[state=open]:bg-green-600 text-xs whitespace-nowrap">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>Stats</span>
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4">
-                    {menuItems.rapports.map((item) => (
-                      <li key={item.path}>
-                        <NavigationMenuLink asChild>
-                          <button
-                            onClick={() => navigate(item.path)}
-                            className="flex items-center gap-3 w-full rounded-md p-3 text-sm leading-none hover:bg-accent transition-colors"
-                          >
-                            <item.icon className="h-5 w-5 text-primary" />
-                            <span className="font-medium">{item.label}</span>
-                          </button>
-                        </NavigationMenuLink>
-                      </li>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
+                <Button
+                  onClick={() => navigate("/stats")}
+                  className="h-10 px-2 flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white font-semibold text-xs whitespace-nowrap"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Statistiques</span>
+                </Button>
               </NavigationMenuItem>
 
               <NavigationMenuItem>

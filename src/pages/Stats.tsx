@@ -8,7 +8,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ExportDataButton } from '@/components/dashboard/ExportDataButton';
 import { useSales } from '@/hooks/useSales';
 import { useDailyRevenue, usePaymentMethodStats } from '@/hooks/useRevenueAnalytics';
-import { format, subDays, startOfWeek, startOfMonth, startOfQuarter, startOfYear, endOfDay } from 'date-fns';
+import { useDailyReports } from '@/hooks/useDailyReports';
+import { format, subDays, startOfWeek, startOfMonth, startOfQuarter, startOfYear, endOfDay, parseISO, isWithinInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { 
   TrendingUp, 
@@ -57,6 +58,7 @@ export default function Stats() {
   const { data: compareSales = [] } = useSales(compareStartDate, compareEndDate);
   const { data: dailyRevenue = [] } = useDailyRevenue(30);
   const { data: paymentStats = [] } = usePaymentMethodStats(30);
+  const { data: allReports = [] } = useDailyReports();
 
   const handlePeriodChange = (period: PeriodType) => {
     setPeriodType(period);
@@ -94,6 +96,12 @@ export default function Stats() {
         break;
     }
   };
+
+  // Filtrer les rapports Z selon la période
+  const filteredReports = allReports.filter((report) => {
+    const reportDate = parseISO(report.report_date);
+    return isWithinInterval(reportDate, { start: startDate, end: endDate });
+  });
 
   // Calculs des statistiques
   const activeSales = sales.filter(s => !s.is_cancelled);
@@ -314,6 +322,176 @@ export default function Stats() {
     });
 
     doc.save(`produits_${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}.pdf`);
+  };
+
+  // Calculs comptables avancés
+  const vatBreakdown = (() => {
+    const vatMap = new Map<number, { totalHT: number; totalVAT: number; count: number }>();
+    
+    activeSales.forEach((sale: any) => {
+      if (sale.sale_items) {
+        sale.sale_items.forEach((item: any) => {
+          const rate = Number(item.vat_rate) || 0;
+          const subtotal = Number(item.subtotal) || 0;
+          const vatAmount = Number(item.vat_amount) || 0;
+          
+          if (!vatMap.has(rate)) {
+            vatMap.set(rate, { totalHT: 0, totalVAT: 0, count: 0 });
+          }
+          
+          const current = vatMap.get(rate)!;
+          current.totalHT += subtotal;
+          current.totalVAT += vatAmount;
+          current.count += 1;
+        });
+      }
+    });
+    
+    return Array.from(vatMap.entries())
+      .map(([rate, data]) => ({ rate, ...data }))
+      .sort((a, b) => a.rate - b.rate);
+  })();
+
+  const freeItemsCount = (() => {
+    let count = 0;
+    activeSales.forEach((sale: any) => {
+      if (sale.sale_items) {
+        sale.sale_items.forEach((item: any) => {
+          if (Number(item.unit_price) === 0) {
+            count += Number(item.quantity);
+          }
+        });
+      }
+    });
+    return count;
+  })();
+
+  // Export Comptabilité PDF
+  const exportAccountingPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Rapport Comptable Détaillé', 14, 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Période: ${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}`, 14, 30);
+    doc.text(`Date d'export: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 36);
+    
+    // Résumé général
+    doc.setFontSize(14);
+    doc.text('Résumé Général', 14, 46);
+    doc.setFontSize(10);
+    doc.text(`Total TTC: ${totalRevenue.toFixed(2)}€`, 14, 54);
+    doc.text(`Total HT: ${(totalRevenue - totalVAT).toFixed(2)}€`, 14, 60);
+    doc.text(`TVA Totale: ${totalVAT.toFixed(2)}€`, 14, 66);
+    doc.text(`Articles gratuits: ${freeItemsCount}`, 14, 72);
+    doc.text(`Nombre de ventes: ${salesCount}`, 14, 78);
+
+    // TVA par taux
+    let yPos = 88;
+    doc.setFontSize(14);
+    doc.text('Détails TVA par taux', 14, yPos);
+    yPos += 8;
+    
+    const vatData = vatBreakdown.map(vat => [
+      `${vat.rate}%`,
+      vat.count.toString(),
+      vat.totalHT.toFixed(2) + '€',
+      vat.totalVAT.toFixed(2) + '€',
+      (vat.totalHT + vat.totalVAT).toFixed(2) + '€'
+    ]);
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Taux', 'Nb articles', 'Montant HT', 'TVA', 'Montant TTC']],
+      body: vatData,
+      theme: 'grid',
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [139, 92, 246] }
+    });
+
+    // Rapports Z
+    if (filteredReports.length > 0) {
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+      doc.setFontSize(14);
+      doc.text('Rapports Z de la période', 14, yPos);
+      yPos += 8;
+
+      const reportsData = filteredReports.map(report => [
+        report.serial_number || 'En cours',
+        format(parseISO(report.report_date), 'dd/MM/yyyy'),
+        report.sales_count.toString(),
+        report.total_cash.toFixed(2) + '€',
+        report.total_card.toFixed(2) + '€',
+        report.total_mobile.toFixed(2) + '€',
+        report.total_sales.toFixed(2) + '€'
+      ]);
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['N° Série', 'Date', 'Nb ventes', 'Espèces', 'Carte', 'Mobile', 'Total']],
+        body: reportsData,
+        theme: 'grid',
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [139, 92, 246] }
+      });
+    }
+
+    doc.save(`comptabilite_${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}.pdf`);
+  };
+
+  // Export Comptabilité XML
+  const exportAccountingXML = () => {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<rapport_comptable>\n';
+    xml += `  <periode>\n`;
+    xml += `    <debut>${format(startDate, 'yyyy-MM-dd')}</debut>\n`;
+    xml += `    <fin>${format(endDate, 'yyyy-MM-dd')}</fin>\n`;
+    xml += `  </periode>\n`;
+    
+    xml += `  <resume_general>\n`;
+    xml += `    <total_ttc>${totalRevenue.toFixed(2)}</total_ttc>\n`;
+    xml += `    <total_ht>${(totalRevenue - totalVAT).toFixed(2)}</total_ht>\n`;
+    xml += `    <tva_totale>${totalVAT.toFixed(2)}</tva_totale>\n`;
+    xml += `    <articles_gratuits>${freeItemsCount}</articles_gratuits>\n`;
+    xml += `    <nombre_ventes>${salesCount}</nombre_ventes>\n`;
+    xml += `  </resume_general>\n`;
+    
+    xml += `  <details_tva>\n`;
+    vatBreakdown.forEach(vat => {
+      xml += `    <taux_tva>\n`;
+      xml += `      <taux>${vat.rate}</taux>\n`;
+      xml += `      <nombre_articles>${vat.count}</nombre_articles>\n`;
+      xml += `      <montant_ht>${vat.totalHT.toFixed(2)}</montant_ht>\n`;
+      xml += `      <tva_collectee>${vat.totalVAT.toFixed(2)}</tva_collectee>\n`;
+      xml += `      <montant_ttc>${(vat.totalHT + vat.totalVAT).toFixed(2)}</montant_ttc>\n`;
+      xml += `    </taux_tva>\n`;
+    });
+    xml += `  </details_tva>\n`;
+    
+    xml += `  <rapports_z>\n`;
+    filteredReports.forEach(report => {
+      xml += `    <rapport>\n`;
+      xml += `      <numero_serie>${report.serial_number || 'En cours'}</numero_serie>\n`;
+      xml += `      <date>${report.report_date}</date>\n`;
+      xml += `      <nombre_ventes>${report.sales_count}</nombre_ventes>\n`;
+      xml += `      <especes>${report.total_cash.toFixed(2)}</especes>\n`;
+      xml += `      <carte>${report.total_card.toFixed(2)}</carte>\n`;
+      xml += `      <mobile>${report.total_mobile.toFixed(2)}</mobile>\n`;
+      xml += `      <total>${report.total_sales.toFixed(2)}</total>\n`;
+      xml += `    </rapport>\n`;
+    });
+    xml += `  </rapports_z>\n`;
+    
+    xml += '</rapport_comptable>';
+
+    const blob = new Blob([xml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `comptabilite_${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}.xml`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // Export Produits XML
@@ -568,11 +746,12 @@ export default function Stats() {
 
       {/* Graphiques et analyses */}
       <Tabs defaultValue="evolution" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="evolution">Évolution</TabsTrigger>
           <TabsTrigger value="products">Produits</TabsTrigger>
           <TabsTrigger value="payments">Paiements</TabsTrigger>
           <TabsTrigger value="ranking">Classement</TabsTrigger>
+          <TabsTrigger value="accounting">Comptabilité</TabsTrigger>
         </TabsList>
 
         <TabsContent value="evolution" className="space-y-4">
@@ -779,6 +958,149 @@ export default function Stats() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="accounting" className="space-y-4">
+          {/* Export buttons */}
+          <div className="flex gap-2">
+            <Button onClick={exportAccountingPDF} variant="outline" size="sm">
+              <FileText className="w-4 h-4 mr-2" />
+              Export PDF Comptabilité
+            </Button>
+            <Button onClick={exportAccountingXML} variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Export XML Comptabilité
+            </Button>
+          </div>
+
+          {/* Résumé TVA */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">Total TTC</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-primary">{totalRevenue.toFixed(2)}€</div>
+                <p className="text-xs text-muted-foreground mt-1">Toutes taxes comprises</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">Total HT</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">{(totalRevenue - totalVAT).toFixed(2)}€</div>
+                <p className="text-xs text-muted-foreground mt-1">Hors taxes</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">TVA Totale</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{totalVAT.toFixed(2)}€</div>
+                <p className="text-xs text-muted-foreground mt-1">À reverser</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">Articles Gratuits</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-orange-600">{freeItemsCount}</div>
+                <p className="text-xs text-muted-foreground mt-1">Cadeaux offerts</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Détails TVA par taux */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Détails TVA par taux</CardTitle>
+              <CardDescription>Répartition du chiffre d'affaires par taux de TVA</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {vatBreakdown.map((vat) => (
+                  <div key={vat.rate} className="p-4 border rounded-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-lg">TVA {vat.rate}%</h3>
+                      <span className="text-sm text-muted-foreground">{vat.count} articles</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Montant HT</p>
+                        <p className="font-bold">{vat.totalHT.toFixed(2)}€</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">TVA collectée</p>
+                        <p className="font-bold text-green-600">{vat.totalVAT.toFixed(2)}€</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Montant TTC</p>
+                        <p className="font-bold text-primary">{(vat.totalHT + vat.totalVAT).toFixed(2)}€</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Liste des rapports Z */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Rapports Z de la période</CardTitle>
+              <CardDescription>
+                {filteredReports.length} rapport(s) sur la période sélectionnée
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {filteredReports.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    Aucun rapport Z disponible pour cette période
+                  </p>
+                ) : (
+                  filteredReports.map((report) => (
+                    <div key={report.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h3 className="font-semibold">
+                            {report.serial_number || 'En cours'}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {format(parseISO(report.report_date), 'EEEE dd MMMM yyyy', { locale: fr })}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-primary">{report.total_sales.toFixed(2)}€</p>
+                          <p className="text-xs text-muted-foreground">{report.sales_count} ventes</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Espèces</p>
+                          <p className="font-semibold">{report.total_cash.toFixed(2)}€</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Carte</p>
+                          <p className="font-semibold">{report.total_card.toFixed(2)}€</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Mobile</p>
+                          <p className="font-semibold">{report.total_mobile.toFixed(2)}€</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
