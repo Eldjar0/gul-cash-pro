@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split } from 'lucide-react';
 
-type PaymentMethod = 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit';
+type PaymentMethod = 'cash' | 'card' | 'mobile' | 'customer_credit';
 
 interface PaymentDialogProps {
   open: boolean;
@@ -18,7 +18,6 @@ interface PaymentDialogProps {
   total: number;
   onConfirmPayment: (method: PaymentMethod, amountPaid?: number, metadata?: any) => void;
   onMixedPayment?: () => void;
-  onOpenGiftCardDialog?: () => void;
   onOpenCustomerCreditDialog?: () => void;
   customerId?: string;
 }
@@ -29,7 +28,6 @@ export function PaymentDialog({
   total, 
   onConfirmPayment, 
   onMixedPayment,
-  onOpenGiftCardDialog,
   onOpenCustomerCreditDialog,
   customerId 
 }: PaymentDialogProps) {
@@ -116,17 +114,24 @@ export function PaymentDialog({
             </div>
 
             {/* Secondary payment methods */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <Card
                 onClick={() => {
-                  onOpenChange(false);
-                  if (onOpenGiftCardDialog) onOpenGiftCardDialog();
+                  if (customerId) {
+                    onOpenChange(false);
+                    if (onOpenCustomerCreditDialog) onOpenCustomerCreditDialog();
+                  }
                 }}
-                className="h-24 cursor-pointer hover:scale-105 transition-transform border-2 hover:border-primary"
+                className={`h-24 border-2 transition-transform ${
+                  customerId 
+                    ? 'cursor-pointer hover:scale-105 hover:border-primary' 
+                    : 'cursor-not-allowed opacity-50'
+                }`}
               >
                 <div className="h-full flex flex-col items-center justify-center gap-2">
-                  <Wallet className="h-8 w-8 text-pink-500" />
-                  <span className="font-bold text-sm">Carte Cadeau</span>
+                  <Wallet className="h-8 w-8 text-cyan-500" />
+                  <span className="font-bold text-sm text-center">Crédit Client</span>
+                  {!customerId && <span className="text-xs text-muted-foreground">Client requis</span>}
                 </div>
               </Card>
 

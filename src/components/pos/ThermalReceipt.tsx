@@ -46,11 +46,6 @@ interface Sale {
   change?: number;
   is_invoice?: boolean;
   customer?: Customer;
-  giftCardPayment?: {
-    cardNumber: string;
-    amountUsed: number;
-    remainingBalance: number;
-  };
 }
 
 interface ThermalReceiptProps {
@@ -250,26 +245,6 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
 
       {/* Payment */}
       <div style={{ fontSize: '13.7px', marginTop: '6px', marginBottom: '6px', fontWeight: '900', paddingRight: '24px' }}>
-        {sale.giftCardPayment && sale.giftCardPayment.amountUsed > 0 && (
-          <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', marginBottom: '2px', gap: '3px' }}>
-              <span style={{ flex: '1', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                CARTE CADEAU
-              </span>
-              <span style={{ whiteSpace: 'nowrap' }}>{sale.giftCardPayment.amountUsed.toFixed(2)}€</span>
-            </div>
-            <div style={{ fontSize: '12.3px', marginBottom: '4px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '3px' }}>
-                <span>Code carte:</span>
-                <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{sale.giftCardPayment.cardNumber}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '3px' }}>
-                <span>Solde restant:</span>
-                <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{sale.giftCardPayment.remainingBalance.toFixed(2)}€</span>
-              </div>
-            </div>
-          </>
-        )}
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', marginBottom: '2px', gap: '3px' }}>
           <span style={{ flex: '1', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, Gift, AlertCircle, Smartphone } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
@@ -11,7 +11,6 @@ import { MixedPaymentDialog } from '@/components/pos/MixedPaymentDialog';
 import { DiscountDialog } from '@/components/pos/DiscountDialog';
 import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
-import { GiftCardDialog } from '@/components/pos/GiftCardDialog';
 import { CustomerCreditDialog } from '@/components/pos/CustomerCreditDialog';
 import { Receipt } from '@/components/pos/Receipt';
 import { PinLockDialog } from '@/components/pos/PinLockDialog';
@@ -29,8 +28,6 @@ import { useCategories } from '@/hooks/useCategories';
 import { Customer } from '@/hooks/useCustomers';
 import { useTodayReport, useOpenDay, useCloseDay, getTodayReportData, ReportData } from '@/hooks/useDailyReports';
 import { useWeather } from '@/hooks/useWeather';
-import { useCreateGiftCard, useUseGiftCard } from '@/hooks/useGiftCards';
-import { printGiftCardReceipt } from '@/components/pos/GiftCardReceipt';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -48,12 +45,6 @@ interface CartItem {
     value: number;
   };
   is_gift?: boolean; // Article offert
-  is_gift_card?: boolean; // C'est une carte cadeau à créer
-  gift_card_data?: {
-    cardNumber: string;
-    senderName?: string;
-    message?: string;
-  };
   subtotal: number;
   vatAmount: number;
   total: number;
@@ -80,8 +71,6 @@ const Index = () => {
     data: categories
   } = useCategories();
   const createSale = useCreateSale();
-  const createGiftCard = useCreateGiftCard();
-  const useGiftCardMutation = useUseGiftCard();
   const scanInputRef = useRef<HTMLInputElement>(null);
   const {
     temperature,
@@ -173,17 +162,9 @@ const Index = () => {
   const [savedCartsDialogOpen, setSavedCartsDialogOpen] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
-  const [giftCardDialogOpen, setGiftCardDialogOpen] = useState(false);
   const [customerCreditDialogOpen, setCustomerCreditDialogOpen] = useState(false);
   const [cancelCartDialogOpen, setCancelCartDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  
-  // Applied gift card state
-  const [appliedGiftCard, setAppliedGiftCard] = useState<{
-    cardNumber: string;
-    cardId: string;
-    availableBalance: number;
-  } | null>(null);
 
   // Physical scan action dialog states
   const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
@@ -219,24 +200,6 @@ const Index = () => {
       totalVat,
       totalDiscount,
       total: Math.max(0, total)
-    };
-  };
-  
-  // Totaux pour l'affichage (avec déduction carte cadeau)
-  const getTotalsForDisplay = () => {
-    const baseTotals = getTotals();
-    let displayTotal = baseTotals.total;
-    let giftCardAmount = 0;
-    
-    if (appliedGiftCard) {
-      giftCardAmount = Math.min(appliedGiftCard.availableBalance, displayTotal);
-      displayTotal -= giftCardAmount;
-    }
-    
-    return {
-      ...baseTotals,
-      total: Math.max(0, displayTotal),
-      giftCardAmount
     };
   };
 
@@ -828,7 +791,7 @@ const Index = () => {
       cashier_id: user.id,
       customer_id: isInvoiceMode ? selectedCustomer?.id : undefined,
       items: cart.map(item => ({
-        product_id: item.is_gift_card ? null : item.product.id,
+        product_id: item.product.id,
         product_name: item.product.name,
         product_barcode: item.product.barcode,
         quantity: item.quantity,
@@ -842,48 +805,7 @@ const Index = () => {
       }))
     };
     try {
-      // Créer les cartes cadeaux qui sont dans le panier
-      const giftCardItems = cart.filter(item => item.is_gift_card && item.gift_card_data);
-      const createdGiftCards: any[] = [];
-      
-      for (const giftCardItem of giftCardItems) {
-        try {
-          const newCard = await createGiftCard.mutateAsync({
-            card_number: giftCardItem.gift_card_data!.cardNumber,
-            initial_balance: giftCardItem.total,
-            current_balance: giftCardItem.total,
-            card_type: 'gift_card',
-            sender_name: giftCardItem.gift_card_data!.senderName,
-            message: giftCardItem.gift_card_data!.message
-          });
-          createdGiftCards.push({
-            card: newCard,
-            senderName: giftCardItem.gift_card_data!.senderName,
-            message: giftCardItem.gift_card_data!.message
-          });
-        } catch (error) {
-          console.error('Error creating gift card:', error);
-          toast.error('Erreur lors de la création de la carte cadeau');
-          return;
-        }
-      }
-
       const sale = await createSale.mutateAsync(saleData);
-
-      // Si une carte cadeau est appliquée, l'utiliser
-      if (appliedGiftCard) {
-        const amountToUse = Math.min(appliedGiftCard.availableBalance, totals.total);
-        try {
-          await useGiftCardMutation.mutateAsync({
-            cardId: appliedGiftCard.cardId,
-            amount: amountToUse,
-            saleId: sale.id
-          });
-        } catch (error) {
-          console.error('Error using gift card:', error);
-          toast.error('Erreur lors de l\'utilisation de la carte cadeau');
-        }
-      }
 
       // Préparer les données de vente pour le reçu
       const saleForReceipt = {
@@ -899,25 +821,9 @@ const Index = () => {
         amountPaid: amountPaid,
         change: amountPaid ? amountPaid - totals.total : 0,
         is_invoice: isInvoiceMode,
-        customer: isInvoiceMode ? selectedCustomer : undefined,
-        giftCardPayment: appliedGiftCard ? {
-          cardNumber: appliedGiftCard.cardNumber,
-          amountUsed: Math.min(appliedGiftCard.availableBalance, totals.total),
-          remainingBalance: appliedGiftCard.availableBalance - Math.min(appliedGiftCard.availableBalance, totals.total)
-        } : undefined
+        customer: isInvoiceMode ? selectedCustomer : undefined
       };
       setCurrentSale(saleForReceipt);
-      
-      // Imprimer les reçus des cartes cadeaux créées
-      if (createdGiftCards.length > 0) {
-        setTimeout(() => {
-          createdGiftCards.forEach(({ card, senderName, message }) => {
-            printGiftCardReceipt(card, senderName, message, () => {
-              console.log('Gift card receipt printed');
-            });
-          });
-        }, 500);
-      }
 
       // Mettre à jour l'affichage client avec statut "completed"
       const completedState = {
@@ -941,7 +847,6 @@ const Index = () => {
       setCart([]);
       setGlobalDiscount(null);
       setAppliedPromoCode(null);
-      setAppliedGiftCard(null);
       setIsInvoiceMode(false);
       setSelectedCustomer(null);
       setPaymentDialogOpen(false);
@@ -959,7 +864,6 @@ const Index = () => {
       setCart([]);
       setGlobalDiscount(null);
       setAppliedPromoCode(null);
-      setAppliedGiftCard(null);
       setIsInvoiceMode(false);
       setSelectedCustomer(null);
 
@@ -972,65 +876,6 @@ const Index = () => {
       displayChannel.postMessage(idleState);
       localStorage.setItem('customer_display_state', JSON.stringify(idleState));
       toast.info('Panier vidé');
-    }
-  };
-
-  // Handler pour ajouter une carte cadeau au panier (comme article)
-  const handleAddGiftCardToCart = (cardNumber: string, amount: number, senderName: string, message: string) => {
-    // Créer un produit virtuel pour la carte cadeau
-    const giftCardProduct: Product = {
-      id: 'virtual-gift-card-' + Date.now(),
-      name: `Carte Cadeau ${cardNumber}`,
-      barcode: cardNumber,
-      price: amount,
-      vat_rate: 0, // Pas de TVA sur les cartes cadeaux
-      stock: 1,
-      min_stock: 0,
-      is_active: true,
-      type: 'unit',
-      unit: 'unité'
-    };
-
-    const { subtotal, vatAmount, total } = calculateItemTotal(giftCardProduct, 1);
-
-    const newItem: CartItem = {
-      product: giftCardProduct,
-      quantity: 1,
-      custom_price: amount,
-      is_gift_card: true,
-      gift_card_data: {
-        cardNumber,
-        senderName,
-        message
-      },
-      subtotal,
-      vatAmount,
-      total
-    };
-
-    setCart([...cart, newItem]);
-  };
-
-  // Handler pour appliquer une carte cadeau comme moyen de paiement
-  const handleApplyGiftCard = (cardNumber: string, cardId: string, availableBalance: number) => {
-    setAppliedGiftCard({
-      cardNumber,
-      cardId,
-      availableBalance
-    });
-    
-    setGiftCardDialogOpen(false);
-    
-    const totals = getTotals();
-    
-    if (availableBalance >= totals.total) {
-      toast.success(`Carte cadeau appliquée (${availableBalance.toFixed(2)}€) - Cliquez sur PAYER pour valider`, {
-        duration: 5000
-      });
-    } else {
-      toast.info(`Carte cadeau appliquée (${availableBalance.toFixed(2)}€) - Payez le reste (${(totals.total - availableBalance).toFixed(2)}€)`, {
-        duration: 5000
-      });
     }
   };
 
@@ -1306,7 +1151,7 @@ const Index = () => {
     setReportData(data);
     setReportXDialogOpen(true);
   };
-  const totals = getTotalsForDisplay();
+  const totals = getTotals();
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   return <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Pin Lock Dialog */}
@@ -1452,9 +1297,6 @@ const Index = () => {
                         <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(index)} className="h-4 w-4 hover:bg-destructive/20 text-destructive flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Trash2 className="h-2.5 w-2.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleToggleGift(index)} className={`h-4 w-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${item.is_gift ? 'bg-pink-500/20 text-pink-600 hover:bg-pink-500/30' : 'hover:bg-pink-500/20 text-pink-500'}`} title={item.is_gift ? "Annuler cadeau" : "Offrir cet article"}>
-                          <Gift className="h-2.5 w-2.5" />
-                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => {
                     setDiscountTarget({
                       type: 'item',
@@ -1570,10 +1412,6 @@ const Index = () => {
               <Button variant="outline" size="sm" onClick={() => setRefundDialogOpen(true)} className="h-7 text-[9px] border-orange-500 text-orange-500 hover:bg-orange-500/10" title="Créer un remboursement">
                 <Undo2 className="h-3 w-3 mr-0.5" />
                 Rembour.
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setGiftCardDialogOpen(true)} className="h-7 text-[9px] border-pink-500 text-pink-500 hover:bg-pink-500/10" title="Gérer les cartes cadeaux">
-                <Gift className="h-3 w-3 mr-0.5" />
-                Cartes
               </Button>
             </div>
             
@@ -1895,7 +1733,6 @@ const Index = () => {
           setPaymentDialogOpen(false);
           setMixedPaymentDialogOpen(true);
         }}
-        onOpenGiftCardDialog={() => setGiftCardDialogOpen(true)}
         onOpenCustomerCreditDialog={() => setCustomerCreditDialogOpen(true)}
         customerId={selectedCustomer?.id} 
       />
@@ -1909,14 +1746,6 @@ const Index = () => {
       <PhysicalScanActionDialog open={physicalScanDialogOpen} onOpenChange={setPhysicalScanDialogOpen} barcode={scannedBarcode} product={scannedProduct} onAddToCart={handlePhysicalScanAddToCart} onViewProduct={handlePhysicalScanViewProduct} onCreateProduct={handlePhysicalScanCreateProduct} />
 
       <CustomerDialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen} onSelectCustomer={handleSelectCustomer} />
-
-      <GiftCardDialog 
-        open={giftCardDialogOpen} 
-        onOpenChange={setGiftCardDialogOpen}
-        onAddGiftCardToCart={handleAddGiftCardToCart}
-        onApplyGiftCard={handleApplyGiftCard}
-        cartTotal={totals.total}
-      />
 
       {selectedCustomer && (
         <CustomerCreditDialog
