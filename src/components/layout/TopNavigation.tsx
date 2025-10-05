@@ -21,7 +21,7 @@ import {
   UserCog,
   Truck,
 } from 'lucide-react';
-import logoNav from '@/assets/logo-gul-reyhan-nav.png';
+import logoHeader from '@/assets/logo-gul-reyhan-header.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadNotificationsCount } from '@/hooks/useNotifications';
 import { NotificationPanel } from '@/components/notifications/NotificationPanel';
@@ -86,7 +86,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           onClick={() => navigate("/")}
           className="shrink-0 hover:opacity-80 transition-opacity"
         >
-          <img src={logoNav} alt="Gül Reyhan" className="h-8 w-auto" />
+          <img src={logoHeader} alt="Gül Reyhan" className="h-11 w-auto" />
         </button>
 
         {/* Navigation Menu - Toujours visible avec texte */}
@@ -94,7 +94,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           {/* Bouton principal Caisse */}
           <Button
             onClick={() => navigate("/")}
-            className="h-10 px-2 flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs whitespace-nowrap"
+            className="h-10 px-2 flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-semibold text-xs whitespace-nowrap border border-white/40"
           >
             <ShoppingCart className="h-4 w-4" />
             <span>Caisse</span>
