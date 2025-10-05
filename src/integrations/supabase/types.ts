@@ -1807,6 +1807,7 @@ export type Database = {
           customer_id: string | null
           date: string | null
           id: string
+          invoice_status: string | null
           is_cancelled: boolean | null
           is_invoice: boolean | null
           notes: string | null
@@ -1828,6 +1829,7 @@ export type Database = {
           customer_id?: string | null
           date?: string | null
           id?: string
+          invoice_status?: string | null
           is_cancelled?: boolean | null
           is_invoice?: boolean | null
           notes?: string | null
@@ -1849,6 +1851,7 @@ export type Database = {
           customer_id?: string | null
           date?: string | null
           id?: string
+          invoice_status?: string | null
           is_cancelled?: boolean | null
           is_invoice?: boolean | null
           notes?: string | null

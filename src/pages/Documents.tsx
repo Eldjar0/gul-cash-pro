@@ -23,6 +23,9 @@ import {
   Download,
   Plus,
   Building2,
+  AlertCircle,
+  CheckCircle,
+  Clock,
 } from 'lucide-react';
 import { useSales, useDeleteSalePermanently } from '@/hooks/useSales';
 import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
@@ -62,6 +65,15 @@ import {
 } from '@/components/ui/table';
 import { downloadInvoicePDF, previewInvoicePDF } from '@/utils/generateInvoicePDF';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
+import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function Documents() {
   const navigate = useNavigate();
@@ -81,6 +93,9 @@ export default function Documents() {
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [deleteRefundDialogOpen, setDeleteRefundDialogOpen] = useState(false);
   const [refundToDelete, setRefundToDelete] = useState<string | null>(null);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [invoiceToUpdate, setInvoiceToUpdate] = useState<any>(null);
+  const [newStatus, setNewStatus] = useState<string>('');
 
   const { data: sales = [], isLoading } = useSales();
   const { data: refunds = [], isLoading: refundsLoading } = useRefunds();
@@ -149,13 +164,64 @@ export default function Documents() {
     }
   };
 
-  const filteredSales = sales.filter((sale) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      sale.sale_number?.toLowerCase().includes(searchLower) ||
-      format(new Date(sale.date), 'dd/MM/yyyy').includes(searchLower)
-    );
-  });
+  const handleStatusChange = (invoice: any, status: string) => {
+    setInvoiceToUpdate(invoice);
+    setNewStatus(status);
+    setStatusDialogOpen(true);
+  };
+
+  const handleConfirmStatusChange = async () => {
+    if (!invoiceToUpdate || !newStatus) return;
+
+    try {
+      const { error } = await supabase
+        .from('sales')
+        .update({ invoice_status: newStatus })
+        .eq('id', invoiceToUpdate.id);
+
+      if (error) throw error;
+
+      toast.success('Statut de la facture mis à jour');
+      setStatusDialogOpen(false);
+      setInvoiceToUpdate(null);
+      setNewStatus('');
+      
+      // Forcer le rechargement
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating invoice status:', error);
+      toast.error('Erreur lors de la mise à jour du statut');
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'brouillon':
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200"><Edit className="h-3 w-3 mr-1" />Brouillon</Badge>;
+      case 'en_attente':
+        return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
+      case 'paye':
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200"><CheckCircle className="h-3 w-3 mr-1" />Payé</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const canModifyInvoice = (status: string) => status === 'brouillon';
+  const canDeleteInvoice = (status: string) => status === 'brouillon';
+
+  const filteredSales = useMemo(() => {
+    return sales.filter((sale) => {
+      // Exclure les factures des ventes (pour éviter les doublons)
+      if (sale.is_invoice) return false;
+      
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        sale.sale_number?.toLowerCase().includes(searchLower) ||
+        format(new Date(sale.date), 'dd/MM/yyyy').includes(searchLower)
+      );
+    });
+  }, [sales, searchTerm]);
 
   const filteredRefunds = refunds.filter((refund) =>
     refund.refund_number.toLowerCase().includes(refundSearchTerm.toLowerCase()) ||
@@ -298,7 +364,10 @@ export default function Documents() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const todaySales = sales.filter((sale) => {
+    // Filtrer uniquement les tickets (pas les factures) pour les statistiques de caisse
+    const ticketsOnly = sales.filter(sale => !sale.is_invoice);
+
+    const todaySales = ticketsOnly.filter((sale) => {
       const saleDate = new Date(sale.date);
       saleDate.setHours(0, 0, 0, 0);
       return saleDate.getTime() === today.getTime() && !sale.is_cancelled;
@@ -307,7 +376,7 @@ export default function Documents() {
     const totalToday = todaySales.reduce((sum, sale) => sum + sale.total, 0);
     const countToday = todaySales.length;
 
-    const activeSales = sales.filter((sale) => !sale.is_cancelled);
+    const activeSales = ticketsOnly.filter((sale) => !sale.is_cancelled);
     const totalAll = activeSales.reduce((sum, sale) => sum + sale.total, 0);
     const countAll = activeSales.length;
 
@@ -446,6 +515,13 @@ export default function Documents() {
 
           {/* Onglet Ventes */}
           <TabsContent value="sales" className="space-y-4">
+            <Alert className="bg-blue-50 border-blue-200">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                <strong>Note importante :</strong> Cet onglet affiche uniquement les tickets de caisse. Les factures sont dans l'onglet "Factures" pour éviter les doublons dans les déclarations.
+              </AlertDescription>
+            </Alert>
+
             <Card className="p-4 bg-white">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -545,6 +621,13 @@ export default function Documents() {
 
           {/* Onglet Factures */}
           <TabsContent value="invoices" className="space-y-4">
+            <Alert className="bg-blue-50 border-blue-200">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                <strong>Note importante :</strong> Les factures sont gérées séparément des ventes de caisse pour éviter les doublons dans les déclarations fiscales.
+              </AlertDescription>
+            </Alert>
+
             <Card className="p-4 bg-white">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -574,80 +657,129 @@ export default function Documents() {
                 </div>
               </div>
 
-              <ScrollArea className="h-[calc(100vh-500px)]">
-                <div className="p-6 space-y-3">
-                  {filteredInvoices.map((invoice) => (
-                    <Card key={invoice.id} className="p-5 border-2 hover:border-primary/30 hover:shadow-lg transition-all">
-                      <div className="space-y-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="space-y-2 flex-1">
-                            <div className="flex items-center gap-3">
-                              <Badge variant="outline" className="font-mono text-base px-3 py-1">
-                                {invoice.sale_number}
-                              </Badge>
-                              <Badge className="bg-primary/10 text-primary border-0">Facture</Badge>
+              <div className="overflow-x-auto">
+                <ScrollArea className="h-[calc(100vh-500px)]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[120px]">Numéro</TableHead>
+                        <TableHead className="min-w-[100px]">Statut</TableHead>
+                        <TableHead className="min-w-[140px]">Date</TableHead>
+                        <TableHead className="min-w-[150px]">Client</TableHead>
+                        <TableHead className="min-w-[80px]">Articles</TableHead>
+                        <TableHead className="text-right min-w-[100px]">Total HT</TableHead>
+                        <TableHead className="text-right min-w-[100px]">Total TTC</TableHead>
+                        <TableHead className="text-right min-w-[150px]">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredInvoices.map((invoice) => (
+                        <TableRow key={invoice.id}>
+                          <TableCell className="font-mono font-semibold">
+                            {invoice.sale_number}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-2">
+                              {getStatusBadge(invoice.invoice_status || 'paye')}
+                              <Select
+                                value={invoice.invoice_status || 'paye'}
+                                onValueChange={(value) => handleStatusChange(invoice, value)}
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="brouillon">Brouillon</SelectItem>
+                                  <SelectItem value="en_attente">En attente</SelectItem>
+                                  <SelectItem value="paye">Payé</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
-                            
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <Calendar className="h-4 w-4" />
-                              <span className="text-sm font-medium">
-                                {format(new Date(invoice.date), 'dd MMMM yyyy', { locale: fr })}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">
+                                {format(new Date(invoice.date), 'dd/MM/yyyy HH:mm', { locale: fr })}
                               </span>
                             </div>
-
-                            {invoice.customers && (
-                              <div className="flex items-center gap-2">
-                                <User className="h-4 w-4 text-muted-foreground" />
-                                <div>
-                                  <p className="font-semibold text-foreground">{invoice.customers.name}</p>
-                                  {invoice.customers.vat_number && (
-                                    <p className="text-xs text-muted-foreground">TVA: {invoice.customers.vat_number}</p>
-                                  )}
-                                </div>
+                          </TableCell>
+                          <TableCell>
+                            {invoice.customers ? (
+                              <div>
+                                <p className="font-medium">{invoice.customers.name}</p>
+                                {invoice.customers.vat_number && (
+                                  <p className="text-xs text-muted-foreground">TVA: {invoice.customers.vat_number}</p>
+                                )}
                               </div>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
                             )}
-                          </div>
-
-                          <div className="text-right space-y-3">
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">Total HT</p>
-                              <p className="text-lg font-bold">{invoice.subtotal.toFixed(2)}€</p>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-muted-foreground">
+                              {invoice.sale_items?.length || 0} article{(invoice.sale_items?.length || 0) > 1 ? 's' : ''}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {invoice.subtotal.toFixed(2)}€
+                          </TableCell>
+                          <TableCell className="text-right font-bold text-primary">
+                            {invoice.total.toFixed(2)}€
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex gap-1 justify-end">
+                              {devMode && canModifyInvoice(invoice.invoice_status) && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => { setSaleToEdit(invoice); setEditDialogOpen(true); }} 
+                                  className="h-8 text-orange-600"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleViewInvoice(invoice)} 
+                                className="h-8"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleDownloadInvoice(invoice)} 
+                                className="h-8"
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                              {canDeleteInvoice(invoice.invoice_status) && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleDeleteClick(invoice.id)} 
+                                  className="h-8 text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">Total TTC</p>
-                              <p className="text-2xl font-black text-primary">{invoice.total.toFixed(2)}€</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-3 border-t">
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>{invoice.sale_items?.length || 0} article{(invoice.sale_items?.length || 0) > 1 ? 's' : ''}</span>
-                          </div>
-
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => handleViewInvoice(invoice)}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Voir
-                            </Button>
-                            <Button size="sm" onClick={() => handleDownloadInvoice(invoice)}>
-                              <Download className="h-4 w-4 mr-2" />
-                              PDF
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-
-                  {filteredInvoices.length === 0 && (
-                    <div className="text-center py-16">
-                      <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-xl font-semibold text-muted-foreground">Aucune facture trouvée</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {filteredInvoices.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                            Aucune facture trouvée
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </div>
             </Card>
           </TabsContent>
 
@@ -850,6 +982,25 @@ export default function Documents() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer le changement de statut</AlertDialogTitle>
+            <AlertDialogDescription>
+              {newStatus === 'brouillon' && 'La facture redeviendra modifiable et supprimable.'}
+              {newStatus === 'en_attente' && 'La facture ne sera plus modifiable, seulement passable en "Payé".'}
+              {newStatus === 'paye' && 'La facture sera marquée comme payée. Vous pourrez la repasser en "En attente" si nécessaire.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmStatusChange}>
+              Confirmer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
