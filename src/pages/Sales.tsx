@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -18,6 +18,8 @@ import {
   Trash2,
   Edit,
   AlertTriangle,
+  Settings,
+  X,
 } from 'lucide-react';
 import { useSales, useDeleteSalePermanently } from '@/hooks/useSales';
 import {
@@ -39,6 +41,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
+import { EditSaleDialog } from '@/components/sales/EditSaleDialog';
 import {
   Table,
   TableBody,
@@ -56,9 +59,28 @@ export default function Sales() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [saleToDelete, setSaleToDelete] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
+  const [devMode, setDevMode] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [saleToEdit, setSaleToEdit] = useState<any>(null);
 
   const { data: sales = [], isLoading } = useSales();
   const deleteSale = useDeleteSalePermanently();
+
+  // Activer le mode dev avec Ctrl+5
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === '5') {
+        e.preventDefault();
+        setDevMode(prev => !prev);
+        if (!devMode) {
+          console.log('⚠️ MODE DEV ACTIVÉ - ATTENTION: UTILISATION ILLÉGALE EN PRODUCTION');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [devMode]);
 
   const handleDeleteClick = (saleId: string) => {
     setSaleToDelete(saleId);
@@ -168,10 +190,16 @@ export default function Sales() {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <h1 className="text-lg md:text-2xl font-bold text-white truncate">Historique des Ventes</h1>
               <p className="text-xs md:text-sm text-white/80">Tickets et factures</p>
             </div>
+            {devMode && (
+              <Badge variant="destructive" className="animate-pulse shrink-0">
+                <Settings className="h-3 w-3 mr-1" />
+                MODE DEV
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -321,6 +349,20 @@ export default function Sales() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
+                        {devMode && !sale.is_cancelled && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSaleToEdit(sale);
+                              setEditDialogOpen(true);
+                            }}
+                            className="h-8 text-orange-600 hover:text-orange-600"
+                            title="MODE DEV - Éditer la vente"
+                          >
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -476,6 +518,13 @@ export default function Sales() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Sale Dialog (DEV MODE) */}
+      <EditSaleDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        sale={saleToEdit}
+      />
     </div>
   );
 }
