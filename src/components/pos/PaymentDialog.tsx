@@ -8,9 +8,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split, X } from 'lucide-react';
 
 type PaymentMethod = 'cash' | 'card' | 'mobile' | 'customer_credit';
+
+interface PaymentSplit {
+  method: PaymentMethod;
+  amount: number;
+}
 
 interface PaymentDialogProps {
   open: boolean;
@@ -33,6 +39,10 @@ export function PaymentDialog({
 }: PaymentDialogProps) {
   const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [amountPaid, setAmountPaid] = useState('');
+  const [isMixedMode, setIsMixedMode] = useState(false);
+  const [splits, setSplits] = useState<PaymentSplit[]>([]);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('cash');
+  const [splitAmount, setSplitAmount] = useState('');
 
   const handleNumberClick = (num: string) => {
     if (num === 'C') {
@@ -42,7 +52,7 @@ export function PaymentDialog({
     }
   };
 
-  const getChange = () => {
+  const getCashChange = () => {
     const paid = parseFloat(amountPaid) || 0;
     return Math.max(0, paid - total);
   };
@@ -57,14 +67,61 @@ export function PaymentDialog({
   };
 
   const handleBack = () => {
-    setMethod(null);
-    setAmountPaid('');
+    if (isMixedMode) {
+      setIsMixedMode(false);
+      setSplits([]);
+      setSplitAmount('');
+    } else {
+      setMethod(null);
+      setAmountPaid('');
+    }
   };
 
   const handleCancel = () => {
     setMethod(null);
     setAmountPaid('');
+    setIsMixedMode(false);
+    setSplits([]);
+    setSplitAmount('');
     onOpenChange(false);
+  };
+
+  const getTotalPaid = () => splits.reduce((sum, split) => sum + split.amount, 0);
+  const getRemaining = () => total - getTotalPaid();
+  const getChange = () => Math.max(0, getTotalPaid() - total);
+
+  const addSplit = () => {
+    const amount = parseFloat(splitAmount);
+    if (!amount || amount <= 0) return;
+    
+    const remaining = getRemaining();
+    const finalAmount = Math.min(amount, remaining);
+    
+    if (finalAmount > 0) {
+      setSplits([...splits, { method: selectedMethod, amount: finalAmount }]);
+      setSplitAmount('');
+    }
+  };
+
+  const removeSplit = (index: number) => {
+    setSplits(splits.filter((_, i) => i !== index));
+  };
+
+  const handleConfirmMixed = () => {
+    if (getTotalPaid() >= total) {
+      onConfirmPayment('cash', undefined, { splits, change: getChange() });
+      handleCancel();
+    }
+  };
+
+  const getMethodInfo = (methodType: PaymentMethod) => {
+    const methods = {
+      cash: { label: 'Espèces', icon: Banknote, color: 'text-green-500' },
+      card: { label: 'CB', icon: CreditCard, color: 'text-blue-500' },
+      mobile: { label: 'Virement', icon: Smartphone, color: 'text-purple-500' },
+      customer_credit: { label: 'Crédit', icon: Wallet, color: 'text-cyan-500' },
+    };
+    return methods[methodType];
   };
 
   const quickAmounts = [5, 10, 20, 50, 100, 200];
@@ -78,7 +135,7 @@ export function PaymentDialog({
           <p className="text-3xl font-bold mt-2">Total: {total.toFixed(2)}€</p>
         </DialogHeader>
 
-        {!method ? (
+        {!method && !isMixedMode ? (
           <div className="space-y-4">
             {/* Primary payment methods */}
             <div className="grid grid-cols-3 gap-3">
@@ -136,32 +193,7 @@ export function PaymentDialog({
               </Card>
 
               <Card
-                onClick={() => {
-                  if (customerId) {
-                    onOpenChange(false);
-                    if (onOpenCustomerCreditDialog) onOpenCustomerCreditDialog();
-                  }
-                }}
-                className={`h-24 border-2 transition-transform ${
-                  customerId 
-                    ? 'cursor-pointer hover:scale-105 hover:border-primary' 
-                    : 'cursor-not-allowed opacity-50'
-                }`}
-              >
-                <div className="h-full flex flex-col items-center justify-center gap-2">
-                  <Wallet className="h-8 w-8 text-cyan-500" />
-                  <span className="font-bold text-sm text-center">Crédit Client</span>
-                  {!customerId && <span className="text-xs text-muted-foreground">Client requis</span>}
-                </div>
-              </Card>
-
-              <Card
-                onClick={() => {
-                  if (onMixedPayment) {
-                    onOpenChange(false);
-                    onMixedPayment();
-                  }
-                }}
+                onClick={() => setIsMixedMode(true)}
                 className="h-24 cursor-pointer hover:scale-105 transition-transform border-2 hover:border-primary"
               >
                 <div className="h-full flex flex-col items-center justify-center gap-2">
@@ -178,6 +210,110 @@ export function PaymentDialog({
             >
               Annuler
             </Button>
+          </div>
+        ) : isMixedMode ? (
+          <div className="space-y-4">
+            {/* Total and Remaining */}
+            <div className="grid grid-cols-2 gap-3">
+              <Card className="bg-muted/50 border-2 p-4">
+                <p className="text-sm font-semibold mb-1">Total à payer</p>
+                <p className="text-3xl font-black">{total.toFixed(2)}€</p>
+              </Card>
+              <Card className={`border-2 p-4 ${getRemaining() > 0 ? 'bg-orange-500/10 border-orange-500' : 'bg-green-500/10 border-green-500'}`}>
+                <p className="text-sm font-semibold mb-1">
+                  {getRemaining() > 0 ? 'Reste à payer' : getChange() > 0 ? 'À rendre' : 'Payé'}
+                </p>
+                <p className={`text-3xl font-black ${getRemaining() > 0 ? 'text-orange-500' : 'text-green-500'}`}>
+                  {getRemaining() > 0 ? getRemaining().toFixed(2) : getChange().toFixed(2)}€
+                </p>
+              </Card>
+            </div>
+
+            {/* Payment splits list */}
+            {splits.length > 0 && (
+              <Card className="p-4 space-y-2">
+                <p className="font-bold mb-2">Paiements enregistrés</p>
+                {splits.map((split, index) => {
+                  const methodInfo = getMethodInfo(split.method);
+                  const Icon = methodInfo.icon;
+                  return (
+                    <div key={index} className="flex items-center justify-between bg-muted/50 p-3 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Icon className={`h-5 w-5 ${methodInfo.color}`} />
+                        <span className="font-semibold">{methodInfo.label}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-bold">{split.amount.toFixed(2)}€</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeSplit(index)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </Card>
+            )}
+
+            {/* Add payment */}
+            {getRemaining() > 0 && (
+              <Card className="p-4 space-y-3">
+                <p className="font-bold">Ajouter un paiement</p>
+                
+                <div className="grid grid-cols-4 gap-2">
+                  {(['cash', 'card', 'mobile', 'customer_credit'] as PaymentMethod[]).map((m) => {
+                    const methodInfo = getMethodInfo(m);
+                    const Icon = methodInfo.icon;
+                    return (
+                      <Button
+                        key={m}
+                        variant={selectedMethod === m ? 'default' : 'outline'}
+                        onClick={() => setSelectedMethod(m)}
+                        className="h-20 flex-col gap-1"
+                      >
+                        <Icon className="h-6 w-6" />
+                        <span className="text-xs">{methodInfo.label}</span>
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Montant"
+                    value={splitAmount}
+                    onChange={(e) => setSplitAmount(e.target.value)}
+                    className="text-lg"
+                  />
+                  <Button onClick={addSplit} className="whitespace-nowrap">
+                    Ajouter
+                  </Button>
+                </div>
+              </Card>
+            )}
+
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleBack} 
+                variant="outline"
+                className="flex-1 h-12"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour
+              </Button>
+              <Button
+                onClick={handleConfirmMixed}
+                disabled={getRemaining() > 0}
+                className="flex-1 h-12 font-bold text-lg"
+              >
+                Valider
+              </Button>
+            </div>
           </div>
         ) : method === 'cash' ? (
           <div className="space-y-4">
@@ -215,7 +351,7 @@ export function PaymentDialog({
                     </div>
                   </div>
                   <div className="text-5xl font-black text-blue-500">
-                    {getChange().toFixed(2)}€
+                    {getCashChange().toFixed(2)}€
                   </div>
                 </div>
               </Card>
