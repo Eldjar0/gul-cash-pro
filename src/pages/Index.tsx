@@ -922,6 +922,17 @@ const Index = () => {
       }))
     };
     try {
+      // Vérifier le stock avant la vente pour informer l'utilisateur
+      const lowStockProducts: string[] = [];
+      for (const item of cart) {
+        if (item.product.stock !== null && item.product.stock !== undefined) {
+          const availableStock = item.product.stock;
+          if (availableStock < item.quantity) {
+            lowStockProducts.push(item.product.name);
+          }
+        }
+      }
+
       const sale = await createSale.mutateAsync({ sale: saleData });
 
       // Si paiement par crédit client, créer la transaction de crédit
@@ -992,6 +1003,8 @@ const Index = () => {
 
       // Demander si l'utilisateur veut imprimer
       setPrintConfirmDialogOpen(true);
+      
+      // Message de succès
       toast.success(
         method === 'customer_credit' 
           ? `Paiement à crédit enregistré (${metadata?.creditAmount?.toFixed(2) || totals.total.toFixed(2)}€)`
@@ -999,6 +1012,14 @@ const Index = () => {
             ? 'Facture créée' 
             : 'Paiement validé'
       );
+
+      // Avertissement si des produits étaient hors stock
+      if (lowStockProducts.length > 0) {
+        toast.warning('⚠️ Stock insuffisant détecté', {
+          description: `Vérifiez le stock de: ${lowStockProducts.join(', ')}`,
+          duration: 8000,
+        });
+      }
     } catch (error: any) {
       // Erreur lors de la création de la vente
       const errorMsg = error instanceof Error ? error.message : 'Erreur inconnue';
