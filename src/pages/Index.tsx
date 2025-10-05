@@ -1502,11 +1502,12 @@ const Index = () => {
   
   const handleSyncData = async () => {
     try {
-      toast.loading('Synchronisation en cours...');
-      // Invalider toutes les requêtes pour forcer le rechargement
+      toast.loading('Synchronisation...');
+      // Invalider toutes les requêtes pour forcer le rechargement des données
       await queryClient.invalidateQueries();
-      // Recharger la page
-      window.location.reload();
+      toast.success('Données synchronisées', {
+        duration: 2000
+      });
     } catch (error) {
       toast.error('Erreur lors de la synchronisation');
     }
