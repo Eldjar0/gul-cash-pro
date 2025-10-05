@@ -67,7 +67,7 @@ export function LowStockAlert() {
         )}
 
         <Button asChild size="sm" variant="outline" className="mt-2 border-orange-600 text-orange-700 hover:bg-orange-100">
-          <Link to="/products">
+          <Link to="/inventory-management">
             Voir tous les produits
             <ArrowRight className="h-4 w-4 ml-2" />
           </Link>

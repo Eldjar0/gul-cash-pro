@@ -23,12 +23,11 @@ const LegalInfo = lazy(() => import("./pages/LegalInfo"));
 const GettingStarted = lazy(() => import("./pages/GettingStarted"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const InvoiceCreate = lazy(() => import("./pages/InvoiceCreate"));
-const Inventory = lazy(() => import("./pages/Inventory"));
+const Analytics = lazy(() => import("./pages/Analytics"));
 const DownloadApp = lazy(() => import("./pages/DownloadApp"));
 const UserManagement = lazy(() => import("./pages/UserManagement"));
 const MobileManagement = lazy(() => import("./pages/MobileManagement"));
 const MobileCategories = lazy(() => import("./pages/MobileCategories"));
-// MobilePromotions page has been removed - use desktop Promotions page instead
 const MobileOrders = lazy(() => import("./pages/MobileOrders"));
 const MobileCalculator = lazy(() => import("./pages/MobileCalculator"));
 const MobileProducts = lazy(() => import("./pages/MobileProducts"));
@@ -56,6 +55,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/customer-display" element={<CustomerDisplay />} />
             <Route path="/download-app" element={<DownloadApp />} />
+            <Route path="/legal-info" element={<LegalInfo />} />
+            <Route path="/getting-started" element={<GettingStarted />} />
             <Route path="/mobile" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
             <Route path="/mobile/management" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
             <Route path="/mobile/products" element={<ProtectedRoute><MobileProducts /></ProtectedRoute>} />
@@ -75,10 +76,13 @@ const App = () => (
             <Route path="/promotions" element={<ProtectedRoute><ProtectedLayout><Promotions /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><ProtectedLayout><Settings /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/customers" element={<ProtectedRoute><ProtectedLayout><Customers /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><ProtectedLayout><Analytics /></ProtectedLayout></ProtectedRoute>} />
             {/* Old routes redirected to new unified page */}
             <Route path="/products" element={<ProtectedRoute><ProtectedLayout><InventoryManagement /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/suppliers" element={<ProtectedRoute><ProtectedLayout><InventoryManagement /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/inventory" element={<ProtectedRoute><ProtectedLayout><InventoryManagement /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/sales" element={<ProtectedRoute><ProtectedLayout><Documents /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/invoices" element={<ProtectedRoute><ProtectedLayout><Documents /></ProtectedLayout></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

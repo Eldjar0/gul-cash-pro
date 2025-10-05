@@ -131,7 +131,7 @@ export default function GettingStarted() {
                   <p className="text-sm text-muted-foreground mb-3">
                     Allez dans <strong>Produits</strong> pour créer votre catalogue avec codes-barres, prix et taux de TVA.
                   </p>
-                  <Button size="sm" onClick={() => navigate('/products')} variant="outline">
+                  <Button size="sm" onClick={() => navigate('/inventory-management')} variant="outline">
                     Gérer les produits
                   </Button>
                 </div>

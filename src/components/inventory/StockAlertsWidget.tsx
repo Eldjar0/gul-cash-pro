@@ -134,7 +134,7 @@ export function StockAlertsWidget() {
         )}
 
         <Button 
-          onClick={() => navigate('/inventory')} 
+          onClick={() => navigate('/inventory-management')} 
           className="w-full"
           variant="outline"
         >

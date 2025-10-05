@@ -26,17 +26,10 @@ export function QuickActions() {
       color: 'bg-green-500 hover:bg-green-600',
     },
     {
-      icon: Undo2,
-      label: 'Remboursement',
-      description: 'Créer un remboursement',
-      onClick: () => navigate('/refunds'),
-      color: 'bg-orange-500 hover:bg-orange-600',
-    },
-    {
       icon: Package,
       label: 'Produits',
       description: 'Gérer le catalogue',
-      onClick: () => navigate('/products'),
+      onClick: () => navigate('/inventory-management'),
       color: 'bg-blue-500 hover:bg-blue-600',
     },
     {
@@ -50,7 +43,7 @@ export function QuickActions() {
       icon: FileText,
       label: 'Ventes',
       description: 'Historique des ventes',
-      onClick: () => navigate('/sales'),
+      onClick: () => navigate('/documents'),
       color: 'bg-indigo-500 hover:bg-indigo-600',
     },
     {
@@ -71,7 +64,7 @@ export function QuickActions() {
       icon: Truck,
       label: 'Fournisseurs',
       description: 'Gérer les contacts',
-      onClick: () => navigate('/suppliers'),
+      onClick: () => navigate('/inventory-management'),
       color: 'bg-cyan-500 hover:bg-cyan-600',
     },
     {

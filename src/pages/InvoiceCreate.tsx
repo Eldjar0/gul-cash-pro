@@ -240,7 +240,7 @@ export default function InvoiceCreate() {
         description: 'La facture a été enregistrée avec succès',
       });
 
-      navigate('/invoices');
+      navigate('/documents');
     } catch (error) {
       console.error('Error creating invoice:', error);
       toast({
@@ -263,7 +263,7 @@ export default function InvoiceCreate() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate('/invoices')}
+                onClick={() => navigate('/documents')}
                 className="text-white hover:bg-white/20 shrink-0 transition-smooth"
               >
                 <ArrowLeft className="h-5 w-5" />
