@@ -12,8 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Undo2, AlertCircle, Search } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Undo2, AlertCircle, Search, Calendar } from 'lucide-react';
 import { useCreateRefund } from '@/hooks/useRefunds';
 import { useSales } from '@/hooks/useSales';
 import { format } from 'date-fns';
@@ -24,10 +24,16 @@ interface RefundDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface SelectedItem {
+  index: number;
+  quantity: number;
+}
+
 export function RefundDialog({ open, onOpenChange }: RefundDialogProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchDate, setSearchDate] = useState('');
   const [selectedSale, setSelectedSale] = useState<any>(null);
-  const [refundType, setRefundType] = useState<'full' | 'partial'>('full');
+  const [selectedItems, setSelectedItems] = useState<Record<number, SelectedItem>>({});
   const [reason, setReason] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'mobile'>('cash');
 
@@ -36,44 +42,89 @@ export function RefundDialog({ open, onOpenChange }: RefundDialogProps) {
 
   const filteredSales = recentSales
     .filter(sale => !sale.is_cancelled)
-    .filter(sale =>
-      sale.sale_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sale.customers?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .slice(0, 10);
+    .filter(sale => {
+      const matchesSearch = 
+        sale.sale_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sale.customers?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesDate = !searchDate || 
+        format(new Date(sale.date), 'yyyy-MM-dd') === searchDate;
+      
+      return matchesSearch && matchesDate;
+    })
+    .slice(0, 20);
+
+  const handleToggleItem = (index: number, maxQuantity: number) => {
+    setSelectedItems(prev => {
+      const newItems = { ...prev };
+      if (newItems[index]) {
+        delete newItems[index];
+      } else {
+        newItems[index] = { index, quantity: maxQuantity };
+      }
+      return newItems;
+    });
+  };
+
+  const handleQuantityChange = (index: number, quantity: number) => {
+    setSelectedItems(prev => ({
+      ...prev,
+      [index]: { ...prev[index], quantity: Math.max(0, quantity) }
+    }));
+  };
+
+  const getTotalRefund = () => {
+    if (!selectedSale) return 0;
+    return Object.values(selectedItems).reduce((sum, item) => {
+      const saleItem = selectedSale.sale_items[item.index];
+      const unitPrice = saleItem.total / saleItem.quantity;
+      return sum + (unitPrice * item.quantity);
+    }, 0);
+  };
 
   const handleCreateRefund = async () => {
-    if (!selectedSale || !reason.trim()) return;
+    if (!selectedSale || Object.keys(selectedItems).length === 0 || !reason.trim()) return;
+
+    const itemsToRefund = Object.values(selectedItems).map(item => {
+      const saleItem = selectedSale.sale_items[item.index];
+      const ratio = item.quantity / saleItem.quantity;
+      
+      return {
+        product_id: saleItem.product_id,
+        product_name: saleItem.product_name,
+        product_barcode: saleItem.product_barcode,
+        quantity: item.quantity,
+        unit_price: saleItem.unit_price,
+        vat_rate: saleItem.vat_rate,
+        subtotal: saleItem.subtotal * ratio,
+        vat_amount: saleItem.vat_amount * ratio,
+        total: saleItem.total * ratio,
+      };
+    });
+
+    const totalRefund = getTotalRefund();
+    const refundRatio = totalRefund / selectedSale.total;
 
     const refundData = {
       original_sale_id: selectedSale.id,
       customer_id: selectedSale.customer_id,
       reason: reason.trim(),
-      refund_type: refundType,
-      subtotal: selectedSale.subtotal,
-      total_vat: selectedSale.total_vat,
-      total: selectedSale.total,
+      refund_type: Object.keys(selectedItems).length === selectedSale.sale_items.length ? 'full' : 'partial' as 'full' | 'partial',
+      subtotal: selectedSale.subtotal * refundRatio,
+      total_vat: selectedSale.total_vat * refundRatio,
+      total: totalRefund,
       payment_method: paymentMethod,
-      items: selectedSale.sale_items.map((item: any) => ({
-        product_id: item.product_id,
-        product_name: item.product_name,
-        product_barcode: item.product_barcode,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        vat_rate: item.vat_rate,
-        subtotal: item.subtotal,
-        vat_amount: item.vat_amount,
-        total: item.total,
-      })),
+      items: itemsToRefund,
     };
 
     await createRefund.mutateAsync(refundData);
     
     // Reset form
     setSelectedSale(null);
+    setSelectedItems({});
     setSearchTerm('');
+    setSearchDate('');
     setReason('');
-    setRefundType('full');
     setPaymentMethod('cash');
     onOpenChange(false);
   };
@@ -92,41 +143,66 @@ export function RefundDialog({ open, onOpenChange }: RefundDialogProps) {
           <div className="space-y-6 pr-4">
             {/* Recherche de vente */}
             {!selectedSale && (
-              <div>
-                <Label>Rechercher une vente</Label>
-                <div className="relative mt-2">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Numéro de ticket, client..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Numéro de ticket ou nom client</Label>
+                    <div className="relative mt-2">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Ex: 20250105-0001 ou Jean Dupont"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Date (optionnel)</Label>
+                    <div className="relative mt-2">
+                      <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="date"
+                        value={searchDate}
+                        onChange={(e) => setSearchDate(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="mt-4 space-y-2">
+                <div className="space-y-2">
                   {filteredSales.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      Aucune vente trouvée
+                      {searchTerm || searchDate ? 'Aucune vente trouvée' : 'Saisissez un numéro de ticket ou un nom client'}
                     </div>
                   ) : (
                     filteredSales.map((sale) => (
                       <Card
                         key={sale.id}
-                        className="p-3 cursor-pointer hover:shadow-md transition-shadow"
+                        className="p-3 cursor-pointer hover:shadow-md hover:border-primary transition-all"
                         onClick={() => setSelectedSale(sale)}
                       >
                         <div className="flex items-center justify-between">
-                          <div>
+                          <div className="flex-1">
                             <div className="font-medium">{sale.sale_number}</div>
                             <div className="text-sm text-muted-foreground">
                               {format(new Date(sale.date), 'dd MMM yyyy HH:mm', { locale: fr })}
                               {sale.customers && ` • ${sale.customers.name}`}
                             </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {sale.sale_items?.length || 0} article(s)
+                            </div>
                           </div>
                           <div className="text-right">
-                            <div className="font-bold">{sale.total.toFixed(2)}€</div>
-                            <Badge variant="outline">{sale.payment_method}</Badge>
+                            <div className="font-bold text-lg">{sale.total.toFixed(2)}€</div>
+                            <Badge variant="outline" className="mt-1">
+                              {sale.payment_method === 'cash' ? 'Espèces' : 
+                               sale.payment_method === 'card' ? 'CB' : 
+                               sale.payment_method === 'mobile' ? 'Virement' : 
+                               sale.payment_method}
+                            </Badge>
                           </div>
                         </div>
                       </Card>
@@ -136,70 +212,99 @@ export function RefundDialog({ open, onOpenChange }: RefundDialogProps) {
               </div>
             )}
 
-            {/* Détails du remboursement */}
+            {/* Sélection des articles à rembourser */}
             {selectedSale && (
               <div className="space-y-4">
                 <Card className="p-4 bg-muted/50">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h3 className="font-semibold">{selectedSale.sale_number}</h3>
+                      <h3 className="font-semibold text-lg">{selectedSale.sale_number}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {format(new Date(selectedSale.date), 'dd MMM yyyy HH:mm', { locale: fr })}
+                        {format(new Date(selectedSale.date), 'dd MMMM yyyy à HH:mm', { locale: fr })}
                       </p>
+                      {selectedSale.customers && (
+                        <p className="text-sm text-muted-foreground">Client: {selectedSale.customers.name}</p>
+                      )}
                     </div>
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => setSelectedSale(null)}
+                      onClick={() => {
+                        setSelectedSale(null);
+                        setSelectedItems({});
+                      }}
                     >
                       Changer
                     </Button>
                   </div>
 
                   <div className="space-y-2">
-                    {selectedSale.sale_items.map((item: any, idx: number) => (
-                      <div key={idx} className="flex justify-between text-sm">
-                        <span>{item.product_name} x{item.quantity}</span>
-                        <span className="font-medium">{item.total.toFixed(2)}€</span>
+                    <Label className="text-base font-semibold">Sélectionnez les articles à rembourser :</Label>
+                    {selectedSale.sale_items?.map((item: any, idx: number) => (
+                      <div key={idx} className="flex items-center gap-3 p-3 border rounded-lg bg-background">
+                        <Checkbox
+                          checked={!!selectedItems[idx]}
+                          onCheckedChange={() => handleToggleItem(idx, item.quantity)}
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium">{item.product_name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {item.unit_price.toFixed(2)}€ × {item.quantity}
+                          </div>
+                        </div>
+                        {selectedItems[idx] && (
+                          <div className="flex items-center gap-2">
+                            <Label className="text-sm">Qté:</Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              max={item.quantity}
+                              value={selectedItems[idx].quantity}
+                              onChange={(e) => handleQuantityChange(idx, parseFloat(e.target.value))}
+                              className="w-20"
+                            />
+                          </div>
+                        )}
+                        <div className="text-right font-bold">
+                          {selectedItems[idx] 
+                            ? ((item.total / item.quantity) * selectedItems[idx].quantity).toFixed(2)
+                            : item.total.toFixed(2)}€
+                        </div>
                       </div>
-                    ))}
-                    <div className="pt-2 border-t flex justify-between font-bold">
-                      <span>Total</span>
-                      <span>{selectedSale.total.toFixed(2)}€</span>
+                    )) || <div className="text-center py-4 text-muted-foreground">Aucun article</div>}
+                    
+                    <div className="pt-3 border-t flex justify-between items-center">
+                      <span className="font-bold text-lg">Total à rembourser:</span>
+                      <span className="font-bold text-2xl text-primary">{getTotalRefund().toFixed(2)}€</span>
                     </div>
                   </div>
                 </Card>
 
                 <div>
-                  <Label>Type de remboursement</Label>
-                  <RadioGroup value={refundType} onValueChange={(v) => setRefundType(v as any)} className="mt-2">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="full" id="full" />
-                      <Label htmlFor="full" className="cursor-pointer">Remboursement complet</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="partial" id="partial" />
-                      <Label htmlFor="partial" className="cursor-pointer">Remboursement partiel</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <div>
                   <Label>Méthode de remboursement</Label>
-                  <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as any)} className="mt-2">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="cash" id="cash" />
-                      <Label htmlFor="cash" className="cursor-pointer">Espèces</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="card" id="card" />
-                      <Label htmlFor="card" className="cursor-pointer">Carte bancaire</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="mobile" id="mobile" />
-                      <Label htmlFor="mobile" className="cursor-pointer">Mobile</Label>
-                    </div>
-                  </RadioGroup>
+                  <div className="grid grid-cols-3 gap-3 mt-2">
+                    <Button
+                      variant={paymentMethod === 'cash' ? 'default' : 'outline'}
+                      onClick={() => setPaymentMethod('cash')}
+                      className="h-16"
+                    >
+                      Espèces
+                    </Button>
+                    <Button
+                      variant={paymentMethod === 'card' ? 'default' : 'outline'}
+                      onClick={() => setPaymentMethod('card')}
+                      className="h-16"
+                    >
+                      CB
+                    </Button>
+                    <Button
+                      variant={paymentMethod === 'mobile' ? 'default' : 'outline'}
+                      onClick={() => setPaymentMethod('mobile')}
+                      className="h-16"
+                    >
+                      Virement
+                    </Button>
+                  </div>
                 </div>
 
                 <div>
@@ -219,7 +324,7 @@ export function RefundDialog({ open, onOpenChange }: RefundDialogProps) {
                     <div className="text-sm">
                       <p className="font-semibold text-destructive mb-1">Important</p>
                       <p className="text-muted-foreground">
-                        Le remboursement remettra les produits en stock et créera un mouvement de caisse négatif.
+                        Le remboursement remettra les produits en stock et créera une <strong>perte</strong> dans les rapports X et Z.
                         Cette action est irréversible.
                       </p>
                     </div>
@@ -229,18 +334,21 @@ export function RefundDialog({ open, onOpenChange }: RefundDialogProps) {
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
-                    onClick={() => setSelectedSale(null)}
+                    onClick={() => {
+                      setSelectedSale(null);
+                      setSelectedItems({});
+                    }}
                     className="flex-1"
                   >
                     Annuler
                   </Button>
                   <Button
                     onClick={handleCreateRefund}
-                    disabled={!reason.trim() || createRefund.isPending}
+                    disabled={Object.keys(selectedItems).length === 0 || !reason.trim() || createRefund.isPending}
                     className="flex-1"
                   >
                     <Undo2 className="h-4 w-4 mr-2" />
-                    Créer le remboursement
+                    Créer le remboursement ({getTotalRefund().toFixed(2)}€)
                   </Button>
                 </div>
               </div>

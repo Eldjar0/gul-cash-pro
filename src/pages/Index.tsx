@@ -1477,7 +1477,7 @@ const Index = () => {
             </div>
             
             {/* Détail par moyen de paiement */}
-            <div className="grid grid-cols-3 gap-1 relative z-10">
+            <div className="grid grid-cols-4 gap-1 relative z-10">
               <div className="bg-white/60 rounded p-1.5 text-center border border-border/50">
                 <div className="text-[7px] text-muted-foreground font-medium uppercase">Espèces</div>
                 <div className="text-xs font-bold text-green-600">
@@ -1491,9 +1491,15 @@ const Index = () => {
                 </div>
               </div>
               <div className="bg-white/60 rounded p-1.5 text-center border border-border/50">
-                <div className="text-[7px] text-muted-foreground font-medium uppercase">Autres</div>
+                <div className="text-[7px] text-muted-foreground font-medium uppercase">Virement</div>
                 <div className="text-xs font-bold text-purple-600">
-                  {(todaySales?.filter(s => !s.is_cancelled && !['cash', 'card'].includes(s.payment_method)).reduce((sum, s) => sum + s.total, 0) || 0).toFixed(2)}€
+                  {(todaySales?.filter(s => !s.is_cancelled && s.payment_method === 'mobile').reduce((sum, s) => sum + s.total, 0) || 0).toFixed(2)}€
+                </div>
+              </div>
+              <div className="bg-white/60 rounded p-1.5 text-center border border-border/50">
+                <div className="text-[7px] text-muted-foreground font-medium uppercase">Crédit</div>
+                <div className="text-xs font-bold text-cyan-600">
+                  {(todaySales?.filter(s => !s.is_cancelled && s.payment_method === 'voucher').reduce((sum, s) => sum + s.total, 0) || 0).toFixed(2)}€
                 </div>
               </div>
             </div>
@@ -1601,45 +1607,56 @@ const Index = () => {
             </div>
             <div className="flex-1 overflow-y-auto min-h-0">
               <div className="space-y-0.5">
-                {todaySales?.filter(s => !s.is_cancelled).slice(0, 10).map(sale => (
-                  <button 
-                    key={sale.id} 
-                    onClick={() => {
-                      const saleForReceipt = {
-                        ...sale,
-                        saleNumber: sale.sale_number,
-                        items: sale.sale_items || [],
-                        subtotal: sale.subtotal,
-                        totalVat: sale.total_vat,
-                        totalDiscount: sale.total_discount,
-                        total: sale.total,
-                        paymentMethod: sale.payment_method,
-                        amountPaid: sale.amount_paid,
-                        change: sale.change_amount
-                      };
-                      setCurrentSale(saleForReceipt);
-                      setReceiptDialogOpen(true);
-                    }} 
-                    className="w-full p-1 bg-muted/30 hover:bg-primary/5 border border-border/30 rounded text-left transition-all hover:border-primary/30 group"
-                  >
-                    <div className="flex items-center justify-between gap-1">
-                      <div className="flex items-center gap-1 flex-1 min-w-0">
-                        <Ticket className="h-2.5 w-2.5 text-primary flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[8px] font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                            {sale.sale_number}
-                          </div>
-                          <div className="text-[7px] text-muted-foreground">
-                            {new Date(sale.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                {todaySales?.filter(s => !s.is_cancelled).slice(0, 10).map(sale => {
+                  const itemCount = sale.sale_items?.length || 0;
+                  
+                  return (
+                    <button 
+                      key={sale.id} 
+                      onClick={() => {
+                        if (!sale.sale_items || sale.sale_items.length === 0) {
+                          toast.error('Ce ticket ne contient pas d\'articles');
+                          return;
+                        }
+                        
+                        const saleForReceipt = {
+                          ...sale,
+                          saleNumber: sale.sale_number,
+                          items: sale.sale_items,
+                          subtotal: sale.subtotal,
+                          totalVat: sale.total_vat,
+                          totalDiscount: sale.total_discount,
+                          total: sale.total,
+                          paymentMethod: sale.payment_method,
+                          amountPaid: sale.amount_paid,
+                          change: sale.change_amount
+                        };
+                        setCurrentSale(saleForReceipt);
+                        setReceiptDialogOpen(true);
+                      }} 
+                      className="w-full p-1.5 bg-muted/30 hover:bg-primary/5 border border-border/30 rounded text-left transition-all hover:border-primary/30 group"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                          <Ticket className="h-3 w-3 text-primary flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[9px] font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                              {sale.sale_number}
+                            </div>
+                            <div className="text-[7px] text-muted-foreground flex items-center gap-1">
+                              <span>{new Date(sale.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span>•</span>
+                              <span>{itemCount} art.</span>
+                            </div>
                           </div>
                         </div>
+                        <div className="text-[10px] font-bold text-primary flex-shrink-0">
+                          {sale.total.toFixed(2)}€
+                        </div>
                       </div>
-                      <div className="text-[9px] font-bold text-primary flex-shrink-0">
-                        {sale.total.toFixed(2)}€
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
                 {(!todaySales || todaySales.filter(s => !s.is_cancelled).length === 0) && (
                   <div className="text-center py-3 text-[8px] text-muted-foreground">
                     Aucun ticket
