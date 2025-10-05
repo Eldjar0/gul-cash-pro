@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, Gift } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
@@ -11,6 +11,8 @@ import { MixedPaymentDialog } from '@/components/pos/MixedPaymentDialog';
 import { DiscountDialog } from '@/components/pos/DiscountDialog';
 import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
+import { GiftCardDialog } from '@/components/pos/GiftCardDialog';
+import { CustomerCreditDialog } from '@/components/pos/CustomerCreditDialog';
 import { Receipt } from '@/components/pos/Receipt';
 import { PinLockDialog } from '@/components/pos/PinLockDialog';
 import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
@@ -161,6 +163,8 @@ const Index = () => {
   const [savedCartsDialogOpen, setSavedCartsDialogOpen] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
+  const [giftCardDialogOpen, setGiftCardDialogOpen] = useState(false);
+  const [customerCreditDialogOpen, setCustomerCreditDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Physical scan action dialog states
@@ -1294,7 +1298,7 @@ const Index = () => {
                           <Trash2 className="h-2.5 w-2.5" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleToggleGift(index)} className={`h-4 w-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${item.is_gift ? 'bg-pink-500/20 text-pink-600 hover:bg-pink-500/30' : 'hover:bg-pink-500/20 text-pink-500'}`} title={item.is_gift ? "Annuler cadeau" : "Offrir cet article"}>
-                          <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" /></svg>
+                          <Gift className="h-2.5 w-2.5" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => {
                     setDiscountTarget({
@@ -1708,10 +1712,19 @@ const Index = () => {
 
       <PromoCodeDialog open={promoDialogOpen} onOpenChange={setPromoDialogOpen} onApply={handleApplyPromoCode} />
 
-      <PaymentDialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen} total={totals.total} onConfirmPayment={handleConfirmPayment} onMixedPayment={() => {
-      setPaymentDialogOpen(false);
-      setMixedPaymentDialogOpen(true);
-    }} customerId={selectedCustomer?.id} />
+      <PaymentDialog 
+        open={paymentDialogOpen} 
+        onOpenChange={setPaymentDialogOpen} 
+        total={totals.total} 
+        onConfirmPayment={handleConfirmPayment} 
+        onMixedPayment={() => {
+          setPaymentDialogOpen(false);
+          setMixedPaymentDialogOpen(true);
+        }}
+        onOpenGiftCardDialog={() => setGiftCardDialogOpen(true)}
+        onOpenCustomerCreditDialog={() => setCustomerCreditDialogOpen(true)}
+        customerId={selectedCustomer?.id} 
+      />
 
       <MixedPaymentDialog open={mixedPaymentDialogOpen} onOpenChange={setMixedPaymentDialogOpen} total={totals.total} onConfirmPayment={handleMixedPayment} customerId={selectedCustomer?.id} />
 
@@ -1722,6 +1735,32 @@ const Index = () => {
       <PhysicalScanActionDialog open={physicalScanDialogOpen} onOpenChange={setPhysicalScanDialogOpen} barcode={scannedBarcode} product={scannedProduct} onAddToCart={handlePhysicalScanAddToCart} onViewProduct={handlePhysicalScanViewProduct} onCreateProduct={handlePhysicalScanCreateProduct} />
 
       <CustomerDialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen} onSelectCustomer={handleSelectCustomer} />
+
+      <GiftCardDialog 
+        open={giftCardDialogOpen} 
+        onOpenChange={setGiftCardDialogOpen} 
+        totalAmount={totals.total}
+        onApply={(amount) => {
+          toast.success(`Carte cadeau appliquée: ${amount}€`);
+          // TODO: Handle gift card payment
+          setGiftCardDialogOpen(false);
+        }}
+      />
+
+      {selectedCustomer && (
+        <CustomerCreditDialog
+          open={customerCreditDialogOpen}
+          onOpenChange={setCustomerCreditDialogOpen}
+          customerId={selectedCustomer.id}
+          customerName={selectedCustomer.name}
+          totalAmount={totals.total}
+          onApply={(amount) => {
+            toast.success(`Crédit client appliqué: ${amount}€`);
+            // TODO: Handle customer credit payment
+            setCustomerCreditDialogOpen(false);
+          }}
+        />
+      )}
 
 
       {/* Confirmation d'impression */}

@@ -8,9 +8,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Gift, Receipt as ReceiptIcon, Split } from 'lucide-react';
+import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split } from 'lucide-react';
 
-type PaymentMethod = 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check' | 'mixed';
+type PaymentMethod = 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit';
 
 interface PaymentDialogProps {
   open: boolean;
@@ -18,10 +18,21 @@ interface PaymentDialogProps {
   total: number;
   onConfirmPayment: (method: PaymentMethod, amountPaid?: number, metadata?: any) => void;
   onMixedPayment?: () => void;
+  onOpenGiftCardDialog?: () => void;
+  onOpenCustomerCreditDialog?: () => void;
   customerId?: string;
 }
 
-export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment, onMixedPayment, customerId }: PaymentDialogProps) {
+export function PaymentDialog({ 
+  open, 
+  onOpenChange, 
+  total, 
+  onConfirmPayment, 
+  onMixedPayment,
+  onOpenGiftCardDialog,
+  onOpenCustomerCreditDialog,
+  customerId 
+}: PaymentDialogProps) {
   const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [amountPaid, setAmountPaid] = useState('');
 
@@ -52,86 +63,90 @@ export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment, onM
     setAmountPaid('');
   };
 
+  const handleCancel = () => {
+    setMethod(null);
+    setAmountPaid('');
+    onOpenChange(false);
+  };
+
   const quickAmounts = [5, 10, 20, 50, 100, 200];
   const suggestedAmounts = quickAmounts.filter(amount => amount >= total);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl bg-[#0a0a0a] border-2 border-pos-success/30">
+      <DialogContent className="max-w-2xl bg-gradient-to-br from-background to-muted/50 border-2">
         <DialogHeader>
-          <DialogTitle className="text-pos-success font-mono text-2xl">MODE DE PAIEMENT</DialogTitle>
-          <p className="text-white text-3xl font-bold font-mono mt-2">TOTAL: {total.toFixed(2)}€</p>
+          <DialogTitle className="text-2xl font-bold">Mode de Paiement</DialogTitle>
+          <p className="text-3xl font-bold mt-2">Total: {total.toFixed(2)}€</p>
         </DialogHeader>
 
         {!method ? (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Primary payment methods */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <Card
                 onClick={() => setMethod('cash')}
-                className="h-40 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-4 border-category-green hover:border-pos-success transition-all"
+                className="h-28 cursor-pointer hover:scale-105 transition-transform border-2 hover:border-primary"
               >
-                <div className="h-full flex flex-col items-center justify-center gap-3">
-                  <Banknote className="h-16 w-16 text-category-green" />
-                  <span className="text-white font-bold text-lg font-mono">ESPÈCES</span>
+                <div className="h-full flex flex-col items-center justify-center gap-2">
+                  <Banknote className="h-10 w-10 text-green-500" />
+                  <span className="font-bold">Espèces</span>
                 </div>
               </Card>
 
               <Card
                 onClick={() => setMethod('card')}
-                className="h-40 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-4 border-category-blue hover:border-pos-success transition-all"
+                className="h-28 cursor-pointer hover:scale-105 transition-transform border-2 hover:border-primary"
               >
-                <div className="h-full flex flex-col items-center justify-center gap-3">
-                  <CreditCard className="h-16 w-16 text-category-blue" />
-                  <span className="text-white font-bold text-lg font-mono">CARTE</span>
+                <div className="h-full flex flex-col items-center justify-center gap-2">
+                  <CreditCard className="h-10 w-10 text-blue-500" />
+                  <span className="font-bold">CB</span>
                 </div>
               </Card>
 
               <Card
                 onClick={() => setMethod('mobile')}
-                className="h-40 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-4 border-category-purple hover:border-pos-success transition-all"
+                className="h-28 cursor-pointer hover:scale-105 transition-transform border-2 hover:border-primary"
               >
-                <div className="h-full flex flex-col items-center justify-center gap-3">
-                  <Smartphone className="h-16 w-16 text-category-purple" />
-                  <span className="text-white font-bold text-lg font-mono">SANS CONTACT</span>
+                <div className="h-full flex flex-col items-center justify-center gap-2">
+                  <Smartphone className="h-10 w-10 text-purple-500" />
+                  <span className="font-bold">Virement</span>
                 </div>
               </Card>
             </div>
 
             {/* Secondary payment methods */}
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <Card
-                onClick={() => setMethod('gift_card')}
-                className="h-32 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-2 border-pink-500/30 hover:border-pink-500 transition-all"
+                onClick={() => {
+                  onOpenChange(false);
+                  if (onOpenGiftCardDialog) onOpenGiftCardDialog();
+                }}
+                className="h-24 cursor-pointer hover:scale-105 transition-transform border-2 hover:border-primary"
               >
                 <div className="h-full flex flex-col items-center justify-center gap-2">
-                  <Gift className="h-12 w-12 text-pink-500" />
-                  <span className="text-white font-bold text-sm font-mono">CARTE CADEAU</span>
+                  <Wallet className="h-8 w-8 text-pink-500" />
+                  <span className="font-bold text-sm">Carte Cadeau</span>
                 </div>
               </Card>
 
               <Card
-                onClick={() => setMethod('check')}
-                className="h-32 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-2 border-orange-500/30 hover:border-orange-500 transition-all"
-              >
-                <div className="h-full flex flex-col items-center justify-center gap-2">
-                  <ReceiptIcon className="h-12 w-12 text-orange-500" />
-                  <span className="text-white font-bold text-sm font-mono">CHÈQUE</span>
-                </div>
-              </Card>
-
-              <Card
-                onClick={() => customerId && setMethod('customer_credit')}
-                className={`h-32 bg-[#1a1a1a] border-2 border-cyan-500/30 transition-all ${
+                onClick={() => {
+                  if (customerId) {
+                    onOpenChange(false);
+                    if (onOpenCustomerCreditDialog) onOpenCustomerCreditDialog();
+                  }
+                }}
+                className={`h-24 border-2 transition-transform ${
                   customerId 
-                    ? 'cursor-pointer hover:bg-[#2a2a2a] hover:border-cyan-500' 
+                    ? 'cursor-pointer hover:scale-105 hover:border-primary' 
                     : 'cursor-not-allowed opacity-50'
                 }`}
               >
                 <div className="h-full flex flex-col items-center justify-center gap-2">
-                  <Wallet className="h-12 w-12 text-cyan-500" />
-                  <span className="text-white font-bold text-sm font-mono text-center">CRÉDIT CLIENT</span>
-                  {!customerId && <span className="text-xs text-gray-500">Client requis</span>}
+                  <Wallet className="h-8 w-8 text-cyan-500" />
+                  <span className="font-bold text-sm text-center">Crédit Client</span>
+                  {!customerId && <span className="text-xs text-muted-foreground">Client requis</span>}
                 </div>
               </Card>
 
@@ -142,56 +157,59 @@ export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment, onM
                     onMixedPayment();
                   }
                 }}
-                className="h-32 cursor-pointer bg-[#1a1a1a] hover:bg-[#2a2a2a] border-2 border-yellow-500/30 hover:border-yellow-500 transition-all"
+                className="h-24 cursor-pointer hover:scale-105 transition-transform border-2 hover:border-primary"
               >
                 <div className="h-full flex flex-col items-center justify-center gap-2">
-                  <Split className="h-12 w-12 text-yellow-500" />
-                  <span className="text-white font-bold text-sm font-mono">PAIEMENT MIXTE</span>
+                  <Split className="h-8 w-8 text-yellow-500" />
+                  <span className="font-bold text-sm">Paiement Mixte</span>
                 </div>
               </Card>
             </div>
+
+            <Button
+              onClick={handleCancel}
+              variant="outline"
+              className="w-full h-12 font-bold"
+            >
+              Annuler
+            </Button>
           </div>
         ) : method === 'cash' ? (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* MONTANT À PAYER */}
-            <Card className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] border-4 border-white/20 p-6">
-              <div className="flex items-center gap-4 mb-3">
-                <Wallet className="h-10 w-10 text-white" />
-                <p className="text-white/80 text-2xl font-bold font-mono">MONTANT À PAYER</p>
+            <Card className="bg-muted/50 border-2 p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Wallet className="h-8 w-8" />
+                <p className="text-xl font-bold">Montant à payer</p>
               </div>
-              <div className="text-white text-7xl font-black font-mono text-center py-4">
+              <div className="text-5xl font-black text-center py-3">
                 {total.toFixed(2)}€
               </div>
             </Card>
 
             {/* MONTANT REÇU DU CLIENT */}
-            <Card className="bg-gradient-to-br from-pos-success/30 to-pos-success/10 border-4 border-pos-success p-8 relative overflow-hidden">
-              <div className="absolute inset-0 bg-pos-success/5 animate-pulse"></div>
-              <div className="relative">
-                <div className="flex items-center gap-4 mb-4">
-                  <HandCoins className="h-12 w-12 text-pos-success animate-bounce" />
-                  <p className="text-white text-3xl font-bold font-mono">MONTANT REÇU</p>
-                </div>
-                <div className="text-pos-success text-8xl font-black font-mono text-center py-6 drop-shadow-lg">
-                  {amountPaid || '0.00'}€
-                </div>
+            <Card className="bg-green-500/10 border-2 border-green-500 p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <HandCoins className="h-8 w-8 text-green-500" />
+                <p className="text-xl font-bold">Montant reçu</p>
+              </div>
+              <div className="text-5xl font-black text-center py-3 text-green-500">
+                {amountPaid || '0.00'}€
               </div>
             </Card>
 
             {/* RENDU DE MONNAIE */}
             {amountPaid && parseFloat(amountPaid) >= total && (
-              <Card className="bg-gradient-to-br from-category-green/30 to-category-green/10 border-4 border-category-green p-8 animate-scale-in">
-                <div className="flex items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
-                    <CheckCircle className="h-16 w-16 text-category-green animate-pulse" />
+              <Card className="bg-blue-500/10 border-2 border-blue-500 p-4 animate-in">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="h-8 w-8 text-blue-500" />
                     <div>
-                      <p className="text-white font-bold text-3xl font-mono mb-2">RENDU DE MONNAIE</p>
-                      <Badge className="bg-category-green text-black text-xl px-4 py-2 font-mono font-black">
-                        À REMETTRE AU CLIENT
-                      </Badge>
+                      <p className="font-bold text-xl">Rendu de monnaie</p>
+                      <Badge className="bg-blue-500 text-white mt-1">À remettre au client</Badge>
                     </div>
                   </div>
-                  <div className="text-category-green text-7xl font-black font-mono animate-pulse">
+                  <div className="text-5xl font-black text-blue-500">
                     {getChange().toFixed(2)}€
                   </div>
                 </div>
@@ -204,7 +222,8 @@ export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment, onM
                   <Button
                     key={amount}
                     onClick={() => setAmountPaid(amount.toFixed(2))}
-                    className="h-14 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-pos-success/30 hover:border-pos-success font-bold font-mono text-lg"
+                    variant="outline"
+                    className="h-12 font-bold"
                   >
                     {amount}€
                   </Button>
@@ -212,100 +231,67 @@ export function PaymentDialog({ open, onOpenChange, total, onConfirmPayment, onM
               </div>
             )}
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
                 <Button
                   key={key}
                   onClick={() => handleNumberClick(key)}
-                  className="h-16 text-2xl font-bold bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono"
+                  variant="outline"
+                  className="h-14 text-xl font-bold"
                 >
                   {key}
                 </Button>
               ))}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <Button 
                 onClick={handleBack} 
-                className="flex-1 h-14 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono"
+                variant="outline"
+                className="flex-1 h-12"
               >
-                <ArrowLeft className="h-5 w-5 mr-2" />
-                RETOUR
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour
               </Button>
               <Button
                 onClick={handleConfirm}
                 disabled={!amountPaid || parseFloat(amountPaid) < total}
-                className="flex-1 h-14 bg-pos-success hover:bg-pos-success/90 text-black font-bold text-lg disabled:opacity-50 font-mono"
+                className="flex-1 h-12 font-bold text-lg"
               >
-                VALIDER
-              </Button>
-            </div>
-          </div>
-        ) : method === 'gift_card' || method === 'check' || method === 'customer_credit' ? (
-          <div className="space-y-6 py-6">
-            <Card className="p-8 text-center bg-[#1a1a1a] border-2 border-pos-success/30">
-              <div className="animate-pulse mb-4">
-                {method === 'gift_card' && <Gift className="h-24 w-24 mx-auto text-pink-500" />}
-                {method === 'check' && <ReceiptIcon className="h-24 w-24 mx-auto text-orange-500" />}
-                {method === 'customer_credit' && <Wallet className="h-24 w-24 mx-auto text-cyan-500" />}
-              </div>
-              <p className="text-white text-xl font-bold mb-2 font-mono">
-                {method === 'gift_card' && 'SAISIR N° CARTE CADEAU'}
-                {method === 'check' && 'VALIDER LE CHÈQUE'}
-                {method === 'customer_credit' && 'CRÉDIT CLIENT'}
-              </p>
-              <p className="text-gray-400 font-mono">
-                {method === 'gift_card' && 'Scanner ou saisir le numéro...'}
-                {method === 'check' && 'Montant: ' + total.toFixed(2) + '€'}
-                {method === 'customer_credit' && 'Utiliser le crédit disponible'}
-              </p>
-            </Card>
-
-            <div className="flex gap-3">
-              <Button 
-                onClick={handleBack} 
-                className="flex-1 h-14 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono"
-              >
-                <ArrowLeft className="h-5 w-5 mr-2" />
-                RETOUR
-              </Button>
-              <Button 
-                onClick={handleConfirm} 
-                className="flex-1 h-14 bg-pos-success hover:bg-pos-success/90 text-black font-bold text-lg font-mono"
-              >
-                VALIDER
+                Valider
               </Button>
             </div>
           </div>
         ) : (
-          <div className="space-y-6 py-6">
-            <Card className="p-8 text-center bg-[#1a1a1a] border-2 border-pos-success/30">
-              <div className="animate-pulse">
+          <div className="space-y-4 py-4">
+            <Card className="p-6 text-center bg-muted/50 border-2">
+              <div className="animate-pulse mb-3">
                 {method === 'card' ? (
-                  <CreditCard className="h-24 w-24 mx-auto mb-4 text-category-blue" />
+                  <CreditCard className="h-20 w-20 mx-auto text-blue-500" />
                 ) : (
-                  <Smartphone className="h-24 w-24 mx-auto mb-4 text-category-purple" />
+                  <Smartphone className="h-20 w-20 mx-auto text-purple-500" />
                 )}
               </div>
-              <p className="text-white text-xl font-bold mb-2 font-mono">
-                {method === 'card' ? 'INSÉRER LA CARTE' : 'APPROCHER LE TÉLÉPHONE'}
+              <p className="text-xl font-bold mb-2">
+                {method === 'card' ? 'LE CLIENT A PAYÉ PAR CB ?' : 'VIREMENT EFFECTUÉ ?'}
               </p>
-              <p className="text-gray-400 font-mono">En attente du paiement...</p>
+              <p className="text-muted-foreground">Confirmez que le paiement est validé</p>
             </Card>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <Button 
                 onClick={handleBack} 
-                className="flex-1 h-14 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono"
+                variant="outline"
+                className="flex-1 h-12"
               >
-                <ArrowLeft className="h-5 w-5 mr-2" />
-                RETOUR
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour
               </Button>
               <Button 
                 onClick={handleConfirm} 
-                className="flex-1 h-14 bg-pos-success hover:bg-pos-success/90 text-black font-bold text-lg font-mono"
+                className="flex-1 h-12 font-bold text-lg"
               >
-                VALIDER PAIEMENT
+                Valider Paiement
               </Button>
             </div>
           </div>

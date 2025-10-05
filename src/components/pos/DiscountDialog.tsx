@@ -61,6 +61,24 @@ export const DiscountDialog = ({ open, onOpenChange, onApply, title = "Appliquer
             </Button>
           </div>
 
+          {discountType === 'percentage' && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Actions rapides</label>
+              <div className="grid grid-cols-3 gap-2">
+                {[5, 10, 15, 25, 50, 100].map((percent) => (
+                  <Button
+                    key={percent}
+                    variant="outline"
+                    onClick={() => setDiscountValue(percent.toString())}
+                    className="h-12 text-lg font-bold"
+                  >
+                    {percent}%
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <label className="text-sm font-medium">
               Valeur {discountType === 'percentage' ? '(%)' : '(€)'}
