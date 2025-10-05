@@ -37,8 +37,8 @@ interface Sale {
   total_discount?: number;
   totalDiscount?: number;
   total: number;
-  payment_method?: 'cash' | 'card' | 'mobile';
-  paymentMethod?: 'cash' | 'card' | 'mobile';
+  payment_method?: 'cash' | 'card' | 'mobile' | 'customer_credit';
+  paymentMethod?: 'cash' | 'card' | 'mobile' | 'customer_credit';
   amount_paid?: number;
   amountPaid?: number;
   change_amount?: number;
@@ -166,7 +166,9 @@ export function Receipt({ sale }: ReceiptProps) {
           <div className="flex justify-between">
             <span className="font-black">
               {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
-               (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE BANCAIRE' : 'PAIEMENT MOBILE'}
+               (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE BANCAIRE' : 
+               (sale.paymentMethod || sale.payment_method) === 'customer_credit' ? 'CRÉDIT' :
+               'PAIEMENT MOBILE'}
             </span>
             <span className="font-black">{sale.total.toFixed(2)}</span>
           </div>

@@ -38,8 +38,8 @@ interface Sale {
   total_discount?: number;
   totalDiscount?: number;
   total: number;
-  payment_method?: 'cash' | 'card' | 'mobile';
-  paymentMethod?: 'cash' | 'card' | 'mobile';
+  payment_method?: 'cash' | 'card' | 'mobile' | 'customer_credit';
+  paymentMethod?: 'cash' | 'card' | 'mobile' | 'customer_credit';
   amount_paid?: number;
   amountPaid?: number;
   change_amount?: number;
@@ -248,7 +248,9 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', marginBottom: '2px', gap: '3px' }}>
           <span style={{ flex: '1', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
-             (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE' : 'PAIEMENT'}
+             (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE' : 
+             (sale.paymentMethod || sale.payment_method) === 'customer_credit' ? 'CRÉDIT' :
+             'PAIEMENT'}
           </span>
           <span style={{ whiteSpace: 'nowrap' }}>{sale.total.toFixed(2)}€</span>
         </div>
