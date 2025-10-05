@@ -83,9 +83,9 @@ export const useCreateGiftCard = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (card: Partial<GiftCard>) => {
+    mutationFn: async (card: Partial<GiftCard> & { sender_name?: string; message?: string }) => {
       // Générer numéro unique
-      const cardNumber = `GC-${Date.now()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+      const cardNumber = card.card_number || `GC-${Date.now()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 
       const { data, error } = await supabase
         .from('gift_cards')

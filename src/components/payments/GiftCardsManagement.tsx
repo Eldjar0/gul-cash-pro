@@ -9,9 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useGiftCards, useCreateGiftCard } from '@/hooks/useGiftCards';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gift, Plus, Search } from 'lucide-react';
+import { Gift, Plus, Search, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { printGiftCardReceipt } from '@/components/pos/GiftCardReceipt';
 
 export function GiftCardsManagement() {
   const { data: giftCards, isLoading } = useGiftCards();
@@ -184,6 +185,7 @@ export function GiftCardsManagement() {
                   <TableHead>Solde actuel</TableHead>
                   <TableHead>Expiration</TableHead>
                   <TableHead>Statut</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -204,9 +206,19 @@ export function GiftCardsManagement() {
                         {card.expiry_date ? format(new Date(card.expiry_date), 'dd/MM/yyyy') : '-'}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={card.is_active ? 'default' : 'secondary'}>
-                          {card.is_active ? 'Active' : 'Inactive'}
+                        <Badge variant={card.is_active && card.current_balance > 0 ? 'default' : 'secondary'}>
+                          {card.is_active && card.current_balance > 0 ? 'Active' : 'Épuisée'}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={card.current_balance <= 0}
+                          onClick={() => printGiftCardReceipt(card)}
+                        >
+                          <Printer className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );

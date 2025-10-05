@@ -3,10 +3,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGiftCard, useCreateGiftCard } from '@/hooks/useGiftCards';
 import { Gift, CreditCard, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { printGiftCardReceipt } from '@/components/pos/GiftCardReceipt';
 
 interface GiftCardDialogProps {
   open: boolean;
@@ -23,7 +25,9 @@ export const GiftCardDialog = ({ open, onOpenChange, totalAmount, onApply }: Gif
   // Pour la création
   const [newCardNumber, setNewCardNumber] = useState('');
   const [newCardBalance, setNewCardBalance] = useState('');
-  const [newCardType, setNewCardType] = useState<'gift_card' | 'restaurant_voucher'>('gift_card');
+  const [newCardType] = useState<'gift_card'>('gift_card');
+  const [senderName, setSenderName] = useState('');
+  const [message, setMessage] = useState('');
 
   const { refetch: fetchCard } = useGiftCard(cardNumber);
   const createCard = useCreateGiftCard();
@@ -84,11 +88,17 @@ export const GiftCardDialog = ({ open, onOpenChange, totalAmount, onApply }: Gif
       card_number: newCardNumber,
       card_type: newCardType,
       initial_balance: balance,
+      sender_name: senderName,
+      message: message,
     }, {
-      onSuccess: () => {
+      onSuccess: (data) => {
         toast.success('Carte créée avec succès');
+        // Imprimer le ticket
+        printGiftCardReceipt(data, senderName, message);
         setNewCardNumber('');
         setNewCardBalance('');
+        setSenderName('');
+        setMessage('');
       }
     });
   };
@@ -188,41 +198,15 @@ export const GiftCardDialog = ({ open, onOpenChange, totalAmount, onApply }: Gif
           </TabsContent>
 
           <TabsContent value="create" className="space-y-4 mt-4">
-            <DialogDescription>
-              Créer une nouvelle carte cadeau ou ticket restaurant
-            </DialogDescription>
+              <DialogDescription>
+                Créer une nouvelle carte cadeau
+              </DialogDescription>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Type de carte</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant={newCardType === 'gift_card' ? 'default' : 'outline'}
-                    onClick={() => setNewCardType('gift_card')}
-                    className="h-20"
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      <Gift className="h-6 w-6" />
-                      <span className="text-xs">Carte Cadeau</span>
-                    </div>
-                  </Button>
-                  <Button
-                    variant={newCardType === 'restaurant_voucher' ? 'default' : 'outline'}
-                    onClick={() => setNewCardType('restaurant_voucher')}
-                    className="h-20"
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      <CreditCard className="h-6 w-6" />
-                      <span className="text-xs">Ticket Restaurant</span>
-                    </div>
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
                 <Label>Numéro de carte</Label>
                 <Input
-                  placeholder="Ex: GC-001 ou TR-001"
+                  placeholder="Ex: GC-001"
                   value={newCardNumber}
                   onChange={(e) => setNewCardNumber(e.target.value)}
                 />
@@ -239,6 +223,25 @@ export const GiftCardDialog = ({ open, onOpenChange, totalAmount, onApply }: Gif
                   onChange={(e) => setNewCardBalance(e.target.value)}
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label>Nom de l'offrant (optionnel)</Label>
+                <Input
+                  placeholder="Jean Dupont"
+                  value={senderName}
+                  onChange={(e) => setSenderName(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Message personnalisé (optionnel)</Label>
+                <Textarea
+                  placeholder="Joyeux anniversaire ! Profitez bien..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={3}
+                />
+              </div>
             </div>
 
             <DialogFooter>
@@ -250,7 +253,7 @@ export const GiftCardDialog = ({ open, onOpenChange, totalAmount, onApply }: Gif
                 disabled={!newCardNumber || !newCardBalance || createCard.isPending}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Créer la carte
+                Créer et Imprimer
               </Button>
             </DialogFooter>
           </TabsContent>
