@@ -456,7 +456,7 @@ const Index = () => {
     toast.success(`${product.name} ajouté au panier`);
   };
 
-  // Traitement d'un scan physique - ouvre le dialog d'actions
+  // Traitement d'un scan physique - ajoute direct au panier si trouvé
   const handlePhysicalScan = (raw: string) => {
     const normalized = normalizeBarcode(raw.trim());
     const normalizedDigits = normalized.replace(/\D+/g, '');
@@ -469,10 +469,15 @@ const Index = () => {
     }
     const barcodeToUse = normalizedDigits.length >= 3 ? normalizedDigits : normalized;
 
-    // Ouvrir le dialog avec le résultat
-    setScannedBarcode(barcodeToUse);
-    setScannedProduct(found || null);
-    setPhysicalScanDialogOpen(true);
+    // Si produit trouvé, ajouter direct au panier
+    if (found) {
+      handleProductSelect(found);
+    } else {
+      // Si pas trouvé, ouvrir le dialog pour créer
+      setScannedBarcode(barcodeToUse);
+      setScannedProduct(null);
+      setPhysicalScanDialogOpen(true);
+    }
   };
 
   // Traitement du code-barres scanné (utilisé pour les scans manuels)
