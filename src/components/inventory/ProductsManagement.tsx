@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Search, Package, Upload, Tag, Edit, Trash2, Plus, FileText, Printer } from 'lucide-react';
+import { Search, Package, Upload, Tag, Trash2, Plus, FileText, Printer, Pencil } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
 import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
@@ -22,7 +22,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Label } from '@/components/ui/label';
 import { generateStockPDF } from '@/utils/generateStockPDF';
 import JsBarcode from 'jsbarcode';
-import { LabelDesignEditor } from '@/components/inventory/LabelDesignEditor';
 
 const normalizeBarcodeInput = (raw: string) => {
   const map: Record<string, string> = {
@@ -73,8 +72,21 @@ export const ProductsManagement = () => {
   const [labelSize, setLabelSize] = useState<'small' | 'medium' | 'large' | '7x3cm' | 'custom'>('7x3cm');
   const [customWidth, setCustomWidth] = useState(70);
   const [customHeight, setCustomHeight] = useState(30);
-  const [designEditorOpen, setDesignEditorOpen] = useState(false);
-  const [labelTemplate, setLabelTemplate] = useState<string | null>(null);
+  // Configuration de personnalisation des étiquettes
+  const [labelConfig, setLabelConfig] = useState({
+    productNameSize: 14,
+    productNameWeight: 700,
+    priceSize: 20,
+    priceWeight: 700,
+    barcodeNumberSize: 9,
+    barcodeNumberWeight: 400,
+    priceUnitSize: 10,
+    priceUnitWeight: 400,
+    vatRateSize: 9,
+    vatRateWeight: 400,
+    vatAmountSize: 9,
+    vatAmountWeight: 400
+  });
 
   // Scanner physique pour remplir automatiquement le code-barres
   // Désactivé par défaut pour permettre la saisie normale
@@ -191,18 +203,14 @@ export const ProductsManagement = () => {
     if (!printWindow) return;
 
     const labelSizes = {
-      small: { width: '60mm', height: '40mm', topSize: '7px', nameSize: '13px', priceSize: '24px', barcodeHeight: '40', barcodeNumSize: '8px' },
-      medium: { width: '80mm', height: '50mm', topSize: '8px', nameSize: '16px', priceSize: '32px', barcodeHeight: '50', barcodeNumSize: '9px' },
-      large: { width: '100mm', height: '60mm', topSize: '9px', nameSize: '19px', priceSize: '40px', barcodeHeight: '60', barcodeNumSize: '10px' },
-      '7x3cm': { width: '70mm', height: '30mm', topSize: '6px', nameSize: '11px', priceSize: '18px', barcodeHeight: '30', barcodeNumSize: '7px' },
+      small: { width: '60mm', height: '40mm', barcodeHeight: '40' },
+      medium: { width: '80mm', height: '50mm', barcodeHeight: '50' },
+      large: { width: '100mm', height: '60mm', barcodeHeight: '60' },
+      '7x3cm': { width: '70mm', height: '30mm', barcodeHeight: '30' },
       'custom': { 
         width: `${customWidth}mm`, 
         height: `${customHeight}mm`, 
-        topSize: '6px', 
-        nameSize: '11px', 
-        priceSize: '18px', 
-        barcodeHeight: '30', 
-        barcodeNumSize: '7px' 
+        barcodeHeight: '35'
       }
     };
 
@@ -252,62 +260,62 @@ export const ProductsManagement = () => {
               padding: 3mm;
               display: flex;
               flex-direction: column;
-              justify-content: space-between;
+              gap: 2mm;
               page-break-inside: avoid;
               background: white;
             }
-            .top-row {
+            .header {
               display: flex;
               justify-content: space-between;
               align-items: flex-start;
-              font-size: ${size.topSize};
-              margin-bottom: 2mm;
-            }
-            .cdt {
-              font-weight: normal;
-            }
-            .unit-price {
-              text-align: right;
             }
             .product-name {
-              font-size: ${size.nameSize};
-              font-weight: bold;
+              font-size: ${labelConfig.productNameSize}px;
+              font-weight: ${labelConfig.productNameWeight};
+              max-width: 60%;
+              line-height: 1.2;
+            }
+            .header-price {
+              font-size: ${labelConfig.priceSize}px;
+              font-weight: ${labelConfig.priceWeight};
+              text-align: right;
+            }
+            .barcode-container {
               text-align: center;
-              line-height: 1.3;
-              margin: auto 0;
-              text-transform: uppercase;
-            }
-            .bottom-row {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-end;
-              gap: 3mm;
-            }
-            .barcode-section {
               flex: 1;
-              text-align: left;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
             }
             .barcode-image {
               max-width: 100%;
               height: auto;
+              margin: 0 auto;
             }
-            .barcode-text {
-              font-size: ${size.barcodeNumSize};
+            .barcode-number {
+              font-size: ${labelConfig.barcodeNumberSize}px;
+              font-weight: ${labelConfig.barcodeNumberWeight};
               font-family: monospace;
               margin-top: 1mm;
             }
-            .price-section {
+            .info-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 1mm 0;
+            }
+            .price-with-unit {
+              font-size: ${labelConfig.priceUnitSize}px;
+              font-weight: ${labelConfig.priceUnitWeight};
+            }
+            .vat-info {
+              font-size: ${labelConfig.vatRateSize}px;
+              font-weight: ${labelConfig.vatRateWeight};
               text-align: right;
-              min-width: 35%;
             }
-            .sale-price {
-              font-size: ${size.priceSize};
-              font-weight: bold;
-              line-height: 1;
-            }
-            .price-unit {
-              font-size: ${size.topSize};
-              margin-top: 1mm;
+            .vat-amount {
+              font-size: ${labelConfig.vatAmountSize}px;
+              font-weight: ${labelConfig.vatAmountWeight};
             }
             @media print {
               body { padding: 0; gap: 3mm; }
@@ -321,35 +329,34 @@ export const ProductsManagement = () => {
     selectedProductsList.forEach(product => {
       const copies = labelCount[product.id] || 1;
       const unitText = product.unit || 'unité';
-      const priceUnit = product.type === 'weight' ? 'kg' : unitText === 'carton' ? 'pcs' : 'pcs';
-      const cdtText = product.category_id ? product.category_id.substring(0, 8) : '24';
+      const priceUnit = product.type === 'weight' ? '/kg' : (unitText === 'carton' ? '/carton' : (unitText === 'litre' ? '/litre' : ''));
       const barcodeImage = barcodes[product.id];
+      const vatRate = product.vat_rate || 0;
+      const priceHT = product.price / (1 + vatRate / 100);
+      const vatAmount = product.price - priceHT;
       
       for (let i = 0; i < copies; i++) {
         htmlContent += `
           <div class="label">
-            <div class="top-row">
-              <div class="cdt">CDT : ${cdtText}</div>
-              ${showPrice ? `
-                <div class="unit-price">PRIX ${priceUnit} - l - pcs :<br/>${product.price.toFixed(2)} €</div>
-              ` : ''}
+            <div class="header">
+              <div class="product-name">${product.name}</div>
+              <div class="header-price">${product.price.toFixed(2)}€</div>
             </div>
             
-            <div class="product-name">${product.name}</div>
+            <div class="barcode-container">
+              ${barcodeImage ? `
+                <img src="${barcodeImage}" class="barcode-image" alt="code-barres"/>
+                <div class="barcode-number">${product.barcode}</div>
+              ` : '<div style="font-size: 8px; color: #999;">Aucun code-barres</div>'}
+            </div>
             
-            <div class="bottom-row">
-              <div class="barcode-section">
-                ${barcodeImage ? `
-                  <img src="${barcodeImage}" class="barcode-image" alt="code-barres"/>
-                  <div class="barcode-text">${product.barcode}</div>
-                ` : '<div style="font-size: 8px; color: #999;">Aucun code</div>'}
-              </div>
-              ${showPrice ? `
-                <div class="price-section">
-                  <div class="sale-price">${product.price.toFixed(2)} €</div>
-                  <div class="price-unit">Prix ${priceUnit} - l - p</div>
-                </div>
-              ` : ''}
+            <div class="info-row">
+              <div class="price-with-unit">Prix: ${product.price.toFixed(2)}€${priceUnit}</div>
+              <div class="vat-info">TVA: ${vatRate.toFixed(1)}%</div>
+            </div>
+            
+            <div class="info-row">
+              <div class="vat-amount">Montant TVA: ${vatAmount.toFixed(2)}€</div>
             </div>
           </div>
         `;
@@ -447,7 +454,7 @@ export const ProductsManagement = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="icon" onClick={() => openEditProduct(product)} title="Modifier">
-                      <Edit className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => confirmDelete(product)} title="Supprimer">
                       <Trash2 className="h-4 w-4" />
@@ -596,24 +603,42 @@ export const ProductsManagement = () => {
                 </>
               )}
 
-              <div className="flex items-center space-x-2 pt-8">
-                <Checkbox 
-                  id="show-price" 
-                  checked={showPrice} 
-                  onCheckedChange={(checked) => setShowPrice(checked as boolean)} 
-                />
-                <Label htmlFor="show-price" className="cursor-pointer">Afficher le prix</Label>
-              </div>
+            </div>
 
-              <div className="flex items-end">
-                <Button 
-                  onClick={() => setDesignEditorOpen(true)}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Personnaliser le design
-                </Button>
+            <div className="mt-6 p-4 border rounded-lg space-y-4">
+              <h3 className="font-semibold text-sm">Personnalisation des étiquettes</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Nom produit (px)</Label>
+                  <Input type="number" min="8" max="30" value={labelConfig.productNameSize} onChange={(e) => setLabelConfig({...labelConfig, productNameSize: Number(e.target.value)})} className="h-8" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Épaisseur nom</Label>
+                  <Select value={String(labelConfig.productNameWeight)} onValueChange={(v) => setLabelConfig({...labelConfig, productNameWeight: Number(v)})}>
+                    <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="400">Normal</SelectItem>
+                      <SelectItem value="600">Semi-gras</SelectItem>
+                      <SelectItem value="700">Gras</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Prix TTC (px)</Label>
+                  <Input type="number" min="10" max="40" value={labelConfig.priceSize} onChange={(e) => setLabelConfig({...labelConfig, priceSize: Number(e.target.value)})} className="h-8" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">N° code-barres (px)</Label>
+                  <Input type="number" min="6" max="20" value={labelConfig.barcodeNumberSize} onChange={(e) => setLabelConfig({...labelConfig, barcodeNumberSize: Number(e.target.value)})} className="h-8" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Prix/unité (px)</Label>
+                  <Input type="number" min="6" max="20" value={labelConfig.priceUnitSize} onChange={(e) => setLabelConfig({...labelConfig, priceUnitSize: Number(e.target.value)})} className="h-8" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Taux TVA (px)</Label>
+                  <Input type="number" min="6" max="20" value={labelConfig.vatRateSize} onChange={(e) => setLabelConfig({...labelConfig, vatRateSize: Number(e.target.value)})} className="h-8" />
+                </div>
               </div>
             </div>
 
@@ -755,15 +780,7 @@ export const ProductsManagement = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <LabelDesignEditor
-        open={designEditorOpen}
-        onOpenChange={setDesignEditorOpen}
-        labelSize={labelSize}
-        customWidth={customWidth}
-        customHeight={customHeight}
-        onSaveTemplate={(template) => setLabelTemplate(template)}
-        currentTemplate={labelTemplate ? JSON.parse(labelTemplate) : null}
-      />
+      {/* LabelDesignEditor supprimé - remplacé par configuration simple */}
     </Tabs>
   );
 };
