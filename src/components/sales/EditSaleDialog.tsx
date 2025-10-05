@@ -141,7 +141,14 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
         .eq('entity_id', sale.id)
         .gte('created_at', new Date(Date.now() - 60000).toISOString()); // Dernière minute
 
-      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      // Invalider toutes les queries liées et forcer le refetch immédiat
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['sales'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['products'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['cash_movements'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['daily_reports'], refetchType: 'active' }),
+      ]);
+      
       toast.success('Vente modifiée (sans trace)');
       onOpenChange(false);
     } catch (error) {

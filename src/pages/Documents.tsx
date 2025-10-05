@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -163,23 +163,30 @@ export default function Documents() {
     refund.customers?.name?.toLowerCase().includes(refundSearchTerm.toLowerCase())
   );
 
-  const invoices = sales.filter(sale => sale.is_invoice);
-  const filteredInvoices = invoices.filter((invoice) => {
-    const searchLower = invoiceSearchTerm.toLowerCase();
-    return (
-      invoice.sale_number?.toLowerCase().includes(searchLower) ||
-      invoice.customers?.name?.toLowerCase().includes(searchLower) ||
-      format(new Date(invoice.date), 'dd/MM/yyyy').includes(searchLower)
-    );
-  });
+  const invoices = useMemo(() => sales.filter(sale => sale.is_invoice), [sales]);
+  
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter((invoice) => {
+      const searchLower = invoiceSearchTerm.toLowerCase();
+      return (
+        invoice.sale_number?.toLowerCase().includes(searchLower) ||
+        invoice.customers?.name?.toLowerCase().includes(searchLower) ||
+        format(new Date(invoice.date), 'dd/MM/yyyy').includes(searchLower)
+      );
+    });
+  }, [invoices, invoiceSearchTerm]);
 
-  const todayRefunds = refunds.filter((r) => {
-    const refundDate = new Date(r.created_at);
-    const today = new Date();
-    return refundDate.toDateString() === today.toDateString();
-  });
+  const todayRefunds = useMemo(() => {
+    return refunds.filter((r) => {
+      const refundDate = new Date(r.created_at);
+      const today = new Date();
+      return refundDate.toDateString() === today.toDateString();
+    });
+  }, [refunds]);
 
-  const todayRefundsTotal = todayRefunds.reduce((sum, r) => sum + r.total, 0);
+  const todayRefundsTotal = useMemo(() => {
+    return todayRefunds.reduce((sum, r) => sum + r.total, 0);
+  }, [todayRefunds]);
 
   const handleViewReceipt = (sale: any) => {
     const saleForReceipt = {
@@ -287,7 +294,7 @@ export default function Documents() {
     downloadInvoicePDF(invoiceData);
   };
 
-  const getTotalsByDate = () => {
+  const getTotalsByDate = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -305,18 +312,18 @@ export default function Documents() {
     const countAll = activeSales.length;
 
     return { totalToday, countToday, totalAll, countAll };
-  };
+  }, [sales]);
 
-  const getInvoiceStats = () => {
+  const getInvoiceStats = useMemo(() => {
     const totalAmount = filteredInvoices.reduce((sum, inv) => sum + inv.total, 0);
     const totalHT = filteredInvoices.reduce((sum, inv) => sum + inv.subtotal, 0);
     const totalTVA = filteredInvoices.reduce((sum, inv) => sum + inv.total_vat, 0);
     const uniqueClients = new Set(filteredInvoices.filter(i => i.customer_id).map(i => i.customer_id)).size;
     return { totalAmount, totalHT, totalTVA, totalCount: filteredInvoices.length, uniqueClients };
-  };
+  }, [filteredInvoices]);
 
-  const { totalToday, countToday, totalAll, countAll } = getTotalsByDate();
-  const { totalAmount, totalHT, totalTVA, totalCount, uniqueClients } = getInvoiceStats();
+  const { totalToday, countToday, totalAll, countAll } = getTotalsByDate;
+  const { totalAmount, totalHT, totalTVA, totalCount, uniqueClients } = getInvoiceStats;
 
   if (isLoading) {
     return (

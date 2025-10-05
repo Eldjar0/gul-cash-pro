@@ -108,8 +108,10 @@ export const useCreateRefund = () => {
       return createdRefund;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['refunds'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['refunds'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['products'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['cash_movements'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['sales'], refetchType: 'active' });
       toast.success('Remboursement créé avec succès');
     },
     onError: (error: Error) => {
@@ -240,9 +242,11 @@ export const useDeleteRefund = () => {
       return refund;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['refunds'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['cash_movements'] });
+      queryClient.invalidateQueries({ queryKey: ['refunds'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['products'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['cash_movements'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['sales'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['daily_reports'], refetchType: 'active' });
       toast.success('Remboursement supprimé avec succès');
     },
     onError: (error: Error) => {

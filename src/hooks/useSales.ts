@@ -165,8 +165,11 @@ export const useCreateSale = () => {
       return createdSale;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sales'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      // Invalider toutes les queries liées et forcer le refetch
+      queryClient.invalidateQueries({ queryKey: ['sales'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['products'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['cash_movements'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['daily_reports'], refetchType: 'active' });
       toast({
         title: 'Vente enregistrée',
         description: 'La vente a été enregistrée avec succès.',
@@ -273,7 +276,9 @@ export const useCancelSale = () => {
       if (saleError) throw saleError;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['sales'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['cash_movements'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['daily_reports'], refetchType: 'active' });
       toast({
         title: 'Vente annulée',
         description: 'La vente a été marquée comme annulée (conservation légale).',
@@ -307,7 +312,10 @@ export const useDeleteSalePermanently = () => {
       if (deleteError) throw deleteError;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['sales'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['products'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['cash_movements'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['daily_reports'], refetchType: 'active' });
       toast({
         title: 'Vente supprimée',
         description: 'La vente a été définitivement supprimée de la base de données.',
@@ -341,7 +349,10 @@ export const useUpdateSale = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['sales'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['products'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['cash_movements'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['daily_reports'], refetchType: 'active' });
       toast({
         title: 'Vente modifiée',
         description: 'La vente a été modifiée avec succès.',
