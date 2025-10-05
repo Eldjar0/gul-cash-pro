@@ -91,6 +91,7 @@ export const useCreateCreditAccount = () => {
       if (error) throw error;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer-credit-accounts'] });
       queryClient.invalidateQueries({ queryKey: ['customer-credit-account'] });
       toast.success('Compte crédit créé');
     },
@@ -144,6 +145,7 @@ export const useChargeCredit = () => {
       if (txError) throw txError;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer-credit-accounts'] });
       queryClient.invalidateQueries({ queryKey: ['customer-credit-account'] });
       queryClient.invalidateQueries({ queryKey: ['customer-credit-transactions'] });
       toast.success('Crédit utilisé');
@@ -190,6 +192,7 @@ export const usePayCredit = () => {
       if (txError) throw txError;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer-credit-accounts'] });
       queryClient.invalidateQueries({ queryKey: ['customer-credit-account'] });
       queryClient.invalidateQueries({ queryKey: ['customer-credit-transactions'] });
       toast.success('Paiement enregistré');
@@ -214,6 +217,7 @@ export const useUpdateCreditLimit = () => {
       if (error) throw error;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer-credit-accounts'] });
       queryClient.invalidateQueries({ queryKey: ['customer-credit-account'] });
       toast.success('Limite de crédit mise à jour');
     },
