@@ -8,10 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useGiftCards, useGiftCard, useCreateGiftCard, useUseGiftCard } from '@/hooks/useGiftCards';
+import { useGiftCards, useGiftCard } from '@/hooks/useGiftCards';
 import { useCustomers } from '@/hooks/useCustomers';
-import { useAuth } from '@/hooks/useAuth';
-import { useCreateSale } from '@/hooks/useSales';
 import { Gift, CreditCard, Plus, Search, Printer, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -20,21 +18,20 @@ import { printGiftCardReceipt } from '@/components/pos/GiftCardReceipt';
 interface GiftCardDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAddGiftCardToCart?: (cardNumber: string, amount: number, senderName: string, message: string) => void;
+  onApplyGiftCard?: (cardNumber: string, cardId: string, availableBalance: number) => void;
 }
 
-export const GiftCardDialog = ({ open, onOpenChange }: GiftCardDialogProps) => {
-  const { user } = useAuth();
+export const GiftCardDialog = ({ open, onOpenChange, onAddGiftCardToCart, onApplyGiftCard }: GiftCardDialogProps) => {
   const { data: giftCards } = useGiftCards();
   const { data: customers } = useCustomers();
-  const createGiftCard = useCreateGiftCard();
-  const createSale = useCreateSale();
   
   // État pour l'onglet "Utiliser"
   const [cardNumber, setCardNumber] = useState('');
   const [verifiedCard, setVerifiedCard] = useState<any>(null);
   const { refetch: fetchCard } = useGiftCard(cardNumber);
   
-  // État pour l'onglet "Vendre"
+  // État pour l'onglet "Créer" (ajouter au panier)
   const [newCardNumber, setNewCardNumber] = useState('');
   const [newCardBalance, setNewCardBalance] = useState('');
   const [senderName, setSenderName] = useState('');
@@ -70,68 +67,32 @@ export const GiftCardDialog = ({ open, onOpenChange }: GiftCardDialogProps) => {
     toast.success(`Carte vérifiée: ${data.current_balance.toFixed(2)}€ disponible`);
   };
 
-  const handleSellGiftCard = async () => {
+  const handleApplyToCart = () => {
+    if (verifiedCard && onApplyGiftCard) {
+      onApplyGiftCard(verifiedCard.card_number, verifiedCard.id, verifiedCard.current_balance);
+      onOpenChange(false);
+    }
+  };
+
+  const handleAddToCart = () => {
     const balance = parseFloat(newCardBalance);
     
     if (!newCardNumber || balance <= 0) {
-      toast.error('Remplissez tous les champs');
+      toast.error('Remplissez tous les champs obligatoires');
       return;
     }
 
-    if (!user) {
-      toast.error('Connectez-vous pour vendre');
-      return;
-    }
-
-    try {
-      // 1. Créer la carte cadeau
-      const newCard = await createGiftCard.mutateAsync({
-        card_number: newCardNumber,
-        card_type: 'gift_card',
-        initial_balance: balance,
-        sender_name: senderName,
-        message: message,
-      });
-
-      // 2. Créer une vente pour la carte cadeau
-      const saleData = {
-        subtotal: balance,
-        total_vat: 0, // Pas de TVA sur les cartes cadeaux généralement
-        total_discount: 0,
-        total: balance,
-        payment_method: 'card' as const, // Le client paie la carte cadeau
-        amount_paid: balance,
-        change_amount: 0,
-        is_invoice: false,
-        is_cancelled: false,
-        cashier_id: user.id,
-        items: [{
-          product_name: `Carte Cadeau ${newCardNumber}`,
-          product_barcode: newCardNumber,
-          quantity: 1,
-          unit_price: balance,
-          vat_rate: 0,
-          subtotal: balance,
-          vat_amount: 0,
-          total: balance
-        }]
-      };
-
-      await createSale.mutateAsync(saleData);
-
-      toast.success('Carte cadeau vendue avec succès');
-      
-      // Imprimer le ticket de la carte cadeau
-      printGiftCardReceipt(newCard, senderName, message);
+    if (onAddGiftCardToCart) {
+      onAddGiftCardToCart(newCardNumber, balance, senderName, message);
+      toast.success('Carte cadeau ajoutée au panier');
       
       // Réinitialiser les champs
       setNewCardNumber('');
       setNewCardBalance('');
       setSenderName('');
       setMessage('');
-    } catch (error) {
-      console.error('Error selling gift card:', error);
-      toast.error('Erreur lors de la vente');
+      
+      onOpenChange(false);
     }
   };
 
@@ -160,15 +121,15 @@ export const GiftCardDialog = ({ open, onOpenChange }: GiftCardDialogProps) => {
 
         <Tabs defaultValue="use" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="use">Utiliser</TabsTrigger>
-            <TabsTrigger value="sell">Vendre</TabsTrigger>
+            <TabsTrigger value="use">Utiliser sur panier</TabsTrigger>
+            <TabsTrigger value="create">Créer (ajouter au panier)</TabsTrigger>
             <TabsTrigger value="manage">Gérer</TabsTrigger>
           </TabsList>
 
-          {/* Onglet UTILISER */}
+          {/* Onglet UTILISER sur le panier */}
           <TabsContent value="use" className="space-y-4 mt-4">
             <DialogDescription>
-              Scannez ou entrez le numéro de la carte pour vérifier le solde
+              Scannez ou entrez le numéro de la carte pour l'utiliser comme paiement
             </DialogDescription>
 
             <div className="space-y-2">
@@ -206,23 +167,29 @@ export const GiftCardDialog = ({ open, onOpenChange }: GiftCardDialogProps) => {
                   <span className="font-medium">{format(new Date(verifiedCard.issued_date), 'dd/MM/yyyy')}</span>
                 </div>
                 
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    className="flex-1"
-                    onClick={() => printGiftCardReceipt(verifiedCard)}
-                  >
-                    <Printer className="h-4 w-4 mr-2" />
-                    Réimprimer
-                  </Button>
+                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mt-3">
+                  <p className="text-sm text-blue-800">
+                    <strong>Info:</strong> Le montant de la carte sera déduit du total lors du paiement.
+                  </p>
                 </div>
+
+                <DialogFooter className="mt-4">
+                  <Button variant="outline" onClick={() => onOpenChange(false)}>
+                    Annuler
+                  </Button>
+                  <Button onClick={handleApplyToCart}>
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Utiliser cette carte
+                  </Button>
+                </DialogFooter>
               </div>
             )}
           </TabsContent>
 
-          {/* Onglet VENDRE */}
-          <TabsContent value="sell" className="space-y-4 mt-4">
+          {/* Onglet CRÉER (ajouter au panier) */}
+          <TabsContent value="create" className="space-y-4 mt-4">
             <DialogDescription>
-              Créer une nouvelle carte cadeau (sera enregistrée comme une vente)
+              Créer une nouvelle carte cadeau qui sera ajoutée au panier
             </DialogDescription>
 
             <div className="space-y-4">
@@ -266,9 +233,9 @@ export const GiftCardDialog = ({ open, onOpenChange }: GiftCardDialogProps) => {
                 />
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Info:</strong> La vente de cette carte cadeau sera enregistrée comme un ticket de caisse.
+              <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                <p className="text-sm text-green-800">
+                  <strong>Info:</strong> La carte cadeau sera ajoutée au panier. Le client pourra payer avec d'autres articles.
                 </p>
               </div>
             </div>
@@ -278,11 +245,11 @@ export const GiftCardDialog = ({ open, onOpenChange }: GiftCardDialogProps) => {
                 Annuler
               </Button>
               <Button 
-                onClick={handleSellGiftCard}
-                disabled={!newCardNumber || !newCardBalance || createGiftCard.isPending || createSale.isPending}
+                onClick={handleAddToCart}
+                disabled={!newCardNumber || !newCardBalance}
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
-                Vendre et Imprimer
+                Ajouter au panier
               </Button>
             </DialogFooter>
           </TabsContent>
@@ -336,7 +303,9 @@ export const GiftCardDialog = ({ open, onOpenChange }: GiftCardDialogProps) => {
                                 size="sm"
                                 variant="outline"
                                 disabled={card.current_balance <= 0}
-                                onClick={() => printGiftCardReceipt(card)}
+                                onClick={() => {
+                                  printGiftCardReceipt(card);
+                                }}
                               >
                                 <Printer className="h-3 w-3" />
                               </Button>

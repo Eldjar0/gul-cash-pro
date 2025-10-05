@@ -29,6 +29,8 @@ import { useCategories } from '@/hooks/useCategories';
 import { Customer } from '@/hooks/useCustomers';
 import { useTodayReport, useOpenDay, useCloseDay, getTodayReportData, ReportData } from '@/hooks/useDailyReports';
 import { useWeather } from '@/hooks/useWeather';
+import { useCreateGiftCard, useUseGiftCard } from '@/hooks/useGiftCards';
+import { printGiftCardReceipt } from '@/components/pos/GiftCardReceipt';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -46,6 +48,12 @@ interface CartItem {
     value: number;
   };
   is_gift?: boolean; // Article offert
+  is_gift_card?: boolean; // C'est une carte cadeau à créer
+  gift_card_data?: {
+    cardNumber: string;
+    senderName?: string;
+    message?: string;
+  };
   subtotal: number;
   vatAmount: number;
   total: number;
@@ -72,6 +80,8 @@ const Index = () => {
     data: categories
   } = useCategories();
   const createSale = useCreateSale();
+  const createGiftCard = useCreateGiftCard();
+  const useGiftCard = useUseGiftCard();
   const scanInputRef = useRef<HTMLInputElement>(null);
   const {
     temperature,
@@ -167,6 +177,13 @@ const Index = () => {
   const [customerCreditDialogOpen, setCustomerCreditDialogOpen] = useState(false);
   const [cancelCartDialogOpen, setCancelCartDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
+  // Applied gift card state
+  const [appliedGiftCard, setAppliedGiftCard] = useState<{
+    cardNumber: string;
+    cardId: string;
+    availableBalance: number;
+  } | null>(null);
 
   // Physical scan action dialog states
   const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
@@ -195,12 +212,21 @@ const Index = () => {
       promoCodeAmount = appliedPromoCode.type === 'percentage' ? total * appliedPromoCode.value / 100 : appliedPromoCode.value;
       total -= promoCodeAmount;
     }
+    
+    // Déduire le montant de la carte cadeau si appliquée
+    let giftCardAmount = 0;
+    if (appliedGiftCard) {
+      giftCardAmount = Math.min(appliedGiftCard.availableBalance, total);
+      total -= giftCardAmount;
+    }
+    
     const totalDiscount = itemDiscounts + globalDiscountAmount + promoCodeAmount;
     return {
       subtotal,
       totalVat,
       totalDiscount,
-      total
+      total: Math.max(0, total),
+      giftCardAmount
     };
   };
 
@@ -848,6 +874,7 @@ const Index = () => {
       setCart([]);
       setGlobalDiscount(null);
       setAppliedPromoCode(null);
+      setAppliedGiftCard(null);
       setIsInvoiceMode(false);
       setSelectedCustomer(null);
       setPaymentDialogOpen(false);
@@ -865,6 +892,7 @@ const Index = () => {
       setCart([]);
       setGlobalDiscount(null);
       setAppliedPromoCode(null);
+      setAppliedGiftCard(null);
       setIsInvoiceMode(false);
       setSelectedCustomer(null);
 
@@ -878,6 +906,52 @@ const Index = () => {
       localStorage.setItem('customer_display_state', JSON.stringify(idleState));
       toast.info('Panier vidé');
     }
+  };
+
+  // Handler pour ajouter une carte cadeau au panier (comme article)
+  const handleAddGiftCardToCart = (cardNumber: string, amount: number, senderName: string, message: string) => {
+    // Créer un produit virtuel pour la carte cadeau
+    const giftCardProduct: Product = {
+      id: 'virtual-gift-card-' + Date.now(),
+      name: `Carte Cadeau ${cardNumber}`,
+      barcode: cardNumber,
+      price: amount,
+      vat_rate: 0, // Pas de TVA sur les cartes cadeaux
+      stock: 1,
+      min_stock: 0,
+      is_active: true,
+      type: 'unit',
+      unit: 'unité'
+    };
+
+    const { subtotal, vatAmount, total } = calculateItemTotal(giftCardProduct, 1);
+
+    const newItem: CartItem = {
+      product: giftCardProduct,
+      quantity: 1,
+      custom_price: amount,
+      is_gift_card: true,
+      gift_card_data: {
+        cardNumber,
+        senderName,
+        message
+      },
+      subtotal,
+      vatAmount,
+      total
+    };
+
+    setCart([...cart, newItem]);
+  };
+
+  // Handler pour appliquer une carte cadeau comme moyen de paiement
+  const handleApplyGiftCard = (cardNumber: string, cardId: string, availableBalance: number) => {
+    setAppliedGiftCard({
+      cardNumber,
+      cardId,
+      availableBalance
+    });
+    toast.success(`Carte cadeau ${cardNumber} appliquée (${availableBalance.toFixed(2)}€)`);
   };
 
   // Gestionnaire pour charger un panier sauvegardé
@@ -1759,6 +1833,8 @@ const Index = () => {
       <GiftCardDialog 
         open={giftCardDialogOpen} 
         onOpenChange={setGiftCardDialogOpen}
+        onAddGiftCardToCart={handleAddGiftCardToCart}
+        onApplyGiftCard={handleApplyGiftCard}
       />
 
       {selectedCustomer && (
