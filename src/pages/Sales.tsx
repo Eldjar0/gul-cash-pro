@@ -39,9 +39,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import { EditSaleDialog } from '@/components/sales/EditSaleDialog';
+import { toast } from 'sonner';
 import {
   Table,
   TableBody,
@@ -62,18 +65,22 @@ export default function Sales() {
   const [devMode, setDevMode] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [saleToEdit, setSaleToEdit] = useState<any>(null);
+  const [showPinDialog, setShowPinDialog] = useState(false);
+  const [pinInput, setPinInput] = useState('');
 
   const { data: sales = [], isLoading } = useSales();
   const deleteSale = useDeleteSalePermanently();
 
-  // Activer le mode dev avec Ctrl+5
+  // Activer le mode dev avec Ctrl+5 + code PIN
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === '5') {
         e.preventDefault();
-        setDevMode(prev => !prev);
-        if (!devMode) {
-          console.log('⚠️ MODE DEV ACTIVÉ - ATTENTION: UTILISATION ILLÉGALE EN PRODUCTION');
+        if (devMode) {
+          setDevMode(false);
+          toast.success('Mode dev désactivé');
+        } else {
+          setShowPinDialog(true);
         }
       }
     };
@@ -81,6 +88,19 @@ export default function Sales() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [devMode]);
+
+  const handlePinSubmit = () => {
+    if (pinInput === '3679') {
+      setDevMode(true);
+      setShowPinDialog(false);
+      setPinInput('');
+      console.log('⚠️ MODE DEV ACTIVÉ - ATTENTION: UTILISATION ILLÉGALE EN PRODUCTION');
+      toast.error('MODE DEV ACTIVÉ - INTERDIT EN PRODUCTION');
+    } else {
+      toast.error('Code incorrect');
+      setPinInput('');
+    }
+  };
 
   const handleDeleteClick = (saleId: string) => {
     setSaleToDelete(saleId);
@@ -530,6 +550,54 @@ export default function Sales() {
         onOpenChange={setEditDialogOpen}
         sale={saleToEdit}
       />
+
+      {/* PIN Dialog pour mode dev */}
+      <Dialog open={showPinDialog} onOpenChange={setShowPinDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Settings className="h-5 w-5" />
+              Code d'accès Mode Développement
+            </DialogTitle>
+            <DialogDescription className="text-destructive text-sm">
+              ⚠️ ACCÈS RESTREINT - Entrez le code d'accès
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20 text-xs">
+              <strong>Avertissement :</strong> Ce mode permet de modifier les données de vente, 
+              ce qui est ILLÉGAL en production. JLprod décline toute responsabilité.
+            </div>
+            <Input
+              type="password"
+              placeholder="Code PIN"
+              value={pinInput}
+              onChange={(e) => setPinInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handlePinSubmit()}
+              className="text-center text-2xl tracking-widest"
+              maxLength={4}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowPinDialog(false);
+                setPinInput('');
+              }}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handlePinSubmit}
+            >
+              Valider
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
