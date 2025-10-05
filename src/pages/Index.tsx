@@ -256,7 +256,7 @@ const Index = () => {
     enabled: isOnMainPage, // Actif uniquement sur la page principale
     minLength: 8,
     timeout: 350, // Augmenté à 350ms pour capturer tous les caractères
-    captureInInputs: true, // Intercepte même si un champ de saisie est focus
+    captureInInputs: false, // Permet la saisie normale dans les champs input
   });
 
   // Calculer les promotions automatiques quand le panier change
