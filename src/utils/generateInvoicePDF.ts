@@ -254,7 +254,7 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   yPos += 8;
 
   // ============ FOOTER ============
-  const footerY = pageHeight - 30;
+  const footerY = pageHeight - 35;
   
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
@@ -300,6 +300,13 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   if (invoice.company.email) {
     doc.text(invoice.company.email, col4X, yPos + 8);
   }
+
+  // Propulsé par
+  yPos = pageHeight - 10;
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  doc.text('Propulsé par JLprod.be', pageWidth / 2, yPos, { align: 'center' });
 
   return doc;
 };
