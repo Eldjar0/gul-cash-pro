@@ -19,10 +19,9 @@ import {
   CreditCard,
   Building2,
   User,
-  ChevronRight,
   Briefcase,
 } from 'lucide-react';
-import { useCustomers, useCreateCustomer, Customer } from '@/hooks/useCustomers';
+import { useCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer, Customer } from '@/hooks/useCustomers';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Dialog,
@@ -31,25 +30,32 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { CustomerCreditManagementDialog } from '@/components/customers/CustomerCreditManagementDialog';
 import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
 
 type CustomerType = 'particulier' | 'professionnel';
 
 export default function Customers() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [creditDialogOpen, setCreditDialogOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<{ id: string; name: string } | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const { data: customers = [], isLoading } = useCustomers();
   const createCustomer = useCreateCustomer();
+  const updateCustomer = useUpdateCustomer();
+  const deleteCustomer = useDeleteCustomer();
 
   const [customerType, setCustomerType] = useState<CustomerType>('particulier');
   const [formData, setFormData] = useState({
@@ -64,9 +70,31 @@ export default function Customers() {
     is_active: true,
   });
 
-  const handleOpenCreditDialog = (customerId: string, customerName: string) => {
-    setSelectedCustomer({ id: customerId, name: customerName });
+  const handleOpenCreditDialog = (customer: Customer) => {
+    setSelectedCustomer(customer);
     setCreditDialogOpen(true);
+  };
+
+  const handleOpenEditDialog = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setCustomerType(customer.vat_number ? 'professionnel' : 'particulier');
+    setFormData({
+      name: customer.name || '',
+      email: customer.email || '',
+      phone: customer.phone || '',
+      address: customer.address || '',
+      city: customer.city || '',
+      postal_code: customer.postal_code || '',
+      vat_number: customer.vat_number || '',
+      notes: customer.notes || '',
+      is_active: customer.is_active ?? true,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleOpenDeleteDialog = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setDeleteDialogOpen(true);
   };
 
   const resetForm = () => {
@@ -82,16 +110,44 @@ export default function Customers() {
       is_active: true,
     });
     setCustomerType('particulier');
+    setSelectedCustomer(null);
   };
 
-  const handleCreateCustomer = async () => {
+  const handleSaveCustomer = async () => {
     if (!formData.name.trim()) {
+      toast.error('Le nom est obligatoire');
       return;
     }
 
-    await createCustomer.mutateAsync(formData);
-    setCreateDialogOpen(false);
-    resetForm();
+    if (customerType === 'professionnel') {
+      if (!formData.vat_number || !formData.email || !formData.phone || !formData.address || !formData.city || !formData.postal_code) {
+        toast.error('Tous les champs sont obligatoires pour un client professionnel');
+        return;
+      }
+    }
+
+    try {
+      if (selectedCustomer) {
+        await updateCustomer.mutateAsync({ id: selectedCustomer.id, ...formData });
+      } else {
+        await createCustomer.mutateAsync(formData);
+      }
+      setDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      console.error('Error saving customer:', error);
+    }
+  };
+
+  const handleDeleteCustomer = async () => {
+    if (!selectedCustomer) return;
+    try {
+      await deleteCustomer.mutateAsync(selectedCustomer.id);
+      setDeleteDialogOpen(false);
+      setSelectedCustomer(null);
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+    }
   };
 
   const filteredCustomers = customers.filter((customer) => {
@@ -109,93 +165,72 @@ export default function Customers() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-indigo-900/20 dark:to-gray-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-4 shadow-lg">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/')}
-            className="text-white hover:bg-white/20"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Fichier Clients</h1>
-            <p className="text-sm text-white/80">Gestion complète de votre portefeuille client</p>
+      <div className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Gestion des Clients
+                </h1>
+                <p className="text-sm text-muted-foreground">{customers.length} clients au total</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-shadow">
+      {/* Content */}
+      <div className="container mx-auto px-6 py-8 space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-90">Total Clients</p>
-                <p className="text-3xl font-bold mt-2">{customers.length}</p>
+                <p className="text-blue-100 text-sm font-medium">Total Clients</p>
+                <p className="text-3xl font-bold mt-1">{customers.length}</p>
               </div>
-              <div className="p-3 bg-white/20 rounded-full">
-                <User className="h-8 w-8" />
-              </div>
+              <User className="w-8 h-8 text-blue-200" />
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-90">Professionnels</p>
-                <p className="text-3xl font-bold mt-2">{professionalCustomers.length}</p>
+                <p className="text-purple-100 text-sm font-medium">Professionnels</p>
+                <p className="text-3xl font-bold mt-1">{professionalCustomers.length}</p>
               </div>
-              <div className="p-3 bg-white/20 rounded-full">
-                <Briefcase className="h-8 w-8" />
-              </div>
+              <Briefcase className="w-8 h-8 text-purple-200" />
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white border-0">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-90">Particuliers</p>
-                <p className="text-3xl font-bold mt-2">{particularCustomers.length}</p>
+                <p className="text-green-100 text-sm font-medium">Particuliers</p>
+                <p className="text-3xl font-bold mt-1">{particularCustomers.length}</p>
               </div>
-              <div className="p-3 bg-white/20 rounded-full">
-                <User className="h-8 w-8" />
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium opacity-90">Clients Actifs</p>
-                <p className="text-3xl font-bold mt-2">
-                  {customers.filter(c => c.is_active).length}
-                </p>
-              </div>
-              <div className="p-3 bg-white/20 rounded-full">
-                <CreditCard className="h-8 w-8" />
-              </div>
+              <User className="w-8 h-8 text-green-200" />
             </div>
           </Card>
         </div>
 
-        {/* Search & Actions */}
-        <Card className="p-4 shadow-md">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
+        {/* Search */}
+        <Card className="p-4">
+          <div className="flex gap-4">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 placeholder="Rechercher par nom, email, téléphone ou TVA..."
@@ -205,8 +240,11 @@ export default function Customers() {
               />
             </div>
             <Button 
-              onClick={() => setCreateDialogOpen(true)}
-              className="h-12 px-6 bg-primary hover:bg-primary/90 shadow-md"
+              onClick={() => {
+                resetForm();
+                setDialogOpen(true);
+              }}
+              className="h-12 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md"
               size="lg"
             >
               <UserPlus className="h-5 w-5 mr-2" />
@@ -216,7 +254,7 @@ export default function Customers() {
         </Card>
 
         {/* Customers Grid */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {professionalCustomers.length > 0 && (
             <div>
               <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
@@ -225,7 +263,7 @@ export default function Customers() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {professionalCustomers.map((customer) => (
-                  <Card key={customer.id} className="p-5 hover:shadow-lg transition-all hover:border-primary/50 cursor-pointer">
+                  <Card key={customer.id} className="p-5 hover:shadow-lg transition-all">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -274,14 +312,17 @@ export default function Customers() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleOpenCreditDialog(customer.id, customer.name)}
+                          onClick={() => handleOpenCreditDialog(customer)}
                           className="flex-1"
                         >
                           <CreditCard className="h-4 w-4 mr-1" />
                           Crédit
                         </Button>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(customer)}>
                           <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenDeleteDialog(customer)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </div>
@@ -299,7 +340,7 @@ export default function Customers() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {particularCustomers.map((customer) => (
-                  <Card key={customer.id} className="p-5 hover:shadow-lg transition-all hover:border-primary/50 cursor-pointer">
+                  <Card key={customer.id} className="p-5 hover:shadow-lg transition-all">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -342,14 +383,17 @@ export default function Customers() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleOpenCreditDialog(customer.id, customer.name)}
+                          onClick={() => handleOpenCreditDialog(customer)}
                           className="flex-1"
                         >
                           <CreditCard className="h-4 w-4 mr-1" />
                           Crédit
                         </Button>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(customer)}>
                           <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenDeleteDialog(customer)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </div>
@@ -367,7 +411,7 @@ export default function Customers() {
                 {searchTerm ? 'Aucun résultat pour votre recherche' : 'Commencez par créer votre premier client'}
               </p>
               {!searchTerm && (
-                <Button onClick={() => setCreateDialogOpen(true)}>
+                <Button onClick={() => { resetForm(); setDialogOpen(true); }}>
                   <UserPlus className="h-4 w-4 mr-2" />
                   Créer un client
                 </Button>
@@ -377,65 +421,69 @@ export default function Customers() {
         </div>
       </div>
 
-      {/* Create Customer Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+      {/* Create/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Créer un nouveau client</DialogTitle>
+            <DialogTitle className="text-2xl">
+              {selectedCustomer ? 'Modifier le client' : 'Créer un nouveau client'}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
             {/* Type Selection */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold">Type de client</Label>
-              <div className="grid grid-cols-2 gap-4">
-                <Card
-                  className={`p-4 cursor-pointer transition-all ${
-                    customerType === 'particulier'
-                      ? 'border-primary bg-primary/5 shadow-md'
-                      : 'hover:border-primary/50'
-                  }`}
-                  onClick={() => setCustomerType('particulier')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`p-3 rounded-full ${
-                      customerType === 'particulier' ? 'bg-primary/20' : 'bg-muted'
-                    }`}>
-                      <User className={`h-6 w-6 ${
-                        customerType === 'particulier' ? 'text-primary' : 'text-muted-foreground'
-                      }`} />
+            {!selectedCustomer && (
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Type de client</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <Card
+                    className={`p-4 cursor-pointer transition-all ${
+                      customerType === 'particulier'
+                        ? 'border-primary bg-primary/5 shadow-md'
+                        : 'hover:border-primary/50'
+                    }`}
+                    onClick={() => setCustomerType('particulier')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-3 rounded-full ${
+                        customerType === 'particulier' ? 'bg-primary/20' : 'bg-muted'
+                      }`}>
+                        <User className={`h-6 w-6 ${
+                          customerType === 'particulier' ? 'text-primary' : 'text-muted-foreground'
+                        }`} />
+                      </div>
+                      <div>
+                        <p className="font-semibold">Particulier</p>
+                        <p className="text-xs text-muted-foreground">Client privé</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold">Particulier</p>
-                      <p className="text-xs text-muted-foreground">Client privé</p>
-                    </div>
-                  </div>
-                </Card>
+                  </Card>
 
-                <Card
-                  className={`p-4 cursor-pointer transition-all ${
-                    customerType === 'professionnel'
-                      ? 'border-primary bg-primary/5 shadow-md'
-                      : 'hover:border-primary/50'
-                  }`}
-                  onClick={() => setCustomerType('professionnel')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`p-3 rounded-full ${
-                      customerType === 'professionnel' ? 'bg-primary/20' : 'bg-muted'
-                    }`}>
-                      <Briefcase className={`h-6 w-6 ${
-                        customerType === 'professionnel' ? 'text-primary' : 'text-muted-foreground'
-                      }`} />
+                  <Card
+                    className={`p-4 cursor-pointer transition-all ${
+                      customerType === 'professionnel'
+                        ? 'border-primary bg-primary/5 shadow-md'
+                        : 'hover:border-primary/50'
+                    }`}
+                    onClick={() => setCustomerType('professionnel')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-3 rounded-full ${
+                        customerType === 'professionnel' ? 'bg-primary/20' : 'bg-muted'
+                      }`}>
+                        <Briefcase className={`h-6 w-6 ${
+                          customerType === 'professionnel' ? 'text-primary' : 'text-muted-foreground'
+                        }`} />
+                      </div>
+                      <div>
+                        <p className="font-semibold">Professionnel</p>
+                        <p className="text-xs text-muted-foreground">Entreprise/Société</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold">Professionnel</p>
-                      <p className="text-xs text-muted-foreground">Entreprise/Société</p>
-                    </div>
-                  </div>
-                </Card>
+                  </Card>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Form Fields */}
             <div className="space-y-4">
@@ -448,117 +496,83 @@ export default function Customers() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder={customerType === 'professionnel' ? 'Ex: SARL Dupont' : 'Ex: Jean Dupont'}
-                  required
+                  className="h-11"
                 />
               </div>
 
               {customerType === 'professionnel' && (
                 <div>
-                  <Label htmlFor="vat_number" className="required">Numéro de TVA *</Label>
+                  <Label htmlFor="vat_number">N° TVA *</Label>
                   <Input
                     id="vat_number"
                     value={formData.vat_number}
                     onChange={(e) => setFormData({ ...formData, vat_number: e.target.value })}
-                    placeholder="BE0123456789"
-                    required={customerType === 'professionnel'}
+                    placeholder="FR12345678901"
+                    className="h-11"
                   />
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="email">Email {customerType === 'professionnel' && '*'}</Label>
+                  <Label htmlFor="email">{customerType === 'professionnel' ? 'Email *' : 'Email'}</Label>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="contact@exemple.com"
+                    placeholder="email@exemple.com"
+                    className="h-11"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="phone">Téléphone {customerType === 'professionnel' && '*'}</Label>
+                  <Label htmlFor="phone">{customerType === 'professionnel' ? 'Téléphone *' : 'Téléphone'}</Label>
                   <Input
                     id="phone"
+                    type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+32 471 12 34 56"
+                    placeholder="06 12 34 56 78"
+                    className="h-11"
                   />
                 </div>
               </div>
 
-              {customerType === 'professionnel' && (
-                <>
-                  <div>
-                    <Label htmlFor="address">Adresse complète *</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      placeholder="123 Rue Example"
-                    />
-                  </div>
+              <div>
+                <Label htmlFor="address">{customerType === 'professionnel' ? 'Adresse *' : 'Adresse'}</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="123 rue de la République"
+                  className="h-11"
+                />
+              </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="postal_code">Code postal *</Label>
-                      <Input
-                        id="postal_code"
-                        value={formData.postal_code}
-                        onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
-                        placeholder="6000"
-                      />
-                    </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="postal_code">{customerType === 'professionnel' ? 'Code postal *' : 'Code postal'}</Label>
+                  <Input
+                    id="postal_code"
+                    value={formData.postal_code}
+                    onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
+                    placeholder="75001"
+                    className="h-11"
+                  />
+                </div>
 
-                    <div>
-                      <Label htmlFor="city">Ville *</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        placeholder="Charleroi"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {customerType === 'particulier' && (
-                <>
-                  <div>
-                    <Label htmlFor="address">Adresse</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      placeholder="123 Rue Example"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="postal_code">Code postal</Label>
-                      <Input
-                        id="postal_code"
-                        value={formData.postal_code}
-                        onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
-                        placeholder="6000"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="city">Ville</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        placeholder="Charleroi"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
+                <div>
+                  <Label htmlFor="city">{customerType === 'professionnel' ? 'Ville *' : 'Ville'}</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    placeholder="Paris"
+                    className="h-11"
+                  />
+                </div>
+              </div>
 
               <div>
                 <Label htmlFor="notes">Notes</Label>
@@ -566,35 +580,59 @@ export default function Customers() {
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Informations complémentaires..."
+                  placeholder="Notes supplémentaires..."
                   rows={3}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="is_active">Client actif</Label>
+                <Switch
+                  id="is_active"
+                  checked={formData.is_active}
+                  onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => {
-                setCreateDialogOpen(false);
-                resetForm();
-              }}>
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }} className="flex-1">
                 Annuler
               </Button>
-              <Button onClick={handleCreateCustomer} disabled={!formData.name.trim()}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Créer le client
+              <Button onClick={handleSaveCustomer} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600">
+                {selectedCustomer ? 'Mettre à jour' : 'Créer'}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Credit Dialog */}
-      {selectedCustomer && (
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le client</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer le client "{selectedCustomer?.name}" ? 
+              Cette action désactivera le client mais conservera son historique.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteCustomer} className="bg-destructive hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Credit Management Dialog */}
+      {selectedCustomer && creditDialogOpen && (
         <CustomerCreditManagementDialog
-          open={creditDialogOpen}
-          onOpenChange={setCreditDialogOpen}
           customerId={selectedCustomer.id}
           customerName={selectedCustomer.name}
+          open={creditDialogOpen}
+          onOpenChange={setCreditDialogOpen}
         />
       )}
     </div>

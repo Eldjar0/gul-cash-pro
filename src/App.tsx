@@ -15,9 +15,9 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Stats = lazy(() => import("./pages/Stats"));
 const Documents = lazy(() => import("./pages/Documents"));
 const Promotions = lazy(() => import("./pages/Promotions"));
-const Suppliers = lazy(() => import("./pages/Suppliers"));
-const StockHistory = lazy(() => import("./pages/StockHistory"));
-const Products = lazy(() => import("./pages/Products"));
+// Products, Suppliers removed - unified in InventoryManagement
+// StockHistory page removed - unified into Inventory page
+const InventoryManagement = lazy(() => import("./pages/InventoryManagement"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Customers = lazy(() => import("./pages/Customers"));
 const CustomerDisplay = lazy(() => import("./pages/CustomerDisplay"));
@@ -73,16 +73,11 @@ const App = () => (
             <Route path="/stats" element={<ProtectedRoute><ProtectedLayout><Stats /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/documents" element={<ProtectedRoute><ProtectedLayout><Documents /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/invoices/create" element={<ProtectedRoute><ProtectedLayout><InvoiceCreate /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/promotions" element={<ProtectedRoute><ProtectedLayout><Promotions /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/suppliers" element={<ProtectedRoute><ProtectedLayout><Suppliers /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/stock-history" element={<ProtectedRoute><ProtectedLayout><StockHistory /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/products" element={<ProtectedRoute><ProtectedLayout><Products /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/customers" element={<ProtectedRoute><ProtectedLayout><Customers /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><ProtectedLayout><Settings /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/users" element={<ProtectedRoute><ProtectedLayout><UserManagement /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/legal-info" element={<ProtectedRoute><ProtectedLayout><LegalInfo /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/getting-started" element={<ProtectedRoute><ProtectedLayout><GettingStarted /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/inventory" element={<ProtectedRoute><ProtectedLayout><Inventory /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/inventory-management" element={<ProtectedRoute><ProtectedLayout><InventoryManagement /></ProtectedLayout></ProtectedRoute>} />
+            {/* Old routes redirected to new unified page */}
+            <Route path="/products" element={<ProtectedRoute><ProtectedLayout><InventoryManagement /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/suppliers" element={<ProtectedRoute><ProtectedLayout><InventoryManagement /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/inventory" element={<ProtectedRoute><ProtectedLayout><InventoryManagement /></ProtectedLayout></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

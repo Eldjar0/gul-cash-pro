@@ -96,3 +96,75 @@ export const useCreateCustomer = () => {
     },
   });
 };
+
+export const useUpdateCustomer = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...customer }: Partial<Customer> & { id: string }) => {
+      // Validate input
+      const validationResult = customerSchema.safeParse(customer);
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(e => e.message).join(', ');
+        throw new Error(`Validation échouée: ${errors}`);
+      }
+
+      const { data, error } = await supabase
+        .from('customers')
+        .update(customer)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as Customer;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      toast({
+        title: 'Client mis à jour',
+        description: 'Le client a été modifié avec succès.',
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating customer:', error);
+      toast({
+        title: 'Erreur',
+        description: error instanceof Error ? error.message : 'Impossible de modifier le client.',
+        variant: 'destructive',
+      });
+    },
+  });
+};
+
+export const useDeleteCustomer = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('customers')
+        .update({ is_active: false })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      toast({
+        title: 'Client supprimé',
+        description: 'Le client a été désactivé avec succès.',
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting customer:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer le client.',
+        variant: 'destructive',
+      });
+    },
+  });
+};

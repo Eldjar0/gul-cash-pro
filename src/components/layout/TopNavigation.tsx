@@ -53,10 +53,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
 
   const menuItems = {
     gestion: [
-      { icon: Package, label: "Produits", path: "/products" },
-      { icon: Truck, label: "Stock", path: "/inventory" },
-      { icon: Clock, label: "Historique", path: "/stock-history" },
-      { icon: Users, label: "Fournisseurs", path: "/suppliers" },
+      { icon: Package, label: "Inventaire", path: "/inventory-management" },
     ],
   };
 
