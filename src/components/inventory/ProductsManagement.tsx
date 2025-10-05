@@ -163,9 +163,9 @@ export const ProductsManagement = () => {
     if (!printWindow) return;
 
     const labelSizes = {
-      small: { width: '50mm', height: '30mm', nameSize: '12px', priceSize: '14px', barcodeHeight: '12mm', fontSize: '8px' },
-      medium: { width: '70mm', height: '45mm', nameSize: '16px', priceSize: '18px', barcodeHeight: '15mm', fontSize: '9px' },
-      large: { width: '90mm', height: '55mm', nameSize: '20px', priceSize: '22px', barcodeHeight: '18mm', fontSize: '10px' }
+      small: { width: '60mm', height: '40mm', topSize: '7px', nameSize: '13px', priceSize: '24px', barcodeHeight: '15mm', barcodeNumSize: '8px' },
+      medium: { width: '80mm', height: '50mm', topSize: '8px', nameSize: '16px', priceSize: '32px', barcodeHeight: '18mm', barcodeNumSize: '9px' },
+      large: { width: '100mm', height: '60mm', topSize: '9px', nameSize: '19px', priceSize: '40px', barcodeHeight: '20mm', barcodeNumSize: '10px' }
     };
 
     const size = labelSizes[labelSize];
@@ -194,32 +194,40 @@ export const ProductsManagement = () => {
               padding: 3mm;
               display: flex;
               flex-direction: column;
-              justify-content: center;
-              align-items: center;
-              text-align: center;
+              justify-content: space-between;
               page-break-inside: avoid;
               background: white;
-              gap: 2mm;
+            }
+            .top-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              font-size: ${size.topSize};
+              margin-bottom: 2mm;
+            }
+            .cdt {
+              font-weight: normal;
+            }
+            .unit-price {
+              text-align: right;
             }
             .product-name {
               font-size: ${size.nameSize};
               font-weight: bold;
-              line-height: 1.2;
-              max-width: 100%;
-              word-wrap: break-word;
+              text-align: center;
+              line-height: 1.3;
+              margin: auto 0;
+              text-transform: uppercase;
             }
-            .price {
-              font-size: ${size.priceSize};
-              font-weight: bold;
-              margin: 1mm 0;
-            }
-            .unit {
-              font-size: ${size.fontSize};
-              color: #666;
-              margin-bottom: 2mm;
+            .bottom-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-end;
+              gap: 3mm;
             }
             .barcode-section {
-              margin-top: 2mm;
+              flex: 1;
+              text-align: left;
             }
             .barcode {
               font-family: "Libre Barcode 128", monospace;
@@ -227,9 +235,21 @@ export const ProductsManagement = () => {
               line-height: ${size.barcodeHeight};
             }
             .barcode-text {
-              font-size: ${size.fontSize};
+              font-size: ${size.barcodeNumSize};
               font-family: monospace;
-              letter-spacing: 0.5px;
+              margin-top: 1mm;
+            }
+            .price-section {
+              text-align: right;
+              min-width: 35%;
+            }
+            .sale-price {
+              font-size: ${size.priceSize};
+              font-weight: bold;
+              line-height: 1;
+            }
+            .price-unit {
+              font-size: ${size.topSize};
               margin-top: 1mm;
             }
             @media print {
@@ -245,21 +265,34 @@ export const ProductsManagement = () => {
     selectedProductsList.forEach(product => {
       const copies = labelCount[product.id] || 1;
       const unitText = product.unit || 'unité';
-      const pricePerUnit = product.type === 'weight' ? 'le kilo' : unitText === 'carton' ? 'le carton' : 'la pièce';
+      const priceUnit = product.type === 'weight' ? 'kg' : unitText === 'carton' ? 'pcs' : 'pcs';
+      const cdtText = product.category_id ? product.category_id.substring(0, 8) : '24';
       
       for (let i = 0; i < copies; i++) {
         htmlContent += `
           <div class="label">
+            <div class="top-row">
+              <div class="cdt">CDT : ${cdtText}</div>
+              ${showPrice ? `
+                <div class="unit-price">PRIX ${priceUnit} - l - pcs :<br/>${product.price.toFixed(2)} €</div>
+              ` : ''}
+            </div>
+            
             <div class="product-name">${product.name}</div>
-            ${showPrice ? `
-              <div class="price">${product.price.toFixed(2)} €</div>
-              <div class="unit">${pricePerUnit}</div>
-            ` : ''}
-            <div class="barcode-section">
-              ${product.barcode ? `
-                <div class="barcode">*${product.barcode}*</div>
-                <div class="barcode-text">${product.barcode}</div>
-              ` : '<div style="font-size: 8px; color: #999;">Aucun code-barres</div>'}
+            
+            <div class="bottom-row">
+              <div class="barcode-section">
+                ${product.barcode ? `
+                  <div class="barcode">*${product.barcode}*</div>
+                  <div class="barcode-text">${product.barcode}</div>
+                ` : '<div style="font-size: 8px; color: #999;">Aucun code</div>'}
+              </div>
+              ${showPrice ? `
+                <div class="price-section">
+                  <div class="sale-price">${product.price.toFixed(2)} €</div>
+                  <div class="price-unit">Prix ${priceUnit} - l - p</div>
+                </div>
+              ` : ''}
             </div>
           </div>
         `;
