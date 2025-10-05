@@ -19,6 +19,7 @@ import { PinLockDialog } from '@/components/pos/PinLockDialog';
 import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { PhysicalScanActionDialog } from '@/components/pos/PhysicalScanActionDialog';
+import { WeightInputDialog } from '@/components/pos/WeightInputDialog';
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
 import { ReportXDialog } from '@/components/pos/ReportXDialog';
@@ -204,6 +205,11 @@ const Index = () => {
   const [stockOverrideDialogOpen, setStockOverrideDialogOpen] = useState(false);
   const [stockIssues, setStockIssues] = useState<Array<{ productName: string; available: number; requested: number }>>([]);
   const [pendingSaleData, setPendingSaleData] = useState<any>(null);
+  
+  // Weight input dialog
+  const [weightInputDialogOpen, setWeightInputDialogOpen] = useState(false);
+  const [weightProduct, setWeightProduct] = useState<Product | null>(null);
+  const [weightQuantity, setWeightQuantity] = useState<number | undefined>(undefined);
   
   // Fetch customers
   const { data: customers } = useCustomers();
@@ -479,6 +485,14 @@ const Index = () => {
       return;
     }
     
+    // Si le produit est au poids, ouvrir le dialog de saisie du poids
+    if (product.type === 'weight') {
+      setWeightProduct(product);
+      setWeightQuantity(quantity);
+      setWeightInputDialogOpen(true);
+      return;
+    }
+    
     const qty = quantity || parseFloat(quantityInput) || 1;
     if (isNaN(qty) || qty <= 0) {
       toast.error('Quantité invalide');
@@ -515,6 +529,43 @@ const Index = () => {
     setScanInput('');
     setSearchResults([]);
     toast.success(`${product.name} ajouté au panier`);
+  };
+
+  // Handler pour confirmer le poids
+  const handleWeightConfirm = (weight: number) => {
+    if (!weightProduct) return;
+    
+    const maxQuantity = 10000;
+    const validWeight = Math.min(weight, maxQuantity);
+    
+    setCart(prevCart => {
+      const existingItemIndex = prevCart.findIndex(item => item.product.id === weightProduct.id);
+      if (existingItemIndex !== -1) {
+        const newCart = [...prevCart];
+        const existingItem = newCart[existingItemIndex];
+        const newQuantity = existingItem.quantity + validWeight;
+        const totals = calculateItemTotal(weightProduct, newQuantity, existingItem.discount, existingItem.custom_price);
+        newCart[existingItemIndex] = {
+          ...existingItem,
+          quantity: newQuantity,
+          ...totals
+        };
+        return newCart;
+      } else {
+        const totals = calculateItemTotal(weightProduct, validWeight);
+        const newItem: CartItem = {
+          product: weightProduct,
+          quantity: validWeight,
+          ...totals
+        };
+        return [...prevCart, newItem];
+      }
+    });
+    setQuantityInput('1');
+    setScanInput('');
+    setSearchResults([]);
+    setPrefixQuantity(null);
+    toast.success(`${weightProduct.name} ajouté au panier (${weight} kg)`);
   };
 
   // Traitement d'un scan physique - ajoute direct au panier si trouvé
@@ -1572,6 +1623,25 @@ const Index = () => {
                           <span className="text-muted-foreground text-xs">/ {item.product.unit || 'u'}</span>
                           <span className="text-muted-foreground text-xs mx-1">×</span>
                           <span className="text-xs font-bold">{item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)} {item.product.unit || 'u'}</span>
+                          {/* Affichage du stock */}
+                          <div className="ml-auto flex items-center gap-1">
+                            {item.product.stock <= 0 ? (
+                              <>
+                                <AlertCircle className="h-3 w-3 text-red-600" />
+                                <span className="text-[9px] font-semibold text-red-600">Rupture</span>
+                              </>
+                            ) : item.product.stock <= (item.product.min_stock || 0) ? (
+                              <>
+                                <AlertCircle className="h-3 w-3 text-orange-500" />
+                                <span className="text-[9px] font-semibold text-orange-500">{item.product.stock}</span>
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="h-3 w-3 text-green-600" />
+                                <span className="text-[9px] font-semibold text-green-600">{item.product.stock}</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                         {item.discount && <div className="flex items-center gap-1 mt-1">
                             <span className="text-[9px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-semibold">
@@ -2285,6 +2355,13 @@ const Index = () => {
       </Dialog>
 
       <RefundDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen} />
+
+      <WeightInputDialog 
+        open={weightInputDialogOpen} 
+        onOpenChange={setWeightInputDialogOpen} 
+        product={weightProduct}
+        onConfirm={handleWeightConfirm}
+      />
 
       <PhysicalScanActionDialog open={physicalScanDialogOpen} onOpenChange={setPhysicalScanDialogOpen} barcode={scannedBarcode} product={scannedProduct} onAddToCart={handlePhysicalScanAddToCart} onViewProduct={handlePhysicalScanViewProduct} onCreateProduct={handlePhysicalScanCreateProduct} />
 
