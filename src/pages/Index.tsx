@@ -1412,65 +1412,142 @@ const Index = () => {
         {/* COLONNE CENTRE - Calculatrice (col-span adapté: 4 sur mobile, 4 sur desktop) */}
         <div className="col-span-4 bg-background p-1 flex flex-col gap-1 overflow-hidden h-full">
 
-          {/* Statistiques rapides */}
-          <Card className="bg-gradient-to-br from-primary/10 to-secondary/5 border border-primary/20 p-1.5 flex-shrink-0 shadow-md">
-            <div className="grid grid-cols-2 gap-1">
-              <div className="bg-white/80 rounded p-1.5 border border-primary/10">
-                <div className="text-[8px] text-muted-foreground font-medium uppercase">Ventes</div>
-                <div className="text-sm font-bold text-primary">{todayTotal.toFixed(2)}€</div>
-                <div className={`text-[7px] font-bold ${totalPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {totalPercentChange >= 0 ? '↗' : '↘'} {totalPercentChange.toFixed(1)}%
+          {/* Statistiques rapides - Améliorées */}
+          <Card className="bg-gradient-to-br from-primary/15 via-primary/5 to-secondary/10 border-2 border-primary/30 p-2.5 flex-shrink-0 shadow-lg relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none" />
+            
+            <h3 className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2 relative z-10 flex items-center gap-1.5">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              Statistiques du Jour
+            </h3>
+            
+            <div className="grid grid-cols-2 gap-2 relative z-10 mb-2">
+              <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-lg p-2 border border-green-500/30 shadow-md">
+                <div className="text-[8px] text-green-700 font-semibold uppercase mb-0.5">Total Ventes</div>
+                <div className="text-2xl font-bold text-green-700">
+                  {todayTotal.toFixed(2)}€
+                </div>
+                <div className={`text-[8px] font-bold mt-0.5 ${totalPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {totalPercentChange >= 0 ? '↗' : '↘'} {totalPercentChange.toFixed(1)}% vs hier
                 </div>
               </div>
-              <div className="bg-white/80 rounded p-1.5 border border-primary/10">
-                <div className="text-[8px] text-muted-foreground font-medium uppercase">Tickets</div>
-                <div className="text-sm font-bold text-primary">{todayCount}</div>
-                <div className={`text-[7px] font-bold ${countPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {countPercentChange >= 0 ? '↗' : '↘'} {countPercentChange.toFixed(1)}%
+              <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-2 border border-blue-500/30 shadow-md">
+                <div className="text-[8px] text-blue-700 font-semibold uppercase mb-0.5">Nb Tickets</div>
+                <div className="text-2xl font-bold text-blue-700">
+                  {todayCount}
+                </div>
+                <div className={`text-[8px] font-bold mt-0.5 ${countPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {countPercentChange >= 0 ? '↗' : '↘'} {countPercentChange.toFixed(1)}% vs hier
+                </div>
+              </div>
+            </div>
+            
+            {/* Détail par moyen de paiement */}
+            <div className="grid grid-cols-3 gap-1 relative z-10">
+              <div className="bg-white/60 rounded p-1.5 text-center border border-border/50">
+                <div className="text-[7px] text-muted-foreground font-medium uppercase">Espèces</div>
+                <div className="text-xs font-bold text-green-600">
+                  {(todaySales?.filter(s => !s.is_cancelled && s.payment_method === 'cash').reduce((sum, s) => sum + s.total, 0) || 0).toFixed(2)}€
+                </div>
+              </div>
+              <div className="bg-white/60 rounded p-1.5 text-center border border-border/50">
+                <div className="text-[7px] text-muted-foreground font-medium uppercase">Carte</div>
+                <div className="text-xs font-bold text-blue-600">
+                  {(todaySales?.filter(s => !s.is_cancelled && s.payment_method === 'card').reduce((sum, s) => sum + s.total, 0) || 0).toFixed(2)}€
+                </div>
+              </div>
+              <div className="bg-white/60 rounded p-1.5 text-center border border-border/50">
+                <div className="text-[7px] text-muted-foreground font-medium uppercase">Autres</div>
+                <div className="text-xs font-bold text-purple-600">
+                  {(todaySales?.filter(s => !s.is_cancelled && !['cash', 'card'].includes(s.payment_method)).reduce((sum, s) => sum + s.total, 0) || 0).toFixed(2)}€
                 </div>
               </div>
             </div>
           </Card>
 
-          {/* Calculatrice style caisse */}
-          <Card className="bg-background border border-border p-2 flex-shrink-0">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="text-[9px] font-bold text-foreground uppercase tracking-wide">
-                {calcMode === 'input' ? 'Quantité' : 'Calcul'}
+          {/* Calculatrice moderne et visible */}
+          <Card className="bg-gradient-to-br from-slate-100 to-slate-50 border-2 border-slate-300 p-3 flex-shrink-0 shadow-xl">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <Calculator className="h-4 w-4 text-slate-700" />
+                <div className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                  {calcMode === 'input' ? 'Quantité' : 'Calcul'}
+                </div>
               </div>
-              <div className="flex gap-0.5">
-                <Button variant={calcMode === 'input' ? 'default' : 'outline'} size="sm" className="h-5 w-5 p-0 text-[9px]" onClick={() => setCalcMode('input')}>Q</Button>
-                <Button variant={calcMode === 'math' ? 'default' : 'outline'} size="sm" className="h-5 w-5 p-0 text-[9px]" onClick={() => setCalcMode('math')}>C</Button>
+              <div className="flex gap-1">
+                <Button 
+                  variant={calcMode === 'input' ? 'default' : 'outline'} 
+                  size="sm" 
+                  className={`h-6 px-2 text-[9px] font-bold ${calcMode === 'input' ? 'bg-primary text-white' : 'bg-white'}`} 
+                  onClick={() => setCalcMode('input')}
+                >
+                  QTÉ
+                </Button>
+                <Button 
+                  variant={calcMode === 'math' ? 'default' : 'outline'} 
+                  size="sm" 
+                  className={`h-6 px-2 text-[9px] font-bold ${calcMode === 'math' ? 'bg-primary text-white' : 'bg-white'}`} 
+                  onClick={() => setCalcMode('math')}
+                >
+                  CALC
+                </Button>
               </div>
             </div>
             
-            {/* Affichage */}
-            <div className="bg-muted p-2 rounded mb-1.5 border border-border">
-              <div className="text-foreground text-lg font-bold text-right font-mono">
+            {/* Affichage LCD style */}
+            <div className="bg-gradient-to-b from-green-900 to-green-950 p-3 rounded-lg mb-2 border-4 border-slate-400 shadow-inner">
+              <div className="text-green-400 text-3xl font-bold text-right font-mono tracking-wider drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]">
                 {quantityInput}
               </div>
             </div>
             
-            {/* Clavier compact */}
-            <div className="grid grid-cols-3 gap-0.5 mb-1">
+            {/* Clavier professionnel */}
+            <div className="grid grid-cols-3 gap-1.5 mb-2">
               {['7', '8', '9', '4', '5', '6', '1', '2', '3', '.', '0', 'C'].map(key => (
                 <Button 
                   key={key} 
                   onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)} 
-                  className={`h-7 text-xs font-bold ${key === 'C' ? 'bg-destructive hover:bg-destructive/90 text-white' : 'bg-white hover:bg-muted border border-border'}`}
+                  className={`h-10 text-lg font-bold shadow-md transition-all active:scale-95 ${
+                    key === 'C' 
+                      ? 'bg-gradient-to-b from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-2 border-red-700' 
+                      : key === '.' 
+                      ? 'bg-gradient-to-b from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white border-2 border-orange-600'
+                      : 'bg-gradient-to-b from-white to-gray-100 hover:from-gray-100 hover:to-gray-200 text-slate-800 border-2 border-slate-300'
+                  }`}
                 >
                   {key}
                 </Button>
               ))}
             </div>
+            
             {calcMode === 'math' && (
-              <div className="grid grid-cols-4 gap-0.5">
-                <Button onClick={() => handleOperation('+')} className="h-7 text-xs bg-primary/10 hover:bg-primary/20 border border-primary/20">+</Button>
-                <Button onClick={() => handleOperation('-')} className="h-7 text-xs bg-primary/10 hover:bg-primary/20 border border-primary/20">−</Button>
-                <Button onClick={() => handleOperation('*')} className="h-7 text-xs bg-primary/10 hover:bg-primary/20 border border-primary/20">×</Button>
-                <Button onClick={() => handleOperation('/')} className="h-7 text-xs bg-primary/10 hover:bg-primary/20 border border-primary/20">÷</Button>
-                <Button onClick={() => handleOperation('%')} className="h-7 text-xs bg-secondary/10 hover:bg-secondary/20 border border-secondary/20 col-span-2">%</Button>
-                <Button onClick={handleEqualsCalc} disabled={!quantityInput} className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white col-span-2">=</Button>
+              <div className="space-y-1.5">
+                <div className="grid grid-cols-4 gap-1">
+                  {['+', '-', '×', '÷'].map((op, idx) => (
+                    <Button 
+                      key={op}
+                      onClick={() => handleOperation(['+', '-', '*', '/'][idx])} 
+                      className="h-9 text-base font-bold bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-2 border-blue-700 shadow-md"
+                    >
+                      {op}
+                    </Button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-1">
+                  <Button 
+                    onClick={() => handleOperation('%')} 
+                    className="h-9 text-sm font-bold bg-gradient-to-b from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-2 border-purple-700 shadow-md"
+                  >
+                    %
+                  </Button>
+                  <Button 
+                    onClick={handleEqualsCalc} 
+                    disabled={!quantityInput} 
+                    className="h-9 text-base font-bold bg-gradient-to-b from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-2 border-green-700 shadow-md disabled:opacity-50"
+                  >
+                    =
+                  </Button>
+                </div>
               </div>
             )}
           </Card>
