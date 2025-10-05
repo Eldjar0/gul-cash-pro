@@ -106,7 +106,7 @@ export const generateOrderPDF = (products: Product[]) => {
     },
     columnStyles: {
       0: { cellWidth: 45, halign: 'left', fontStyle: 'bold' },
-      1: { cellWidth: 28, font: 'courier', fontSize: 8 },
+      1: { cellWidth: 28, font: 'helvetica', fontSize: 8 },
       2: { cellWidth: 22 },
       3: { cellWidth: 22 },
       4: { cellWidth: 25, fontStyle: 'bold' },

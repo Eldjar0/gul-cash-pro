@@ -135,7 +135,7 @@ export const generateStockPDF = (products: Product[]) => {
     },
     columnStyles: {
       0: { cellWidth: 50, halign: 'left', fontStyle: 'bold' },
-      1: { cellWidth: 30, fontStyle: 'normal', font: 'courier' },
+      1: { cellWidth: 30, fontStyle: 'normal', font: 'helvetica' },
       2: { cellWidth: 22 },
       3: { cellWidth: 15 },
       4: { cellWidth: 22 },
