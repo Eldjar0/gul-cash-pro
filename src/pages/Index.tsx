@@ -146,6 +146,7 @@ const Index = () => {
   const [operation, setOperation] = useState<string | null>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [prefixQuantity, setPrefixQuantity] = useState<number | null>(null);
   const [globalDiscount, setGlobalDiscount] = useState<{
     type: DiscountType;
     value: number;
@@ -566,6 +567,10 @@ const Index = () => {
     if (found) {
       console.log('[POS] Produit trouvé, ajout au panier:', found.name);
       
+      // Utiliser la quantité préfixe si elle existe
+      const qtyToUse = prefixQuantity && prefixQuantity > 0 ? prefixQuantity : undefined;
+      console.log('[POS] Quantité utilisée:', qtyToUse || 'défaut');
+      
       // Ajouter à l'historique - succès
       setScanHistory(prev => [{
         barcode: normalized,
@@ -574,9 +579,10 @@ const Index = () => {
         timestamp: Date.now()
       }, ...prev].slice(0, 6));
       
-      handleProductSelect(found);
+      handleProductSelect(found, qtyToUse);
       setScanInput("");
       setSearchResults([]);
+      setPrefixQuantity(null); // Réinitialiser la quantité préfixe
       return;
     }
 
@@ -598,7 +604,8 @@ const Index = () => {
       }
     });
     setScanInput("");
-  }, [products, navigate, handleProductSelect]);
+    setPrefixQuantity(null); // Réinitialiser la quantité préfixe
+  }, [products, navigate, handleProductSelect, prefixQuantity]);
 
   // Physical barcode scanner using dedicated hook
   usePhysicalScanner({
@@ -698,9 +705,11 @@ const Index = () => {
     handleSearch();
   };
   const handleSelectSearchResult = (product: Product) => {
-    handleProductSelect(product);
+    const qtyToUse = prefixQuantity && prefixQuantity > 0 ? prefixQuantity : undefined;
+    handleProductSelect(product, qtyToUse);
     setScanInput('');
     setSearchResults([]);
+    setPrefixQuantity(null);
   };
   const handleRemoveItem = (index: number) => {
     if (typeof index !== 'number' || index < 0) return;
@@ -1461,14 +1470,27 @@ const Index = () => {
             <div className="relative">
               <Scan className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-primary" />
               <Input ref={scanInputRef} value={scanInput} onChange={e => {
-              setScanInput(e.target.value);
-              if (!e.target.value.trim()) {
+              const value = e.target.value;
+              setScanInput(value);
+              
+              // Si c'est un nombre pur, le stocker comme quantité préfixe
+              const numValue = parseFloat(value);
+              if (value.trim() !== '' && !isNaN(numValue) && numValue > 0 && /^\d+\.?\d*$/.test(value.trim())) {
+                setPrefixQuantity(numValue);
+                setQuantityInput(value);
+              } else {
+                setPrefixQuantity(null);
+              }
+              
+              if (!value.trim()) {
                 setSearchResults([]);
+                setPrefixQuantity(null);
               }
             }} placeholder="Rechercher..." autoComplete="off" className="h-7 pl-7 pr-6 text-xs bg-background border-input text-foreground" />
               {scanInput && <Button type="button" onClick={() => {
               setScanInput('');
               setSearchResults([]);
+              setPrefixQuantity(null);
               scanInputRef.current?.focus();
             }} className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 p-0 bg-transparent hover:bg-destructive/10 text-muted-foreground hover:text-destructive" variant="ghost">
                   ×
