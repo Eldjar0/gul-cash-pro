@@ -42,10 +42,13 @@ export const useSaveSuppliers = () => {
     mutationFn: async (suppliers: Supplier[]) => {
       const { error } = await supabase
         .from('settings')
-        .upsert({
-          key: 'suppliers',
-          value: { suppliers } as any,
-        });
+        .upsert(
+          {
+            key: 'suppliers',
+            value: { suppliers } as any,
+          },
+          { onConflict: 'key' }
+        );
 
       if (error) throw error;
     },
