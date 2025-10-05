@@ -4,27 +4,32 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Save, Shield, Scale, Image, Receipt, Monitor, Home, Database, Bell, Gift, Smartphone } from 'lucide-react';
+import { ArrowLeft, Building, Save, Plus, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { BrandingSettings } from '@/components/settings/BrandingSettings';
-import { TicketSettings } from '@/components/settings/TicketSettings';
-import { DisplaySettings } from '@/components/settings/DisplaySettings';
-import { HomePageSettings } from '@/components/settings/HomePageSettings';
-import { BackupSettings } from '@/components/settings/BackupSettings';
-import { StockAlertSettings } from '@/components/settings/StockAlertSettings';
-import { LoyaltySettings } from '@/components/settings/LoyaltySettings';
+import { Checkbox } from '@/components/ui/checkbox';
 
+interface BankAccount {
+  id: string;
+  bank_name: string;
+  account_number: string;
+}
 
-interface CompanySettings {
-  name: string;
-  address: string;
-  city: string;
-  postal_code: string;
+interface InvoiceSettings {
+  is_company: boolean;
+  company_name?: string;
+  first_name?: string;
+  last_name?: string;
+  headquarters_address: string;
+  headquarters_city: string;
+  headquarters_postal_code: string;
+  store_address: string;
+  store_city: string;
+  store_postal_code: string;
   vat_number: string;
   phone: string;
   email: string;
+  bank_accounts: BankAccount[];
 }
 
 
@@ -33,16 +38,22 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [companySettings, setCompanySettings] = useState<CompanySettings>({
-    name: '',
-    address: '',
-    city: '',
-    postal_code: '',
+  const [settings, setSettings] = useState<InvoiceSettings>({
+    is_company: true,
+    company_name: '',
+    first_name: '',
+    last_name: '',
+    headquarters_address: '',
+    headquarters_city: '',
+    headquarters_postal_code: '',
+    store_address: '',
+    store_city: '',
+    store_postal_code: '',
     vat_number: '',
     phone: '',
     email: '',
+    bank_accounts: [],
   });
-
 
   useEffect(() => {
     loadSettings();
@@ -50,15 +61,14 @@ export default function Settings() {
 
   const loadSettings = async () => {
     try {
-      // Charger les paramètres entreprise
-      const { data: companyData } = await supabase
+      const { data } = await supabase
         .from('settings')
         .select('*')
-        .eq('key', 'company_info')
-        .single();
+        .eq('key', 'invoice_settings')
+        .maybeSingle();
 
-      if (companyData) {
-        setCompanySettings(companyData.value as unknown as CompanySettings);
+      if (data?.value) {
+        setSettings(data.value as unknown as InvoiceSettings);
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -67,43 +77,66 @@ export default function Settings() {
     }
   };
 
-  const saveCompanySettings = async () => {
+  const saveSettings = async () => {
     setSaving(true);
     try {
-      // Vérifier si l'entrée existe
       const { data: existing } = await supabase
         .from('settings')
         .select('id')
-        .eq('key', 'company_info')
-        .single();
+        .eq('key', 'invoice_settings')
+        .maybeSingle();
 
       if (existing) {
-        // Mettre à jour
         const { error } = await supabase
           .from('settings')
-          .update({ value: companySettings as any })
-          .eq('key', 'company_info');
+          .update({ value: settings as any })
+          .eq('key', 'invoice_settings');
         
         if (error) throw error;
       } else {
-        // Insérer
         const { error } = await supabase
           .from('settings')
           .insert({
-            key: 'company_info',
-            value: companySettings as any,
+            key: 'invoice_settings',
+            value: settings as any,
           });
         
         if (error) throw error;
       }
 
-      toast.success('Paramètres entreprise enregistrés');
+      toast.success('Paramètres enregistrés avec succès');
     } catch (error) {
-      console.error('Error saving company settings:', error);
+      console.error('Error saving settings:', error);
       toast.error('Erreur lors de l\'enregistrement');
     } finally {
       setSaving(false);
     }
+  };
+
+  const addBankAccount = () => {
+    setSettings({
+      ...settings,
+      bank_accounts: [
+        ...settings.bank_accounts,
+        { id: crypto.randomUUID(), bank_name: '', account_number: '' }
+      ]
+    });
+  };
+
+  const removeBankAccount = (id: string) => {
+    setSettings({
+      ...settings,
+      bank_accounts: settings.bank_accounts.filter(acc => acc.id !== id)
+    });
+  };
+
+  const updateBankAccount = (id: string, field: 'bank_name' | 'account_number', value: string) => {
+    setSettings({
+      ...settings,
+      bank_accounts: settings.bank_accounts.map(acc =>
+        acc.id === id ? { ...acc, [field]: value } : acc
+      )
+    });
   };
 
 
@@ -121,226 +154,251 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-3">
-        <div className="flex items-center gap-2 md:gap-4">
+      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-4">
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate('/')}
-            className="text-white hover:bg-white/20 shrink-0"
+            className="text-white hover:bg-white/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-lg md:text-2xl font-bold text-white">Paramètres</h1>
-            <p className="text-xs md:text-sm text-white/80">Configuration du système</p>
+            <h1 className="text-2xl font-bold text-white">Paramètres de Facturation</h1>
+            <p className="text-sm text-white/80">Configuration des informations légales</p>
           </div>
         </div>
       </div>
 
-      <div className="p-4 md:p-6 max-w-6xl mx-auto">
-        <Tabs defaultValue="company" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9 mb-6">
-            <TabsTrigger value="company">
-              <Building className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Entreprise</span>
-            </TabsTrigger>
-            <TabsTrigger value="branding">
-              <Image className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Logos</span>
-            </TabsTrigger>
-            <TabsTrigger value="tickets">
-              <Receipt className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Tickets</span>
-            </TabsTrigger>
-            <TabsTrigger value="display">
-              <Monitor className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Affichage</span>
-            </TabsTrigger>
-            <TabsTrigger value="homepage">
-              <Home className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Accueil</span>
-            </TabsTrigger>
-            <TabsTrigger value="backup">
-              <Database className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Sauvegardes</span>
-            </TabsTrigger>
-            <TabsTrigger value="alerts">
-              <Bell className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Alertes</span>
-            </TabsTrigger>
-            <TabsTrigger value="loyalty">
-              <Gift className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Fidélité</span>
-            </TabsTrigger>
-            <TabsTrigger value="compliance">
-              <Shield className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Conformité</span>
-            </TabsTrigger>
-          </TabsList>
+      <div className="p-6 max-w-4xl mx-auto">
+        <Card className="p-6">
+          <div className="space-y-8">
+            {/* Type d'entité */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Building className="h-5 w-5" />
+                Type d'entité
+              </h2>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="is_company"
+                  checked={settings.is_company}
+                  onCheckedChange={(checked) => setSettings({ ...settings, is_company: checked as boolean })}
+                />
+                <Label htmlFor="is_company" className="cursor-pointer">
+                  Société (sinon personne physique)
+                </Label>
+              </div>
+            </div>
 
-          {/* Company Settings */}
-          <TabsContent value="company">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-6">Informations Entreprise</h2>
-              <div className="space-y-4">
+            {/* Nom / Identité */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Identité</h3>
+              {settings.is_company ? (
                 <div>
-                  <Label htmlFor="company_name">Nom de l'entreprise *</Label>
+                  <Label htmlFor="company_name">Nom de la société *</Label>
                   <Input
                     id="company_name"
-                    value={companySettings.name}
-                    onChange={(e) => setCompanySettings({ ...companySettings, name: e.target.value })}
-                    placeholder="Mon Commerce"
+                    value={settings.company_name || ''}
+                    onChange={(e) => setSettings({ ...settings, company_name: e.target.value })}
+                    placeholder="Ex: SARL Mon Commerce"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="address">Adresse *</Label>
-                  <Input
-                    id="address"
-                    value={companySettings.address}
-                    onChange={(e) => setCompanySettings({ ...companySettings, address: e.target.value })}
-                    placeholder="123 Rue Example"
-                  />
-                </div>
+              ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="postal_code">Code postal *</Label>
+                    <Label htmlFor="first_name">Prénom *</Label>
                     <Input
-                      id="postal_code"
-                      value={companySettings.postal_code}
-                      onChange={(e) => setCompanySettings({ ...companySettings, postal_code: e.target.value })}
-                      placeholder="75001"
+                      id="first_name"
+                      value={settings.first_name || ''}
+                      onChange={(e) => setSettings({ ...settings, first_name: e.target.value })}
+                      placeholder="Jean"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="city">Ville *</Label>
+                    <Label htmlFor="last_name">Nom *</Label>
                     <Input
-                      id="city"
-                      value={companySettings.city}
-                      onChange={(e) => setCompanySettings({ ...companySettings, city: e.target.value })}
-                      placeholder="Paris"
+                      id="last_name"
+                      value={settings.last_name || ''}
+                      onChange={(e) => setSettings({ ...settings, last_name: e.target.value })}
+                      placeholder="Dupont"
                     />
                   </div>
                 </div>
-                <div>
-                  <Label htmlFor="vat_number">Numéro de TVA</Label>
-                  <Input
-                    id="vat_number"
-                    value={companySettings.vat_number}
-                    onChange={(e) => setCompanySettings({ ...companySettings, vat_number: e.target.value })}
-                    placeholder="FR12345678901"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Téléphone</Label>
-                  <Input
-                    id="phone"
-                    value={companySettings.phone}
-                    onChange={(e) => setCompanySettings({ ...companySettings, phone: e.target.value })}
-                    placeholder="+33 1 23 45 67 89"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={companySettings.email}
-                    onChange={(e) => setCompanySettings({ ...companySettings, email: e.target.value })}
-                    placeholder="contact@moncommerce.fr"
-                  />
-                </div>
-              </div>
-              <div className="mt-6">
-                <Button onClick={saveCompanySettings} disabled={saving} className="w-full">
-                  <Save className="h-4 w-4 mr-2" />
-                  {saving ? 'Enregistrement...' : 'Enregistrer'}
-                </Button>
-              </div>
-            </Card>
-          </TabsContent>
-
-          {/* Branding Settings */}
-          <TabsContent value="branding">
-            <BrandingSettings />
-          </TabsContent>
-
-          {/* Ticket Settings */}
-          <TabsContent value="tickets">
-            <TicketSettings />
-          </TabsContent>
-
-          {/* Display Settings */}
-          <TabsContent value="display">
-            <DisplaySettings />
-          </TabsContent>
-
-          {/* Homepage Settings */}
-          <TabsContent value="homepage">
-            <HomePageSettings />
-          </TabsContent>
-
-          {/* Backup Settings */}
-          <TabsContent value="backup">
-            <BackupSettings />
-          </TabsContent>
-
-          {/* Alerts Settings */}
-          <TabsContent value="alerts">
-            <StockAlertSettings />
-          </TabsContent>
-
-          {/* Loyalty Settings */}
-          <TabsContent value="loyalty">
-            <LoyaltySettings />
-          </TabsContent>
-
-          {/* Compliance Settings */}
-          <TabsContent value="compliance">
-            <div className="space-y-6">
-              <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
-                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <Smartphone className="h-6 w-6 text-blue-600" />
-                  Application Mobile
-                </h2>
-                <p className="text-muted-foreground mb-4">
-                  Téléchargez l'application Android pour scanner les produits avec la caméra de votre téléphone.
-                </p>
-                <Button 
-                  onClick={() => window.open('/download-app', '_blank')} 
-                  size="lg"
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
-                >
-                  <Smartphone className="h-5 w-5 mr-2" />
-                  Télécharger l'Application Android
-                </Button>
-              </Card>
-
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Ressources Utiles</h2>
-                <div className="space-y-3">
-                  <Button 
-                    onClick={() => navigate('/legal-info')} 
-                    className="w-full justify-start bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md relative"
-                  >
-                    <Scale className="h-5 w-5 mr-2" />
-                    Informations légales complètes
-                    <span className="absolute top-1 right-2 bg-red-500 text-white text-[9px] font-bold px-1 rounded-full animate-pulse">
-                      i
-                    </span>
-                  </Button>
-                  <Button 
-                    onClick={() => navigate('/getting-started')} 
-                    variant="outline" 
-                    className="w-full justify-start"
-                  >
-                    🚀 Guide de démarrage
-                  </Button>
-                </div>
-              </Card>
+              )}
             </div>
-          </TabsContent>
-        </Tabs>
+
+            {/* Adresse siège social */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Adresse du siège social</h3>
+              <div>
+                <Label htmlFor="hq_address">Adresse *</Label>
+                <Input
+                  id="hq_address"
+                  value={settings.headquarters_address}
+                  onChange={(e) => setSettings({ ...settings, headquarters_address: e.target.value })}
+                  placeholder="123 Rue Example"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="hq_postal">Code postal *</Label>
+                  <Input
+                    id="hq_postal"
+                    value={settings.headquarters_postal_code}
+                    onChange={(e) => setSettings({ ...settings, headquarters_postal_code: e.target.value })}
+                    placeholder="6000"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="hq_city">Ville *</Label>
+                  <Input
+                    id="hq_city"
+                    value={settings.headquarters_city}
+                    onChange={(e) => setSettings({ ...settings, headquarters_city: e.target.value })}
+                    placeholder="Charleroi"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Adresse du commerce */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Adresse du commerce</h3>
+              <div>
+                <Label htmlFor="store_address">Adresse *</Label>
+                <Input
+                  id="store_address"
+                  value={settings.store_address}
+                  onChange={(e) => setSettings({ ...settings, store_address: e.target.value })}
+                  placeholder="456 Avenue du Commerce"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="store_postal">Code postal *</Label>
+                  <Input
+                    id="store_postal"
+                    value={settings.store_postal_code}
+                    onChange={(e) => setSettings({ ...settings, store_postal_code: e.target.value })}
+                    placeholder="6000"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="store_city">Ville *</Label>
+                  <Input
+                    id="store_city"
+                    value={settings.store_city}
+                    onChange={(e) => setSettings({ ...settings, store_city: e.target.value })}
+                    placeholder="Charleroi"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Informations légales */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Informations légales</h3>
+              <div>
+                <Label htmlFor="vat_number">Numéro de TVA *</Label>
+                <Input
+                  id="vat_number"
+                  value={settings.vat_number}
+                  onChange={(e) => setSettings({ ...settings, vat_number: e.target.value })}
+                  placeholder="BE0123456789"
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Téléphone *</Label>
+                <Input
+                  id="phone"
+                  value={settings.phone}
+                  onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+                  placeholder="+32 71 12 34 56"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={settings.email}
+                  onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                  placeholder="contact@moncommerce.be"
+                />
+              </div>
+            </div>
+
+            {/* Comptes bancaires */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-lg">Comptes bancaires</h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addBankAccount}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter un compte
+                </Button>
+              </div>
+              
+              {settings.bank_accounts.length === 0 ? (
+                <p className="text-sm text-muted-foreground italic">
+                  Aucun compte bancaire configuré. Cliquez sur "Ajouter un compte" pour en ajouter.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {settings.bank_accounts.map((account) => (
+                    <Card key={account.id} className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label>Compte bancaire</Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeBankAccount(account.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                        <div>
+                          <Label htmlFor={`bank_name_${account.id}`}>Nom de la banque</Label>
+                          <Input
+                            id={`bank_name_${account.id}`}
+                            value={account.bank_name}
+                            onChange={(e) => updateBankAccount(account.id, 'bank_name', e.target.value)}
+                            placeholder="Ex: BNP Paribas Fortis"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor={`account_number_${account.id}`}>Numéro de compte (IBAN)</Label>
+                          <Input
+                            id={`account_number_${account.id}`}
+                            value={account.account_number}
+                            onChange={(e) => updateBankAccount(account.id, 'account_number', e.target.value)}
+                            placeholder="BE00 0000 0000 0000"
+                          />
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Bouton sauvegarder */}
+            <div className="pt-4">
+              <Button onClick={saveSettings} disabled={saving} className="w-full" size="lg">
+                <Save className="h-5 w-5 mr-2" />
+                {saving ? 'Enregistrement...' : 'Enregistrer les paramètres'}
+              </Button>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );
