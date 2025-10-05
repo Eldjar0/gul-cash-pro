@@ -494,6 +494,257 @@ export default function Stats() {
     URL.revokeObjectURL(url);
   };
 
+  // Export Evolution PDF
+  const exportEvolutionPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Rapport Évolution des Ventes', 14, 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Période: ${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}`, 14, 30);
+    doc.text(`Date d'export: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 36);
+    
+    // Statistiques générales
+    doc.setFontSize(14);
+    doc.text('Résumé', 14, 46);
+    doc.setFontSize(10);
+    doc.text(`Chiffre d'affaires total: ${totalRevenue.toFixed(2)}€`, 14, 54);
+    doc.text(`Nombre de ventes: ${salesCount}`, 14, 60);
+    doc.text(`Panier moyen: ${avgBasket.toFixed(2)}€`, 14, 66);
+
+    // Table évolution par jour
+    const evolutionData = dailyData.map(day => [
+      day.date,
+      day.count.toString(),
+      day.revenue.toFixed(2) + '€',
+      (day.revenue / day.count).toFixed(2) + '€'
+    ]);
+
+    autoTable(doc, {
+      startY: 76,
+      head: [['Date', 'Nb ventes', 'CA', 'Panier moyen']],
+      body: evolutionData,
+      theme: 'grid',
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [139, 92, 246] }
+    });
+
+    doc.save(`evolution_${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}.pdf`);
+  };
+
+  // Export Evolution XML
+  const exportEvolutionXML = () => {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<rapport_evolution>\n';
+    xml += `  <periode>\n`;
+    xml += `    <debut>${format(startDate, 'yyyy-MM-dd')}</debut>\n`;
+    xml += `    <fin>${format(endDate, 'yyyy-MM-dd')}</fin>\n`;
+    xml += `  </periode>\n`;
+    xml += `  <resume>\n`;
+    xml += `    <chiffre_affaires_total>${totalRevenue.toFixed(2)}</chiffre_affaires_total>\n`;
+    xml += `    <nombre_ventes>${salesCount}</nombre_ventes>\n`;
+    xml += `    <panier_moyen>${avgBasket.toFixed(2)}</panier_moyen>\n`;
+    xml += `  </resume>\n`;
+    xml += `  <evolution_journaliere>\n`;
+    
+    dailyData.forEach(day => {
+      xml += `    <jour>\n`;
+      xml += `      <date>${day.date}</date>\n`;
+      xml += `      <nombre_ventes>${day.count}</nombre_ventes>\n`;
+      xml += `      <chiffre_affaires>${day.revenue.toFixed(2)}</chiffre_affaires>\n`;
+      xml += `      <panier_moyen>${(day.revenue / day.count).toFixed(2)}</panier_moyen>\n`;
+      xml += `    </jour>\n`;
+    });
+    
+    xml += `  </evolution_journaliere>\n`;
+    xml += '</rapport_evolution>';
+
+    const blob = new Blob([xml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `evolution_${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}.xml`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Export Paiements PDF
+  const exportPaymentsPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Rapport Modes de Paiement', 14, 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Période: ${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}`, 14, 30);
+    doc.text(`Date d'export: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 36);
+    
+    // Statistiques
+    doc.setFontSize(14);
+    doc.text('Répartition des paiements', 14, 46);
+    doc.setFontSize(10);
+    doc.text(`Nombre total de transactions: ${salesCount}`, 14, 54);
+    doc.text(`Montant total: ${totalRevenue.toFixed(2)}€`, 14, 60);
+
+    // Table des paiements
+    const paymentsData = paymentData.map(method => [
+      method.method,
+      method.count.toString(),
+      method.total.toFixed(2) + '€',
+      method.percentage.toFixed(1) + '%'
+    ]);
+
+    autoTable(doc, {
+      startY: 70,
+      head: [['Mode de paiement', 'Nb transactions', 'Montant', '% du total']],
+      body: paymentsData,
+      theme: 'grid',
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [139, 92, 246] }
+    });
+
+    doc.save(`paiements_${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}.pdf`);
+  };
+
+  // Export Paiements XML
+  const exportPaymentsXML = () => {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<rapport_paiements>\n';
+    xml += `  <periode>\n`;
+    xml += `    <debut>${format(startDate, 'yyyy-MM-dd')}</debut>\n`;
+    xml += `    <fin>${format(endDate, 'yyyy-MM-dd')}</fin>\n`;
+    xml += `  </periode>\n`;
+    xml += `  <statistiques>\n`;
+    xml += `    <nombre_transactions>${salesCount}</nombre_transactions>\n`;
+    xml += `    <montant_total>${totalRevenue.toFixed(2)}</montant_total>\n`;
+    xml += `  </statistiques>\n`;
+    xml += `  <modes_paiement>\n`;
+    
+    paymentData.forEach(method => {
+      xml += `    <mode>\n`;
+      xml += `      <nom>${method.method}</nom>\n`;
+      xml += `      <nombre_transactions>${method.count}</nombre_transactions>\n`;
+      xml += `      <montant>${method.total.toFixed(2)}</montant>\n`;
+      xml += `      <pourcentage>${method.percentage.toFixed(2)}</pourcentage>\n`;
+      xml += `    </mode>\n`;
+    });
+    
+    xml += `  </modes_paiement>\n`;
+    xml += '</rapport_paiements>';
+
+    const blob = new Blob([xml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `paiements_${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}.xml`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Export Classement PDF
+  const exportRankingPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Classement des Produits', 14, 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Période: ${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}`, 14, 30);
+    doc.text(`Date d'export: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 36);
+    
+    // Top 10 produits
+    doc.setFontSize(14);
+    doc.text('Top 10 - Produits les plus vendus', 14, 46);
+    
+    const topData = topProducts.slice(0, 10).map((product, idx) => [
+      (idx + 1).toString(),
+      product.name,
+      product.quantity.toString(),
+      product.count.toString(),
+      product.revenue.toFixed(2) + '€'
+    ]);
+
+    autoTable(doc, {
+      startY: 54,
+      head: [['Rang', 'Produit', 'Qté vendue', 'Nb ventes', 'CA']],
+      body: topData,
+      theme: 'grid',
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [139, 92, 246] }
+    });
+
+    // Produits moins vendus
+    const yPos = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.text('Produits les moins vendus', 14, yPos);
+
+    const bottomData = topProducts.slice().reverse().slice(0, 10).map((product, idx) => [
+      (topProducts.length - idx).toString(),
+      product.name,
+      product.quantity.toString(),
+      product.count.toString(),
+      product.revenue.toFixed(2) + '€'
+    ]);
+
+    autoTable(doc, {
+      startY: yPos + 8,
+      head: [['Rang', 'Produit', 'Qté vendue', 'Nb ventes', 'CA']],
+      body: bottomData,
+      theme: 'grid',
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [139, 92, 246] }
+    });
+
+    doc.save(`classement_${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}.pdf`);
+  };
+
+  // Export Classement XML
+  const exportRankingXML = () => {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<classement_produits>\n';
+    xml += `  <periode>\n`;
+    xml += `    <debut>${format(startDate, 'yyyy-MM-dd')}</debut>\n`;
+    xml += `    <fin>${format(endDate, 'yyyy-MM-dd')}</fin>\n`;
+    xml += `  </periode>\n`;
+    
+    xml += `  <top_produits>\n`;
+    topProducts.slice(0, 10).forEach((product, idx) => {
+      xml += `    <produit>\n`;
+      xml += `      <rang>${idx + 1}</rang>\n`;
+      xml += `      <nom>${product.name}</nom>\n`;
+      xml += `      <code_barre>${product.barcode || ''}</code_barre>\n`;
+      xml += `      <quantite_vendue>${product.quantity}</quantite_vendue>\n`;
+      xml += `      <nombre_ventes>${product.count}</nombre_ventes>\n`;
+      xml += `      <chiffre_affaires>${product.revenue.toFixed(2)}</chiffre_affaires>\n`;
+      xml += `    </produit>\n`;
+    });
+    xml += `  </top_produits>\n`;
+    
+    xml += `  <produits_moins_vendus>\n`;
+    topProducts.slice().reverse().slice(0, 10).forEach((product, idx) => {
+      xml += `    <produit>\n`;
+      xml += `      <rang>${topProducts.length - idx}</rang>\n`;
+      xml += `      <nom>${product.name}</nom>\n`;
+      xml += `      <code_barre>${product.barcode || ''}</code_barre>\n`;
+      xml += `      <quantite_vendue>${product.quantity}</quantite_vendue>\n`;
+      xml += `      <nombre_ventes>${product.count}</nombre_ventes>\n`;
+      xml += `      <chiffre_affaires>${product.revenue.toFixed(2)}</chiffre_affaires>\n`;
+      xml += `    </produit>\n`;
+    });
+    xml += `  </produits_moins_vendus>\n`;
+    
+    xml += '</classement_produits>';
+
+    const blob = new Blob([xml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `classement_${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}.xml`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // Export Produits XML
   const exportProductsXML = () => {
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
@@ -755,6 +1006,17 @@ export default function Stats() {
         </TabsList>
 
         <TabsContent value="evolution" className="space-y-4">
+          <div className="flex gap-2 mb-4">
+            <Button onClick={exportEvolutionPDF} variant="outline" size="sm">
+              <FileText className="w-4 h-4 mr-2" />
+              Export PDF Évolution
+            </Button>
+            <Button onClick={exportEvolutionXML} variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Export XML Évolution
+            </Button>
+          </div>
+
           <Card>
             <CardHeader>
               <CardTitle>Évolution du chiffre d'affaires</CardTitle>
@@ -834,6 +1096,17 @@ export default function Stats() {
         </TabsContent>
 
         <TabsContent value="payments" className="space-y-4">
+          <div className="flex gap-2 mb-4">
+            <Button onClick={exportPaymentsPDF} variant="outline" size="sm">
+              <FileText className="w-4 h-4 mr-2" />
+              Export PDF Paiements
+            </Button>
+            <Button onClick={exportPaymentsXML} variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Export XML Paiements
+            </Button>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
@@ -897,6 +1170,17 @@ export default function Stats() {
         </TabsContent>
 
         <TabsContent value="ranking" className="space-y-4">
+          <div className="flex gap-2 mb-4">
+            <Button onClick={exportRankingPDF} variant="outline" size="sm">
+              <FileText className="w-4 h-4 mr-2" />
+              Export PDF Classement
+            </Button>
+            <Button onClick={exportRankingXML} variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Export XML Classement
+            </Button>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
