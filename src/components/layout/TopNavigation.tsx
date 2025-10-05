@@ -79,7 +79,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-primary to-primary-glow shadow-lg">
       <div className="flex h-12 items-center gap-1 px-2">
         {/* Logo */}
         <button
@@ -220,7 +220,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               variant="ghost"
               size="icon"
               onClick={() => setShowNotifications(!showNotifications)}
-              className="h-10 w-10"
+              className="h-10 w-10 text-white hover:bg-white/20"
             >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
@@ -239,7 +239,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
             variant="ghost"
             size="icon"
             onClick={onLockScreen}
-            className="h-10 w-10"
+            className="h-10 w-10 text-white hover:bg-white/20"
           >
             <Lock className="h-4 w-4" />
           </Button>
@@ -248,7 +248,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
             variant="ghost"
             size="icon"
             onClick={handleSignOut}
-            className="text-destructive hover:text-destructive h-10 w-10"
+            className="h-10 w-10 text-white hover:bg-white/20"
           >
             <LogOut className="h-4 w-4" />
           </Button>
