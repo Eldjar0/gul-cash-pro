@@ -576,11 +576,16 @@ const Index = () => {
       </div>;
   }
   const handleSearch = () => {
-    if (!scanInput.trim() || !products) {
+    if (!scanInput || !scanInput.trim() || !products || products.length === 0) {
       setSearchResults([]);
       return;
     }
-    const strip = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    
+    const strip = (s: string) => {
+      if (!s || typeof s !== 'string') return '';
+      return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    };
+    
     const normalizedInput = normalizeBarcode(scanInput);
     const searchTerm = strip(scanInput);
     const trimmedSearch = scanInput.trim();
@@ -630,7 +635,10 @@ const Index = () => {
         results = [...results, ...productsByCategory].filter((product, index, self) => self.findIndex(p => p.id === product.id) === index);
       }
     }
-    setSearchResults(results);
+    
+    // Limiter le nombre de résultats pour la performance
+    const maxResults = 50;
+    setSearchResults(results.slice(0, maxResults));
   };
   const handleProductLinked = (productId: string) => {
     const product = products?.find(p => p.id === productId);
@@ -742,6 +750,19 @@ const Index = () => {
         }
       });
       setPaymentDialogOpen(false);
+      return;
+    }
+
+    // Validation du panier
+    if (cart.length === 0) {
+      toast.error('Le panier est vide');
+      setPaymentDialogOpen(false);
+      return;
+    }
+
+    // Validation du montant
+    if (amountPaid !== undefined && (typeof amountPaid !== 'number' || isNaN(amountPaid) || amountPaid < 0)) {
+      toast.error('Montant payé invalide');
       return;
     }
 
@@ -958,6 +979,37 @@ const Index = () => {
       return;
     }
 
+    // Validation du panier
+    if (cart.length === 0) {
+      toast.error('Le panier est vide');
+      setMixedPaymentDialogOpen(false);
+      return;
+    }
+
+    // Validation des paiements
+    if (!payments || !Array.isArray(payments) || payments.length === 0) {
+      toast.error('Aucun paiement fourni');
+      return;
+    }
+
+    // Vérifier que tous les montants sont valides
+    const hasInvalidAmount = payments.some(p => 
+      typeof p.amount !== 'number' || isNaN(p.amount) || p.amount <= 0
+    );
+    if (hasInvalidAmount) {
+      toast.error('Montants de paiement invalides');
+      return;
+    }
+
+    // Vérifier que le total correspond
+    const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+    if (Math.abs(totalPaid - totals.total) > 0.01) {
+      toast.error('Le total des paiements ne correspond pas au montant dû', {
+        description: `Payé: ${totalPaid.toFixed(2)}€ / Dû: ${totals.total.toFixed(2)}€`
+      });
+      return;
+    }
+
     // Calculer le montant espèces pour le tiroir-caisse
     const cashAmount = payments.filter(p => p.method === 'cash').reduce((sum, p) => sum + p.amount, 0);
     const saleData = {
@@ -995,6 +1047,11 @@ const Index = () => {
     };
     try {
       const sale = await createSale.mutateAsync(saleData);
+      
+      if (!sale || !sale.id) {
+        throw new Error('Vente créée mais données invalides');
+      }
+      
       const saleForReceipt = {
         ...sale,
         saleNumber: sale.sale_number,
@@ -1008,6 +1065,7 @@ const Index = () => {
         payments: payments
       };
       setCurrentSale(saleForReceipt);
+      
       const timeoutId = setTimeout(() => {
         const idleState = {
           items: [],
@@ -1021,6 +1079,7 @@ const Index = () => {
           // Erreur silencieuse
         }
       }, 5000);
+      
       setCart([]);
       setGlobalDiscount(null);
       setAppliedPromoCode(null);
@@ -1031,16 +1090,28 @@ const Index = () => {
       setPrintConfirmDialogOpen(true);
       toast.success('Paiement mixte validé');
     } catch (error) {
-      toast.error('Erreur paiement mixte');
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      toast.error('Erreur paiement mixte', {
+        description: errorMessage
+      });
     }
   };
   const handleSelectCustomer = (customer: Customer) => {
+    if (!customer || !customer.id) {
+      toast.error('Client invalide');
+      return;
+    }
+    
     setSelectedCustomer(customer);
     setIsInvoiceMode(true);
     toast.success(`Client sélectionné: ${customer.name}`);
   };
   const handlePreviewReceipt = () => {
-    if (cart.length === 0) return;
+    if (cart.length === 0) {
+      toast.info('Le panier est vide');
+      return;
+    }
+    
     const previewSale = {
       saleNumber: 'PREVIEW-' + Date.now(),
       date: new Date(),
