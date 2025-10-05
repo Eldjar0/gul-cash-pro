@@ -25,12 +25,18 @@ import { LabelDesignEditor } from '@/components/inventory/LabelDesignEditor';
 
 const normalizeBarcodeInput = (raw: string) => {
   const map: Record<string, string> = {
-    '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5', '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0', '!': '8'
+    '&': '1', '!': '1', 'é': '2', '@': '2', '"': '3', '#': '3',
+    "'": '4', '$': '4', '(': '5', '%': '5', '-': '6', '^': '6',
+    'è': '7', '&amp;': '7', '_': '8', '*': '8', 'ç': '9', 'à': '0', ')': '0',
+    '§': '6', '²': '2', '³': '3', '°': '0', '+': '1', '=': '0',
+    '~': '2', '{': '4', '}': '0', '[': '5', ']': '6', '|': '6',
+    '`': '7', '\\': '8', '/': '9'
   };
   return raw
     .split('')
-    .map((ch) => (/[0-9]/.test(ch) ? ch : (map[ch] ?? '')))
-    .join('');
+    .map((ch) => (/[0-9]/.test(ch) ? ch : (map[ch] || ch)))
+    .join('')
+    .replace(/\D+/g, ''); // Supprimer tous les caractères non-numériques à la fin
 };
 
 export const ProductsManagement = () => {
