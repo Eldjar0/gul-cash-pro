@@ -1,5 +1,6 @@
 import { Product } from '@/hooks/useProducts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
+import { CheckCircle, AlertCircle, XCircle, ExternalLink } from 'lucide-react';
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -58,7 +59,16 @@ export function Receipt({ sale }: ReceiptProps) {
   const { settings } = useCompanySettings();
   
   return (
-    <div className="font-mono text-[11px] leading-tight max-w-[320px] mx-auto bg-white text-black p-4 print:p-0">
+    <div className="font-mono text-[11px] leading-tight max-w-[320px] mx-auto bg-white text-black p-4 print:p-0 relative">
+      {/* Bouton AFSCA en haut à droite */}
+      <a
+        href="https://favv-afsca.be/fr/produits"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors print:hidden"
+      >
+        AFSCA <ExternalLink size={12} />
+      </a>
       {/* En-tête magasin */}
       <div className="text-center mb-4">
         <h1 className="text-xl font-black tracking-wider mb-1">{settings.name}</h1>
@@ -115,6 +125,22 @@ export function Receipt({ sale }: ReceiptProps) {
           // Vérifier que le produit existe
           if (!item.product) return null;
           
+          // Déterminer l'indicateur de stock
+          const currentStock = item.product.stock || 0;
+          const minStock = item.product.min_stock || 0;
+          const afterSaleStock = currentStock - item.quantity;
+          
+          let stockColor = 'text-green-600';
+          let StockIcon = CheckCircle;
+          
+          if (afterSaleStock <= 0) {
+            stockColor = 'text-red-600';
+            StockIcon = XCircle;
+          } else if (afterSaleStock <= minStock) {
+            stockColor = 'text-orange-600';
+            StockIcon = AlertCircle;
+          }
+          
           return (
             <div key={index} className="mb-2">
               <div className="flex justify-between leading-tight">
@@ -123,13 +149,19 @@ export function Receipt({ sale }: ReceiptProps) {
                   {item.is_gift && <span className="ml-1 text-pink-600">🎁</span>}
                 </span>
               </div>
-              <div className="flex justify-between text-[10px] mt-0.5">
+              <div className="flex justify-between text-[10px] mt-0.5 items-center">
                 <span className="font-semibold">
                   {item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0)}
                   {item.product.type === 'weight' ? 'kg' : 'x'}
                   {item.product.type === 'weight' ? '' : ` ${item.product.price.toFixed(2)}€`}
                 </span>
-                <span className="font-black">{item.is_gift ? 'OFFERT' : item.subtotal.toFixed(2)}</span>
+                <div className="flex items-center gap-2">
+                  <div className={`flex items-center gap-1 ${stockColor}`}>
+                    <StockIcon size={12} />
+                    <span className="text-[9px]">{afterSaleStock.toFixed(item.product.type === 'weight' ? 1 : 0)}</span>
+                  </div>
+                  <span className="font-black">{item.is_gift ? 'OFFERT' : item.subtotal.toFixed(2)}</span>
+                </div>
               </div>
               {item.discount && !item.is_gift && (
                 <div className="text-[9px] font-bold italic">

@@ -1,6 +1,7 @@
 import { Product } from '@/hooks/useProducts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import logoMarket from '@/assets/logo-market.png';
+import { CheckCircle, AlertCircle, XCircle, ExternalLink } from 'lucide-react';
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -85,7 +86,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
   return (
     <div 
       id="thermal-receipt"
-      className="font-mono bg-white text-black"
+      className="font-mono bg-white text-black relative"
       style={{ 
         width: '80mm',
         maxWidth: '302px',
@@ -100,6 +101,16 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         boxSizing: 'border-box'
       }}
     >
+      {/* Bouton AFSCA en haut à droite */}
+      <a
+        href="https://favv-afsca.be/fr/produits"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors no-print"
+        style={{ fontSize: '10px', fontWeight: '700' }}
+      >
+        AFSCA <ExternalLink size={12} />
+      </a>
       {/* Logo centré */}
       <div className="text-center mb-2">
         <img 
@@ -173,6 +184,22 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           const qtyDisplay = item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0);
           const pricePerUnit = item.product.price.toFixed(2);
           
+          // Déterminer l'indicateur de stock
+          const currentStock = item.product.stock || 0;
+          const minStock = item.product.min_stock || 0;
+          const afterSaleStock = currentStock - item.quantity;
+          
+          let stockColor = '#22c55e'; // Vert par défaut
+          let StockIcon = CheckCircle;
+          
+          if (afterSaleStock <= 0) {
+            stockColor = '#ef4444'; // Rouge
+            StockIcon = XCircle;
+          } else if (afterSaleStock <= minStock) {
+            stockColor = '#f97316'; // Orange
+            StockIcon = AlertCircle;
+          }
+          
           return (
             <div key={index} style={{ marginBottom: '3px' }}>
               {/* Nom du produit ET infos sur la MÊME ligne */}
@@ -193,7 +220,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  maxWidth: '200px'
+                  maxWidth: '180px'
                 }}>
                   {item.product.name}
                   {item.is_gift && <span style={{ marginLeft: '4px' }}>🎁</span>}
@@ -208,17 +235,32 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                 </span>
               </div>
               
-              {/* Ligne avec quantité, prix unitaire - REMISE SUR LA MÊME LIGNE */}
+              {/* Ligne avec quantité, prix unitaire - REMISE + STOCK */}
               <div style={{ 
                 fontSize: '11px',
-                fontWeight: '800'
+                fontWeight: '800',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}>
-                {qtyDisplay} {unitDisplay} x {pricePerUnit}€
-                {item.discount && !item.is_gift && (
-                  <span style={{ fontStyle: 'italic', marginLeft: '5px' }}>
-                    REM -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
-                  </span>
-                )}
+                <div>
+                  {qtyDisplay} {unitDisplay} x {pricePerUnit}€
+                  {item.discount && !item.is_gift && (
+                    <span style={{ fontStyle: 'italic', marginLeft: '5px' }}>
+                      REM -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
+                    </span>
+                  )}
+                </div>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '3px',
+                  fontSize: '10px',
+                  color: stockColor
+                }}>
+                  <StockIcon size={12} style={{ color: stockColor }} />
+                  <span>{afterSaleStock.toFixed(item.product.type === 'weight' ? 1 : 0)}</span>
+                </div>
               </div>
             </div>
           );
