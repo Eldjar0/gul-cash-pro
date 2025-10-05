@@ -425,26 +425,26 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                       placeholder="Nom du client"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
-                      className="font-semibold bg-blue-50 border-blue-200 focus-visible:ring-blue-500"
+                      className="font-semibold border-0 border-b border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 px-0 rounded-none bg-transparent transition-colors"
                     />
                     <Input
                       placeholder="Adresse"
                       value={clientAddress}
                       onChange={(e) => setClientAddress(e.target.value)}
-                      className="bg-blue-50 border-blue-200 focus-visible:ring-blue-500"
+                      className="border-0 border-b border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 px-0 rounded-none bg-transparent transition-colors"
                     />
                     <div className="flex gap-2">
                       <Input
                         placeholder="Code postal"
                         value={clientPostalCode}
                         onChange={(e) => setClientPostalCode(e.target.value)}
-                        className="bg-blue-50 border-blue-200 focus-visible:ring-blue-500 w-32"
+                        className="border-0 border-b border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 px-0 rounded-none bg-transparent transition-colors w-32"
                       />
                       <Input
                         placeholder="Ville"
                         value={clientCity}
                         onChange={(e) => setClientCity(e.target.value)}
-                        className="bg-blue-50 border-blue-200 focus-visible:ring-blue-500 flex-1"
+                        className="border-0 border-b border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 px-0 rounded-none bg-transparent transition-colors flex-1"
                       />
                     </div>
                   </div>
@@ -453,7 +453,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                 <div className="w-72 space-y-3 text-sm">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold">Numéro de facture</span>
-                    <span className="font-mono bg-gray-100 px-2 py-1 rounded">{invoiceNumber}</span>
+                    <span className="font-mono bg-gray-50 px-3 py-1 rounded border">{invoiceNumber}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="font-semibold">Date de facturation</span>
@@ -461,7 +461,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                       type="date"
                       value={invoiceDate}
                       onChange={(e) => setInvoiceDate(e.target.value)}
-                      className="h-8 w-36 text-xs bg-blue-50 border-blue-200"
+                      className="h-8 w-36 text-xs border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors"
                     />
                   </div>
                   <div className="flex justify-between items-center">
@@ -470,7 +470,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      className="h-8 w-36 text-xs bg-blue-50 border-blue-200"
+                      className="h-8 w-36 text-xs border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors"
                     />
                   </div>
                   <div className="flex justify-between items-center">
@@ -479,7 +479,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                       placeholder="BE..."
                       value={clientVatNumber}
                       onChange={(e) => setClientVatNumber(e.target.value)}
-                      className="h-8 w-36 text-xs bg-blue-50 border-blue-200"
+                      className="h-8 w-36 text-xs border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors"
                     />
                   </div>
                 </div>
@@ -548,7 +548,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                             placeholder="Description de l'article"
                             value={item.description}
                             onChange={(e) => updateItem(index, 'description', e.target.value)}
-                            className="bg-blue-50 border-blue-200 focus-visible:ring-blue-500 h-9"
+                            className="border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors h-9"
                           />
                         </td>
                         <td className="py-2 px-2">
@@ -558,7 +558,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                             step="0.01"
                             value={item.quantity}
                             onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                            className="text-center bg-blue-50 border-blue-200 focus-visible:ring-blue-500 h-9"
+                            className="text-center border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors h-9"
                           />
                         </td>
                         <td className="py-2 px-2">
@@ -568,7 +568,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                             step="0.01"
                             value={item.unitPrice}
                             onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                            className="text-right bg-blue-50 border-blue-200 focus-visible:ring-blue-500 h-9"
+                            className="text-right border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors h-9"
                           />
                         </td>
                         <td className="py-2 px-2">
@@ -578,7 +578,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                             step="0.01"
                             value={item.vatRate}
                             onChange={(e) => updateItem(index, 'vatRate', parseFloat(e.target.value) || 0)}
-                            className="text-center bg-blue-50 border-blue-200 focus-visible:ring-blue-500 h-9 w-20"
+                            className="text-center border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors h-9 w-20"
                           />
                         </td>
                         <td className="py-2 px-2 text-right font-semibold">
@@ -640,7 +640,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                   placeholder="Notes ou instructions de paiement..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="min-h-[100px] text-sm bg-blue-50 border-blue-200 focus-visible:ring-blue-500"
+                  className="min-h-[100px] text-sm border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors"
                 />
               </div>
 
