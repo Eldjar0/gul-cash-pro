@@ -69,16 +69,19 @@ export function useOpenDay() {
     mutationFn: async (openingAmount: number) => {
       const today = new Date().toISOString().split('T')[0];
       
-      // Vérifier si la journée est déjà ouverte (closing_amount IS NULL)
+      // Vérifier si un rapport existe déjà pour cette date
       const { data: existing } = await supabase
         .from('daily_reports')
-        .select('id')
+        .select('id, closing_amount')
         .eq('report_date', today)
-        .is('closing_amount', null)
         .maybeSingle();
 
       if (existing) {
-        throw new Error('La journée est déjà ouverte');
+        if (existing.closing_amount === null) {
+          throw new Error('La journée est déjà ouverte');
+        } else {
+          throw new Error('La journée a déjà été ouverte et fermée');
+        }
       }
 
       const { data: user } = await supabase.auth.getUser();
