@@ -60,6 +60,9 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
   
   // Calculer TVA par taux (comme Lidl)
   const vatByRate = sale.items.reduce((acc, item) => {
+    // Vérifier que le produit existe
+    if (!item.product) return acc;
+    
     const rate = item.product.vat_rate;
     if (!acc[rate]) {
       acc[rate] = { totalHT: 0, totalVAT: 0 };
@@ -162,6 +165,9 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       {/* Items - Style Lidl */}
       <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
         {sale.items.map((item, index) => {
+          // Vérifier que le produit existe
+          if (!item.product) return null;
+          
           const unitDisplay = item.product.type === 'weight' ? 'kg' : 'pc';
           const qtyDisplay = item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0);
           const pricePerUnit = item.product.price.toFixed(2);

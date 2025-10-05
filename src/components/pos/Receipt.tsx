@@ -110,26 +110,31 @@ export function Receipt({ sale }: ReceiptProps) {
 
       {/* Articles */}
       <div className="mb-3">
-        {sale.items.map((item, index) => (
-          <div key={index} className="mb-2">
-            <div className="flex justify-between leading-tight">
-              <span className="flex-1 uppercase text-xs font-black tracking-wide">{item.product.name}</span>
-            </div>
-            <div className="flex justify-between text-[10px] mt-0.5">
-              <span className="font-semibold">
-                {item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0)}
-                {item.product.type === 'weight' ? 'kg' : 'x'}
-                {item.product.type === 'weight' ? '' : ` ${item.product.price.toFixed(2)}€`}
-              </span>
-              <span className="font-black">{item.subtotal.toFixed(2)}</span>
-            </div>
-            {item.discount && (
-              <div className="text-[9px] font-bold italic">
-                REMISE -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
+        {sale.items.map((item, index) => {
+          // Vérifier que le produit existe
+          if (!item.product) return null;
+          
+          return (
+            <div key={index} className="mb-2">
+              <div className="flex justify-between leading-tight">
+                <span className="flex-1 uppercase text-xs font-black tracking-wide">{item.product.name}</span>
               </div>
-            )}
-          </div>
-        ))}
+              <div className="flex justify-between text-[10px] mt-0.5">
+                <span className="font-semibold">
+                  {item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0)}
+                  {item.product.type === 'weight' ? 'kg' : 'x'}
+                  {item.product.type === 'weight' ? '' : ` ${item.product.price.toFixed(2)}€`}
+                </span>
+                <span className="font-black">{item.subtotal.toFixed(2)}</span>
+              </div>
+              {item.discount && (
+                <div className="text-[9px] font-bold italic">
+                  REMISE -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Ligne de séparation */}
