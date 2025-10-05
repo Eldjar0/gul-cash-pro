@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Plus, Trash2, Save, Users, Lock } from 'lucide-react';
+import { Plus, Trash2, Save, Users, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -40,7 +39,6 @@ interface User {
 }
 
 export default function UserManagement() {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -213,27 +211,7 @@ export default function UserManagement() {
   const cashierCount = users.filter(u => u.role === 'cashier').length;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/')}
-            className="text-white hover:bg-white/20"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Gestion des Utilisateurs</h1>
-            <p className="text-sm text-white/80">Gérer les comptes caissiers et administrateurs</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-6 max-w-6xl mx-auto">
-        <Card className="p-6">
+    <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-semibold flex items-center gap-2">
@@ -364,8 +342,7 @@ export default function UserManagement() {
               Aucun utilisateur trouvé
             </div>
           )}
-        </Card>
-      </div>
+        
 
       {/* Dialog changement de mot de passe */}
       <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
@@ -395,6 +372,6 @@ export default function UserManagement() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </Card>
   );
 }

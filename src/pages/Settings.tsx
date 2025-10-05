@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Building, Save, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import UserManagement from './UserManagement';
+import ContactInfo from './ContactInfo';
 
 interface BankAccount {
   id: string;
@@ -204,14 +207,31 @@ export default function Settings() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-white">Paramètres de Facturation</h1>
-            <p className="text-sm text-white/80">Configuration des informations légales</p>
+            <h1 className="text-2xl font-bold text-white">Paramètres</h1>
+            <p className="text-sm text-white/80">Configuration et gestion des utilisateurs</p>
           </div>
         </div>
       </div>
 
-      <div className="p-6 max-w-4xl mx-auto">
-        <Card className="p-6">
+      <div className="p-6 max-w-6xl mx-auto">
+        <Tabs defaultValue="billing" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="billing" className="flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              Facturation
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Utilisateurs
+            </TabsTrigger>
+            <TabsTrigger value="contact" className="flex items-center gap-2">
+              <Info className="h-4 w-4" />
+              Contact
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="billing">
+            <Card className="p-6">
           <div className="space-y-8">
             {/* Type d'entité */}
             <div className="space-y-4">
@@ -454,7 +474,17 @@ export default function Settings() {
               </Button>
             </div>
           </div>
-        </Card>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users">
+            <UserManagement />
+          </TabsContent>
+
+          <TabsContent value="contact">
+            <ContactInfo />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
