@@ -25,6 +25,7 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
     vat_rate: '21',
     type: 'unit' as 'unit' | 'weight',
     category_id: '',
+    unit: 'pièce',
   });
 
   const { data: products = [] } = useProducts();
@@ -86,6 +87,7 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
         vat_rate: parseFloat(newProduct.vat_rate),
         type: newProduct.type,
         category_id: newProduct.category_id,
+        unit: newProduct.unit,
         is_active: true,
         stock: 0,
         min_stock: 0,
@@ -249,8 +251,34 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unit">Unité (pièce)</SelectItem>
-                    <SelectItem value="weight">Poids (kg)</SelectItem>
+                    <SelectItem value="unit">Unité</SelectItem>
+                    <SelectItem value="weight">Poids</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="unit" className="text-base font-semibold">Unité de mesure</Label>
+                <Select
+                  value={newProduct.unit}
+                  onValueChange={(value) =>
+                    setNewProduct({ ...newProduct, unit: value })
+                  }
+                >
+                  <SelectTrigger id="unit" className="h-12 text-base mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pièce">pièce</SelectItem>
+                    <SelectItem value="kg">kg (kilogramme)</SelectItem>
+                    <SelectItem value="g">g (gramme)</SelectItem>
+                    <SelectItem value="L">L (litre)</SelectItem>
+                    <SelectItem value="mL">mL (millilitre)</SelectItem>
+                    <SelectItem value="m">m (mètre)</SelectItem>
+                    <SelectItem value="m²">m² (mètre carré)</SelectItem>
+                    <SelectItem value="paquet">paquet</SelectItem>
+                    <SelectItem value="boîte">boîte</SelectItem>
+                    <SelectItem value="carton">carton</SelectItem>
+                    <SelectItem value="lot">lot</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

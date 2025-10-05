@@ -74,7 +74,7 @@ export default function Products() {
     price: '',
     cost_price: '',
     type: 'unit' as 'unit' | 'weight',
-    unit: 'unité',
+    unit: 'pièce',
     category_id: '',
     vat_rate: '21',
     stock: '',
@@ -144,7 +144,7 @@ export default function Products() {
         price: '',
         cost_price: '',
         type: 'unit',
-        unit: 'unité',
+        unit: 'pièce',
         category_id: '',
         vat_rate: '21',
         stock: '',
@@ -652,7 +652,25 @@ export default function Products() {
                 />
               </div>
               <div className="col-span-2 md:col-span-1">
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="category">Catégorie *</Label>
+                <Select
+                  value={formData.category_id}
+                  onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner une catégorie..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-2 md:col-span-1">
+                <Label htmlFor="type">Type de produit</Label>
                 <Select
                   value={formData.type}
                   onValueChange={(value: 'unit' | 'weight') => setFormData({ ...formData, type: value })}
@@ -662,12 +680,12 @@ export default function Products() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unit">Unité</SelectItem>
-                    <SelectItem value="weight">Poids (kg)</SelectItem>
+                    <SelectItem value="weight">Poids</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="col-span-2 md:col-span-1">
-                <Label htmlFor="unit">Unité de vente</Label>
+                <Label htmlFor="unit">Unité de mesure</Label>
                 <Select
                   value={formData.unit}
                   onValueChange={(value) => setFormData({ ...formData, unit: value })}
@@ -676,31 +694,17 @@ export default function Products() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unité">Unité (u)</SelectItem>
-                    <SelectItem value="carton">Carton</SelectItem>
-                    <SelectItem value="lot">Lot</SelectItem>
-                    <SelectItem value="kg">Kilogramme (kg)</SelectItem>
-                    <SelectItem value="g">Gramme (g)</SelectItem>
-                    <SelectItem value="litre">Litre (L)</SelectItem>
-                    <SelectItem value="ml">Millilitre (ml)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <Label htmlFor="category">Catégorie</Label>
-                <Select
-                  value={formData.category_id}
-                  onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="pièce">pièce</SelectItem>
+                    <SelectItem value="kg">kg (kilogramme)</SelectItem>
+                    <SelectItem value="g">g (gramme)</SelectItem>
+                    <SelectItem value="L">L (litre)</SelectItem>
+                    <SelectItem value="mL">mL (millilitre)</SelectItem>
+                    <SelectItem value="m">m (mètre)</SelectItem>
+                    <SelectItem value="m²">m² (mètre carré)</SelectItem>
+                    <SelectItem value="paquet">paquet</SelectItem>
+                    <SelectItem value="boîte">boîte</SelectItem>
+                    <SelectItem value="carton">carton</SelectItem>
+                    <SelectItem value="lot">lot</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
