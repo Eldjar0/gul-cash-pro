@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ interface GiftCardDialogProps {
 }
 
 export const GiftCardDialog = ({ open, onOpenChange, totalAmount, onApply }: GiftCardDialogProps) => {
+  const navigate = useNavigate();
   const [cardNumber, setCardNumber] = useState('');
   const [amountToUse, setAmountToUse] = useState('');
   const [verifiedCard, setVerifiedCard] = useState<any>(null);
@@ -93,8 +95,19 @@ export const GiftCardDialog = ({ open, onOpenChange, totalAmount, onApply }: Gif
     }, {
       onSuccess: (data) => {
         toast.success('Carte créée avec succès');
-        // Imprimer le ticket
-        printGiftCardReceipt(data, senderName, message);
+        
+        // Imprimer le ticket avec redirection après impression
+        printGiftCardReceipt(data, senderName, message, () => {
+          // Fermer le dialogue
+          onOpenChange(false);
+          
+          // Rediriger vers la page Paiements
+          setTimeout(() => {
+            navigate('/payments');
+          }, 500);
+        });
+        
+        // Réinitialiser les champs
         setNewCardNumber('');
         setNewCardBalance('');
         setSenderName('');

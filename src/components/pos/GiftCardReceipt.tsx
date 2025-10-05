@@ -12,7 +12,8 @@ interface GiftCard {
 export const printGiftCardReceipt = (
   card: GiftCard,
   senderName?: string,
-  message?: string
+  message?: string,
+  onAfterPrint?: () => void
 ) => {
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
@@ -50,141 +51,111 @@ export const printGiftCardReceipt = (
           font-family: 'Lato', sans-serif;
           width: 80mm;
           margin: 0 auto;
-          padding: 10mm 5mm;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
+          padding: 8mm 4mm;
+          background: white;
         }
 
         .card-container {
           background: white;
-          border-radius: 15px;
-          padding: 20px;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .card-container::before {
-          content: '';
-          position: absolute;
-          top: -50%;
-          right: -50%;
-          width: 200%;
-          height: 200%;
-          background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
-          pointer-events: none;
+          padding: 0;
         }
 
         .header {
           text-align: center;
-          margin-bottom: 20px;
-          position: relative;
+          margin-bottom: 12px;
+          padding-bottom: 8px;
+          border-bottom: 2px dashed #333;
         }
 
         .gift-icon {
-          font-size: 60px;
-          margin-bottom: 10px;
-          animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
+          font-size: 48px;
+          margin-bottom: 5px;
         }
 
         .company-name {
           font-family: 'Playfair Display', serif;
-          font-size: 22px;
+          font-size: 16px;
           font-weight: 700;
-          color: #667eea;
-          margin-bottom: 5px;
+          color: #333;
+          margin-bottom: 3px;
         }
 
         .title {
           font-family: 'Dancing Script', cursive;
-          font-size: 32px;
-          color: #764ba2;
-          margin: 15px 0;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .divider {
-          height: 2px;
-          background: linear-gradient(to right, transparent, #667eea, transparent);
-          margin: 15px 0;
+          font-size: 24px;
+          color: #000;
+          margin: 8px 0;
         }
 
         .amount-section {
           text-align: center;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          padding: 20px;
-          border-radius: 10px;
-          margin: 20px 0;
-          box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+          background: #f5f5f5;
+          padding: 15px;
+          border-radius: 8px;
+          margin: 12px 0;
         }
 
         .amount-label {
-          font-size: 14px;
-          color: rgba(255, 255, 255, 0.9);
+          font-size: 11px;
+          color: #666;
           text-transform: uppercase;
-          letter-spacing: 2px;
+          letter-spacing: 1px;
           margin-bottom: 5px;
         }
 
         .amount {
           font-family: 'Playfair Display', serif;
-          font-size: 48px;
+          font-size: 36px;
           font-weight: 700;
-          color: white;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+          color: #000;
         }
 
         .card-info {
-          background: #f8f9fa;
-          padding: 15px;
-          border-radius: 8px;
-          margin: 15px 0;
-          border-left: 4px solid #667eea;
+          background: #f9f9f9;
+          padding: 12px;
+          border-radius: 6px;
+          margin: 12px 0;
+          border-left: 3px solid #333;
         }
 
         .info-row {
           display: flex;
           justify-content: space-between;
-          margin: 8px 0;
-          font-size: 12px;
+          margin: 6px 0;
+          font-size: 10pt;
           color: #333;
         }
 
         .info-label {
           font-weight: 600;
-          color: #667eea;
+          color: #666;
         }
 
         .card-number {
           text-align: center;
           font-family: 'Courier New', monospace;
-          font-size: 16px;
+          font-size: 14px;
           font-weight: 700;
-          color: #333;
-          background: #fff3cd;
-          padding: 12px;
-          border-radius: 8px;
-          margin: 15px 0;
-          border: 2px dashed #764ba2;
+          color: #000;
+          background: #fff;
+          padding: 10px;
+          border-radius: 6px;
+          margin: 12px 0;
+          border: 2px dashed #333;
           letter-spacing: 2px;
         }
 
         .sender-section {
-          background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-          padding: 15px;
-          border-radius: 8px;
-          margin: 15px 0;
-          border: 1px solid rgba(102, 126, 234, 0.2);
+          background: #f9f9f9;
+          padding: 12px;
+          border-radius: 6px;
+          margin: 12px 0;
+          border-left: 3px solid #000;
         }
 
         .sender-label {
-          font-size: 11px;
-          color: #667eea;
+          font-size: 9px;
+          color: #666;
           text-transform: uppercase;
           letter-spacing: 1px;
           margin-bottom: 5px;
@@ -193,50 +164,40 @@ export const printGiftCardReceipt = (
 
         .sender-name {
           font-family: 'Dancing Script', cursive;
-          font-size: 20px;
-          color: #764ba2;
-          margin-bottom: 10px;
+          font-size: 18px;
+          color: #000;
+          margin-bottom: 8px;
         }
 
         .message {
           font-family: 'Lato', sans-serif;
-          font-size: 13px;
+          font-size: 10pt;
           color: #333;
-          line-height: 1.6;
+          line-height: 1.4;
           font-style: italic;
-          padding: 10px;
-          background: white;
-          border-radius: 5px;
-          margin-top: 10px;
         }
 
         .footer {
           text-align: center;
-          margin-top: 20px;
-          padding-top: 15px;
-          border-top: 2px dashed rgba(102, 126, 234, 0.3);
+          margin-top: 15px;
+          padding-top: 12px;
+          border-top: 2px dashed #333;
         }
 
         .footer-text {
-          font-size: 11px;
+          font-size: 9px;
           color: #666;
-          line-height: 1.5;
+          line-height: 1.4;
         }
 
-        .decorative-element {
-          text-align: center;
-          font-size: 24px;
-          color: rgba(102, 126, 234, 0.3);
-          margin: 10px 0;
+        .divider {
+          border-top: 1px dashed #ccc;
+          margin: 8px 0;
         }
 
         @media print {
           body {
-            padding: 5mm;
-          }
-          
-          .card-container {
-            page-break-inside: avoid;
+            padding: 4mm;
           }
         }
       </style>
@@ -252,7 +213,7 @@ export const printGiftCardReceipt = (
         <div class="divider"></div>
 
         <div class="amount-section">
-          <div class="amount-label">Valeur</div>
+          <div class="amount-label">Solde Actuel</div>
           <div class="amount">${card.current_balance.toFixed(2)}€</div>
         </div>
 
@@ -262,42 +223,36 @@ export const printGiftCardReceipt = (
 
         <div class="card-info">
           <div class="info-row">
-            <span class="info-label">Date d'émission:</span>
+            <span class="info-label">Date émission:</span>
             <span>${currentDate}</span>
           </div>
+          <div class="divider"></div>
           <div class="info-row">
             <span class="info-label">Valeur initiale:</span>
             <span>${card.initial_balance.toFixed(2)}€</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Solde actuel:</span>
-            <span>${card.current_balance.toFixed(2)}€</span>
           </div>
         </div>
 
         ${senderName || message ? `
           <div class="sender-section">
             ${senderName ? `
-              <div class="sender-label">De la part de</div>
+              <div class="sender-label">Offert par</div>
               <div class="sender-name">${senderName}</div>
             ` : ''}
             ${message ? `
-              <div class="message">${message}</div>
+              <div class="message">"${message}"</div>
             ` : ''}
           </div>
         ` : ''}
 
-        <div class="decorative-element">✦ ✦ ✦</div>
-
         <div class="footer">
           <div class="footer-text">
-            <strong>Valable dans notre magasin</strong><br>
-            ${COMPANY_INFO.address}<br>
-            ${COMPANY_INFO.postalCode} ${COMPANY_INFO.city}<br>
-            ${COMPANY_INFO.phone || ''}<br>
+            <strong>Conservez cette carte</strong><br>
+            Valable jusqu'à épuisement du solde<br>
             <br>
-            Cette carte peut être réimprimée à tout moment<br>
-            Le solde restant sera toujours indiqué
+            ${COMPANY_INFO.name}<br>
+            ${COMPANY_INFO.address}<br>
+            ${COMPANY_INFO.postalCode} ${COMPANY_INFO.city}
           </div>
         </div>
       </div>
@@ -306,6 +261,12 @@ export const printGiftCardReceipt = (
         window.onload = function() {
           setTimeout(function() {
             window.print();
+            ${onAfterPrint ? `
+            setTimeout(function() {
+              window.opener.postMessage('giftcard_printed', '*');
+              window.close();
+            }, 1000);
+            ` : ''}
           }, 500);
         };
       </script>
@@ -315,4 +276,15 @@ export const printGiftCardReceipt = (
 
   printWindow.document.write(html);
   printWindow.document.close();
+  
+  // Écouter le message de confirmation d'impression
+  if (onAfterPrint) {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data === 'giftcard_printed') {
+        window.removeEventListener('message', handleMessage);
+        onAfterPrint();
+      }
+    };
+    window.addEventListener('message', handleMessage);
+  }
 };
