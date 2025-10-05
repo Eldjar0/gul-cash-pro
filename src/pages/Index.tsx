@@ -848,7 +848,12 @@ const Index = () => {
         amountPaid: amountPaid,
         change: amountPaid ? amountPaid - totals.total : 0,
         is_invoice: isInvoiceMode,
-        customer: isInvoiceMode ? selectedCustomer : undefined
+        customer: isInvoiceMode ? selectedCustomer : undefined,
+        giftCardPayment: appliedGiftCard ? {
+          cardNumber: appliedGiftCard.cardNumber,
+          amountUsed: Math.min(appliedGiftCard.availableBalance, totals.total),
+          remainingBalance: appliedGiftCard.availableBalance - Math.min(appliedGiftCard.availableBalance, totals.total)
+        } : undefined
       };
       setCurrentSale(saleForReceipt);
 

@@ -45,6 +45,11 @@ interface Sale {
   change?: number;
   is_invoice?: boolean;
   customer?: Customer;
+  giftCardPayment?: {
+    cardNumber: string;
+    amountUsed: number;
+    remainingBalance: number;
+  };
 }
 
 interface ReceiptProps {
@@ -163,6 +168,24 @@ export function Receipt({ sale }: ReceiptProps) {
       {/* Paiement */}
       <div className="border-t border-dashed border-black mt-3 pt-2">
         <div className="text-[10px] space-y-1">
+          {sale.giftCardPayment && sale.giftCardPayment.amountUsed > 0 && (
+            <div className="mb-2">
+              <div className="flex justify-between font-black">
+                <span>CARTE CADEAU</span>
+                <span>{sale.giftCardPayment.amountUsed.toFixed(2)}</span>
+              </div>
+              <div className="text-[9px] mt-1 space-y-0.5">
+                <div className="flex justify-between">
+                  <span>Code carte:</span>
+                  <span className="font-bold">{sale.giftCardPayment.cardNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Solde restant:</span>
+                  <span className="font-bold">{sale.giftCardPayment.remainingBalance.toFixed(2)}€</span>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="font-black">
               {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
