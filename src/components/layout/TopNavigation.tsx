@@ -52,18 +52,11 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
   };
 
   const menuItems = {
-    ventes: [
-      { icon: Receipt, label: "Ventes", path: "/" },
-    ],
     gestion: [
       { icon: Package, label: "Produits", path: "/products" },
       { icon: Truck, label: "Stock", path: "/inventory" },
       { icon: Clock, label: "Historique", path: "/stock-history" },
       { icon: Users, label: "Fournisseurs", path: "/suppliers" },
-    ],
-    clients: [
-      { icon: Users, label: "Clients", path: "/customers" },
-      { icon: Tags, label: "Promotions", path: "/promotions" },
     ],
   };
 
@@ -138,27 +131,23 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-10 px-2 flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold data-[state=open]:bg-orange-600 text-xs whitespace-nowrap">
+                <Button
+                  onClick={() => navigate("/customers")}
+                  className="h-10 px-2 flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs whitespace-nowrap"
+                >
                   <Users className="h-4 w-4" />
                   <span>Clients</span>
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4">
-                    {menuItems.clients.map((item) => (
-                      <li key={item.path}>
-                        <NavigationMenuLink asChild>
-                          <button
-                            onClick={() => navigate(item.path)}
-                            className="flex items-center gap-3 w-full rounded-md p-3 text-sm leading-none hover:bg-accent transition-colors"
-                          >
-                            <item.icon className="h-5 w-5 text-primary" />
-                            <span className="font-medium">{item.label}</span>
-                          </button>
-                        </NavigationMenuLink>
-                      </li>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
+                </Button>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Button
+                  onClick={() => navigate("/promotions")}
+                  className="h-10 px-2 flex items-center gap-1.5 bg-pink-500 hover:bg-pink-600 text-white font-semibold text-xs whitespace-nowrap"
+                >
+                  <Tags className="h-4 w-4" />
+                  <span>Promotions</span>
+                </Button>
               </NavigationMenuItem>
 
               <NavigationMenuItem>
