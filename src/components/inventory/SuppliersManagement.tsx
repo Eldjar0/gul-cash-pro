@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Phone, Mail, MapPin, Search, Truck } from 'lucide-react';
+import { Plus, Edit, Trash2, Phone, Mail, MapPin, Search, Truck, FileText } from 'lucide-react';
 import { useSuppliers, useSaveSuppliers, Supplier } from '@/hooks/useSuppliers';
 import { toast } from 'sonner';
+import { generateSuppliersPDF } from '@/utils/generateSuppliersPDF';
 
 export const SuppliersManagement = () => {
   const { data: suppliers = [], isLoading } = useSuppliers();
@@ -119,6 +120,14 @@ export const SuppliersManagement = () => {
             className="pl-10"
           />
         </div>
+        <Button 
+          variant="outline" 
+          onClick={() => generateSuppliersPDF(suppliers)}
+          disabled={suppliers.length === 0}
+        >
+          <FileText className="h-4 w-4 mr-2" />
+          Exporter PDF
+        </Button>
         <Button onClick={() => handleOpenDialog()} className="bg-gradient-to-r from-teal-600 to-cyan-600">
           <Plus className="h-4 w-4 mr-2" />
           Nouveau Fournisseur

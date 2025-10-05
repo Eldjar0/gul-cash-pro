@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Package, Upload, Tag, Edit, Trash2, Plus } from 'lucide-react';
+import { Search, Package, Upload, Tag, Edit, Trash2, Plus, FileText } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
 import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
@@ -17,6 +17,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
+import { generateStockPDF } from '@/utils/generateStockPDF';
 
 export const ProductsManagement = () => {
   const { data: products = [] } = useProducts();
@@ -142,6 +143,14 @@ export const ProductsManagement = () => {
         <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
           <Upload className="h-4 w-4 mr-2" />
           Importer
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => generateStockPDF(products)}
+          disabled={products.length === 0}
+        >
+          <FileText className="h-4 w-4 mr-2" />
+          Export PDF
         </Button>
         <Button onClick={openNewProduct}>
           <Plus className="h-4 w-4 mr-2" />
