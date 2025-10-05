@@ -1266,10 +1266,10 @@ const Index = () => {
       />
       
       {/* Info bar avec date, météo, recherche et boutons */}
-      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-2 py-1.5 flex items-center justify-between gap-2 flex-shrink-0">
-        {/* Gauche: Date/Heure + Météo */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-2 py-1 bg-background rounded-lg border border-border">
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-1.5 py-1 flex items-center justify-between gap-1.5 flex-shrink-0">
+        {/* Gauche: Date/Heure + Météo - Caché sur très petits écrans */}
+        <div className="hidden lg:flex items-center gap-1.5">
+          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-background rounded-md border border-border">
             <Clock className="h-3 w-3 text-primary" />
             <div className="text-[10px]">
               <span className="font-bold">{currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
@@ -1277,7 +1277,7 @@ const Index = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-1.5 px-2 py-1 bg-background rounded-lg border border-border">
+          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-background rounded-md border border-border">
             <CloudSun className="h-3 w-3 text-primary" />
             <div className="text-[10px] font-bold">
               {weatherLoading ? '...' : `${temperature}°C`}
@@ -1285,8 +1285,8 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Centre: Barre de recherche */}
-        <div className="flex-1 max-w-sm">
+        {/* Centre: Barre de recherche - Réduite sur petits écrans */}
+        <div className="flex-1 max-w-xs lg:max-w-sm">
           <form onSubmit={handleScanSubmit}>
             <div className="relative">
               <Scan className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-primary" />
@@ -1301,7 +1301,7 @@ const Index = () => {
                 }}
                 placeholder="Rechercher..."
                 autoComplete="off"
-                className="h-7 pl-8 pr-7 text-xs bg-background border-input text-foreground"
+                className="h-7 pl-7 pr-6 text-xs bg-background border-input text-foreground"
               />
               {scanInput && (
                 <Button
@@ -1321,35 +1321,35 @@ const Index = () => {
           </form>
         </div>
         
-        {/* Droite: Boutons */}
-        <div className="flex items-center gap-1">
+        {/* Droite: Boutons - Texte caché sur petits écrans */}
+        <div className="flex items-center gap-0.5">
           {/* Boutons gestion de journée */}
           {!isDayOpenEffective ? (
             <Button
               onClick={() => setOpenDayDialogOpen(true)}
               size="sm"
-              className="h-7 text-xs bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md"
+              className="h-7 px-2 text-xs bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md"
             >
-              <Calendar className="h-3 w-3 mr-1" />
-              Ouvrir
+              <Calendar className="h-3 w-3 lg:mr-1" />
+              <span className="hidden lg:inline">Ouvrir</span>
             </Button>
           ) : (
             <>
               <Button
                 onClick={handleReportX}
                 size="sm"
-                className="h-7 text-xs bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md"
+                className="h-7 px-2 text-xs bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md"
               >
-                <FileText className="h-3 w-3 mr-1" />
-                Rapport X
+                <FileText className="h-3 w-3 lg:mr-1" />
+                <span className="hidden lg:inline">Rapport X</span>
               </Button>
               <Button
                 onClick={() => setCloseDayDialogOpen(true)}
                 size="sm"
-                className="h-7 text-xs bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md"
+                className="h-7 px-2 text-xs bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md"
               >
-                <CalendarX className="h-3 w-3 mr-1" />
-                Fermer
+                <CalendarX className="h-3 w-3 lg:mr-1" />
+                <span className="hidden lg:inline">Fermer</span>
               </Button>
             </>
           )}
@@ -1357,10 +1357,10 @@ const Index = () => {
           <Button
             onClick={openCustomerDisplay}
             size="sm"
-            className="h-7 text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md"
+            className="h-7 px-2 text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md"
           >
-            <Eye className="h-3 w-3 mr-1" />
-            Affichage
+            <Eye className="h-3 w-3 lg:mr-1" />
+            <span className="hidden lg:inline">Affichage</span>
           </Button>
           
           <RemoteScanDialog 

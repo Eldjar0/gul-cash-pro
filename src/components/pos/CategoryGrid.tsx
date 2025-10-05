@@ -27,20 +27,20 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
       {!selectedCategory ? (
         // Affichage des catégories
         <ScrollArea className="h-full">
-          <div className="grid grid-cols-3 gap-2 p-1">
+          <div className="grid grid-cols-3 gap-1.5 p-1">
             {categories?.map((category) => (
               <Button
                 key={category.id}
                 onClick={() => onCategorySelect(category.id)}
-                className="h-24 flex flex-col items-center justify-center gap-2 p-3 text-white font-semibold transition-all hover:brightness-110"
+                className="h-20 flex flex-col items-center justify-center gap-1.5 p-2 text-white font-semibold transition-all hover:brightness-110"
                 style={{ 
                   backgroundColor: category.color,
                   borderColor: category.color,
                   borderWidth: '2px'
                 }}
               >
-                <Package className="h-6 w-6" />
-                <span className="text-sm font-medium text-center line-clamp-2">
+                <Package className="h-5 w-5 shrink-0" />
+                <span className="text-xs font-medium text-center line-clamp-2 leading-tight">
                   {category.name}
                 </span>
               </Button>
@@ -77,16 +77,16 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
                 <div className="text-sm text-muted-foreground">Chargement...</div>
               </div>
             ) : filteredProducts && filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-3 gap-2 p-1">
+              <div className="grid grid-cols-3 gap-1.5 p-1">
                 {filteredProducts.map((product) => (
                   <Button
                     key={product.id}
                     variant="outline"
                     onClick={() => onProductSelect(product)}
-                    className="h-24 flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10"
+                    className="h-20 flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10"
                     disabled={product.stock <= 0}
                   >
-                    <span className="text-xs font-medium text-center line-clamp-2">
+                    <span className="text-[11px] font-medium text-center line-clamp-2 leading-tight">
                       {product.name}
                     </span>
                     <div className="flex flex-col items-center gap-0.5">
