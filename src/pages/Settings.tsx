@@ -194,44 +194,45 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/')}
-            className="text-white hover:bg-white/20"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Paramètres</h1>
-            <p className="text-sm text-white/80">Configuration et gestion des utilisateurs</p>
+      <div className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  Paramètres
+                </h1>
+                <p className="text-sm text-muted-foreground">Configuration et gestion des utilisateurs</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="p-6 max-w-6xl mx-auto">
-        <Tabs defaultValue="billing" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="billing" className="flex items-center gap-2">
+      <div className="container mx-auto px-6 py-8">
+        <Tabs defaultValue="billing" className="w-full space-y-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+            <TabsTrigger value="billing" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               <Building className="h-4 w-4" />
               Facturation
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
+            <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               <Users className="h-4 w-4" />
               Utilisateurs
             </TabsTrigger>
-            <TabsTrigger value="contact" className="flex items-center gap-2">
+            <TabsTrigger value="contact" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               <Info className="h-4 w-4" />
               Contact
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="billing">
-            <Card className="p-6">
+            <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
           <div className="space-y-8">
             {/* Type d'entité */}
             <div className="space-y-4">
@@ -478,11 +479,15 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="users">
-            <UserManagement />
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0 rounded-lg">
+              <UserManagement />
+            </div>
           </TabsContent>
 
           <TabsContent value="contact">
-            <ContactInfo />
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0 rounded-lg">
+              <ContactInfo />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

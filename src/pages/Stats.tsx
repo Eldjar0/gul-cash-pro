@@ -21,7 +21,8 @@ import {
   BarChart3,
   Download,
   FileSpreadsheet,
-  FileText
+  FileText,
+  ArrowLeft
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -784,34 +785,47 @@ export default function Stats() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6 space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Statistiques & Analyses</h1>
-          <p className="text-muted-foreground">Analyse complète des performances de vente</p>
-        </div>
-        
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={exportPDF} variant="outline" size="sm" className="gap-2">
-            <FileSpreadsheet className="h-4 w-4" />
-            Export PDF
-          </Button>
-          <Button onClick={exportXML} variant="outline" size="sm" className="gap-2">
-            <Download className="h-4 w-4" />
-            Export XML
-          </Button>
+      <div className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+                  Statistiques & Analyses
+                </h1>
+                <p className="text-sm text-muted-foreground">Rapports détaillés et analyses de ventes</p>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={exportPDF} variant="outline" size="sm" className="gap-2">
+                <FileSpreadsheet className="h-4 w-4" />
+                Export PDF
+              </Button>
+              <Button onClick={exportXML} variant="outline" size="sm" className="gap-2">
+                <Download className="h-4 w-4" />
+                Export XML
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Filtres de période */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5" />
-            Période d'analyse
-          </CardTitle>
-        </CardHeader>
+      <div className="container mx-auto px-6 py-8 space-y-6">
+
+        {/* Filtres de période */}
+        <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5" />
+              Période d'analyse
+            </CardTitle>
+          </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
             {(['today', 'week', 'month', 'quarter', 'semester', 'year', 'all', 'custom'] as PeriodType[]).map(period => (
@@ -937,54 +951,62 @@ export default function Stats() {
         </CardContent>
       </Card>
 
-      {/* KPIs principaux */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Chiffre d'affaires</CardTitle>
-            <Euro className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalRevenue.toFixed(2)}€</div>
-            {compareMode && compareRevenue > 0 && (
-              <p className={cn("text-xs flex items-center gap-1 mt-2", growthRate >= 0 ? "text-green-600" : "text-red-600")}>
-                {growthRate >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                {Math.abs(growthRate).toFixed(1)}% vs période comparée
+        {/* KPIs principaux */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="bg-gradient-to-br from-violet-500 to-violet-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-violet-100">Chiffre d'affaires</CardTitle>
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Euro className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{totalRevenue.toFixed(2)}€</div>
+              {compareMode && compareRevenue > 0 && (
+                <p className="text-sm flex items-center gap-1 mt-2 text-white/80">
+                  {growthRate >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                  {Math.abs(growthRate).toFixed(1)}% vs période comparée
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-purple-100">Nombre de ventes</CardTitle>
+              <div className="p-2 bg-white/20 rounded-lg">
+                <ShoppingCart className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{salesCount}</div>
+              <p className="text-sm text-white/80 mt-2">
+                transactions réalisées
               </p>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Nombre de ventes</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{salesCount}</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              transactions réalisées
-            </p>
-          </CardContent>
-        </Card>
+          <Card className="bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-fuchsia-100">Panier moyen</CardTitle>
+              <div className="p-2 bg-white/20 rounded-lg">
+                <BarChart3 className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{avgBasket.toFixed(2)}€</div>
+              <p className="text-sm text-white/80 mt-2">
+                par transaction
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Panier moyen</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{avgBasket.toFixed(2)}€</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              par transaction
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">TVA collectée</CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
+          <Card className="bg-gradient-to-br from-pink-500 to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-pink-100">TVA collectée</CardTitle>
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Receipt className="h-4 w-4" />
+              </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalVAT.toFixed(2)}€</div>
@@ -1387,6 +1409,7 @@ export default function Stats() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

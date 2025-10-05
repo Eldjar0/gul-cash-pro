@@ -445,83 +445,84 @@ export default function Documents() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-teal-900/20 dark:to-gray-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-glow border-b border-primary/20 px-4 md:px-6 py-3">
-        <div className="flex items-center gap-2 md:gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/')}
-            className="text-white hover:bg-white/20 shrink-0"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-lg md:text-2xl font-bold text-white truncate">Documents</h1>
-            <p className="text-xs md:text-sm text-white/80">Ventes, Factures, Commandes & Remboursements</p>
-          </div>
-          {devMode && (
-            <div className="flex flex-col gap-1 shrink-0">
-              <Badge variant="destructive" className="animate-pulse">
-                <Settings className="h-3 w-3 mr-1" />
-                MODE DEV - INTERDIT
-              </Badge>
-              <div className="text-[10px] text-destructive text-right">
-                JLprod décline toute responsabilité
+      <div className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
+                  Documents
+                </h1>
+                <p className="text-sm text-muted-foreground">Ventes, Factures, Commandes & Remboursements</p>
               </div>
             </div>
-          )}
+            {devMode && (
+              <div className="flex flex-col gap-1 shrink-0">
+                <Badge variant="destructive" className="animate-pulse">
+                  <Settings className="h-3 w-3 mr-1" />
+                  MODE DEV - INTERDIT
+                </Badge>
+                <div className="text-[10px] text-destructive text-right">
+                  JLprod décline toute responsabilité
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="p-4 md:p-6 max-w-7xl mx-auto">
+      <div className="container mx-auto px-6 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
-          <Card className="p-3 md:p-4 bg-white">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 md:p-3 bg-primary/10 rounded-lg shrink-0">
-                <Euro className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card className="p-6 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-emerald-100 text-sm font-medium">Total Aujourd'hui</p>
+                <p className="text-3xl font-bold mt-1">{totalToday.toFixed(2)}€</p>
               </div>
-              <div className="min-w-0">
-                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Total Aujourd'hui</p>
-                <p className="text-sm md:text-xl font-bold text-primary truncate">{totalToday.toFixed(2)}€</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-3 md:p-4 bg-white">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 md:p-3 bg-accent/10 rounded-lg shrink-0">
-                <Receipt className="h-4 w-4 md:h-5 md:w-5 text-accent" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Ventes Aujourd'hui</p>
-                <p className="text-sm md:text-xl font-bold truncate">{countToday}</p>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <Euro className="h-6 w-6" />
               </div>
             </div>
           </Card>
 
-          <Card className="p-3 md:p-4 bg-white">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 md:p-3 bg-category-blue/10 rounded-lg shrink-0">
-                <FileText className="h-4 w-4 md:h-5 md:w-5 text-category-blue" />
+          <Card className="p-6 bg-gradient-to-br from-teal-500 to-teal-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-teal-100 text-sm font-medium">Ventes Aujourd'hui</p>
+                <p className="text-3xl font-bold mt-1">{countToday}</p>
               </div>
-              <div className="min-w-0">
-                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Total Factures</p>
-                <p className="text-sm md:text-xl font-bold truncate">{totalAmount.toFixed(2)}€</p>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <Receipt className="h-6 w-6" />
               </div>
             </div>
           </Card>
 
-          <Card className="p-3 md:p-4 bg-white">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 md:p-3 bg-orange-500/10 rounded-lg shrink-0">
-                <Undo2 className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
+          <Card className="p-6 bg-gradient-to-br from-cyan-500 to-cyan-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-cyan-100 text-sm font-medium">Total Factures</p>
+                <p className="text-3xl font-bold mt-1">{totalAmount.toFixed(2)}€</p>
               </div>
-              <div className="min-w-0">
-                <p className="text-[10px] md:text-xs text-muted-foreground truncate">Remboursements</p>
-                <p className="text-sm md:text-xl font-bold truncate">{todayRefunds.length}</p>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <FileText className="h-6 w-6" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-100 text-sm font-medium">Remboursements</p>
+                <p className="text-3xl font-bold mt-1">{todayRefunds.length}</p>
+              </div>
+              <div className="p-3 bg-white/20 rounded-lg">
+                <Undo2 className="h-6 w-6" />
               </div>
             </div>
           </Card>
