@@ -3,11 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Search, Package, Upload, Tag } from 'lucide-react';
+import { Search, Package, Upload, Tag } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
 import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
-import { BarcodeLabelDialog } from '@/components/products/BarcodeLabelDialog';
 import {
   Select,
   SelectContent,
@@ -22,8 +21,6 @@ export const ProductsManagement = () => {
   const [stockFilter, setStockFilter] = useState<'all' | 'low' | 'out'>('all');
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [barcodeLabelDialogOpen, setBarcodeLabelDialogOpen] = useState(false);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
