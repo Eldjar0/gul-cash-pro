@@ -88,6 +88,19 @@ export const useCreateProduct = () => {
 
   return useMutation({
     mutationFn: async (product: Omit<Product, 'id'>) => {
+      // Validation des données
+      if (!product.name || typeof product.name !== 'string' || product.name.trim().length === 0) {
+        throw new Error('Le nom du produit est requis');
+      }
+      
+      if (typeof product.price !== 'number' || isNaN(product.price) || product.price < 0) {
+        throw new Error('Le prix doit être un nombre positif');
+      }
+      
+      if (typeof product.vat_rate !== 'number' || isNaN(product.vat_rate) || product.vat_rate < 0 || product.vat_rate > 100) {
+        throw new Error('Le taux de TVA doit être entre 0 et 100%');
+      }
+
       const { data, error } = await supabase
         .from('products')
         .insert(product)
@@ -105,7 +118,6 @@ export const useCreateProduct = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Error creating product:', error);
       let description = "Impossible de créer le produit.";
       
       // Handle duplicate barcode error
@@ -148,7 +160,6 @@ export const useUpdateProduct = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Error updating product:', error);
       let description = 'Impossible de mettre à jour le produit.';
       
       // Handle duplicate barcode error

@@ -87,7 +87,6 @@ export const useCreateCustomer = () => {
       });
     },
     onError: (error) => {
-      console.error('Error creating customer:', error);
       toast({
         title: 'Erreur',
         description: error instanceof Error ? error.message : 'Impossible de créer le client.',
@@ -128,7 +127,6 @@ export const useUpdateCustomer = () => {
       });
     },
     onError: (error) => {
-      console.error('Error updating customer:', error);
       toast({
         title: 'Erreur',
         description: error instanceof Error ? error.message : 'Impossible de modifier le client.',
@@ -159,10 +157,9 @@ export const useDeleteCustomer = () => {
       });
     },
     onError: (error) => {
-      console.error('Error deleting customer:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de supprimer le client.',
+        description: error instanceof Error ? error.message : 'Impossible de supprimer le client.',
         variant: 'destructive',
       });
     },

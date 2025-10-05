@@ -41,6 +41,32 @@ export const useCreateSale = () => {
 
   return useMutation({
     mutationFn: async (sale: Sale) => {
+      // Validation des données de vente
+      if (!sale || !sale.items || !Array.isArray(sale.items) || sale.items.length === 0) {
+        throw new Error('La vente doit contenir au moins un article');
+      }
+      
+      if (typeof sale.total !== 'number' || isNaN(sale.total) || sale.total < 0) {
+        throw new Error('Le montant total est invalide');
+      }
+      
+      if (typeof sale.subtotal !== 'number' || isNaN(sale.subtotal) || sale.subtotal < 0) {
+        throw new Error('Le sous-total est invalide');
+      }
+      
+      // Vérifier que tous les articles sont valides
+      for (const item of sale.items) {
+        if (!item.product_name || typeof item.product_name !== 'string') {
+          throw new Error('Tous les articles doivent avoir un nom');
+        }
+        if (typeof item.quantity !== 'number' || isNaN(item.quantity) || item.quantity <= 0) {
+          throw new Error(`Quantité invalide pour ${item.product_name}`);
+        }
+        if (typeof item.unit_price !== 'number' || isNaN(item.unit_price) || item.unit_price < 0) {
+          throw new Error(`Prix invalide pour ${item.product_name}`);
+        }
+      }
+      
       // Verify stock availability BEFORE creating the sale
       for (const item of sale.items) {
         if (item.product_id) {
@@ -125,10 +151,7 @@ export const useCreateSale = () => {
               .update({ stock: newStock })
               .eq('id', item.product_id);
 
-            if (updateError) {
-              console.error('Error updating stock:', updateError);
-              throw updateError;
-            }
+            if (updateError) throw updateError;
 
             // Create stock movement record
             await supabase
@@ -176,7 +199,6 @@ export const useCreateSale = () => {
       });
     },
     onError: (error: Error) => {
-      console.error('Error creating sale:', error);
       toast({
         title: 'Erreur',
         description: error.message || 'Impossible d\'enregistrer la vente.',
@@ -228,13 +250,7 @@ export const useSales = (startDate?: Date, endDate?: Date) => {
       }
 
       const { data, error } = await query;
-      if (error) {
-        console.error('Error fetching sales:', error);
-        throw error;
-      }
-      
-      // Log pour debug
-      console.log('Sales loaded:', data?.length, 'first sale items:', data?.[0]?.sale_items?.length);
+      if (error) throw error;
       
       return data;
     },
@@ -285,10 +301,9 @@ export const useCancelSale = () => {
       });
     },
     onError: (error: Error) => {
-      console.error('Error cancelling sale:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible d\'annuler la vente.',
+        description: error.message || 'Impossible d\'annuler la vente.',
         variant: 'destructive',
       });
     },
@@ -322,10 +337,9 @@ export const useDeleteSalePermanently = () => {
       });
     },
     onError: (error: Error) => {
-      console.error('Error deleting sale:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de supprimer la vente.',
+        description: error.message || 'Impossible de supprimer la vente.',
         variant: 'destructive',
       });
     },
@@ -359,10 +373,9 @@ export const useUpdateSale = () => {
       });
     },
     onError: (error: Error) => {
-      console.error('Error updating sale:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de modifier la vente.',
+        description: error.message || 'Impossible de modifier la vente.',
         variant: 'destructive',
       });
     },
