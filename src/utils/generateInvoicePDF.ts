@@ -252,55 +252,96 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     doc.setTextColor(0, 0, 0);
     yPos += 15;
   } else {
-    // Facture impayée - Afficher les informations de paiement et QR code
-    yPos += 10;
+    // Facture impayée - Section de paiement améliorée
+    yPos += 15;
 
-    // Informations de paiement
     if (invoice.bankAccounts && invoice.bankAccounts.length > 0) {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Informations de paiement :', 15, yPos);
-      yPos += 7;
+      // Calculer la position de départ pour le QR code
+      const qrSize = 50;
+      const qrX = pageWidth - qrSize - 20;
+      const qrStartY = yPos;
       
-      doc.setFont('helvetica', 'normal');
-      invoice.bankAccounts.forEach((account) => {
+      // SECTION GAUCHE - Informations de paiement
+      const leftColumnX = 15;
+      const leftColumnWidth = pageWidth - qrSize - 50;
+      
+      // Titre de section
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 122, 204);
+      doc.text('INFORMATIONS DE PAIEMENT', leftColumnX, yPos);
+      doc.setTextColor(0, 0, 0);
+      yPos += 8;
+      
+      // Ligne de séparation
+      doc.setDrawColor(0, 122, 204);
+      doc.setLineWidth(0.5);
+      doc.line(leftColumnX, yPos, leftColumnX + leftColumnWidth, yPos);
+      yPos += 6;
+      
+      // Comptes bancaires
+      doc.setFontSize(9);
+      invoice.bankAccounts.forEach((account, index) => {
+        if (index > 0) yPos += 3;
+        
         doc.setFont('helvetica', 'bold');
-        doc.text(`Banque: ${account.bank_name}`, 15, yPos);
-        yPos += 5;
+        doc.text('Banque:', leftColumnX, yPos);
         doc.setFont('helvetica', 'normal');
-        doc.text(`IBAN: ${account.account_number}`, 15, yPos);
-        yPos += 7;
+        doc.text(account.bank_name, leftColumnX + 25, yPos);
+        yPos += 5;
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text('IBAN:', leftColumnX, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(account.account_number, leftColumnX + 25, yPos);
+        yPos += 6;
       });
       
+      // Communication structurée
       if (invoice.structuredCommunication) {
         doc.setFont('helvetica', 'bold');
-        doc.text('Communication structurée:', 15, yPos);
-        yPos += 5;
+        doc.text('Communication:', leftColumnX, yPos);
         doc.setFont('helvetica', 'normal');
-        doc.text(invoice.structuredCommunication, 15, yPos);
-        yPos += 7;
+        doc.text(invoice.structuredCommunication, leftColumnX + 25, yPos);
+        yPos += 6;
       }
       
-      // Générer QR code pour le paiement
-      if (invoice.bankAccounts[0]) {
-        const qrData = `BCD\n002\n1\nSCT\n\n${invoice.company.name}\n${invoice.bankAccounts[0].account_number}\nEUR${invoice.total.toFixed(2)}\n\n${invoice.structuredCommunication || invoice.saleNumber}\n${invoice.saleNumber}`;
+      // Montant à payer
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('Montant à payer:', leftColumnX, yPos);
+      doc.setTextColor(0, 122, 204);
+      doc.text(`${invoice.total.toFixed(2)} €`, leftColumnX + 35, yPos);
+      doc.setTextColor(0, 0, 0);
+      
+      // SECTION DROITE - QR Code
+      const qrData = `BCD\n002\n1\nSCT\n\n${invoice.company.name}\n${invoice.bankAccounts[0].account_number}\nEUR${invoice.total.toFixed(2)}\n\n${invoice.structuredCommunication || invoice.saleNumber}\n${invoice.saleNumber}`;
+      
+      try {
+        const qrCodeDataUrl = await QRCode.toDataURL(qrData, { width: 400, margin: 1 });
         
-        try {
-          const qrCodeDataUrl = await QRCode.toDataURL(qrData, { width: 300, margin: 1 });
-          const qrSize = 40;
-          const qrX = pageWidth - qrSize - 15;
-          const qrY = yPos - 50;
-          doc.addImage(qrCodeDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
-          
-          doc.setFontSize(8);
-          doc.text('Scannez pour payer', qrX + qrSize / 2, qrY + qrSize + 5, { align: 'center' });
-        } catch (error) {
-          console.error('Error generating QR code:', error);
-        }
+        // Cadre autour du QR code
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(qrX - 3, qrStartY - 3, qrSize + 6, qrSize + 15, 2, 2);
+        
+        // QR Code
+        doc.addImage(qrCodeDataUrl, 'PNG', qrX, qrStartY, qrSize, qrSize);
+        
+        // Texte sous le QR
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100, 100, 100);
+        doc.text('Scannez pour payer', qrX + qrSize / 2, qrStartY + qrSize + 8, { align: 'center' });
+        doc.setTextColor(0, 0, 0);
+      } catch (error) {
+        console.error('Error generating QR code:', error);
       }
+      
+      yPos = Math.max(yPos, qrStartY + qrSize + 20);
     }
     
-    yPos += 10;
+    yPos += 5;
   }
 
   // ============ NOTES ============
