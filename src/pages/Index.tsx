@@ -1691,7 +1691,7 @@ const Index = () => {
               </div>
               <div className="bg-gradient-to-br from-secondary/15 to-secondary/5 rounded-xl p-2.5 border-2 border-secondary/20 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] group">
                 <div className="text-[9px] text-muted-foreground mb-1 font-semibold uppercase tracking-wide">Nb tickets</div>
-                <div className="text-xl font-bold text-secondary mb-1 group-hover:scale-105 transition-transform">
+                <div className="text-xl font-bold text-primary mb-1 group-hover:scale-105 transition-transform">
                   {todayCount}
                 </div>
                 <div className={`flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full w-fit ${countPercentChange >= 0 ? 'bg-green-500/20 text-green-700' : 'bg-red-500/20 text-red-700'}`}>
