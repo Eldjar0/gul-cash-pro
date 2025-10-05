@@ -1,11 +1,12 @@
 import jsPDF from 'jspdf';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import logoJLProd from '../assets/logo-jlprod.png';
+import logoInvoice from '../assets/logo-invoice.png';
 
 interface InvoiceData {
   saleNumber: string;
   date: Date;
+  dueDate?: Date;
   company: {
     name: string;
     address: string;
@@ -13,6 +14,7 @@ interface InvoiceData {
     postalCode: string;
     vatNumber: string;
     phone?: string;
+    email?: string;
   };
   customer?: {
     name: string;
@@ -48,48 +50,52 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   const centerX = pageWidth / 2;
   let yPos = 20;
 
-  // ============ LOGO CENTRÉ (EN COULEUR) ============
+  // ============ LOGO ============
   try {
-    const logoWidth = 50;
-    const logoHeight = 35;
-    doc.addImage(logoJLProd, 'PNG', centerX - logoWidth/2, yPos, logoWidth, logoHeight);
-    yPos += logoHeight + 8;
+    const logoWidth = 60;
+    const logoHeight = 30;
+    doc.addImage(logoInvoice, 'PNG', 15, yPos, logoWidth, logoHeight);
+    yPos += logoHeight + 5;
   } catch (error) {
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(BLACK.r, BLACK.g, BLACK.b);
-    doc.text('JL PROD', centerX, yPos, { align: 'center' });
+    doc.text(invoice.company.name, 15, yPos);
     yPos += 10;
   }
 
-  // ============ INFORMATIONS SOCIÉTÉ (CENTRÉ) ============
-  doc.setFontSize(9);
+  // ============ INFORMATIONS SOCIÉTÉ (DROITE) ============
+  yPos = 20;
+  const rightX = pageWidth - 15;
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(BLACK.r, BLACK.g, BLACK.b);
-  doc.text(invoice.company.address, centerX, yPos, { align: 'center' });
-  yPos += 5;
-  doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, centerX, yPos, { align: 'center' });
-  yPos += 5;
-  if (invoice.company.phone) {
-    doc.text(`Tel: ${invoice.company.phone}`, centerX, yPos, { align: 'center' });
-    yPos += 5;
+  doc.text(invoice.company.name, rightX, yPos, { align: 'right' });
+  yPos += 4;
+  doc.setFont('helvetica', 'normal');
+  doc.text(invoice.company.address, rightX, yPos, { align: 'right' });
+  yPos += 4;
+  doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, rightX, yPos, { align: 'right' });
+  yPos += 4;
+  if (invoice.company.email) {
+    doc.text(invoice.company.email, rightX, yPos, { align: 'right' });
+    yPos += 4;
   }
-  doc.text(`TVA: ${invoice.company.vatNumber}`, centerX, yPos, { align: 'center' });
-  yPos += 8;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`TVA: ${invoice.company.vatNumber}`, rightX, yPos, { align: 'right' });
+  yPos += 10;
 
-  // ============ LIGNE SÉPARATRICE ============
-  doc.setDrawColor(BLACK.r, BLACK.g, BLACK.b);
-  doc.setLineWidth(0.5);
-  doc.line(15, yPos, pageWidth - 15, yPos);
+  // Position après les infos société
+  yPos = Math.max(yPos, 65);
+
+  // ============ TITRE FACTURE ============
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Facture', 15, yPos);
   yPos += 8;
 
   // ============ INFORMATIONS CLIENT ============
   if (invoice.customer) {
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('CLIENT:', 15, yPos);
-    yPos += 5;
-    
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.text(invoice.customer.name, 15, yPos);
@@ -97,39 +103,53 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
     
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
-    if (invoice.customer.vatNumber) {
-      doc.text(`TVA: ${invoice.customer.vatNumber}`, 15, yPos);
-      yPos += 5;
-    }
     if (invoice.customer.address) {
       doc.text(invoice.customer.address, 15, yPos);
-      yPos += 5;
+      yPos += 4;
     }
     if (invoice.customer.city) {
       doc.text(`${invoice.customer.postalCode || ''} ${invoice.customer.city}`, 15, yPos);
       yPos += 5;
     }
     yPos += 3;
-    
-    // Ligne séparatrice
-    doc.setLineWidth(0.5);
-    doc.line(15, yPos, pageWidth - 15, yPos);
-    yPos += 8;
   }
 
-  // ============ NUMÉRO ET DATE FACTURE ============
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('FACTURE N°:', 15, yPos);
-  doc.text(invoice.saleNumber, 50, yPos);
-  yPos += 6;
+  // ============ NUMÉRO ET DATES FACTURE (DROITE) ============
+  const infoStartY = 73;
+  let infoY = infoStartY;
   
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Numéro de facture', rightX - 45, infoY, { align: 'left' });
   doc.setFont('helvetica', 'normal');
-  doc.text('DATE:', 15, yPos);
-  doc.text(format(new Date(invoice.date), 'dd/MM/yyyy HH:mm', { locale: fr }), 50, yPos);
-  yPos += 8;
+  doc.text(invoice.saleNumber, rightX, infoY, { align: 'right' });
+  infoY += 5;
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('Date de facturation', rightX - 45, infoY, { align: 'left' });
+  doc.setFont('helvetica', 'normal');
+  doc.text(format(new Date(invoice.date), 'dd/MM/yyyy', { locale: fr }), rightX, infoY, { align: 'right' });
+  infoY += 5;
+  
+  if (invoice.dueDate) {
+    doc.setFont('helvetica', 'bold');
+    doc.text("Date d'échéance", rightX - 45, infoY, { align: 'left' });
+    doc.setFont('helvetica', 'normal');
+    doc.text(format(new Date(invoice.dueDate), 'dd/MM/yyyy', { locale: fr }), rightX, infoY, { align: 'right' });
+    infoY += 5;
+  }
+  
+  if (invoice.customer?.vatNumber) {
+    doc.setFont('helvetica', 'bold');
+    doc.text('Numéro TVA client', rightX - 45, infoY, { align: 'left' });
+    doc.setFont('helvetica', 'normal');
+    doc.text(invoice.customer.vatNumber, rightX, infoY, { align: 'right' });
+  }
+
+  yPos = Math.max(yPos, infoY + 10);
 
   // Ligne séparatrice
+  doc.setDrawColor(BLACK.r, BLACK.g, BLACK.b);
   doc.setLineWidth(0.5);
   doc.line(15, yPos, pageWidth - 15, yPos);
   yPos += 8;
@@ -210,37 +230,36 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   doc.setTextColor(BLACK.r, BLACK.g, BLACK.b);
   yPos += 12;
 
-  // ============ MENTIONS LÉGALES OBLIGATOIRES (BELGIQUE) ============
-  yPos += 10;
+  // ============ RÉFÉRENCE DE PAIEMENT ============
+  yPos += 5;
+  doc.setFillColor(0, 122, 204); // Couleur bleue
+  const refBoxHeight = 15;
+  doc.rect(15, yPos, 80, refBoxHeight, 'F');
   
-  doc.setFillColor(GRAY_LIGHT.r, GRAY_LIGHT.g, GRAY_LIGHT.b);
-  const legalBoxHeight = 45;
-  doc.rect(15, yPos, pageWidth - 30, legalBoxHeight, 'F');
-  doc.setDrawColor(BLACK.r, BLACK.g, BLACK.b);
-  doc.setLineWidth(0.5);
-  doc.rect(15, yPos, pageWidth - 30, legalBoxHeight, 'S');
-  
-  yPos += 6;
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
-  doc.text('MENTIONS LÉGALES', centerX, yPos, { align: 'center' });
-  yPos += 6;
-  
-  doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('Référence de paiement', 18, yPos + 5);
+  doc.setFontSize(11);
+  doc.text(invoice.saleNumber, 18, yPos + 11);
+  doc.setTextColor(BLACK.r, BLACK.g, BLACK.b);
   
-  const legalTexts = [
-    `Facture payable sous 30 jours à compter de la date d'émission`,
-    `En cas de retard de paiement, des intérêts de retard au taux légal seront appliqués`,
-    `TVA applicable: BE ${invoice.company.vatNumber}`,
-    `Aucun escompte accordé en cas de paiement anticipé`,
-  ];
+  yPos += refBoxHeight + 10;
+
+  // ============ CONDITIONS DE PAIEMENT ============
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
   
-  legalTexts.forEach(text => {
-    const lines = doc.splitTextToSize(text, pageWidth - 40);
-    doc.text(lines, centerX, yPos, { align: 'center' });
-    yPos += 5;
-  });
+  let paymentText = '';
+  if (invoice.dueDate) {
+    const daysDiff = differenceInDays(new Date(invoice.dueDate), new Date(invoice.date));
+    paymentText = `Paiement à ${daysDiff} jours - Date d'échéance: ${format(new Date(invoice.dueDate), 'dd/MM/yyyy', { locale: fr })}`;
+  } else {
+    paymentText = "Paiement à 30 jours à compter de la date d'émission";
+  }
+  
+  doc.text(paymentText, centerX, yPos, { align: 'center' });
+  yPos += 8;
 
   // ============ NOTES ADDITIONNELLES ============
   if (invoice.notes) {
@@ -256,21 +275,52 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   }
 
   // ============ FOOTER ============
-  const footerY = pageHeight - 20;
+  const footerY = pageHeight - 30;
   
   doc.setDrawColor(BLACK.r, BLACK.g, BLACK.b);
   doc.setLineWidth(0.5);
   doc.line(15, footerY, pageWidth - 15, footerY);
   
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(BLACK.r, BLACK.g, BLACK.b);
-  doc.text('MERCI DE VOTRE CONFIANCE', centerX, footerY + 6, { align: 'center' });
-  
-  doc.setFontSize(8);
+  yPos = footerY + 5;
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(GRAY_DARK.r, GRAY_DARK.g, GRAY_DARK.b);
-  doc.text('www.JLprod.be', centerX, footerY + 11, { align: 'center' });
+  
+  const col1X = 20;
+  const col2X = 70;
+  const col3X = 120;
+  const col4X = 160;
+  
+  // Colonne 1: Siège social
+  doc.setFont('helvetica', 'bold');
+  doc.text('Siège social', col1X, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text(invoice.company.address, col1X, yPos + 4);
+  doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, col1X, yPos + 8);
+  
+  // Colonne 2: Bureau
+  doc.setFont('helvetica', 'bold');
+  doc.text('Bureau', col2X, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text(invoice.company.address, col2X, yPos + 4);
+  doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, col2X, yPos + 8);
+  
+  // Colonne 3: Compte bancaire
+  doc.setFont('helvetica', 'bold');
+  doc.text('Compte bancaire', col3X, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text('IBAN à configurer', col3X, yPos + 4);
+  
+  // Colonne 4: Questions
+  doc.setFont('helvetica', 'bold');
+  doc.text('Questions ?', col4X, yPos);
+  doc.setFont('helvetica', 'normal');
+  if (invoice.company.phone) {
+    doc.text(invoice.company.phone, col4X, yPos + 4);
+  }
+  if (invoice.company.email) {
+    doc.text(invoice.company.email, col4X, yPos + 8);
+  }
 
   return doc;
 };

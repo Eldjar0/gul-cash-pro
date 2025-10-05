@@ -256,7 +256,8 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
             total_vat: calculateTotalVat(),
             total: calculateTotal(),
             notes,
-          })
+            due_date: new Date(dueDate),
+          } as any)
           .eq('id', invoiceId);
 
         if (updateError) throw updateError;

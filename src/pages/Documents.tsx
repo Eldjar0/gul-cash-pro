@@ -292,9 +292,11 @@ export default function Documents() {
   };
 
   const handleViewInvoice = (sale: any) => {
+    const saleData = sale as any;
     const invoiceData = {
       saleNumber: sale.sale_number,
       date: new Date(sale.date),
+      dueDate: saleData.due_date ? new Date(saleData.due_date) : undefined,
       company: {
         name: companySettings.name,
         address: companySettings.address,
@@ -302,6 +304,7 @@ export default function Documents() {
         postalCode: companySettings.postal_code,
         vatNumber: companySettings.vat_number,
         phone: companySettings.phone,
+        email: companySettings.email,
       },
       customer: sale.customers ? {
         name: sale.customers.name,
@@ -328,9 +331,11 @@ export default function Documents() {
   };
 
   const handleDownloadInvoice = (sale: any) => {
+    const saleData = sale as any;
     const invoiceData = {
       saleNumber: sale.sale_number,
       date: new Date(sale.date),
+      dueDate: saleData.due_date ? new Date(saleData.due_date) : undefined,
       company: {
         name: companySettings.name,
         address: companySettings.address,
@@ -338,6 +343,7 @@ export default function Documents() {
         postalCode: companySettings.postal_code,
         vatNumber: companySettings.vat_number,
         phone: companySettings.phone,
+        email: companySettings.email,
       },
       customer: sale.customers ? {
         name: sale.customers.name,
