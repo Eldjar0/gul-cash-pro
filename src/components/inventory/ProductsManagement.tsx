@@ -19,6 +19,16 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Label } from '@/components/ui/label';
 import { generateStockPDF } from '@/utils/generateStockPDF';
 
+const normalizeBarcodeInput = (raw: string) => {
+  const map: Record<string, string> = {
+    '&': '1', 'é': '2', '"': '3', "'": '4', '(': '5', '-': '6', 'è': '7', '_': '8', 'ç': '9', 'à': '0', '!': '8'
+  };
+  return raw
+    .split('')
+    .map((ch) => (/[0-9]/.test(ch) ? ch : (map[ch] ?? '')))
+    .join('');
+};
+
 export const ProductsManagement = () => {
   const { data: products = [] } = useProducts();
   const { mutate: createProduct } = useCreateProduct();
@@ -82,9 +92,11 @@ export const ProductsManagement = () => {
     const min_stock = parseFloat(form.min_stock || '0');
     if (!name || isNaN(price)) return;
 
+    const barcodeNormalized = normalizeBarcodeInput((form.barcode || '').trim());
+
     const payload: any = {
       name,
-      barcode: form.barcode.trim() || null,
+      barcode: barcodeNormalized || null,
       price,
       stock,
       vat_rate,
@@ -216,7 +228,23 @@ export const ProductsManagement = () => {
             </div>
             <div className="space-y-1">
               <Label htmlFor="barcode">Code-barres</Label>
-              <Input id="barcode" value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} />
+              <Input id="barcode" value={form.barcode}
+                inputMode="numeric" pattern="[0-9]*" autoComplete="off" maxLength={32}
+                onChange={(e) => setForm({ ...form, barcode: normalizeBarcodeInput(e.target.value) })}
+                onPaste={(e) => { e.preventDefault(); const text = e.clipboardData.getData('text'); setForm({ ...form, barcode: normalizeBarcodeInput(text) }); }}
+                onKeyDown={(e) => {
+                  const allowed = ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'];
+                  if (allowed.includes(e.key)) return;
+                  const isDigit = /[0-9]/.test(e.key);
+                  const map: Record<string,string> = { '&':'1','é':'2','"':'3','\'':'4','(':'5','-':'6','è':'7','_':'8','ç':'9','à':'0','!':'8' };
+                  const mapped = map[e.key];
+                  if (!isDigit && !mapped) { e.preventDefault(); }
+                  if (mapped) {
+                    e.preventDefault();
+                    setForm((f) => ({ ...f, barcode: (f.barcode || '') + mapped }));
+                  }
+                }}
+              />
             </div>
             <div className="space-y-1">
               <Label htmlFor="price">Prix</Label>
