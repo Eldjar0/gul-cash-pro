@@ -624,12 +624,12 @@ const Index = () => {
     setScanInput('');
     setSearchResults([]);
   };
-  const handleRemoveItem = useCallback((index: number) => {
+  const handleRemoveItem = (index: number) => {
     if (typeof index !== 'number' || index < 0) return;
     setCart(prev => prev.filter((_, i) => i !== index));
     toast.info('Article retiré');
-  }, []);
-  const handleUpdateQuantity = useCallback((index: number, quantity: number) => {
+  };
+  const handleUpdateQuantity = (index: number, quantity: number) => {
     if (typeof index !== 'number' || index < 0 || typeof quantity !== 'number' || isNaN(quantity)) return;
     
     const maxQuantity = 10000;
@@ -654,8 +654,8 @@ const Index = () => {
       };
       return newCart;
     });
-  }, []);
-  const handleUpdatePrice = useCallback((index: number, newPrice: number) => {
+  };
+  const handleUpdatePrice = (index: number, newPrice: number) => {
     if (typeof index !== 'number' || index < 0 || typeof newPrice !== 'number' || isNaN(newPrice)) return;
     
     const maxPrice = 1000000;
@@ -681,9 +681,9 @@ const Index = () => {
       return newCart;
     });
     toast.success('Prix modifié');
-  }, []);
+  };
   
-  const handleToggleGift = useCallback((index: number) => {
+  const handleToggleGift = (index: number) => {
     if (typeof index !== 'number' || index < 0) return;
     
     let newIsGift = false;
@@ -708,7 +708,7 @@ const Index = () => {
       return newCart;
     });
     toast.success(newIsGift ? 'Article offert' : 'Cadeau annulé');
-  }, []);
+  };
   const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check', amountPaid?: number, metadata?: any) => {
     if (!user) {
       toast.error('Connectez-vous pour encaisser', {
