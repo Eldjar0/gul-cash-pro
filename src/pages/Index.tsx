@@ -1648,6 +1648,11 @@ const Index = () => {
             </div>
             <div className="flex-1 overflow-y-auto min-h-0">
               <div className="space-y-0.5">
+                {(!todaySales || todaySales.length === 0) && (
+                  <div className="text-[8px] text-muted-foreground text-center py-2">
+                    Aucun ticket aujourd'hui
+                  </div>
+                )}
                 {todaySales?.filter(s => !s.is_cancelled).slice(0, 10).map(sale => {
                   const itemCount = sale.sale_items?.length || 0;
                   

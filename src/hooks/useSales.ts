@@ -185,13 +185,28 @@ export const useCreateSale = () => {
 
 export const useSales = (startDate?: Date, endDate?: Date) => {
   return useQuery({
-    queryKey: ['sales', startDate, endDate],
+    queryKey: ['sales', startDate?.toISOString(), endDate?.toISOString()],
     queryFn: async () => {
       let query = supabase
         .from('sales')
         .select(`
           *,
-          sale_items(*),
+          sale_items(
+            id,
+            sale_id,
+            product_id,
+            product_name,
+            product_barcode,
+            quantity,
+            unit_price,
+            vat_rate,
+            discount_type,
+            discount_value,
+            subtotal,
+            vat_amount,
+            total,
+            created_at
+          ),
           customers(
             id,
             name,
@@ -210,7 +225,14 @@ export const useSales = (startDate?: Date, endDate?: Date) => {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching sales:', error);
+        throw error;
+      }
+      
+      // Log pour debug
+      console.log('Sales loaded:', data?.length, 'first sale items:', data?.[0]?.sale_items?.length);
+      
       return data;
     },
   });
