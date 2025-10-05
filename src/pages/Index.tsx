@@ -382,19 +382,17 @@ const Index = () => {
     // Intentionnellement vide
   }, []);
 
-  // Recherche manuelle uniquement (désactivé auto-search)
+  const debouncedSearchTerm = useDebounce(scanInput, 300);
+
+  // Recherche automatique avec debounce
   useEffect(() => {
-    const term = scanInput.trim();
+    const term = debouncedSearchTerm.trim();
     if (!term) {
       setSearchResults([]);
       return;
     }
-    // Recherche en direct (debounce 200ms)
-    const id = setTimeout(() => {
-      handleSearch();
-    }, 200);
-    return () => clearTimeout(id);
-  }, [scanInput, products, categories]);
+    handleSearch();
+  }, [debouncedSearchTerm]);
 
   // Normalisation AZERTY → chiffres pour les codes-barres
   const normalizeBarcode = (raw: string): string => {
@@ -820,15 +818,19 @@ const Index = () => {
       displayChannelRef.current.postMessage(completedState);
       localStorage.setItem('customer_display_state', JSON.stringify(completedState));
 
-      // Retour à "idle" après 5 secondes
-      setTimeout(() => {
+      // Retour à "idle" après 5 secondes avec cleanup
+      const timeoutId = setTimeout(() => {
         const idleState = {
           items: [],
           status: 'idle',
           timestamp: Date.now()
         };
-        displayChannelRef.current.postMessage(idleState);
-        localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+        try {
+          displayChannelRef.current.postMessage(idleState);
+          localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+        } catch (e) {
+          // Erreur silencieuse
+        }
       }, 5000);
       setCart([]);
       setGlobalDiscount(null);
@@ -956,14 +958,18 @@ const Index = () => {
         payments: payments
       };
       setCurrentSale(saleForReceipt);
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         const idleState = {
           items: [],
           status: 'idle',
           timestamp: Date.now()
         };
-        displayChannelRef.current.postMessage(idleState);
-        localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+        try {
+          displayChannelRef.current.postMessage(idleState);
+          localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+        } catch (e) {
+          // Erreur silencieuse
+        }
       }, 5000);
       setCart([]);
       setGlobalDiscount(null);
@@ -1075,41 +1081,64 @@ const Index = () => {
     setWaitingForOperand(false);
   };
   const handleOperation = (op: string) => {
+    if (!op || typeof op !== 'string') return;
     const inputValue = parseFloat(quantityInput || '0');
+    if (isNaN(inputValue)) return;
+    
     if (currentValue === null) {
       setCurrentValue(inputValue);
     } else if (operation) {
       const newValue = performCalculation(currentValue, inputValue, operation);
-      setQuantityInput(String(newValue));
-      setCurrentValue(newValue);
+      if (!isNaN(newValue) && isFinite(newValue)) {
+        setQuantityInput(String(newValue));
+        setCurrentValue(newValue);
+      }
     }
     setWaitingForOperand(true);
     setOperation(op);
   };
   const performCalculation = (first: number, second: number, op: string): number => {
+    // Validation des inputs
+    if (typeof first !== 'number' || typeof second !== 'number' || isNaN(first) || isNaN(second)) {
+      return 0;
+    }
+    
+    let result = 0;
     switch (op) {
       case '+':
-        return first + second;
+        result = first + second;
+        break;
       case '-':
-        return first - second;
+        result = first - second;
+        break;
       case '*':
-        return first * second;
+        result = first * second;
+        break;
       case '/':
-        return second !== 0 ? first / second : 0;
+        result = second !== 0 ? first / second : 0;
+        break;
       case '%':
-        return first * (second / 100);
+        result = first * (second / 100);
+        break;
       default:
-        return second;
+        result = second;
     }
+    
+    // Arrondir à 2 décimales et vérifier la validité
+    return isFinite(result) ? Math.round(result * 100) / 100 : 0;
   };
   const handleEqualsCalc = () => {
     const inputValue = parseFloat(quantityInput || '0');
+    if (isNaN(inputValue)) return;
+    
     if (currentValue !== null && operation) {
       const result = performCalculation(currentValue, inputValue, operation);
-      setQuantityInput(String(result));
-      setCurrentValue(null);
-      setOperation(null);
-      setWaitingForOperand(true);
+      if (!isNaN(result) && isFinite(result)) {
+        setQuantityInput(String(result));
+        setCurrentValue(null);
+        setOperation(null);
+        setWaitingForOperand(true);
+      }
     }
   };
   const handleOpenDay = (openingAmount: number) => {
