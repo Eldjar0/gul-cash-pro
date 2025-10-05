@@ -14,6 +14,7 @@ import {
   FileText,
   Edit,
   Trash2,
+  CreditCard,
 } from 'lucide-react';
 import { useCustomers } from '@/hooks/useCustomers';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -25,11 +26,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { CustomerCreditManagementDialog } from '@/components/customers/CustomerCreditManagementDialog';
 
 export default function Customers() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [creditDialogOpen, setCreditDialogOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<{ id: string; name: string } | null>(null);
   const { data: customers = [], isLoading } = useCustomers();
+
+  const handleOpenCreditDialog = (customerId: string, customerName: string) => {
+    setSelectedCustomer({ id: customerId, name: customerName });
+    setCreditDialogOpen(true);
+  };
 
   const filteredCustomers = customers.filter((customer) => {
     const searchLower = searchTerm.toLowerCase();
@@ -174,6 +183,15 @@ export default function Customers() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8"
+                            onClick={() => handleOpenCreditDialog(customer.id, customer.name)}
+                            title="Gérer le crédit"
+                          >
+                            <CreditCard className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="sm" className="h-8">
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -197,6 +215,15 @@ export default function Customers() {
           </div>
         </Card>
       </div>
+
+      {selectedCustomer && (
+        <CustomerCreditManagementDialog
+          open={creditDialogOpen}
+          onOpenChange={setCreditDialogOpen}
+          customerId={selectedCustomer.id}
+          customerName={selectedCustomer.name}
+        />
+      )}
     </div>
   );
 }

@@ -200,3 +200,26 @@ export const usePayCredit = () => {
     },
   });
 };
+
+export const useUpdateCreditLimit = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ customerId, newLimit }: { customerId: string; newLimit: number }) => {
+      const { error } = await supabase
+        .from('customer_credit_accounts')
+        .update({ credit_limit: newLimit })
+        .eq('customer_id', customerId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer-credit-account'] });
+      toast.success('Limite de crédit mise à jour');
+    },
+    onError: (error: Error) => {
+      console.error('Error updating credit limit:', error);
+      toast.error('Erreur lors de la mise à jour');
+    },
+  });
+};
