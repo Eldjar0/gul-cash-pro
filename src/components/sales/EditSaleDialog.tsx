@@ -3,12 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertTriangle, Trash2, Save } from 'lucide-react';
+import { AlertTriangle, Trash2, Save, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { ProductSearch } from '@/components/pos/ProductSearch';
+import { Product } from '@/hooks/useProducts';
 
 interface EditSaleDialogProps {
   open: boolean;
@@ -19,6 +21,7 @@ interface EditSaleDialogProps {
 export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps) {
   const [items, setItems] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
+  const [showProductSearch, setShowProductSearch] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -45,6 +48,27 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
   const handleRemoveItem = (index: number) => {
     const newItems = items.filter((_, i) => i !== index);
     setItems(newItems);
+  };
+
+  const handleAddProduct = (product: Product) => {
+    const newItem = {
+      product_id: product.id,
+      product_name: product.name,
+      product_barcode: product.barcode,
+      quantity: 1,
+      unit_price: product.price,
+      vat_rate: product.vat_rate,
+      discount_type: null,
+      discount_value: 0,
+      subtotal: product.price,
+      vat_amount: product.price * (product.vat_rate / 100),
+      total: product.price * (1 + product.vat_rate / 100),
+      created_at: new Date().toISOString(),
+    };
+    
+    setItems([...items, newItem]);
+    setShowProductSearch(false);
+    toast.success('Produit ajouté');
   };
 
   const calculateNewTotals = () => {
@@ -157,6 +181,31 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
                 </span>
               </div>
             </div>
+
+            {showProductSearch ? (
+              <div className="p-4 border rounded-lg bg-muted/30">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">Ajouter un produit</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowProductSearch(false)}
+                  >
+                    Annuler
+                  </Button>
+                </div>
+                <ProductSearch onProductSelect={handleAddProduct} />
+              </div>
+            ) : (
+              <Button
+                onClick={() => setShowProductSearch(true)}
+                variant="outline"
+                className="w-full"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter un produit
+              </Button>
+            )}
 
             <ScrollArea className="h-[350px] border rounded-lg p-4">
               <div className="space-y-3">
