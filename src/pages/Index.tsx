@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
@@ -25,7 +25,7 @@ import { Product, useProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateSale, useSales } from '@/hooks/useSales';
 import { useCategories } from '@/hooks/useCategories';
-import { Customer } from '@/hooks/useCustomers';
+import { Customer, useCustomers } from '@/hooks/useCustomers';
 import { useTodayReport, useOpenDay, useCloseDay, getTodayReportData, ReportData } from '@/hooks/useDailyReports';
 import { useWeather } from '@/hooks/useWeather';
 import { toast } from 'sonner';
@@ -165,6 +165,10 @@ const Index = () => {
   const [customerCreditDialogOpen, setCustomerCreditDialogOpen] = useState(false);
   const [cancelCartDialogOpen, setCancelCartDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectCustomerDialogOpen, setSelectCustomerDialogOpen] = useState(false);
+  
+  // Fetch customers
+  const { data: customers } = useCustomers();
 
   // Physical scan action dialog states
   const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
@@ -1401,6 +1405,10 @@ const Index = () => {
                 <FolderOpen className="h-3 w-3 mr-0.5" />
                 Charger
               </Button>
+              <Button variant="outline" size="sm" onClick={() => setSelectCustomerDialogOpen(true)} className={`h-7 text-[9px] ${selectedCustomer ? 'border-cyan-500 text-cyan-500 bg-cyan-500/10' : 'border-purple-500 text-purple-500'} hover:bg-purple-500/10`} title="Sélectionner un client">
+                <User className="h-3 w-3 mr-0.5" />
+                {selectedCustomer ? selectedCustomer.name.split(' ')[0] : 'Client'}
+              </Button>
               <Button variant="outline" size="sm" onClick={() => {
               if (cart.length > 0) {
                 setSavedCartsDialogOpen(true);
@@ -1740,6 +1748,73 @@ const Index = () => {
       <MixedPaymentDialog open={mixedPaymentDialogOpen} onOpenChange={setMixedPaymentDialogOpen} total={totals.total} onConfirmPayment={handleMixedPayment} customerId={selectedCustomer?.id} />
 
       <SavedCartsDialog open={savedCartsDialogOpen} onOpenChange={setSavedCartsDialogOpen} currentCart={cart} onLoadCart={handleLoadCart} />
+
+      {/* Dialogue de sélection client */}
+      <Dialog open={selectCustomerDialogOpen} onOpenChange={setSelectCustomerDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Sélectionner un client</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="h-[400px] pr-4">
+            <div className="space-y-2">
+              {/* Option pour désélectionner */}
+              {selectedCustomer && (
+                <Card
+                  className="p-4 cursor-pointer hover:bg-destructive/10 border-2 border-destructive"
+                  onClick={() => {
+                    setSelectedCustomer(null);
+                    setSelectCustomerDialogOpen(false);
+                    toast.info('Client désélectionné');
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <X className="h-5 w-5 text-destructive" />
+                      <span className="font-semibold">Retirer le client</span>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Liste des clients */}
+              {customers?.map((customer) => (
+                <Card
+                  key={customer.id}
+                  className={`p-4 cursor-pointer hover:bg-primary/10 border-2 transition-all ${
+                    selectedCustomer?.id === customer.id ? 'border-primary bg-primary/5' : 'border-border'
+                  }`}
+                  onClick={() => {
+                    setSelectedCustomer(customer);
+                    setSelectCustomerDialogOpen(false);
+                    toast.success(`Client sélectionné: ${customer.name}`);
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-lg">{customer.name}</div>
+                      {customer.email && (
+                        <div className="text-sm text-muted-foreground">{customer.email}</div>
+                      )}
+                      {customer.phone && (
+                        <div className="text-sm text-muted-foreground">{customer.phone}</div>
+                      )}
+                    </div>
+                    {selectedCustomer?.id === customer.id && (
+                      <CheckCircle className="h-6 w-6 text-primary" />
+                    )}
+                  </div>
+                </Card>
+              ))}
+
+              {(!customers || customers.length === 0) && (
+                <div className="text-center py-8 text-muted-foreground">
+                  Aucun client disponible
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
 
       <RefundDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen} />
 
