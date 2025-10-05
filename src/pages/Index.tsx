@@ -624,66 +624,91 @@ const Index = () => {
     setScanInput('');
     setSearchResults([]);
   };
-  const handleRemoveItem = (index: number) => {
-    const newCart = cart.filter((_, i) => i !== index);
-    setCart(newCart);
+  const handleRemoveItem = useCallback((index: number) => {
+    if (typeof index !== 'number' || index < 0) return;
+    setCart(prev => prev.filter((_, i) => i !== index));
     toast.info('Article retiré');
-  };
-  const handleUpdateQuantity = (index: number, quantity: number) => {
-    const newCart = [...cart];
-    const item = newCart[index];
-    const {
-      subtotal,
-      vatAmount,
-      total
-    } = calculateItemTotal(item.product, quantity, item.discount, item.custom_price, item.is_gift);
-    newCart[index] = {
-      ...item,
-      quantity,
-      subtotal,
-      vatAmount,
-      total
-    };
-    setCart(newCart);
-  };
-  const handleUpdatePrice = (index: number, newPrice: number) => {
-    const newCart = [...cart];
-    const item = newCart[index];
-    const {
-      subtotal,
-      vatAmount,
-      total
-    } = calculateItemTotal(item.product, item.quantity, item.discount, newPrice, item.is_gift);
-    newCart[index] = {
-      ...item,
-      custom_price: newPrice,
-      subtotal,
-      vatAmount,
-      total
-    };
-    setCart(newCart);
+  }, []);
+  const handleUpdateQuantity = useCallback((index: number, quantity: number) => {
+    if (typeof index !== 'number' || index < 0 || typeof quantity !== 'number' || isNaN(quantity)) return;
+    
+    const maxQuantity = 10000;
+    const validQuantity = Math.min(Math.max(0.01, quantity), maxQuantity);
+    
+    setCart(prev => {
+      const newCart = [...prev];
+      const item = newCart[index];
+      if (!item) return prev;
+      
+      const {
+        subtotal,
+        vatAmount,
+        total
+      } = calculateItemTotal(item.product, validQuantity, item.discount, item.custom_price, item.is_gift);
+      newCart[index] = {
+        ...item,
+        quantity: validQuantity,
+        subtotal,
+        vatAmount,
+        total
+      };
+      return newCart;
+    });
+  }, []);
+  const handleUpdatePrice = useCallback((index: number, newPrice: number) => {
+    if (typeof index !== 'number' || index < 0 || typeof newPrice !== 'number' || isNaN(newPrice)) return;
+    
+    const maxPrice = 1000000;
+    const validPrice = Math.min(Math.max(0, newPrice), maxPrice);
+    
+    setCart(prev => {
+      const newCart = [...prev];
+      const item = newCart[index];
+      if (!item) return prev;
+      
+      const {
+        subtotal,
+        vatAmount,
+        total
+      } = calculateItemTotal(item.product, item.quantity, item.discount, validPrice, item.is_gift);
+      newCart[index] = {
+        ...item,
+        custom_price: validPrice,
+        subtotal,
+        vatAmount,
+        total
+      };
+      return newCart;
+    });
     toast.success('Prix modifié');
-  };
+  }, []);
   
-  const handleToggleGift = (index: number) => {
-    const newCart = [...cart];
-    const item = newCart[index];
-    const newIsGift = !item.is_gift;
-    const {
-      subtotal,
-      vatAmount,
-      total
-    } = calculateItemTotal(item.product, item.quantity, item.discount, item.custom_price, newIsGift);
-    newCart[index] = {
-      ...item,
-      is_gift: newIsGift,
-      subtotal,
-      vatAmount,
-      total
-    };
-    setCart(newCart);
+  const handleToggleGift = useCallback((index: number) => {
+    if (typeof index !== 'number' || index < 0) return;
+    
+    let newIsGift = false;
+    setCart(prev => {
+      const newCart = [...prev];
+      const item = newCart[index];
+      if (!item) return prev;
+      
+      newIsGift = !item.is_gift;
+      const {
+        subtotal,
+        vatAmount,
+        total
+      } = calculateItemTotal(item.product, item.quantity, item.discount, item.custom_price, newIsGift);
+      newCart[index] = {
+        ...item,
+        is_gift: newIsGift,
+        subtotal,
+        vatAmount,
+        total
+      };
+      return newCart;
+    });
     toast.success(newIsGift ? 'Article offert' : 'Cadeau annulé');
-  };
+  }, []);
   const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check', amountPaid?: number, metadata?: any) => {
     if (!user) {
       toast.error('Connectez-vous pour encaisser', {
