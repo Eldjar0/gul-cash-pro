@@ -6,10 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Package, Truck, ShoppingBag, BarChart3 } from 'lucide-react';
 import { ProductsManagement } from '@/components/inventory/ProductsManagement';
 import { SuppliersManagement } from '@/components/inventory/SuppliersManagement';
-import { BatchesTab } from '@/components/inventory/BatchesTab';
-import { PurchaseOrdersTab } from '@/components/inventory/PurchaseOrdersTab';
-import { InventoryCountsTab } from '@/components/inventory/InventoryCountsTab';
-import { ExpiringBatchesAlert } from '@/components/inventory/ExpiringBatchesAlert';
+import { StockManagement } from '@/components/inventory/StockManagement';
 import { useProducts } from '@/hooks/useProducts';
 import { useSuppliers } from '@/hooks/useSuppliers';
 
@@ -104,9 +101,6 @@ export default function InventoryManagement() {
           </Card>
         </div>
 
-        {/* Expiring Batches Alert */}
-        <ExpiringBatchesAlert />
-
         {/* Tabs */}
         <Card className="overflow-hidden shadow-xl">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -124,7 +118,7 @@ export default function InventoryManagement() {
                   className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm rounded-none border-b-2 border-transparent data-[state=active]:border-cyan-500 px-8 py-4 font-semibold"
                 >
                   <Package className="w-5 h-5 mr-2" />
-                  Stock & Inventaire
+                  Gestion Stock
                 </TabsTrigger>
                 <TabsTrigger 
                   value="suppliers" 
@@ -141,26 +135,8 @@ export default function InventoryManagement() {
                 <ProductsManagement />
               </TabsContent>
 
-              <TabsContent value="stock" className="mt-0 space-y-6">
-                <Tabs defaultValue="batches">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="batches">Lots & Péremption</TabsTrigger>
-                    <TabsTrigger value="purchase-orders">Commandes Fournisseurs</TabsTrigger>
-                    <TabsTrigger value="counts">Inventaires Physiques</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="batches">
-                    <BatchesTab />
-                  </TabsContent>
-
-                  <TabsContent value="purchase-orders">
-                    <PurchaseOrdersTab />
-                  </TabsContent>
-
-                  <TabsContent value="counts">
-                    <InventoryCountsTab />
-                  </TabsContent>
-                </Tabs>
+              <TabsContent value="stock" className="mt-0">
+                <StockManagement />
               </TabsContent>
 
               <TabsContent value="suppliers" className="mt-0">
