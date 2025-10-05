@@ -13,6 +13,7 @@ import { DiscountDialog } from '@/components/pos/DiscountDialog';
 import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { CustomerCreditDialog } from '@/components/pos/CustomerCreditDialog';
+import { CustomerCreditManagementDialog } from '@/components/customers/CustomerCreditManagementDialog';
 import { Receipt } from '@/components/pos/Receipt';
 import { PinLockDialog } from '@/components/pos/PinLockDialog';
 import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
@@ -169,6 +170,8 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectCustomerDialogOpen, setSelectCustomerDialogOpen] = useState(false);
   const [customerSearchTerm, setCustomerSearchTerm] = useState('');
+  const [creditManagementDialogOpen, setCreditManagementDialogOpen] = useState(false);
+  const [creditManagementCustomer, setCreditManagementCustomer] = useState<{ id: string; name: string } | null>(null);
   
   // Fetch customers
   const { data: customers } = useCustomers();
@@ -1854,72 +1857,90 @@ const Index = () => {
                 const currentBalance = creditAccount?.current_balance || 0;
                 
                 return (
-                  <Card
-                    key={customer.id}
-                    className={`p-4 border-2 transition-all ${
-                      isCreditBlocked 
-                        ? 'border-destructive bg-destructive/5 opacity-75 cursor-not-allowed' 
-                        : selectedCustomer?.id === customer.id 
-                          ? 'border-primary bg-primary/5 cursor-pointer hover:bg-primary/10' 
-                          : 'border-border cursor-pointer hover:bg-muted/50'
-                    }`}
-                    onClick={() => {
-                      if (isCreditBlocked) {
-                        toast.error(`Client ${customer.name} bloqué pour le crédit`);
-                        return;
-                      }
-                      setSelectedCustomer(customer);
-                      setSelectCustomerDialogOpen(false);
-                      toast.success(`Client sélectionné: ${customer.name}`);
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <div className="font-bold text-lg">{customer.name}</div>
-                          {isCreditBlocked && (
-                            <Badge variant="destructive" className="text-xs">
-                              Crédit Bloqué
-                            </Badge>
+                    <Card
+                      key={customer.id}
+                      className={`p-4 border-2 transition-all ${
+                        isCreditBlocked 
+                          ? 'border-destructive bg-destructive/5 opacity-75' 
+                          : selectedCustomer?.id === customer.id 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:bg-muted/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div 
+                          className="flex-1 cursor-pointer"
+                          onClick={() => {
+                            if (isCreditBlocked) {
+                              toast.error(`Client ${customer.name} bloqué pour le crédit`);
+                              return;
+                            }
+                            setSelectedCustomer(customer);
+                            setSelectCustomerDialogOpen(false);
+                            toast.success(`Client sélectionné: ${customer.name}`);
+                          }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="font-bold text-lg">{customer.name}</div>
+                            {isCreditBlocked && (
+                              <Badge variant="destructive" className="text-xs">
+                                Crédit Bloqué
+                              </Badge>
+                            )}
+                          </div>
+                          {customer.email && (
+                            <div className="text-sm text-muted-foreground">{customer.email}</div>
+                          )}
+                          {customer.phone && (
+                            <div className="text-sm text-muted-foreground">{customer.phone}</div>
+                          )}
+                          
+                          {/* Solde crédit */}
+                          {creditAccount && (
+                            <div className="mt-2 flex items-center gap-4">
+                              <div className="text-sm">
+                                <span className="text-muted-foreground">Limite crédit: </span>
+                                <span className="font-semibold">{creditAccount.credit_limit.toFixed(2)}€</span>
+                              </div>
+                              <div className="text-sm">
+                                <span className="text-muted-foreground">Solde dû: </span>
+                                <span className={`font-semibold ${currentBalance > 0 ? 'text-orange-500' : 'text-green-500'}`}>
+                                  {currentBalance.toFixed(2)}€
+                                </span>
+                              </div>
+                              <div className="text-sm">
+                                <span className="text-muted-foreground">Crédit disponible: </span>
+                                <span className="font-semibold text-blue-500">
+                                  {Math.max(0, creditAccount.credit_limit - currentBalance).toFixed(2)}€
+                                </span>
+                              </div>
+                            </div>
                           )}
                         </div>
-                        {customer.email && (
-                          <div className="text-sm text-muted-foreground">{customer.email}</div>
-                        )}
-                        {customer.phone && (
-                          <div className="text-sm text-muted-foreground">{customer.phone}</div>
-                        )}
-                        
-                        {/* Solde crédit */}
-                        {creditAccount && (
-                          <div className="mt-2 flex items-center gap-4">
-                            <div className="text-sm">
-                              <span className="text-muted-foreground">Limite crédit: </span>
-                              <span className="font-semibold">{creditAccount.credit_limit.toFixed(2)}€</span>
-                            </div>
-                            <div className="text-sm">
-                              <span className="text-muted-foreground">Solde dû: </span>
-                              <span className={`font-semibold ${currentBalance > 0 ? 'text-orange-500' : 'text-green-500'}`}>
-                                {currentBalance.toFixed(2)}€
-                              </span>
-                            </div>
-                            <div className="text-sm">
-                              <span className="text-muted-foreground">Crédit disponible: </span>
-                              <span className="font-semibold text-blue-500">
-                                {Math.max(0, creditAccount.credit_limit - currentBalance).toFixed(2)}€
-                              </span>
-                            </div>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {creditAccount && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCreditManagementCustomer({ id: customer.id, name: customer.name });
+                                setCreditManagementDialogOpen(true);
+                              }}
+                              title="Gérer le crédit"
+                            >
+                              <CreditCard className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {selectedCustomer?.id === customer.id && !isCreditBlocked && (
+                            <CheckCircle className="h-6 w-6 text-primary" />
+                          )}
+                          {isCreditBlocked && (
+                            <AlertCircle className="h-6 w-6 text-destructive" />
+                          )}
+                        </div>
                       </div>
-                      {selectedCustomer?.id === customer.id && !isCreditBlocked && (
-                        <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
-                      )}
-                      {isCreditBlocked && (
-                        <AlertCircle className="h-6 w-6 text-destructive flex-shrink-0" />
-                      )}
-                    </div>
-                  </Card>
+                    </Card>
                 );
               })}
 
@@ -2088,6 +2109,16 @@ const Index = () => {
     }} todayReport={todayReport} />
 
       {reportData && <ReportXDialog open={reportXDialogOpen} onOpenChange={setReportXDialogOpen} reportData={reportData} todayReport={todayReport} />}
+
+      {/* Customer Credit Management Dialog */}
+      {creditManagementCustomer && (
+        <CustomerCreditManagementDialog
+          open={creditManagementDialogOpen}
+          onOpenChange={setCreditManagementDialogOpen}
+          customerId={creditManagementCustomer.id}
+          customerName={creditManagementCustomer.name}
+        />
+      )}
     </div>;
 };
 export default Index;
