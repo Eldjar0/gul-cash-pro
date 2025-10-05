@@ -520,7 +520,7 @@ const Index = () => {
   };
 
   // Gestion de la sélection de produit - MUST BE BEFORE handleBarcodeScan
-  const handleProductSelect = (product: Product, quantity?: number) => {
+  const handleProductSelect = useCallback((product: Product, quantity?: number) => {
     if (!product || !product.id) {
       toast.error('Produit invalide');
       return;
@@ -570,7 +570,7 @@ const Index = () => {
     setScanInput('');
     setSearchResults([]);
     toast.success(`${product.name} ajouté au panier`);
-  };
+  }, [quantityInput]);
 
   // Handler pour confirmer le poids
   const handleWeightConfirm = (weight: number) => {
