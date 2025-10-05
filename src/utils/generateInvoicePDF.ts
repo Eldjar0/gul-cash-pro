@@ -254,13 +254,6 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   } else {
     // Facture impayée - Afficher les informations de paiement et QR code
     yPos += 10;
-    
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(204, 0, 0);
-    doc.text('FACTURE IMPAYÉE', pageWidth / 2, yPos, { align: 'center' });
-    doc.setTextColor(0, 0, 0);
-    yPos += 10;
 
     // Informations de paiement
     if (invoice.bankAccounts && invoice.bankAccounts.length > 0) {
