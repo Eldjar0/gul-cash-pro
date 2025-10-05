@@ -7,8 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, FileDown, Save, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { generateOrderPDF } from '@/utils/generateOrderPDF';
 
 export function StockManagement() {
   const { data: products = [], refetch } = useProducts();
@@ -72,99 +71,13 @@ export function StockManagement() {
     }
   };
 
-  const generateOrderPDF = () => {
-    const lowStockProducts = products.filter(p => p.stock <= (p.min_stock || 0));
-    
-    if (lowStockProducts.length === 0) {
+  const handleGenerateOrderPDF = () => {
+    const result = generateOrderPDF(products);
+    if (result === null) {
       toast.info('Aucun produit en stock faible');
-      return;
+    } else {
+      toast.success('PDF genere avec succes');
     }
-
-    const doc = new jsPDF();
-
-    // En-tête
-    doc.setFontSize(20);
-    doc.text('Bon de Commande - Produits à Commander', 14, 22);
-    
-    doc.setFontSize(10);
-    doc.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, 14, 30);
-    
-    // Catégoriser les produits
-    const outOfStock = lowStockProducts.filter(p => p.stock === 0);
-    const lowStock = lowStockProducts.filter(p => p.stock > 0 && p.stock <= (p.min_stock || 0));
-
-    let currentY = 40;
-
-    // Section Rupture de stock
-    if (outOfStock.length > 0) {
-      doc.setFontSize(14);
-      doc.setTextColor(220, 38, 38); // red
-      doc.text('🔴 RUPTURE DE STOCK (URGENT)', 14, currentY);
-      currentY += 8;
-
-      const outOfStockData = outOfStock.map(p => [
-        p.name,
-        p.barcode || '-',
-        p.stock.toString(),
-        (p.min_stock || 0).toString(),
-        Math.max(10, (p.min_stock || 5) * 2).toString(), // Quantité suggérée
-        p.supplier || '-'
-      ]);
-
-      autoTable(doc, {
-        startY: currentY,
-        head: [['Produit', 'Code-barres', 'Stock', 'Min', 'Qté à commander', 'Fournisseur']],
-        body: outOfStockData,
-        theme: 'grid',
-        headStyles: { fillColor: [220, 38, 38] },
-        styles: { fontSize: 9 }
-      });
-
-      currentY = (doc as any).lastAutoTable.finalY + 10;
-    }
-
-    // Section Stock faible
-    if (lowStock.length > 0) {
-      doc.setFontSize(14);
-      doc.setTextColor(234, 88, 12); // orange
-      doc.text('🟠 STOCK FAIBLE', 14, currentY);
-      currentY += 8;
-
-      const lowStockData = lowStock.map(p => [
-        p.name,
-        p.barcode || '-',
-        p.stock.toString(),
-        (p.min_stock || 0).toString(),
-        Math.max(5, Math.ceil((p.min_stock || 5) * 1.5)).toString(),
-        p.supplier || '-'
-      ]);
-
-      autoTable(doc, {
-        startY: currentY,
-        head: [['Produit', 'Code-barres', 'Stock', 'Min', 'Qté à commander', 'Fournisseur']],
-        body: lowStockData,
-        theme: 'grid',
-        headStyles: { fillColor: [234, 88, 12] },
-        styles: { fontSize: 9 }
-      });
-    }
-
-    // Pied de page
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(128, 128, 128);
-      doc.text(
-        `Page ${i} sur ${pageCount}`,
-        doc.internal.pageSize.width / 2,
-        doc.internal.pageSize.height - 10,
-        { align: 'center' }
-      );
-    }
-
-    doc.save(`commande-produits-${new Date().toISOString().split('T')[0]}.pdf`);
-    toast.success('PDF généré avec succès');
   };
 
   const getStockBadge = (product: any) => {
@@ -189,9 +102,9 @@ export function StockManagement() {
             className="pl-10"
           />
         </div>
-        <Button onClick={generateOrderPDF} className="gap-2">
+        <Button onClick={handleGenerateOrderPDF} className="gap-2">
           <FileDown className="h-4 w-4" />
-          Générer PDF Commande
+          Generer PDF Commande
         </Button>
       </div>
 
