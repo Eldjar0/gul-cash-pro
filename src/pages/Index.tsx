@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, Gift } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, Gift, AlertCircle } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
@@ -165,6 +165,7 @@ const Index = () => {
   const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
   const [giftCardDialogOpen, setGiftCardDialogOpen] = useState(false);
   const [customerCreditDialogOpen, setCustomerCreditDialogOpen] = useState(false);
+  const [cancelCartDialogOpen, setCancelCartDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Physical scan action dialog states
@@ -1399,7 +1400,7 @@ const Index = () => {
           {/* Payment buttons - Modern JL Prod style */}
           <div className="bg-background p-1.5 space-y-1.5 border-t-2 border-border flex-shrink-0">
             {/* Nouveaux boutons fonctionnalités */}
-            <div className="grid grid-cols-4 gap-1 mb-1">
+            <div className="grid grid-cols-3 gap-1 mb-1">
               <Button variant="outline" size="sm" onClick={() => setSavedCartsDialogOpen(true)} className="h-7 text-[9px] border-blue-500 text-blue-500 hover:bg-blue-500/10" title="Paniers sauvegardés">
                 <FolderOpen className="h-3 w-3 mr-0.5" />
                 Charger
@@ -1412,10 +1413,6 @@ const Index = () => {
                 <Save className="h-3 w-3 mr-0.5" />
                 Sauver
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setMixedPaymentDialogOpen(true)} disabled={cart.length === 0} className="h-7 text-[9px] border-purple-500 text-purple-500 hover:bg-purple-500/10" title="Paiement mixte">
-                <Split className="h-3 w-3 mr-0.5" />
-                Mixte
-              </Button>
               <Button variant="outline" size="sm" onClick={() => setRefundDialogOpen(true)} className="h-7 text-[9px] border-orange-500 text-orange-500 hover:bg-orange-500/10" title="Créer un remboursement">
                 <Undo2 className="h-3 w-3 mr-0.5" />
                 Rembour.
@@ -1426,20 +1423,11 @@ const Index = () => {
               <Euro className="mr-1.5 h-4 w-4" />
               PAYER {cart.length > 0 && `${totals.total.toFixed(2)}€`}
             </Button>
-            <div className="grid grid-cols-3 gap-1">
-              <Button onClick={() => setPaymentDialogOpen(true)} disabled={cart.length === 0} className="h-8 text-[10px] bg-white hover:bg-primary/5 text-primary border-2 border-primary font-semibold shadow-sm">
-                <CreditCard className="mr-0.5 h-2.5 w-2.5" />
-                CB
-              </Button>
-              <Button onClick={() => setPaymentDialogOpen(true)} disabled={cart.length === 0} className="h-8 text-[10px] bg-white hover:bg-accent/5 text-accent border-2 border-accent font-semibold shadow-sm">
-                <Banknote className="mr-0.5 h-2.5 w-2.5" />
-                ESP
-              </Button>
-              <Button onClick={handleClearCart} disabled={cart.length === 0} className="h-8 text-[10px] bg-white hover:bg-destructive/5 text-destructive border-2 border-destructive font-semibold shadow-sm">
-                <Trash2 className="mr-0.5 h-2.5 w-2.5" />
-                ANN
-              </Button>
-            </div>
+            
+            <Button onClick={() => setCancelCartDialogOpen(true)} disabled={cart.length === 0} className="w-full h-10 bg-gradient-to-r from-destructive to-destructive/90 hover:from-destructive/90 hover:to-destructive/80 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+              <Trash2 className="mr-1.5 h-4 w-4" />
+              ANNULER LE TICKET
+            </Button>
           </div>
         </div>
 
@@ -1802,6 +1790,57 @@ const Index = () => {
               setReceiptDialogOpen(true);
             }} className="flex-1 h-14 bg-primary hover:bg-primary/90 text-white text-base font-bold">
                 Oui, imprimer
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation d'annulation du ticket */}
+      <Dialog open={cancelCartDialogOpen} onOpenChange={setCancelCartDialogOpen}>
+        <DialogContent className="max-w-md bg-white border-2 border-destructive">
+          <DialogHeader>
+            <DialogTitle className="text-destructive text-xl font-bold flex items-center gap-2">
+              <AlertCircle className="h-6 w-6" />
+              Annuler le ticket en cours?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-muted-foreground mb-4">
+              Êtes-vous sûr de vouloir annuler ce ticket?
+            </p>
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-6">
+              <p className="text-sm font-semibold mb-2">Articles à supprimer:</p>
+              <div className="space-y-1">
+                {cart.map((item, idx) => (
+                  <div key={idx} className="flex justify-between text-sm">
+                    <span>{item.product.name} x{item.quantity}</span>
+                    <span className="font-medium">{item.total.toFixed(2)}€</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 pt-3 border-t border-destructive/20 flex justify-between font-bold">
+                <span>Total:</span>
+                <span className="text-destructive">{totals.total.toFixed(2)}€</span>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setCancelCartDialogOpen(false)} 
+                className="flex-1 h-14 text-base font-semibold"
+              >
+                Non, garder
+              </Button>
+              <Button 
+                onClick={() => {
+                  handleClearCart();
+                  setCancelCartDialogOpen(false);
+                  toast.success('Ticket annulé');
+                }} 
+                className="flex-1 h-14 bg-destructive hover:bg-destructive/90 text-white text-base font-bold"
+              >
+                Oui, annuler
               </Button>
             </div>
           </div>
