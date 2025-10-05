@@ -13,7 +13,9 @@ import JsBarcode from 'jsbarcode';
 interface LabelDesignEditorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  labelSize: '3x7cm' | 'small' | 'medium' | 'large';
+  labelSize: '7x3cm' | 'small' | 'medium' | 'large' | 'custom';
+  customWidth?: number;
+  customHeight?: number;
   onSaveTemplate: (template: any) => void;
   currentTemplate?: any;
 }
@@ -22,6 +24,8 @@ export const LabelDesignEditor = ({
   open, 
   onOpenChange, 
   labelSize,
+  customWidth,
+  customHeight,
   onSaveTemplate,
   currentTemplate 
 }: LabelDesignEditorProps) => {
@@ -32,10 +36,14 @@ export const LabelDesignEditor = ({
   const [textColor, setTextColor] = useState('#000000');
 
   const labelSizes = {
-    '3x7cm': { width: 113, height: 265 }, // 30mm x 70mm en pixels (96 DPI)
+    '7x3cm': { width: 265, height: 113 }, // 70mm x 30mm en pixels (96 DPI)
     small: { width: 227, height: 151 },   // 60mm x 40mm
     medium: { width: 302, height: 189 },  // 80mm x 50mm
-    large: { width: 378, height: 227 }    // 100mm x 60mm
+    large: { width: 378, height: 227 },   // 100mm x 60mm
+    custom: { 
+      width: customWidth ? Math.round(customWidth * 3.78) : 265, 
+      height: customHeight ? Math.round(customHeight * 3.78) : 113 
+    } // Conversion mm vers pixels (96 DPI)
   };
 
   const size = labelSizes[labelSize];

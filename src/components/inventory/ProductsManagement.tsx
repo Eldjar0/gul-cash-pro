@@ -69,7 +69,9 @@ export const ProductsManagement = () => {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [labelCount, setLabelCount] = useState<Record<string, number>>({});
   const [showPrice, setShowPrice] = useState(true);
-  const [labelSize, setLabelSize] = useState<'small' | 'medium' | 'large' | '3x7cm'>('3x7cm');
+  const [labelSize, setLabelSize] = useState<'small' | 'medium' | 'large' | '7x3cm' | 'custom'>('7x3cm');
+  const [customWidth, setCustomWidth] = useState(70);
+  const [customHeight, setCustomHeight] = useState(30);
   const [designEditorOpen, setDesignEditorOpen] = useState(false);
   const [labelTemplate, setLabelTemplate] = useState<string | null>(null);
 
@@ -176,7 +178,16 @@ export const ProductsManagement = () => {
       small: { width: '60mm', height: '40mm', topSize: '7px', nameSize: '13px', priceSize: '24px', barcodeHeight: '40', barcodeNumSize: '8px' },
       medium: { width: '80mm', height: '50mm', topSize: '8px', nameSize: '16px', priceSize: '32px', barcodeHeight: '50', barcodeNumSize: '9px' },
       large: { width: '100mm', height: '60mm', topSize: '9px', nameSize: '19px', priceSize: '40px', barcodeHeight: '60', barcodeNumSize: '10px' },
-      '3x7cm': { width: '30mm', height: '70mm', topSize: '6px', nameSize: '11px', priceSize: '20px', barcodeHeight: '35', barcodeNumSize: '7px' }
+      '7x3cm': { width: '70mm', height: '30mm', topSize: '6px', nameSize: '11px', priceSize: '18px', barcodeHeight: '30', barcodeNumSize: '7px' },
+      'custom': { 
+        width: `${customWidth}mm`, 
+        height: `${customHeight}mm`, 
+        topSize: '6px', 
+        nameSize: '11px', 
+        priceSize: '18px', 
+        barcodeHeight: '30', 
+        barcodeNumSize: '7px' 
+      }
     };
 
     const size = labelSizes[labelSize];
@@ -535,13 +546,39 @@ export const ProductsManagement = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="3x7cm">3x7cm (30x70mm)</SelectItem>
-                    <SelectItem value="small">Petite (40×25mm)</SelectItem>
-                    <SelectItem value="medium">Moyenne (60×40mm)</SelectItem>
-                    <SelectItem value="large">Grande (80×50mm)</SelectItem>
+                    <SelectItem value="7x3cm">7x3cm (70x30mm)</SelectItem>
+                    <SelectItem value="small">Petite (60×40mm)</SelectItem>
+                    <SelectItem value="medium">Moyenne (80×50mm)</SelectItem>
+                    <SelectItem value="large">Grande (100×60mm)</SelectItem>
+                    <SelectItem value="custom">Personnalisée</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              {labelSize === 'custom' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Largeur (mm)</Label>
+                    <Input
+                      type="number"
+                      min="20"
+                      max="200"
+                      value={customWidth}
+                      onChange={(e) => setCustomWidth(parseInt(e.target.value) || 70)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Hauteur (mm)</Label>
+                    <Input
+                      type="number"
+                      min="20"
+                      max="200"
+                      value={customHeight}
+                      onChange={(e) => setCustomHeight(parseInt(e.target.value) || 30)}
+                    />
+                  </div>
+                </>
+              )}
 
               <div className="flex items-center space-x-2 pt-8">
                 <Checkbox 
@@ -706,6 +743,8 @@ export const ProductsManagement = () => {
         open={designEditorOpen}
         onOpenChange={setDesignEditorOpen}
         labelSize={labelSize}
+        customWidth={customWidth}
+        customHeight={customHeight}
         onSaveTemplate={(template) => setLabelTemplate(template)}
         currentTemplate={labelTemplate ? JSON.parse(labelTemplate) : null}
       />
