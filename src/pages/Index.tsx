@@ -534,19 +534,29 @@ const Index = () => {
 
   // Traitement du code-barres scanné (utilisé pour les scans physiques)
   const handleBarcodeScan = useCallback((raw: string) => {
+    console.log('[POS] Barcode scanné (brut):', raw);
+    
     const normalized = normalizeBarcode(raw.trim());
-    const normalizedDigits = normalized.replace(/\D+/g, ''); // Fallback: chiffres uniquement
-
-    if (!normalized || normalized.length < 3) return;
-
-    // 1. Recherche exacte sur le code-barres normalisé
-    let found = products?.find(p => p.barcode && normalizeBarcode(p.barcode).toLowerCase() === normalized.toLowerCase());
-
-    // 2. Recherche sur chiffres uniquement (fallback)
-    if (!found && normalizedDigits.length >= 3) {
-      found = products?.find(p => p.barcode && p.barcode.replace(/\D+/g, '') === normalizedDigits);
+    console.log('[POS] Barcode normalisé:', normalized);
+    
+    if (!normalized || normalized.length < 3) {
+      console.log('[POS] Barcode trop court, ignoré');
+      return;
     }
+
+    // Recherche du produit - normaliser AUSSI le code-barres en base
+    let found = products?.find(p => {
+      if (!p.barcode) return false;
+      const dbBarcode = normalizeBarcode(p.barcode.trim());
+      const match = dbBarcode === normalized;
+      if (match) {
+        console.log('[POS] ✓ Match trouvé:', p.name, '(DB:', p.barcode, '→', dbBarcode, ')');
+      }
+      return match;
+    });
+
     if (found) {
+      console.log('[POS] Produit trouvé, ajout au panier:', found.name);
       handleProductSelect(found);
       setScanInput("");
       setSearchResults([]);
@@ -554,16 +564,16 @@ const Index = () => {
     }
 
     // Si inconnu, afficher un toast avec action pour créer
-    const barcodeToUse = normalizedDigits.length >= 3 ? normalizedDigits : normalized;
+    console.log('[POS] ✗ Aucun produit trouvé pour:', normalized);
     toast.error('Code-barres inconnu', {
-      description: `Aucun produit lié à ${barcodeToUse}`,
+      description: `Aucun produit lié à ${normalized}`,
       action: {
         label: 'Créer produit',
-        onClick: () => navigate(`/products?new=1&barcode=${encodeURIComponent(barcodeToUse)}`)
+        onClick: () => navigate(`/products?new=1&barcode=${encodeURIComponent(normalized)}`)
       }
     });
     setScanInput("");
-  }, [products, navigate]);
+  }, [products, navigate, handleProductSelect]);
 
   // Physical barcode scanner using dedicated hook
   usePhysicalScanner({
