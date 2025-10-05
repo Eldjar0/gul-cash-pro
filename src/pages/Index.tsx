@@ -243,6 +243,75 @@ const Index = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [cart.length]);
 
+  // Capture automatique des scans du scanner physique au niveau global
+  useEffect(() => {
+    let scanBuffer = '';
+    let scanTimeout: NodeJS.Timeout | null = null;
+
+    const handleGlobalKeyPress = (e: KeyboardEvent) => {
+      // Ignorer si on est dans un champ de texte/textarea (sauf le champ de scan)
+      const target = e.target as HTMLElement;
+      const isScanInput = target?.id === 'scan-input' || target?.getAttribute('placeholder')?.includes('Scan');
+      const isTextInput = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA';
+      
+      if (isTextInput && !isScanInput) {
+        return; // Ignorer les frappes dans d'autres champs
+      }
+
+      // Accumuler les caractères
+      if (e.key.length === 1) {
+        scanBuffer += e.key;
+        
+        // Réinitialiser le timeout
+        if (scanTimeout) clearTimeout(scanTimeout);
+        
+        scanTimeout = setTimeout(() => {
+          // Si le buffer contient des caractères spéciaux typiques du scanner
+          if (scanBuffer.length > 3 && /[&é"'(èçà!@#$%^*_\-àç]/.test(scanBuffer)) {
+            const normalized = normalizeBarcode(scanBuffer);
+            
+            // Si on a obtenu des chiffres valides après normalisation
+            if (normalized.length >= 8) {
+              // Mettre à jour le champ de scan
+              setScanInput(normalized);
+              // Focus sur le champ
+              scanInputRef.current?.focus();
+              // Déclencher la recherche après un court délai
+              setTimeout(() => {
+                handleBarcodeScan(normalized);
+              }, 100);
+            }
+          }
+          
+          scanBuffer = ''; // Réinitialiser le buffer
+        }, 100); // 100ms après la dernière touche
+      }
+
+      // Enter termine immédiatement le scan
+      if (e.key === 'Enter' && scanBuffer.length > 0) {
+        if (scanTimeout) clearTimeout(scanTimeout);
+        
+        const normalized = normalizeBarcode(scanBuffer);
+        if (normalized.length >= 8) {
+          setScanInput(normalized);
+          scanInputRef.current?.focus();
+          setTimeout(() => {
+            handleBarcodeScan(normalized);
+          }, 100);
+        }
+        
+        scanBuffer = '';
+      }
+    };
+
+    window.addEventListener('keypress', handleGlobalKeyPress);
+    
+    return () => {
+      window.removeEventListener('keypress', handleGlobalKeyPress);
+      if (scanTimeout) clearTimeout(scanTimeout);
+    };
+  }, [products]); // Dépendance: products pour la recherche
+
   // Calculer les promotions automatiques quand le panier change
   useEffect(() => {
     if (activePromotions && cart.length > 0) {
@@ -419,6 +488,7 @@ const Index = () => {
   // Normalisation AZERTY → chiffres pour les codes-barres
   const normalizeBarcode = (raw: string): string => {
     const azertyMap: Record<string, string> = {
+      // Chiffres avec Shift sur AZERTY français
       '&': '1',
       '!': '1',
       'é': '2',
@@ -432,13 +502,30 @@ const Index = () => {
       '-': '6',
       '^': '6',
       'è': '7',
+      '&amp;': '7', // HTML entity
       '_': '8',
       '*': '8',
       'ç': '9',
       'à': '0',
       ')': '0',
-      '§': '6'
+      '§': '6',
+      // Caractères supplémentaires possibles
+      '²': '2',
+      '³': '3',
+      '°': '0',
+      '+': '1',
+      '=': '0',
+      '~': '2',
+      '{': '4',
+      '}': '0',
+      '[': '5',
+      ']': '6',
+      '|': '6',
+      '`': '7',
+      '\\': '8',
+      '/': '9'
     };
+    
     // Mapper les caractères AZERTY puis garder uniquement les chiffres
     const normalized = raw.split('').map(c => azertyMap[c] ?? c).join('');
     return normalized.replace(/\D+/g, ''); // Supprimer tout ce qui n'est pas un chiffre
