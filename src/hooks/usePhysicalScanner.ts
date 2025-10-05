@@ -22,7 +22,7 @@ export const usePhysicalScanner = ({
   timeout = 100,
 }: PhysicalScannerOptions) => {
   const normalizeBarcode = useCallback((raw: string): string => {
-    return raw.split('').map(char => AZERTY_MAP[char] || char).join('').trim();
+    return raw.split('').map(char => AZERTY_MAP[char] || char).join('').replace(/\D+/g, '').trim();
   }, []);
 
   useEffect(() => {
@@ -63,42 +63,53 @@ export const usePhysicalScanner = ({
         isScanning = false;
       }
 
-      // Détecter début de scan (frappe rapide)
-      if (timeDiff < 50 && !isScanning) {
-        isScanning = true;
-      }
-
+      // Mettre à jour le timestamp
       lastKeyTime = now;
 
       // Enter ou Tab = fin de scan
       if (e.key === 'Enter' || e.key === 'Tab') {
-        if (isScanning && buffer.length > 0) {
+        if (buffer.length > 0) {
           e.preventDefault();
+          e.stopPropagation();
           if (timeoutId) clearTimeout(timeoutId);
           processScan();
-          return;
         }
+        return;
       }
 
-      // Ignorer les touches spéciales
-      if (e.key.length > 1 && e.key !== 'Enter' && e.key !== 'Tab') return;
+      // Ignorer les touches spéciales non imprimables
+      if (e.key.length > 1) return;
 
-      // Ajouter au buffer si scan en cours
-      if (isScanning || timeDiff < 50) {
+      // Déterminer le chiffre à ajouter
+      let toAppend: string | null = null;
+      if (e.code && e.code.startsWith('Digit')) {
+        toAppend = e.code.replace('Digit', '');
+      } else if (e.code && e.code.startsWith('Numpad')) {
+        toAppend = e.code.replace('Numpad', '');
+      } else {
+        toAppend = AZERTY_MAP[e.key] || e.key;
+      }
+
+      // Démarrer le scan si nécessaire et ajouter le premier caractère
+      if (!isScanning) {
         isScanning = true;
-        buffer += e.key;
-        e.preventDefault();
+      }
 
-        // Auto-traiter après timeout
+      if (toAppend && toAppend.length === 1) {
+        buffer += toAppend;
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Auto-traiter après timeout de silence
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(processScan, timeout);
       }
     };
 
-    window.addEventListener('keydown', handler);
+    window.addEventListener('keydown', handler, true);
 
     return () => {
-      window.removeEventListener('keydown', handler);
+      window.removeEventListener('keydown', handler, true);
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [enabled, minLength, timeout, onScan, normalizeBarcode]);
