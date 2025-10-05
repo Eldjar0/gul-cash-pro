@@ -43,9 +43,15 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
               {categories?.map((category) => (
                 <Button
                   key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "outline"}
                   onClick={() => onCategorySelect(category.id)}
-                  className="h-20 flex flex-col items-center justify-center gap-1 p-2"
+                  className="h-20 flex flex-col items-center justify-center gap-1 p-2 text-white font-semibold transition-all hover:brightness-110"
+                  style={{ 
+                    backgroundColor: selectedCategory === category.id 
+                      ? category.color 
+                      : `${category.color}CC`,
+                    borderColor: category.color,
+                    borderWidth: '2px'
+                  }}
                 >
                   <Package className="h-5 w-5" />
                   <span className="text-xs font-medium text-center line-clamp-2">
