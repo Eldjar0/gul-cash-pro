@@ -28,6 +28,7 @@ const InvoiceCreate = lazy(() => import("./pages/InvoiceCreate"));
 const Inventory = lazy(() => import("./pages/Inventory"));
 const Loyalty = lazy(() => import("./pages/Loyalty"));
 const DownloadApp = lazy(() => import("./pages/DownloadApp"));
+const UserManagement = lazy(() => import("./pages/UserManagement"));
 const MobileManagement = lazy(() => import("./pages/MobileManagement"));
 const MobileCategories = lazy(() => import("./pages/MobileCategories"));
 const MobilePromotions = lazy(() => import("./pages/MobilePromotions"));
@@ -79,6 +80,7 @@ const App = () => (
             <Route path="/products" element={<ProtectedRoute><ProtectedLayout><Products /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/customers" element={<ProtectedRoute><ProtectedLayout><Customers /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><ProtectedLayout><Settings /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/users" element={<ProtectedRoute><ProtectedLayout><UserManagement /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/legal-info" element={<ProtectedRoute><ProtectedLayout><LegalInfo /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/getting-started" element={<ProtectedRoute><ProtectedLayout><GettingStarted /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/inventory" element={<ProtectedRoute><ProtectedLayout><Inventory /></ProtectedLayout></ProtectedRoute>} />

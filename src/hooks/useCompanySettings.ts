@@ -59,26 +59,45 @@ export function useCompanySettings() {
 
   const loadSettings = async () => {
     try {
-      const { data } = await supabase
-        .from('settings')
-        .select('*')
-        .eq('key', 'invoice_settings')
-        .maybeSingle();
+      // Charger à la fois company_info et invoice_settings
+      const [companyData, invoiceData] = await Promise.all([
+        supabase.from('settings').select('*').eq('key', 'company_info').maybeSingle(),
+        supabase.from('settings').select('*').eq('key', 'invoice_settings').maybeSingle(),
+      ]);
 
-      if (data?.value) {
-        const invoiceSettings = data.value as any;
-        // Mapper vers l'ancien format pour compatibilité
-        setSettings({
-          ...DEFAULT_SETTINGS,
+      let mergedSettings = { ...DEFAULT_SETTINGS };
+
+      // Fusionner company_info si existe
+      if (companyData.data?.value) {
+        const companyInfo = companyData.data.value as any;
+        mergedSettings = {
+          ...mergedSettings,
+          name: companyInfo.name || '',
+          address: companyInfo.address || '',
+          city: companyInfo.city || '',
+          postal_code: companyInfo.postal_code || '',
+          vat_number: companyInfo.vat_number || '',
+          phone: companyInfo.phone || '',
+          email: companyInfo.email || '',
+        };
+      }
+
+      // Fusionner invoice_settings si existe (prioritaire)
+      if (invoiceData.data?.value) {
+        const invoiceSettings = invoiceData.data.value as any;
+        mergedSettings = {
+          ...mergedSettings,
           ...invoiceSettings,
           name: invoiceSettings.is_company 
-            ? invoiceSettings.company_name 
-            : `${invoiceSettings.first_name} ${invoiceSettings.last_name}`,
-          address: invoiceSettings.store_address || invoiceSettings.headquarters_address || '',
-          city: invoiceSettings.store_city || invoiceSettings.headquarters_city || '',
-          postal_code: invoiceSettings.store_postal_code || invoiceSettings.headquarters_postal_code || '',
-        });
+            ? invoiceSettings.company_name || mergedSettings.name
+            : `${invoiceSettings.first_name || ''} ${invoiceSettings.last_name || ''}`.trim() || mergedSettings.name,
+          address: invoiceSettings.store_address || mergedSettings.address,
+          city: invoiceSettings.store_city || mergedSettings.city,
+          postal_code: invoiceSettings.store_postal_code || mergedSettings.postal_code,
+        };
       }
+
+      setSettings(mergedSettings);
     } catch (error) {
       console.error('Error loading company settings:', error);
     } finally {

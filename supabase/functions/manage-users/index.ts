@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       throw new Error('Accès refusé - droits administrateur requis');
     }
 
-    const { action, userId, email, password, fullName } = await req.json();
+    const { action, userId, email, password, fullName, role, user_id, new_password } = await req.json();
     console.log(`Action: ${action}`, { userId, email, adminUser: user.email });
 
     switch (action) {
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
 
         if (createError) throw createError;
 
-        // Créer le profil (without role)
+        // Créer le profil
         const { error: profileError } = await supabaseAdmin
           .from('profiles')
           .upsert({
@@ -92,12 +92,12 @@ Deno.serve(async (req) => {
           throw profileError;
         }
 
-        // Assign default cashier role
+        // Assign role (admin or cashier)
         const { error: roleError } = await supabaseAdmin
           .from('user_roles')
           .upsert({
             user_id: newUser.user.id,
-            role: 'cashier'
+            role: role || 'cashier'
           });
 
         if (roleError) {
@@ -112,12 +112,34 @@ Deno.serve(async (req) => {
         );
       }
 
+      case 'update_password': {
+        const targetUserId = user_id || userId;
+        if (!targetUserId || !new_password) {
+          throw new Error('user_id et new_password requis');
+        }
+
+        console.log(`🔑 Mise à jour mot de passe: ${targetUserId}`);
+        const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+          targetUserId,
+          { password: new_password }
+        );
+
+        if (updateError) throw updateError;
+
+        console.log(`✅ Mot de passe mis à jour: ${targetUserId}`);
+        return new Response(
+          JSON.stringify({ success: true, user: updatedUser.user }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       case 'update': {
-        if (!userId) {
+        const targetUserId = userId || user_id;
+        if (!targetUserId) {
           throw new Error('userId requis');
         }
 
-        console.log(`✏️ Mise à jour du compte: ${userId}`);
+        console.log(`✏️ Mise à jour du compte: ${targetUserId}`);
         const updateData: any = {};
         
         if (email) updateData.email = email;
@@ -125,7 +147,7 @@ Deno.serve(async (req) => {
         if (fullName) updateData.user_metadata = { full_name: fullName };
 
         const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-          userId,
+          targetUserId,
           updateData
         );
 
@@ -136,10 +158,10 @@ Deno.serve(async (req) => {
           await supabaseAdmin
             .from('profiles')
             .update({ full_name: fullName })
-            .eq('id', userId);
+            .eq('id', targetUserId);
         }
 
-        console.log(`✅ Compte mis à jour: ${userId}`);
+        console.log(`✅ Compte mis à jour: ${targetUserId}`);
         return new Response(
           JSON.stringify({ success: true, user: updatedUser.user }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -147,16 +169,17 @@ Deno.serve(async (req) => {
       }
 
       case 'delete': {
-        if (!userId) {
+        const targetUserId = userId || user_id;
+        if (!targetUserId) {
           throw new Error('userId requis');
         }
 
-        console.log(`🗑️ Suppression du compte: ${userId}`);
-        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+        console.log(`🗑️ Suppression du compte: ${targetUserId}`);
+        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(targetUserId);
         
         if (deleteError) throw deleteError;
 
-        console.log(`✅ Compte supprimé: ${userId}`);
+        console.log(`✅ Compte supprimé: ${targetUserId}`);
         return new Response(
           JSON.stringify({ success: true }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

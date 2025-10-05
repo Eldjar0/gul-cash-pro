@@ -30,6 +30,7 @@ interface InvoiceSettings {
   phone: string;
   email: string;
   bank_accounts: BankAccount[];
+  invoice_logo?: string;
 }
 
 
@@ -53,6 +54,7 @@ export default function Settings() {
     phone: '',
     email: '',
     bank_accounts: [],
+    invoice_logo: '',
   });
 
   useEffect(() => {
@@ -61,15 +63,52 @@ export default function Settings() {
 
   const loadSettings = async () => {
     try {
-      const { data } = await supabase
-        .from('settings')
-        .select('*')
-        .eq('key', 'invoice_settings')
-        .maybeSingle();
+      // Charger à la fois company_info et invoice_settings
+      const [companyData, invoiceData] = await Promise.all([
+        supabase.from('settings').select('*').eq('key', 'company_info').maybeSingle(),
+        supabase.from('settings').select('*').eq('key', 'invoice_settings').maybeSingle(),
+      ]);
 
-      if (data?.value) {
-        setSettings(data.value as unknown as InvoiceSettings);
+      let loadedSettings = {
+        is_company: true,
+        company_name: '',
+        first_name: '',
+        last_name: '',
+        headquarters_address: '',
+        headquarters_city: '',
+        headquarters_postal_code: '',
+        store_address: '',
+        store_city: '',
+        store_postal_code: '',
+        vat_number: '',
+        phone: '',
+        email: '',
+        bank_accounts: [] as BankAccount[],
+        invoice_logo: '',
+      };
+
+      // Charger les données de company_info en premier
+      if (companyData.data?.value) {
+        const companyInfo = companyData.data.value as any;
+        loadedSettings.company_name = companyInfo.name || '';
+        loadedSettings.headquarters_address = companyInfo.address || '';
+        loadedSettings.headquarters_city = companyInfo.city || '';
+        loadedSettings.headquarters_postal_code = companyInfo.postal_code || '';
+        loadedSettings.store_address = companyInfo.address || '';
+        loadedSettings.store_city = companyInfo.city || '';
+        loadedSettings.store_postal_code = companyInfo.postal_code || '';
+        loadedSettings.vat_number = companyInfo.vat_number || '';
+        loadedSettings.phone = companyInfo.phone || '';
+        loadedSettings.email = companyInfo.email || '';
       }
+
+      // Puis écraser avec invoice_settings si existe
+      if (invoiceData.data?.value) {
+        const invoiceSettings = invoiceData.data.value as any;
+        loadedSettings = { ...loadedSettings, ...invoiceSettings };
+      }
+
+      setSettings(loadedSettings);
     } catch (error) {
       console.error('Error loading settings:', error);
     } finally {
@@ -327,6 +366,23 @@ export default function Settings() {
                   onChange={(e) => setSettings({ ...settings, email: e.target.value })}
                   placeholder="contact@moncommerce.be"
                 />
+              </div>
+            </div>
+
+            {/* Logo de facturation */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Logo pour les factures</h3>
+              <div>
+                <Label htmlFor="invoice_logo">URL du logo</Label>
+                <Input
+                  id="invoice_logo"
+                  value={settings.invoice_logo || ''}
+                  onChange={(e) => setSettings({ ...settings, invoice_logo: e.target.value })}
+                  placeholder="https://exemple.com/logo.png ou /chemin/vers/logo.png"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Le logo sera affiché en haut à gauche des factures
+                </p>
               </div>
             </div>
 
