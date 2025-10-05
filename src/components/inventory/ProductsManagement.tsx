@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { generateStockPDF } from '@/utils/generateStockPDF';
+import JsBarcode from 'jsbarcode';
 
 const normalizeBarcodeInput = (raw: string) => {
   const map: Record<string, string> = {
@@ -163,12 +164,32 @@ export const ProductsManagement = () => {
     if (!printWindow) return;
 
     const labelSizes = {
-      small: { width: '60mm', height: '40mm', topSize: '7px', nameSize: '13px', priceSize: '24px', barcodeHeight: '15mm', barcodeNumSize: '8px' },
-      medium: { width: '80mm', height: '50mm', topSize: '8px', nameSize: '16px', priceSize: '32px', barcodeHeight: '18mm', barcodeNumSize: '9px' },
-      large: { width: '100mm', height: '60mm', topSize: '9px', nameSize: '19px', priceSize: '40px', barcodeHeight: '20mm', barcodeNumSize: '10px' }
+      small: { width: '60mm', height: '40mm', topSize: '7px', nameSize: '13px', priceSize: '24px', barcodeHeight: '40', barcodeNumSize: '8px' },
+      medium: { width: '80mm', height: '50mm', topSize: '8px', nameSize: '16px', priceSize: '32px', barcodeHeight: '50', barcodeNumSize: '9px' },
+      large: { width: '100mm', height: '60mm', topSize: '9px', nameSize: '19px', priceSize: '40px', barcodeHeight: '60', barcodeNumSize: '10px' }
     };
 
     const size = labelSizes[labelSize];
+
+    // Générer les SVG de code-barres
+    const barcodes: Record<string, string> = {};
+    selectedProductsList.forEach(product => {
+      if (product.barcode) {
+        try {
+          const canvas = document.createElement('canvas');
+          JsBarcode(canvas, product.barcode, {
+            format: 'CODE128',
+            width: 2,
+            height: parseInt(size.barcodeHeight),
+            displayValue: false,
+            margin: 0
+          });
+          barcodes[product.id] = canvas.toDataURL('image/png');
+        } catch (error) {
+          console.error('Erreur génération code-barres:', error);
+        }
+      }
+    });
 
     let htmlContent = `
       <!DOCTYPE html>
@@ -229,10 +250,9 @@ export const ProductsManagement = () => {
               flex: 1;
               text-align: left;
             }
-            .barcode {
-              font-family: "Libre Barcode 128", monospace;
-              font-size: ${size.barcodeHeight};
-              line-height: ${size.barcodeHeight};
+            .barcode-image {
+              max-width: 100%;
+              height: auto;
             }
             .barcode-text {
               font-size: ${size.barcodeNumSize};
@@ -257,7 +277,6 @@ export const ProductsManagement = () => {
               .label { border: 1.5px solid #000; }
             }
           </style>
-          <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&display=swap" rel="stylesheet">
         </head>
         <body>
     `;
@@ -267,6 +286,7 @@ export const ProductsManagement = () => {
       const unitText = product.unit || 'unité';
       const priceUnit = product.type === 'weight' ? 'kg' : unitText === 'carton' ? 'pcs' : 'pcs';
       const cdtText = product.category_id ? product.category_id.substring(0, 8) : '24';
+      const barcodeImage = barcodes[product.id];
       
       for (let i = 0; i < copies; i++) {
         htmlContent += `
@@ -282,8 +302,8 @@ export const ProductsManagement = () => {
             
             <div class="bottom-row">
               <div class="barcode-section">
-                ${product.barcode ? `
-                  <div class="barcode">*${product.barcode}*</div>
+                ${barcodeImage ? `
+                  <img src="${barcodeImage}" class="barcode-image" alt="code-barres"/>
                   <div class="barcode-text">${product.barcode}</div>
                 ` : '<div style="font-size: 8px; color: #999;">Aucun code</div>'}
               </div>
