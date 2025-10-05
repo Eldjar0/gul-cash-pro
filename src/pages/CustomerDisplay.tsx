@@ -237,27 +237,28 @@ const CustomerDisplay = () => {
           <div className="absolute w-36 h-36 bg-category-purple/40 rounded-full blur-xl animate-dvd-bounce-3" style={{ animationDuration: '18s', animationDelay: '4s' }}></div>
         </div>
         
-        <div className="w-full max-w-6xl space-y-6 relative z-10">
+        <div className="w-full max-w-6xl space-y-8 relative z-10">
           {/* Logo centré */}
           <div className="text-center animate-fade-in">
             <div className="relative inline-block">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 blur-3xl rounded-full animate-pulse-soft"></div>
-              <img src={logoMarket} alt="Logo" className="relative w-56 h-56 mx-auto object-contain animate-scale-in drop-shadow-2xl" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary blur-3xl rounded-full animate-pulse-soft opacity-60"></div>
+              <img src={logoMarket} alt="Logo" className="relative w-72 h-72 mx-auto object-contain animate-scale-in drop-shadow-2xl brightness-110" />
             </div>
             
-            <div className="mt-4">
-              <h1 className="text-8xl font-black tracking-tight animate-scale-in drop-shadow-lg bg-gradient-to-r from-accent via-accent/60 to-accent bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s' }}>
+            <div className="mt-8 relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary blur-2xl opacity-40 animate-pulse-soft"></div>
+              <h1 className="relative text-[10rem] font-black tracking-tight animate-scale-in drop-shadow-2xl bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
                 Bienvenue
               </h1>
             </div>
           </div>
 
           {/* Textes centrés entre logo et infos */}
-          <div className="text-center space-y-3 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <p className="text-5xl font-bold text-foreground drop-shadow-md">
+          <div className="text-center space-y-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <p className="text-6xl font-black text-primary drop-shadow-lg">
               Veuillez patienter
             </p>
-            <p className="text-3xl text-muted-foreground">
+            <p className="text-4xl font-bold bg-gradient-to-r from-accent to-primary text-transparent bg-clip-text">
               Un collaborateur va prendre votre commande
             </p>
           </div>
