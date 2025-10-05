@@ -80,33 +80,33 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-11 items-center gap-0.5 px-1.5">
+      <div className="flex h-12 items-center gap-1 px-2">
         {/* Logo */}
         <button
           onClick={() => navigate("/")}
           className="shrink-0 hover:opacity-80 transition-opacity"
         >
-          <img src={logoNav} alt="Gül Reyhan" className="h-7 w-auto" />
+          <img src={logoNav} alt="Gül Reyhan" className="h-8 w-auto" />
         </button>
 
-        {/* Navigation Menu - Toujours visible, ultra compact */}
-        <div className="flex flex-1 justify-center gap-0.5">
+        {/* Navigation Menu - Toujours visible avec texte */}
+        <div className="flex flex-1 justify-center gap-1">
           {/* Bouton principal Caisse */}
           <Button
             onClick={() => navigate("/")}
-            className="h-9 px-1.5 flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-[10px]"
+            className="h-10 px-2 flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs whitespace-nowrap"
           >
-            <ShoppingCart className="h-3 w-3" />
-            <span className="hidden md:inline">Caisse</span>
+            <ShoppingCart className="h-4 w-4" />
+            <span>Caisse</span>
           </Button>
 
           {/* Menus déroulants simplifiés */}
           <NavigationMenu>
-            <NavigationMenuList className="gap-0.5">
+            <NavigationMenuList className="gap-1">
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-1.5 flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white font-semibold data-[state=open]:bg-green-600 text-[10px]">
-                  <TrendingUp className="h-3 w-3" />
-                  <span className="hidden md:inline">Stats</span>
+                <NavigationMenuTrigger className="h-10 px-2 flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white font-semibold data-[state=open]:bg-green-600 text-xs whitespace-nowrap">
+                  <TrendingUp className="h-4 w-4" />
+                  <span>Stats</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
@@ -128,9 +128,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-1.5 flex items-center gap-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold data-[state=open]:bg-purple-600 text-[10px]">
-                  <Receipt className="h-3 w-3" />
-                  <span className="hidden md:inline">Ventes</span>
+                <NavigationMenuTrigger className="h-10 px-2 flex items-center gap-1.5 bg-purple-500 hover:bg-purple-600 text-white font-semibold data-[state=open]:bg-purple-600 text-xs whitespace-nowrap">
+                  <Receipt className="h-4 w-4" />
+                  <span>Ventes</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
@@ -152,9 +152,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-1.5 flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold data-[state=open]:bg-indigo-600 text-[10px]">
-                  <Package className="h-3 w-3" />
-                  <span className="hidden md:inline">Stock</span>
+                <NavigationMenuTrigger className="h-10 px-2 flex items-center gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold data-[state=open]:bg-indigo-600 text-xs whitespace-nowrap">
+                  <Package className="h-4 w-4" />
+                  <span>Stock</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
@@ -176,9 +176,9 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-9 px-1.5 flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold data-[state=open]:bg-orange-600 text-[10px]">
-                  <Users className="h-3 w-3" />
-                  <span className="hidden md:inline">Clients</span>
+                <NavigationMenuTrigger className="h-10 px-2 flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold data-[state=open]:bg-orange-600 text-xs whitespace-nowrap">
+                  <Users className="h-4 w-4" />
+                  <span>Clients</span>
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4">
@@ -203,10 +203,10 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                 <Button
                   variant="ghost"
                   onClick={() => navigate("/settings")}
-                  className="h-9 px-1.5 flex items-center gap-1 bg-slate-500 hover:bg-slate-600 text-white font-semibold text-[10px]"
+                  className="h-10 px-2 flex items-center gap-1.5 bg-slate-500 hover:bg-slate-600 text-white font-semibold text-xs whitespace-nowrap"
                 >
-                  <Settings className="h-3 w-3" />
-                  <span className="hidden md:inline">Param.</span>
+                  <Settings className="h-4 w-4" />
+                  <span>Réglages</span>
                 </Button>
               </NavigationMenuItem>
             </NavigationMenuList>
@@ -214,17 +214,17 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-0.5 ml-auto">
+        <div className="flex items-center gap-1 ml-auto">
           <div className="relative">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowNotifications(!showNotifications)}
-              className="h-9 w-9"
+              className="h-10 w-10"
             >
-              <Bell className="h-3 w-3" />
+              <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
-                <Badge variant="destructive" className="absolute -top-0.5 -right-0.5 h-4 w-4 p-0 flex items-center justify-center text-[9px]">
+                <Badge variant="destructive" className="absolute -top-0.5 -right-0.5 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
                   {unreadCount}
                 </Badge>
               )}
@@ -239,18 +239,18 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
             variant="ghost"
             size="icon"
             onClick={onLockScreen}
-            className="h-9 w-9"
+            className="h-10 w-10"
           >
-            <Lock className="h-3 w-3" />
+            <Lock className="h-4 w-4" />
           </Button>
 
           <Button
             variant="ghost"
             size="icon"
             onClick={handleSignOut}
-            className="text-destructive hover:text-destructive h-9 w-9"
+            className="text-destructive hover:text-destructive h-10 w-10"
           >
-            <LogOut className="h-3 w-3" />
+            <LogOut className="h-4 w-4" />
           </Button>
         </div>
       </div>
