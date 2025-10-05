@@ -19,7 +19,8 @@ import {
   Calendar as CalendarIcon,
   BarChart3,
   Download,
-  FileSpreadsheet
+  FileSpreadsheet,
+  FileText
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -275,6 +276,84 @@ export default function Stats() {
     URL.revokeObjectURL(url);
   };
 
+  // Export Produits PDF
+  const exportProductsToPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Rapport Produits Vendus', 14, 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Période: ${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}`, 14, 30);
+    doc.text(`Date d'export: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 36);
+    
+    // Statistiques générales
+    doc.setFontSize(14);
+    doc.text('Statistiques Produits', 14, 46);
+    doc.setFontSize(10);
+    doc.text(`Nombre de produits différents: ${topProducts.length}`, 14, 54);
+    doc.text(`Chiffre d'affaires total: ${totalRevenue.toFixed(2)}€`, 14, 60);
+
+    // Table des produits
+    const productsData = topProducts.map((product, idx) => [
+      (idx + 1).toString(),
+      product.name,
+      product.quantity.toString(),
+      product.count.toString(),
+      product.revenue.toFixed(2) + '€',
+      ((product.revenue / totalRevenue) * 100).toFixed(1) + '%'
+    ]);
+
+    autoTable(doc, {
+      startY: 70,
+      head: [['#', 'Produit', 'Qté', 'Nb ventes', 'CA', '% CA']],
+      body: productsData,
+      theme: 'grid',
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [139, 92, 246] }
+    });
+
+    doc.save(`produits_${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}.pdf`);
+  };
+
+  // Export Produits XML
+  const exportProductsXML = () => {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<rapport_produits>\n';
+    xml += `  <periode>\n`;
+    xml += `    <debut>${format(startDate, 'yyyy-MM-dd')}</debut>\n`;
+    xml += `    <fin>${format(endDate, 'yyyy-MM-dd')}</fin>\n`;
+    xml += `  </periode>\n`;
+    xml += `  <statistiques>\n`;
+    xml += `    <nombre_produits>${topProducts.length}</nombre_produits>\n`;
+    xml += `    <chiffre_affaires_total>${totalRevenue.toFixed(2)}</chiffre_affaires_total>\n`;
+    xml += `  </statistiques>\n`;
+    xml += `  <produits>\n`;
+    
+    topProducts.forEach((product, idx) => {
+      xml += `    <produit>\n`;
+      xml += `      <rang>${idx + 1}</rang>\n`;
+      xml += `      <nom>${product.name}</nom>\n`;
+      xml += `      <code_barre>${product.barcode || ''}</code_barre>\n`;
+      xml += `      <quantite_vendue>${product.quantity}</quantite_vendue>\n`;
+      xml += `      <nombre_ventes>${product.count}</nombre_ventes>\n`;
+      xml += `      <chiffre_affaires>${product.revenue.toFixed(2)}</chiffre_affaires>\n`;
+      xml += `      <pourcentage_ca>${((product.revenue / totalRevenue) * 100).toFixed(2)}</pourcentage_ca>\n`;
+      xml += `    </produit>\n`;
+    });
+    
+    xml += `  </produits>\n`;
+    xml += '</rapport_produits>';
+
+    const blob = new Blob([xml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `produits_${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}.xml`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen bg-background p-6 space-y-6">
       {/* Header */}
@@ -520,6 +599,17 @@ export default function Stats() {
         </TabsContent>
 
         <TabsContent value="products" className="space-y-4">
+          <div className="flex gap-2 mb-4">
+            <Button onClick={exportProductsToPDF} variant="outline" size="sm">
+              <FileText className="w-4 h-4 mr-2" />
+              Export PDF Produits
+            </Button>
+            <Button onClick={exportProductsXML} variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Export XML Produits
+            </Button>
+          </div>
+          
           <Card>
             <CardHeader>
               <CardTitle>Performance des produits</CardTitle>
