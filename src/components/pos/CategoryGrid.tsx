@@ -1,10 +1,9 @@
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCategories } from '@/hooks/useCategories';
 import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/hooks/useProducts';
-import { Package, Grid3x3 } from 'lucide-react';
+import { Package, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 
 interface CategoryGridProps {
@@ -21,62 +20,70 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
     ? products?.filter(p => p.category_id === selectedCategory)
     : products;
 
+  const selectedCategoryData = categories?.find(c => c.id === selectedCategory);
+
   return (
     <div className="flex flex-col gap-2 h-full">
-      <Tabs defaultValue="categories" className="flex-1 flex flex-col">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="categories">Catégories</TabsTrigger>
-          <TabsTrigger value="products">Produits</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="categories" className="flex-1 mt-2 overflow-hidden">
-          <ScrollArea className="h-full">
-            <div className="grid grid-cols-3 gap-2 p-1">
+      {!selectedCategory ? (
+        // Affichage des catégories
+        <ScrollArea className="h-full">
+          <div className="grid grid-cols-3 gap-2 p-1">
+            {categories?.map((category) => (
               <Button
-                variant={selectedCategory === null ? "default" : "outline"}
-                onClick={() => onCategorySelect(null)}
-                className="h-20 flex flex-col items-center justify-center gap-1 p-2"
+                key={category.id}
+                onClick={() => onCategorySelect(category.id)}
+                className="h-24 flex flex-col items-center justify-center gap-2 p-3 text-white font-semibold transition-all hover:brightness-110"
+                style={{ 
+                  backgroundColor: category.color,
+                  borderColor: category.color,
+                  borderWidth: '2px'
+                }}
               >
-                <Grid3x3 className="h-5 w-5" />
-                <span className="text-xs font-medium">Tout</span>
+                <Package className="h-6 w-6" />
+                <span className="text-sm font-medium text-center line-clamp-2">
+                  {category.name}
+                </span>
               </Button>
-              {categories?.map((category) => (
-                <Button
-                  key={category.id}
-                  onClick={() => onCategorySelect(category.id)}
-                  className="h-20 flex flex-col items-center justify-center gap-1 p-2 text-white font-semibold transition-all hover:brightness-110"
-                  style={{ 
-                    backgroundColor: selectedCategory === category.id 
-                      ? category.color 
-                      : `${category.color}CC`,
-                    borderColor: category.color,
-                    borderWidth: '2px'
-                  }}
-                >
-                  <Package className="h-5 w-5" />
-                  <span className="text-xs font-medium text-center line-clamp-2">
-                    {category.name}
-                  </span>
-                </Button>
-              ))}
+            ))}
+          </div>
+        </ScrollArea>
+      ) : (
+        // Affichage des produits de la catégorie sélectionnée
+        <div className="flex flex-col h-full gap-2">
+          <Button
+            onClick={() => onCategorySelect(null)}
+            variant="outline"
+            className="w-full h-12 gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="font-medium">Retour aux catégories</span>
+          </Button>
+          
+          {selectedCategoryData && (
+            <div 
+              className="p-3 rounded-lg text-white font-semibold"
+              style={{ backgroundColor: selectedCategoryData.color }}
+            >
+              <div className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                <span>{selectedCategoryData.name}</span>
+              </div>
             </div>
-          </ScrollArea>
-        </TabsContent>
+          )}
 
-        <TabsContent value="products" className="flex-1 mt-2 overflow-hidden">
-          <ScrollArea className="h-full">
+          <ScrollArea className="flex-1">
             {productsLoading ? (
               <div className="flex items-center justify-center h-32">
                 <div className="text-sm text-muted-foreground">Chargement...</div>
               </div>
-            ) : (
+            ) : filteredProducts && filteredProducts.length > 0 ? (
               <div className="grid grid-cols-3 gap-2 p-1">
-                {filteredProducts?.map((product) => (
+                {filteredProducts.map((product) => (
                   <Button
                     key={product.id}
                     variant="outline"
                     onClick={() => onProductSelect(product)}
-                    className="h-20 flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10"
+                    className="h-24 flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10"
                     disabled={product.stock <= 0}
                   >
                     <span className="text-xs font-medium text-center line-clamp-2">
@@ -95,10 +102,14 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
                   </Button>
                 ))}
               </div>
+            ) : (
+              <div className="flex items-center justify-center h-32">
+                <div className="text-sm text-muted-foreground">Aucun produit dans cette catégorie</div>
+              </div>
             )}
           </ScrollArea>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 }
