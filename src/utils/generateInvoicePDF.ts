@@ -195,61 +195,18 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
 
   yPos += 10;
 
-  // ============ RÉFÉRENCE DE PAIEMENT (BLEU) ============
+  // ============ RÉFÉRENCE (SIMPLE CADRE BLEU) ============
   doc.setFillColor(0, 122, 204);
-  let refBoxHeight = 20;
-  
-  // Si facture impayée, agrandir le carré pour les infos de paiement
-  if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
-    refBoxHeight = 55;
-  }
+  const refBoxHeight = 20;
   
   doc.roundedRect(15, yPos, 80, refBoxHeight, 2, 2, 'F');
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  doc.text('Référence de paiement', 18, yPos + 6);
-  doc.setFontSize(11);
-  doc.text(invoice.saleNumber, 18, yPos + 12);
-  
-  if (invoice.structuredCommunication) {
-    doc.setFontSize(9);
-    doc.text(invoice.structuredCommunication, 18, yPos + 17);
-  }
-  
-  // Si facture impayée, ajouter les infos de paiement dans le carré bleu
-  if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
-    let infoY = yPos + 24;
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    
-    // Banque et IBAN
-    const account = invoice.bankAccounts[0];
-    doc.text(`Banque: ${account.bank_name}`, 18, infoY);
-    infoY += 4;
-    doc.text(`IBAN: ${account.account_number}`, 18, infoY);
-    infoY += 5;
-    
-    // Montant à payer
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.text(`Montant: ${invoice.total.toFixed(2)} €`, 18, infoY);
-    infoY += 5;
-    
-    // Conditions de paiement
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    if (invoice.dueDate) {
-      const daysDiff = differenceInDays(new Date(invoice.dueDate), new Date(invoice.date));
-      const dueDateText = `Paiement à ${daysDiff} jours`;
-      doc.text(dueDateText, 18, infoY);
-      infoY += 4;
-      doc.text(`Échéance: ${format(new Date(invoice.dueDate), 'dd/MM/yyyy', { locale: fr })}`, 18, infoY);
-    } else {
-      doc.text('Paiement à 7 jours', 18, infoY);
-    }
-  }
+  doc.text('Référence', 18, yPos + 7);
+  doc.setFontSize(10);
+  doc.text(invoice.saleNumber, 18, yPos + 14);
   
   doc.setTextColor(0, 0, 0);
 
@@ -292,34 +249,72 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     yPos += 15;
   }
 
-  // Plus de section séparée pour les infos de paiement, tout est dans le carré bleu
+  // ============ INFORMATIONS DE PAIEMENT (ENCADRÉ ÉLÉGANT) ============
+  if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
+    yPos += 10;
+    
+    // Cadre avec bordure
+    doc.setDrawColor(0, 122, 204);
+    doc.setLineWidth(0.8);
+    doc.roundedRect(15, yPos, pageWidth - 30, 28, 2, 2);
+    
+    // Fond légèrement coloré
+    doc.setFillColor(240, 248, 255);
+    doc.roundedRect(15, yPos, pageWidth - 30, 28, 2, 2, 'F');
+    doc.setDrawColor(0, 122, 204);
+    doc.roundedRect(15, yPos, pageWidth - 30, 28, 2, 2, 'S');
+    
+    let paymentY = yPos + 8;
+    
+    // Titre
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 122, 204);
+    doc.text('Informations de paiement', 20, paymentY);
+    paymentY += 7;
+    
+    // Informations en colonnes
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    
+    const account = invoice.bankAccounts[0];
+    const col1 = 20;
+    const col2 = 90;
+    const col3 = 140;
+    
+    // Colonne 1: Banque et IBAN
+    doc.text(`Banque: ${account.bank_name}`, col1, paymentY);
+    doc.text(`IBAN: ${account.account_number}`, col1, paymentY + 5);
+    
+    // Colonne 2: Montant et Communication
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Montant: ${invoice.total.toFixed(2)} €`, col2, paymentY);
+    doc.setFont('helvetica', 'normal');
+    if (invoice.structuredCommunication) {
+      doc.text(`Communication: ${invoice.structuredCommunication}`, col2, paymentY + 5);
+    }
+    
+    // Colonne 3: Échéance
+    if (invoice.dueDate) {
+      const daysDiff = differenceInDays(new Date(invoice.dueDate), new Date(invoice.date));
+      doc.text(`Paiement à ${daysDiff} jours`, col3, paymentY);
+      doc.text(`Échéance: ${format(new Date(invoice.dueDate), 'dd/MM/yyyy', { locale: fr })}`, col3, paymentY + 5);
+    }
+    
+    doc.setTextColor(0, 0, 0);
+    yPos += 35;
+  }
 
   // ============ NOTES ============
   if (invoice.notes) {
+    yPos += 5;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     const splitNotes = doc.splitTextToSize(invoice.notes, pageWidth - 30);
     doc.text(splitNotes, 15, yPos);
     yPos += splitNotes.length * 5 + 5;
   }
-
-  // ============ CONDITIONS DE PAIEMENT ============
-  yPos += 5;
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 122, 204);
-  
-  let paymentText = '';
-  if (invoice.dueDate) {
-    const daysDiff = differenceInDays(new Date(invoice.dueDate), new Date(invoice.date));
-    paymentText = `Paiement à ${daysDiff} jours - Date d'échéance: ${format(new Date(invoice.dueDate), 'dd/MM/yyyy', { locale: fr })}`;
-  } else {
-    paymentText = "Paiement à 30 jours";
-  }
-  
-  doc.text(paymentText, pageWidth / 2, yPos, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
-  yPos += 8;
 
   // ============ FOOTER ============
   const footerY = pageHeight - 40;
