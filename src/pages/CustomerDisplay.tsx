@@ -413,24 +413,24 @@ const CustomerDisplay = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background flex flex-col overflow-hidden">
       {/* Header fixe avec logo */}
-      <div className="fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-md border-b-4 border-primary shadow-2xl p-4 z-10">
+      <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-primary/95 via-accent/95 to-primary/95 backdrop-blur-md border-b-4 border-primary shadow-2xl p-6 z-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
           <div className="relative">
-            <div className="absolute inset-0 bg-primary/10 blur-xl rounded-full"></div>
-            <img src={logoMarket} alt="Logo" className="relative h-20 object-contain drop-shadow-lg" />
+            <div className="absolute inset-0 bg-white/20 blur-xl rounded-full"></div>
+            <img src={logoMarket} alt="Logo" className="relative h-24 object-contain drop-shadow-2xl brightness-110" />
           </div>
           <div className="text-center flex-1">
-            <div className="inline-block px-6 py-2 bg-primary/10 rounded-full border-2 border-primary/30 mb-2">
-              <h1 className="text-5xl font-black text-primary tracking-tight">
+            <div className="inline-block px-8 py-3 bg-white/20 rounded-full border-2 border-white/40 mb-2 backdrop-blur-sm">
+              <h1 className="text-6xl font-black text-white tracking-tight drop-shadow-lg">
                 {displayState.isInvoice ? 'FACTURE' : 'TICKET'} {displayState.saleNumber || 'EN COURS'}
               </h1>
             </div>
             {displayState.isInvoice && displayState.customer && (
-              <p className="text-2xl text-accent font-bold mt-2">{displayState.customer.name}</p>
+              <p className="text-3xl text-white font-bold mt-2 drop-shadow-md">{displayState.customer.name}</p>
             )}
-            <div className="text-base text-muted-foreground mt-2 font-medium">
+            <div className="text-xl text-white/90 mt-2 font-bold drop-shadow-md">
               {currentTime.toLocaleDateString('fr-BE', { 
                 weekday: 'long', 
                 day: '2-digit', 
@@ -445,16 +445,16 @@ const CustomerDisplay = () => {
               })}
             </div>
           </div>
-          <div className="text-right bg-primary/10 rounded-2xl px-6 py-3 border-2 border-primary/30">
-            <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold">Caisse</p>
-            <p className="text-3xl font-black text-primary">{displayState.cashierName || 'N/A'}</p>
+          <div className="text-right bg-white/20 rounded-2xl px-8 py-4 border-2 border-white/40 backdrop-blur-sm">
+            <p className="text-base text-white/90 uppercase tracking-wide font-bold">Caisse</p>
+            <p className="text-4xl font-black text-white drop-shadow-lg">{displayState.cashierName || 'N/A'}</p>
           </div>
         </div>
       </div>
 
       {/* Zone scrollable pour les articles - avec padding top et bottom pour header/footer fixes */}
-      <div className="flex-1 overflow-y-auto pt-32 pb-56 px-6">
-        <div className="max-w-7xl mx-auto space-y-3 flex flex-col-reverse">
+      <div className="flex-1 overflow-y-auto pt-40 pb-60 px-6">
+        <div className="max-w-7xl mx-auto space-y-4 flex flex-col-reverse">
           {displayState.items.map((item, index) => {
             const subtotal = calculateSubtotal(item);
             const vat = calculateVAT(item);
@@ -463,44 +463,44 @@ const CustomerDisplay = () => {
             return (
               <div
                 key={`${item.name}-${index}`}
-                className="bg-card rounded-2xl shadow-lg p-6 border-2 border-primary/20 hover:shadow-2xl hover:border-primary/40 transition-all duration-300 hover:scale-[1.02] animate-fade-in"
+                className="bg-card rounded-3xl shadow-2xl p-8 border-4 border-primary/30 hover:shadow-glow-lg hover:border-primary/60 transition-all duration-300 hover:scale-[1.01] animate-fade-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <div className="flex justify-between items-start gap-6">
+                <div className="flex justify-between items-start gap-8">
                   <div className="flex-1">
-                    <h3 className="text-3xl font-black text-foreground uppercase tracking-tight mb-3 flex items-center gap-3">
-                      <div className="w-2 h-8 bg-primary rounded-full"></div>
+                    <h3 className="text-4xl font-black text-foreground uppercase tracking-tight mb-4 flex items-center gap-4">
+                      <div className="w-3 h-10 bg-gradient-to-b from-primary to-accent rounded-full shadow-lg"></div>
                       {item.name}
                     </h3>
                     <div className="flex gap-4 items-center flex-wrap">
-                      <div className="flex items-center gap-3 bg-muted/50 rounded-xl px-4 py-2">
-                        <span className="text-2xl font-black text-foreground">
+                      <div className="flex items-center gap-4 bg-primary/10 rounded-2xl px-6 py-3 border-2 border-primary/20">
+                        <span className="text-3xl font-black text-foreground">
                           {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)} {unitDisplay}
                         </span>
-                        <span className="text-xl text-muted-foreground">×</span>
-                        <span className="text-2xl font-bold text-primary">
+                        <span className="text-2xl text-muted-foreground font-bold">×</span>
+                        <span className="text-3xl font-black text-primary">
                           {item.price.toFixed(2)} €
                         </span>
                       </div>
                       {item.hasCustomPrice && (
-                        <span className="px-4 py-2 rounded-xl text-base font-bold bg-accent/20 text-accent border-2 border-accent/30">
+                        <span className="px-6 py-3 rounded-2xl text-lg font-black bg-accent/20 text-accent border-2 border-accent/50 shadow-lg">
                           Prix modifié
                         </span>
                       )}
                       {item.discount && (
-                        <span className="px-4 py-2 rounded-xl text-base font-bold bg-destructive/20 text-destructive border-2 border-destructive/30">
+                        <span className="px-6 py-3 rounded-2xl text-lg font-black bg-destructive/20 text-destructive border-2 border-destructive/50 shadow-lg">
                           -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="bg-primary/10 rounded-2xl px-6 py-4 border-2 border-primary/30">
-                      <div className="text-5xl font-black text-primary mb-2 tabular-nums">
+                    <div className="bg-gradient-to-br from-primary/15 to-accent/15 rounded-3xl px-8 py-6 border-4 border-primary/40 shadow-glow-lg">
+                      <div className="text-6xl font-black text-primary mb-2 tabular-nums drop-shadow-lg">
                         {item.total.toFixed(2)} €
                       </div>
-                      <div className="text-sm text-muted-foreground font-semibold">
-                        TVA {item.vatRate}%: <span className="text-foreground font-bold">{vat.toFixed(2)}€</span>
+                      <div className="text-base text-muted-foreground font-bold">
+                        TVA {item.vatRate}%: <span className="text-foreground font-black text-lg">{vat.toFixed(2)}€</span>
                       </div>
                     </div>
                   </div>
@@ -512,11 +512,11 @@ const CustomerDisplay = () => {
       </div>
 
       {/* Footer fixe avec total en bas à droite */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary via-primary-glow to-accent shadow-2xl z-10 border-t-4 border-primary-foreground/20">
-        <div className="max-w-7xl mx-auto p-8">
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary via-accent to-primary shadow-2xl z-10 border-t-4 border-white/20">
+        <div className="max-w-7xl mx-auto p-10">
           <div className="flex justify-between items-center gap-8">
             {/* Infos TVA à gauche */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               {(() => {
                 const vatByRate = displayState.items.reduce((acc, item) => {
                   const vat = calculateVAT(item);
@@ -528,9 +528,9 @@ const CustomerDisplay = () => {
                 }, {} as Record<number, number>);
 
                 return Object.entries(vatByRate).map(([rate, amount]) => (
-                  <div key={rate} className="flex items-center gap-3 bg-primary-foreground/10 backdrop-blur-sm rounded-xl px-5 py-3 border border-primary-foreground/20">
-                    <span className="text-xl font-bold text-primary-foreground uppercase tracking-wide">TVA {parseFloat(rate).toFixed(0)}%:</span>
-                    <span className="text-2xl font-black text-primary-foreground tabular-nums">{amount.toFixed(2)} €</span>
+                  <div key={rate} className="flex items-center gap-4 bg-white/20 backdrop-blur-md rounded-2xl px-8 py-4 border-2 border-white/40 shadow-lg">
+                    <span className="text-2xl font-black text-white uppercase tracking-wide drop-shadow-md">TVA {parseFloat(rate).toFixed(0)}%:</span>
+                    <span className="text-3xl font-black text-white tabular-nums drop-shadow-md">{amount.toFixed(2)} €</span>
                   </div>
                 ));
               })()}
@@ -538,9 +538,9 @@ const CustomerDisplay = () => {
 
             {/* Total TTC à droite - ÉNORME */}
             <div className="text-right">
-              <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-3xl px-10 py-6 border-4 border-primary-foreground/30 shadow-glow-lg">
-                <div className="text-3xl font-bold text-primary-foreground mb-3 uppercase tracking-widest">TOTAL À PAYER</div>
-                <div className="text-8xl font-black text-primary-foreground tracking-tighter leading-none tabular-nums drop-shadow-2xl animate-pulse-soft">
+              <div className="bg-white/20 backdrop-blur-md rounded-3xl px-12 py-8 border-4 border-white/50 shadow-glow-lg">
+                <div className="text-4xl font-black text-white mb-4 uppercase tracking-widest drop-shadow-lg">TOTAL À PAYER</div>
+                <div className="text-9xl font-black text-white tracking-tighter leading-none tabular-nums drop-shadow-2xl animate-pulse-soft">
                   {getTotalTTC().toFixed(2)} €
                 </div>
               </div>
