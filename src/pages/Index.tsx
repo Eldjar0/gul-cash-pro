@@ -1668,26 +1668,34 @@ const Index = () => {
         <div className="col-span-4 bg-background p-1 flex flex-col gap-1 overflow-hidden h-full">
 
           {/* Statistiques rapides */}
-          <Card className="bg-gradient-to-br from-background to-muted/20 border-2 border-border/50 p-2 flex-shrink-0 shadow-md">
-            <h3 className="text-[9px] font-bold text-primary uppercase tracking-wide mb-2">Statistiques du jour</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-primary/5 rounded-lg p-2 border border-primary/10">
-                <div className="text-[9px] text-muted-foreground mb-0.5">Total ventes</div>
-                <div className="text-lg font-bold text-primary mb-0.5">
+          <Card className="bg-gradient-to-br from-primary/10 via-background to-secondary/10 border-2 border-primary/30 p-3 flex-shrink-0 shadow-xl relative overflow-hidden">
+            {/* Effet de brillance */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" />
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
+            
+            <h3 className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2 relative z-10 flex items-center gap-1.5">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              Statistiques du jour
+            </h3>
+            <div className="grid grid-cols-2 gap-2.5 relative z-10">
+              <div className="bg-gradient-to-br from-primary/15 to-primary/5 rounded-xl p-2.5 border-2 border-primary/20 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] group">
+                <div className="text-[9px] text-muted-foreground mb-1 font-semibold uppercase tracking-wide">Total ventes</div>
+                <div className="text-xl font-bold text-primary mb-1 group-hover:scale-105 transition-transform">
                   {todayTotal.toFixed(2)}€
                 </div>
-                <div className={`flex items-center gap-0.5 text-[9px] font-semibold ${totalPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {totalPercentChange >= 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                <div className={`flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full w-fit ${totalPercentChange >= 0 ? 'bg-green-500/20 text-green-700' : 'bg-red-500/20 text-red-700'}`}>
+                  {totalPercentChange >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                   {totalPercentChange >= 0 ? '+' : ''}{totalPercentChange.toFixed(1)}%
                 </div>
               </div>
-              <div className="bg-secondary/5 rounded-lg p-2 border border-secondary/10">
-                <div className="text-[9px] text-muted-foreground mb-0.5">Nb tickets</div>
-                <div className="text-lg font-bold text-secondary mb-0.5">
+              <div className="bg-gradient-to-br from-secondary/15 to-secondary/5 rounded-xl p-2.5 border-2 border-secondary/20 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] group">
+                <div className="text-[9px] text-muted-foreground mb-1 font-semibold uppercase tracking-wide">Nb tickets</div>
+                <div className="text-xl font-bold text-secondary mb-1 group-hover:scale-105 transition-transform">
                   {todayCount}
                 </div>
-                <div className={`flex items-center gap-0.5 text-[9px] font-semibold ${countPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {countPercentChange >= 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                <div className={`flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full w-fit ${countPercentChange >= 0 ? 'bg-green-500/20 text-green-700' : 'bg-red-500/20 text-red-700'}`}>
+                  {countPercentChange >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                   {countPercentChange >= 0 ? '+' : ''}{countPercentChange.toFixed(1)}%
                 </div>
               </div>
