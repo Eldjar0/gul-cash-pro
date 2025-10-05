@@ -4,9 +4,32 @@ import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
-  Scan, CreditCard, Banknote, Trash2, ShoppingBag, Percent,
-  Clock, Calendar, CalendarX, FileText, TrendingUp, TrendingDown,
-  Split, Eye, Calculator, Euro
+  Scan,
+  CreditCard,
+  Banknote,
+  Trash2,
+  Euro,
+  Clock,
+  ShoppingBag,
+  Percent,
+  Edit,
+  Ticket,
+  Eye,
+  Scale,
+  Calendar,
+  CalendarX,
+  FileText,
+  CloudSun,
+  Calculator,
+  Divide,
+  Minus,
+  X,
+  TrendingUp,
+  TrendingDown,
+  Save,
+  FolderOpen,
+  Undo2,
+  Split,
 } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
@@ -20,6 +43,7 @@ import { PinLockDialog } from '@/components/pos/PinLockDialog';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 import { PhysicalScanActionDialog } from '@/components/pos/PhysicalScanActionDialog';
+
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
 import { ReportXDialog } from '@/components/pos/ReportXDialog';
@@ -35,10 +59,14 @@ import { useWeather } from '@/hooks/useWeather';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 import { createSafeBroadcastChannel } from '@/lib/safeBroadcast';
 
 type DiscountType = 'percentage' | 'amount';
@@ -46,8 +74,11 @@ type DiscountType = 'percentage' | 'amount';
 interface CartItem {
   product: Product;
   quantity: number;
-  custom_price?: number;
-  discount?: { type: DiscountType; value: number };
+  custom_price?: number; // Prix personnalisé pour cette vente
+  discount?: {
+    type: DiscountType;
+    value: number;
+  };
   subtotal: number;
   vatAmount: number;
   total: number;
@@ -56,46 +87,53 @@ interface CartItem {
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-
+  
+  // Redirection automatique vers /mobile si on est sur APK
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       navigate('/mobile', { replace: true });
     }
   }, [navigate]);
-
+  
   const { data: products } = useProducts();
   const { data: categories } = useCategories();
   const createSale = useCreateSale();
   const scanInputRef = useRef<HTMLInputElement>(null);
   const { temperature, loading: weatherLoading } = useWeather();
-
-  // Get today's and yesterday's sales
+  
+  // Get today's sales for statistics
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   const { data: todaySales } = useSales(today, tomorrow);
-
+  
+  // Get yesterday's sales for comparison
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
   const { data: yesterdaySales } = useSales(yesterday, today);
-
+  
+  // Calculate statistics
   const todayTotal = todaySales?.filter(s => !s.is_cancelled).reduce((sum, s) => sum + s.total, 0) || 0;
   const yesterdayTotal = yesterdaySales?.filter(s => !s.is_cancelled).reduce((sum, s) => sum + s.total, 0) || 0;
   const todayCount = todaySales?.filter(s => !s.is_cancelled).length || 0;
   const yesterdayCount = yesterdaySales?.filter(s => !s.is_cancelled).length || 0;
-
+  
   const totalPercentChange = yesterdayTotal > 0 ? ((todayTotal - yesterdayTotal) / yesterdayTotal) * 100 : 0;
   const countPercentChange = yesterdayCount > 0 ? ((todayCount - yesterdayCount) / yesterdayCount) * 100 : 0;
-
+  
+  // Lock system
   const [isLocked, setIsLocked] = useState(false);
-
+  
+  // Daily reports hooks
   const { data: todayReport } = useTodayReport();
   const openDay = useOpenDay();
   const closeDay = useCloseDay();
+  // UI override so buttons update instantly after actions
   const [isDayOpenLocal, setIsDayOpenLocal] = useState<boolean | null>(null);
   const isDayOpenEffective = isDayOpenLocal ?? !!todayReport;
 
+  // Reset local override when server data changes
   useEffect(() => {
     setIsDayOpenLocal(null);
   }, [todayReport?.id, todayReport?.closing_amount]);
@@ -123,156 +161,363 @@ const Index = () => {
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
   const [customerDisplayWindow, setCustomerDisplayWindow] = useState<Window | null>(null);
   const [displayChannel] = useState(() => createSafeBroadcastChannel('customer_display'));
-
+  
+  // Daily reports states
   const [openDayDialogOpen, setOpenDayDialogOpen] = useState(false);
   const [closeDayDialogOpen, setCloseDayDialogOpen] = useState(false);
   const [reportXDialogOpen, setReportXDialogOpen] = useState(false);
   const [reportData, setReportData] = useState<ReportData | null>(null);
-
+  
+  // New features states
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
+  
+  // Remote scanning states
   const [remoteScanSessionId, setRemoteScanSessionId] = useState<string | null>(null);
   const markItemProcessed = useMarkItemProcessed();
 
+  // Physical scan action dialog states
   const [physicalScanDialogOpen, setPhysicalScanDialogOpen] = useState(false);
   const [scannedBarcode, setScannedBarcode] = useState<string>('');
   const [scannedProduct, setScannedProduct] = useState<Product | null>(null);
 
-  // Calculate totals for cart
+  // Calculate totals - defined before useEffect to avoid initialization errors
   const getTotals = () => {
     const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
     const totalVat = cart.reduce((sum, item) => sum + item.vatAmount, 0);
     const itemDiscounts = cart.reduce((sum, item) => {
       if (item.discount) {
-        const discountAmount = item.discount.type === 'percentage'
-          ? (item.subtotal * item.discount.value) / 100
-          : item.discount.value;
+        const discountAmount =
+          item.discount.type === 'percentage'
+            ? (item.subtotal * item.discount.value) / 100
+            : item.discount.value;
         return sum + discountAmount;
       }
       return sum;
     }, 0);
-
+    
     let total = cart.reduce((sum, item) => sum + item.total, 0);
     let globalDiscountAmount = 0;
     let promoCodeAmount = 0;
-
+    
     if (globalDiscount) {
       globalDiscountAmount = globalDiscount.type === 'percentage'
         ? (total * globalDiscount.value) / 100
         : globalDiscount.value;
       total -= globalDiscountAmount;
     }
-
+    
     if (appliedPromoCode) {
       promoCodeAmount = appliedPromoCode.type === 'percentage'
         ? (total * appliedPromoCode.value) / 100
         : appliedPromoCode.value;
       total -= promoCodeAmount;
     }
-
+    
     const totalDiscount = itemDiscounts + globalDiscountAmount + promoCodeAmount;
-
+    
     return { subtotal, totalVat, totalDiscount, total };
   };
 
-  // Update current time every second
+  // Synchroniser l'affichage client avec le panier
   useEffect(() => {
-    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(interval);
+    const updateCustomerDisplay = () => {
+      const totals = getTotals();
+      const displayItems = cart.map(item => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.custom_price ?? item.product.price,
+        originalPrice: item.product.price,
+        vatRate: item.product.vat_rate,
+        total: item.total,
+        unit: item.product.unit,
+        discount: item.discount ? {
+          type: item.discount.type,
+          value: item.discount.value,
+        } : undefined,
+        hasCustomPrice: item.custom_price !== undefined && item.custom_price !== item.product.price,
+      }));
+
+      const state = {
+        items: displayItems,
+        status: cart.length > 0 ? 'shopping' : 'idle',
+        timestamp: Date.now(),
+        cashierName: user?.email?.split('@')[0] || 'Caisse',
+        saleNumber: 'EN COURS',
+        globalDiscount: globalDiscount ? {
+          type: globalDiscount.type,
+          value: globalDiscount.value,
+        } : undefined,
+        promoCode: appliedPromoCode ? {
+          code: appliedPromoCode.code,
+          type: appliedPromoCode.type,
+          value: appliedPromoCode.value,
+        } : undefined,
+        totals: {
+          subtotal: totals.subtotal,
+          totalVat: totals.totalVat,
+          totalDiscount: totals.totalDiscount,
+          total: totals.total,
+        },
+        isInvoice: isInvoiceMode,
+        customer: selectedCustomer ? {
+          name: selectedCustomer.name,
+        } : undefined,
+      };
+
+      console.log('[POS] Sending to customer display:', state);
+
+      // Envoyer via BroadcastChannel
+      try {
+        displayChannel.postMessage(state);
+      } catch (e) {
+        console.error('[POS] BroadcastChannel error:', e);
+      }
+      
+      // Sauvegarder dans localStorage pour persistance
+      localStorage.setItem('customer_display_state', JSON.stringify(state));
+    };
+
+    updateCustomerDisplay();
+  }, [cart, displayChannel, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer]);
+
+  // Traiter les items scannés à distance
+  useRealtimeScannedItems(remoteScanSessionId ?? undefined, (newItem) => {
+    console.log('New remote scanned item:', newItem);
+    
+    // Find product by barcode
+    const product = products?.find(p => p.barcode === newItem.barcode);
+    if (product) {
+      handleProductSelect(product, newItem.quantity);
+      toast.success(`Produit ajouté: ${product.name}`);
+      // Mark item as processed
+      markItemProcessed.mutate(newItem.id);
+    } else {
+      toast.error(`Produit non trouvé: ${newItem.barcode}`);
+      // Still mark as processed to avoid retry
+      markItemProcessed.mutate(newItem.id);
+    }
+  });
+
+  // Ouvrir l'affichage client dans une nouvelle fenêtre
+  const openCustomerDisplay = () => {
+    const width = window.screen.width;
+    const height = window.screen.height;
+    
+    // Ouvrir en plein écran sur l'écran secondaire si disponible
+    const newWindow = window.open(
+      '/customer-display',
+      'customerDisplay',
+      `width=${width},height=${height},left=${width},top=0,fullscreen=yes`
+    );
+    
+    if (newWindow) {
+      setCustomerDisplayWindow(newWindow);
+      toast.success('Affichage client ouvert');
+    } else {
+      toast.error('Impossible d\'ouvrir l\'affichage client');
+    }
+  };
+
+  // Nettoyer à la fermeture
+  useEffect(() => {
+    return () => {
+      displayChannel.close();
+    };
+  }, [displayChannel]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
-  // Normalize barcode input
-  const normalizeBarcode = (barcode: string) => barcode.trim();
+  // Désactivation de l'auto-focus sur la barre de recherche pour éviter que les scans
+  // écrivent des caractères visibles dans le champ
+  useEffect(() => {
+    // Intentionnellement vide
+  }, []);
 
-  // Calculate item total with discounts and VAT
-  const calculateItemTotal = (item: CartItem) => {
-    const price = item.custom_price ?? item.product.price;
-    const subtotal = price * item.quantity;
-    let discountAmount = 0;
-    if (item.discount) {
-      discountAmount = item.discount.type === 'percentage'
-        ? (subtotal * item.discount.value) / 100
-        : item.discount.value;
-    }
-    const subtotalAfterDiscount = subtotal - discountAmount;
-    const vatAmount = subtotalAfterDiscount * (item.product.vat_rate / 100);
-    const total = subtotalAfterDiscount + vatAmount;
-    return { subtotal, vatAmount, total };
-  };
-
-  // Handle product selection from category grid or search
-  const handleProductSelect = (product: Product) => {
-    setSelectedCategory(null);
-    const existingIndex = cart.findIndex(item => item.product.id === product.id);
-    if (existingIndex >= 0) {
-      const newCart = [...cart];
-      newCart[existingIndex].quantity += 1;
-      const totals = calculateItemTotal(newCart[existingIndex]);
-      newCart[existingIndex].subtotal = totals.subtotal;
-      newCart[existingIndex].vatAmount = totals.vatAmount;
-      newCart[existingIndex].total = totals.total;
-      setCart(newCart);
-    } else {
-      const newItem: CartItem = {
-        product,
-        quantity: 1,
-        subtotal: product.price,
-        vatAmount: product.price * (product.vat_rate / 100),
-        total: product.price * (1 + product.vat_rate / 100),
-      };
-      setCart([...cart, newItem]);
-    }
-  };
-
-  // Handle physical scan action dialog
-  const handlePhysicalScan = (barcode: string) => {
-    setScannedBarcode(barcode);
-    const product = products?.find(p => p.barcode === barcode) || null;
-    setScannedProduct(product);
-    setPhysicalScanDialogOpen(true);
-  };
-
-  // Handle barcode scan input
-  const handleBarcodeScan = (barcode: string) => {
-    const normalized = normalizeBarcode(barcode);
-    if (!normalized) return;
-
-    const product = products?.find(p => p.barcode === normalized);
-    if (product) {
-      handleProductSelect(product);
-      setScanInput('');
-      if (scanInputRef.current) {
-        scanInputRef.current.focus();
-      }
-    } else {
-      toast.error('Produit non trouvé');
-    }
-  };
-
-  // Handle search input change
-  const handleSearch = (query: string) => {
-    setScanInput(query);
-    if (!query.trim()) {
+  // Recherche manuelle uniquement (désactivé auto-search)
+  useEffect(() => {
+    const term = scanInput.trim();
+    if (!term) {
       setSearchResults([]);
       return;
     }
-    const lowerQuery = query.toLowerCase();
-    const results = products?.filter(p => p.name.toLowerCase().includes(lowerQuery) || p.barcode.includes(lowerQuery)) || [];
-    setSearchResults(results);
+    // Recherche en direct (debounce 200ms)
+    const id = setTimeout(() => {
+      handleSearch();
+    }, 200);
+    return () => clearTimeout(id);
+  }, [scanInput, products, categories]);
+
+  // Normalisation AZERTY → chiffres pour les codes-barres
+  const normalizeBarcode = (raw: string): string => {
+    const azertyMap: Record<string, string> = {
+      '&': '1', '!': '1', 'é': '2', '@': '2', '\"': '3', '#': '3', 
+      '\'': '4', '$': '4', '(': '5', '%': '5', '-': '6', '^': '6',
+      'è': '7', '_': '8', '*': '8', 'ç': '9', 
+      'à': '0', ')': '0', '§': '6'
+    };
+    // Mapper les caractères AZERTY puis garder uniquement les chiffres
+    const normalized = raw.split('').map(c => azertyMap[c] ?? c).join('');
+    return normalized.replace(/\D+/g, ''); // Supprimer tout ce qui n'est pas un chiffre
   };
 
-  // Handle quantity input change
-  const handleQuantityChange = (value: string) => {
-    if (/^\d*$/.test(value)) {
-      setQuantityInput(value);
+  // Calcul du total d'un article avec TVA TTC
+  const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount'], customPrice?: number) => {
+    const unitPriceTTC = customPrice ?? product.price;
+    
+    // Prix TTC → HT : diviser par (1 + taux_TVA/100)
+    const unitPriceHT = unitPriceTTC / (1 + product.vat_rate / 100);
+    const subtotal = unitPriceHT * quantity;
+    const vatAmount = subtotal * (product.vat_rate / 100);
+    
+    let discountAmount = 0;
+    if (discount) {
+      const totalTTC = unitPriceTTC * quantity;
+      discountAmount = discount.type === 'percentage' 
+        ? (totalTTC * discount.value) / 100 
+        : discount.value;
+    }
+    
+    const total = (unitPriceTTC * quantity) - discountAmount;
+    
+    return { subtotal, vatAmount, total };
+  };
+
+  // Gestion de la sélection de produit - MUST BE BEFORE handleBarcodeScan
+  const handleProductSelect = (product: Product, quantity?: number) => {
+    const qty = quantity || parseFloat(quantityInput) || 1;
+    
+    setCart(prevCart => {
+      const existingItemIndex = prevCart.findIndex(item => item.product.id === product.id);
+      
+      if (existingItemIndex !== -1) {
+        const newCart = [...prevCart];
+        const existingItem = newCart[existingItemIndex];
+        const newQuantity = existingItem.quantity + qty;
+        const totals = calculateItemTotal(product, newQuantity, existingItem.discount, existingItem.custom_price);
+        
+        newCart[existingItemIndex] = {
+          ...existingItem,
+          quantity: newQuantity,
+          ...totals
+        };
+        
+        return newCart;
+      } else {
+        const totals = calculateItemTotal(product, qty);
+        
+        const newItem: CartItem = {
+          product,
+          quantity: qty,
+          ...totals
+        };
+        
+        return [...prevCart, newItem];
+      }
+    });
+    
+    setQuantityInput('1');
+    setScanInput('');
+    setSearchResults([]);
+    toast.success(`${product.name} ajouté au panier`);
+  };
+
+  // Traitement d'un scan physique - ouvre le dialog d'actions
+  const handlePhysicalScan = (raw: string) => {
+    const normalized = normalizeBarcode(raw.trim());
+    const normalizedDigits = normalized.replace(/\D+/g, '');
+    
+    if (!normalized || normalized.length < 3) return;
+
+    // Recherche du produit
+    let found = products?.find(
+      (p) => p.barcode && normalizeBarcode(p.barcode).toLowerCase() === normalized.toLowerCase()
+    );
+
+    if (!found && normalizedDigits.length >= 3) {
+      found = products?.find(
+        (p) => p.barcode && p.barcode.replace(/\D+/g, '') === normalizedDigits
+      );
+    }
+
+    const barcodeToUse = normalizedDigits.length >= 3 ? normalizedDigits : normalized;
+    
+    // Ouvrir le dialog avec le résultat
+    setScannedBarcode(barcodeToUse);
+    setScannedProduct(found || null);
+    setPhysicalScanDialogOpen(true);
+  };
+
+  // Traitement du code-barres scanné (utilisé pour les scans manuels)
+  const handleBarcodeScan = (raw: string) => {
+    const DEBUG_SCAN = false; // Mettre à true pour debug
+    
+    const normalized = normalizeBarcode(raw.trim());
+    const normalizedDigits = normalized.replace(/\D+/g, ''); // Fallback: chiffres uniquement
+    
+    if (DEBUG_SCAN) {
+      console.log('[SCAN] Raw:', raw, '| Normalized:', normalized, '| Digits:', normalizedDigits);
+    }
+    
+    if (!normalized || normalized.length < 3) return;
+
+    // 1. Recherche exacte sur le code-barres normalisé
+    let found = products?.find(
+      (p) => p.barcode && normalizeBarcode(p.barcode).toLowerCase() === normalized.toLowerCase()
+    );
+
+    // 2. Recherche sur chiffres uniquement (fallback)
+    if (!found && normalizedDigits.length >= 3) {
+      found = products?.find(
+        (p) => p.barcode && p.barcode.replace(/\D+/g, '') === normalizedDigits
+      );
+    }
+
+    if (found) {
+      handleProductSelect(found);
+      toast.success(`${found.name} ajouté`);
+      if (DEBUG_SCAN) {
+        console.log('[SCAN] Product found:', found.name, found.barcode);
+      }
+    } else {
+      toast.error('Produit non trouvé');
+      if (DEBUG_SCAN) {
+        console.warn('[SCAN] Product not found for:', normalized, normalizedDigits);
+      }
     }
   };
 
-  // Calculator input handling
+  // Fonction de recherche (externaliser pour pouvoir être appelée)
+  const handleSearch = () => {
+    const q = scanInput.trim().toLowerCase();
+    if (!q) {
+      setSearchResults([]);
+      return;
+    }
+
+    const results = products?.filter((p) => {
+      const catName = categories?.find((c) => c.id === p.category_id)?.name?.toLowerCase() || '';
+      return (
+        p.name.toLowerCase().includes(q) ||
+        p.barcode?.toLowerCase().includes(q) ||
+        catName.includes(q)
+      );
+    });
+
+    setSearchResults(results?.slice(0, 10) || []);
+  };
+
+  const handleQuantityChange = (value: string) => {
+    setQuantityInput(value);
+  };
+
   const handleCalculator = (input: string) => {
     if (calcMode === 'input') {
+      // Mode input direct
       if (input === 'C') {
         setCurrentValue(null);
         setOperation(null);
@@ -283,153 +528,155 @@ const Index = () => {
           setWaitingForOperand(true);
         }
       } else if (input === '=') {
-        if (operation && currentValue !== null && !waitingForOperand) {
-          try {
-            // eslint-disable-next-line no-eval
-            const result = eval(`${currentValue} ${operation} ${quantityInput}`);
-            setCurrentValue(result);
-            setQuantityInput(result.toString());
-            setOperation(null);
-            setWaitingForOperand(false);
-          } catch {
-            toast.error('Erreur de calcul');
-          }
-        }
+        setCalcMode('math');
       } else {
+        // Chiffres
         if (waitingForOperand) {
-          setQuantityInput(input);
+          setCurrentValue(parseFloat(input));
           setWaitingForOperand(false);
         } else {
-          setQuantityInput(prev => (prev === '0' ? input : prev + input));
+          const newValue = currentValue !== null ? parseFloat('' + currentValue + input) : parseFloat(input);
+          setCurrentValue(newValue);
         }
+      }
+    } else {
+      // Mode math evaluation
+      try {
+        // eslint-disable-next-line no-eval
+        const result = eval(input);
+        setCurrentValue(result);
+        setCalcMode('input');
+        setOperation(null);
+        setWaitingForOperand(false);
+      } catch {
+        toast.error('Expression invalide');
       }
     }
   };
 
-  // Handle item quantity increase/decrease
-  const handleItemAction = (index: number, action: 'increase' | 'decrease') => {
+  const handleItemAction = (index: number, action: 'increase' | 'decrease' | 'edit') => {
     const newCart = [...cart];
     if (action === 'increase') {
       newCart[index].quantity += 1;
-    } else if (action === 'decrease') {
-      newCart[index].quantity = Math.max(1, newCart[index].quantity - 1);
+    } else if (action === 'decrease' && newCart[index].quantity > 1) {
+      newCart[index].quantity -= 1;
     }
-    const totals = calculateItemTotal(newCart[index]);
-    newCart[index].subtotal = totals.subtotal;
-    newCart[index].vatAmount = totals.vatAmount;
-    newCart[index].total = totals.total;
+    const totals = calculateItemTotal(
+      newCart[index].product,
+      newCart[index].quantity,
+      newCart[index].discount,
+      newCart[index].custom_price
+    );
+    newCart[index] = { ...newCart[index], ...totals };
     setCart(newCart);
   };
 
-  // Remove item from cart
   const handleRemoveFromCart = (index: number) => {
-    const newCart = [...cart];
-    newCart.splice(index, 1);
-    setCart(newCart);
+    setCart(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Apply discount to item or global
   const handleApplyDiscount = (type: DiscountType, value: number) => {
-    if (!discountTarget) return;
-    if (discountTarget.type === 'item' && discountTarget.index !== undefined) {
+    if (discountTarget?.type === 'item' && discountTarget.index !== undefined) {
       const newCart = [...cart];
       newCart[discountTarget.index].discount = { type, value };
-      const totals = calculateItemTotal(newCart[discountTarget.index]);
-      newCart[discountTarget.index].subtotal = totals.subtotal;
-      newCart[discountTarget.index].vatAmount = totals.vatAmount;
-      newCart[discountTarget.index].total = totals.total;
+      const totals = calculateItemTotal(
+        newCart[discountTarget.index].product,
+        newCart[discountTarget.index].quantity,
+        { type, value },
+        newCart[discountTarget.index].custom_price
+      );
+      newCart[discountTarget.index] = { ...newCart[discountTarget.index], ...totals };
       setCart(newCart);
-    } else if (discountTarget.type === 'global') {
+    } else if (discountTarget?.type === 'global') {
       setGlobalDiscount({ type, value });
     }
     setDiscountDialogOpen(false);
     setDiscountTarget(null);
   };
 
-  // Apply promo code
-  const handleApplyPromo = (code: string, type: DiscountType, value: number) => {
+  const handleApplyPromo = (code: string, type: 'percentage' | 'amount', value: number) => {
     setAppliedPromoCode({ code, type, value });
     setPromoDialogOpen(false);
+    toast.success(`Code promo "${code}" appliqué`);
   };
 
-  // Open customer display window
   const handleOpenCustomerDisplay = () => {
-    if (customerDisplayWindow && !customerDisplayWindow.closed) {
-      customerDisplayWindow.focus();
-      return;
-    }
-    const newWindow = window.open('/customer-display', 'CustomerDisplay', 'width=400,height=600');
-    setCustomerDisplayWindow(newWindow);
+    openCustomerDisplay();
   };
 
-  // Complete payment process
-  const handleCompletePayment = (method: 'cash' | 'card' | 'mixed') => {
+  const handleCompletePayment = (paymentType: 'cash' | 'card' | 'mobile' | 'mixed') => {
     if (cart.length === 0) {
       toast.error('Le panier est vide');
       return;
     }
-    setPaymentDialogOpen(true);
+
+    if (paymentType === 'mixed') {
+      setMixedPaymentDialogOpen(true);
+    } else {
+      setPaymentDialogOpen(true);
+    }
   };
 
-  // Open day dialog
   const handleOpenDay = (amount: number) => {
-    openDay.mutate({ opening_amount: amount }, {
+    openDay.mutate(amount, {
       onSuccess: () => {
         setIsDayOpenLocal(true);
         setOpenDayDialogOpen(false);
         toast.success('Journée ouverte');
-      },
-      onError: () => {
-        toast.error('Erreur lors de l\'ouverture de la journée');
       }
     });
   };
 
-  // Report X dialog
-  const handleReportX = () => {
+  const handleReportX = async () => {
+    const data = await getTodayReportData();
+    setReportData(data);
     setReportXDialogOpen(true);
   };
 
-  // Close day dialog
-  const handleCloseDay = (amount: number) => {
+  const handleCloseDay = (closingAmount: number) => {
     if (!todayReport) return;
-    closeDay.mutate({ id: todayReport.id, closing_amount: amount }, {
-      onSuccess: () => {
-        setIsDayOpenLocal(false);
-        setCloseDayDialogOpen(false);
-        toast.success('Journée clôturée');
+    
+    closeDay.mutate(
+      { 
+        reportId: todayReport.id, 
+        closingAmount,
+        reportData: reportData!
       },
-      onError: () => {
-        toast.error('Erreur lors de la clôture de la journée');
+      {
+        onSuccess: () => {
+          setIsDayOpenLocal(false);
+          setCloseDayDialogOpen(false);
+          toast.success('Journée clôturée');
+        }
       }
-    });
+    );
   };
 
-  // Clear cart
   const handleClearCart = () => {
     setCart([]);
     setGlobalDiscount(null);
     setAppliedPromoCode(null);
+    setSelectedCustomer(null);
+    setIsInvoiceMode(false);
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-background overflow-hidden">
-      {/* Compact Header with Stats */}
-      <div className="bg-gradient-to-r from-primary via-primary-glow to-primary border-b-2 border-primary/30 shadow-lg">
+    <div className="flex flex-col h-screen bg-background overflow-hidden">
+      {/* Header with stats */}
+      <div className="bg-gradient-to-r from-primary via-primary-glow to-primary border-b-2 border-primary/20 shadow-xl">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between gap-4">
-            {/* Logo + Day Status */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <img src={logoMarket} alt="Logo" className="h-12 w-12 rounded-lg shadow-lg" />
               <div>
-                <h1 className="text-2xl font-black text-white">CAISSE</h1>
-                <p className="text-white/80 text-sm font-medium">{currentTime.toLocaleTimeString('fr-FR')}</p>
+                <h1 className="text-2xl font-black text-white tracking-tight">CAISSE</h1>
+                <p className="text-white/80 text-sm">{currentTime.toLocaleTimeString('fr-FR')}</p>
               </div>
             </div>
 
-            {/* Compact Stats */}
+            {/* Stats */}
             <div className="hidden lg:flex items-center gap-3">
-              <Card className="px-4 py-2 bg-white/95 backdrop-blur-sm border-0 shadow-lg">
+              <Card className="px-4 py-2 bg-white/95 border-0 shadow-lg">
                 <div className="flex items-center gap-2">
                   <Euro className="h-5 w-5 text-primary" />
                   <div>
@@ -437,15 +684,15 @@ const Index = () => {
                     <p className="text-xl font-black text-primary">{todayTotal.toFixed(0)}€</p>
                   </div>
                   {totalPercentChange !== 0 && (
-                    <div className={`flex items-center gap-1 ${totalPercentChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className={`flex items-center ${totalPercentChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {totalPercentChange > 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                      <span className="text-sm font-bold">{Math.abs(totalPercentChange).toFixed(0)}%</span>
+                      <span className="text-sm font-bold ml-1">{Math.abs(totalPercentChange).toFixed(0)}%</span>
                     </div>
                   )}
                 </div>
               </Card>
 
-              <Card className="px-4 py-2 bg-white/95 backdrop-blur-sm border-0 shadow-lg">
+              <Card className="px-4 py-2 bg-white/95 border-0 shadow-lg">
                 <div className="flex items-center gap-2">
                   <ShoppingBag className="h-5 w-5 text-accent" />
                   <div>
@@ -456,7 +703,7 @@ const Index = () => {
               </Card>
             </div>
 
-            {/* Action Buttons */}
+            {/* Actions */}
             <div className="flex items-center gap-2">
               <Button
                 onClick={handleOpenCustomerDisplay}
@@ -468,11 +715,7 @@ const Index = () => {
               </Button>
               
               <Button
-                onClick={async () => {
-                  const data = await getTodayReportData();
-                  setReportData(data);
-                  setReportXDialogOpen(true);
-                }}
+                onClick={handleReportX}
                 variant="outline"
                 size="icon"
                 className="bg-white/10 border-white/30 text-white hover:bg-white/20"
@@ -484,23 +727,23 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Main Content: Categories + Cart */}
+      {/* Main Content */}
       <div className="flex-1 flex gap-4 p-4 overflow-hidden">
-        {/* Left: Categories & Products */}
+        {/* Left: Products */}
         <div className="flex-1 flex flex-col gap-4 overflow-hidden">
-          {/* Search Bar */}
+          {/* Search */}
           <Card className="p-3 bg-white shadow-lg border-2 border-primary/20">
             <div className="flex gap-2">
               <div className="flex-1 relative">
                 <Scan className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
                 <Input
                   ref={scanInputRef}
-                  placeholder="Scanner ou rechercher un produit..."
+                  placeholder="Scanner ou rechercher..."
                   value={scanInput}
-                  onChange={(e) => handleSearch(e.target.value)}
+                  onChange={(e) => setScanInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && scanInput.trim()) {
-                      handleBarcodeScan(scanInput.trim());
+                    if (e.key === 'Enter') {
+                      handleBarcodeScan(scanInput);
                     }
                   }}
                   className="pl-11 h-12 text-lg border-2 border-primary/30 focus:border-primary"
@@ -517,24 +760,20 @@ const Index = () => {
             </div>
           </Card>
 
-          {/* Categories Grid */}
+          {/* Category Grid */}
           <div className="flex-1 overflow-hidden">
             <CategoryGrid
-              categories={categories}
-              products={products}
               onProductSelect={handleProductSelect}
-              selectedCategory={selectedCategory}
-              onCategorySelect={setSelectedCategory}
             />
           </div>
 
-          {/* Quick Actions */}
+          {/* Day Actions */}
           <div className="flex gap-2">
             {!isDayOpenEffective ? (
               <Button
                 onClick={() => setOpenDayDialogOpen(true)}
                 size="lg"
-                className="flex-1 h-14 bg-green-600 hover:bg-green-700 text-white font-bold"
+                className="flex-1 h-14 bg-green-600 hover:bg-green-700"
               >
                 <Calendar className="h-5 w-5 mr-2" />
                 OUVRIR LA JOURNÉE
@@ -543,7 +782,7 @@ const Index = () => {
               <Button
                 onClick={() => setCloseDayDialogOpen(true)}
                 size="lg"
-                className="flex-1 h-14 bg-red-600 hover:bg-red-700 text-white font-bold"
+                className="flex-1 h-14 bg-red-600 hover:bg-red-700"
               >
                 <CalendarX className="h-5 w-5 mr-2" />
                 CLÔTURER
@@ -562,36 +801,33 @@ const Index = () => {
         </div>
 
         {/* Right: Cart */}
-        <Card className="w-[420px] flex flex-col bg-white shadow-xl border-2 border-primary/30 overflow-hidden">
-          {/* Cart Header */}
+        <Card className="w-[420px] flex flex-col bg-white shadow-xl border-2 border-primary/30">
           <div className="bg-gradient-to-r from-accent to-accent/80 p-4 text-white">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <h2 className="text-xl font-black flex items-center gap-2">
                 <ShoppingBag className="h-6 w-6" />
-                <h2 className="text-xl font-black">PANIER</h2>
-              </div>
-              <Badge className="bg-white text-accent font-bold text-lg px-3 py-1">
+                PANIER
+              </h2>
+              <div className="bg-white text-accent font-bold text-lg px-3 py-1 rounded-lg">
                 {cart.reduce((sum, item) => sum + item.quantity, 0)}
-              </Badge>
+              </div>
             </div>
           </div>
 
-          {/* Cart Items */}
           <ScrollArea className="flex-1 p-4">
             {cart.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <ShoppingBag className="h-16 w-16 text-muted-foreground/30 mb-4" />
-                <p className="text-muted-foreground text-lg">Panier vide</p>
-                <p className="text-muted-foreground text-sm">Scannez un produit pour commencer</p>
+                <p className="text-muted-foreground">Panier vide</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {cart.map((item, index) => (
-                  <Card key={index} className="p-3 border-2 hover:border-primary/30 transition-all">
+                  <Card key={index} className="p-3 border-2 hover:border-primary/30">
                     <div className="space-y-2">
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <p className="font-bold text-foreground">{item.product.name}</p>
+                          <p className="font-bold">{item.product.name}</p>
                           <p className="text-sm text-muted-foreground">
                             {item.quantity} × {(item.custom_price ?? item.product.price).toFixed(2)}€
                           </p>
@@ -600,7 +836,7 @@ const Index = () => {
                           onClick={() => handleRemoveFromCart(index)}
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          className="h-8 w-8 text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -635,9 +871,8 @@ const Index = () => {
             )}
           </ScrollArea>
 
-          {/* Cart Footer - Totals & Payment */}
           {cart.length > 0 && (
-            <div className="border-t-2 border-primary/20 p-4 space-y-3 bg-muted/30">
+            <div className="border-t-2 p-4 space-y-3 bg-muted/30">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Sous-total</span>
@@ -653,7 +888,7 @@ const Index = () => {
                     <span className="font-semibold">-{getTotals().totalDiscount.toFixed(2)}€</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 border-t-2 border-primary/30">
+                <div className="flex justify-between pt-2 border-t-2">
                   <span className="text-xl font-black">TOTAL</span>
                   <span className="text-3xl font-black text-primary">{getTotals().total.toFixed(2)}€</span>
                 </div>
@@ -674,7 +909,7 @@ const Index = () => {
                 <Button
                   onClick={handleClearCart}
                   variant="outline"
-                  className="h-12 text-destructive hover:bg-destructive/10"
+                  className="h-12 text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Vider
@@ -699,7 +934,7 @@ const Index = () => {
                   <span className="text-xs font-bold">CARTE</span>
                 </Button>
                 <Button
-                  onClick={() => setMixedPaymentDialogOpen(true)}
+                  onClick={() => handleCompletePayment('mixed')}
                   size="lg"
                   className="h-16 bg-purple-600 hover:bg-purple-700 flex flex-col gap-1"
                 >
@@ -712,79 +947,58 @@ const Index = () => {
         </Card>
       </div>
 
-      {/* Payment Dialog */}
+      {/* Dialogs */}
       <PaymentDialog
         open={paymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
-        cart={cart}
-        total={getTotals().total}
-        onPaymentComplete={(sale) => {
+        onComplete={(sale) => {
           setCurrentSale(sale);
           setReceiptDialogOpen(true);
-          setCart([]);
-          setGlobalDiscount(null);
-          setAppliedPromoCode(null);
-          setPaymentDialogOpen(false);
+          handleClearCart();
         }}
-        isInvoiceMode={isInvoiceMode}
-        selectedCustomer={selectedCustomer}
       />
 
-      {/* Mixed Payment Dialog */}
       <MixedPaymentDialog
         open={mixedPaymentDialogOpen}
         onOpenChange={setMixedPaymentDialogOpen}
-        cart={cart}
-        total={getTotals().total}
-        onPaymentComplete={(sale) => {
+        onComplete={(sale) => {
           setCurrentSale(sale);
           setReceiptDialogOpen(true);
-          setCart([]);
-          setGlobalDiscount(null);
-          setAppliedPromoCode(null);
-          setMixedPaymentDialogOpen(false);
+          handleClearCart();
         }}
       />
 
-      {/* Discount Dialog */}
       <DiscountDialog
         open={discountDialogOpen}
         onOpenChange={setDiscountDialogOpen}
         onApply={handleApplyDiscount}
       />
 
-      {/* Promo Code Dialog */}
       <PromoCodeDialog
         open={promoDialogOpen}
         onOpenChange={setPromoDialogOpen}
         onApply={handleApplyPromo}
       />
 
-      {/* Customer Dialog */}
       <CustomerDialog
         open={customerDialogOpen}
         onOpenChange={setCustomerDialogOpen}
-        onSelectCustomer={(customer) => {
+        onSelect={(customer) => {
           setSelectedCustomer(customer);
           setCustomerDialogOpen(false);
         }}
       />
 
-      {/* Receipt Dialog */}
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
-        <DialogContent className="max-w-sm bg-white p-0">
+        <DialogContent className="max-w-sm p-0">
           <DialogHeader className="p-4 pb-0">
-            <DialogTitle className="text-primary font-bold text-center">TICKET DE CAISSE</DialogTitle>
+            <DialogTitle className="text-center">TICKET DE CAISSE</DialogTitle>
           </DialogHeader>
           <div className="max-h-[70vh] overflow-y-auto">
             {currentSale && <ThermalReceipt sale={currentSale} />}
           </div>
           <div className="p-4 border-t flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setReceiptDialogOpen(false)}
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={() => setReceiptDialogOpen(false)} className="flex-1">
               Fermer
             </Button>
             <Button
@@ -792,7 +1006,7 @@ const Index = () => {
                 printThermalReceipt();
                 setTimeout(() => setReceiptDialogOpen(false), 500);
               }}
-              className="flex-1 bg-accent hover:bg-accent/90"
+              className="flex-1 bg-accent"
             >
               IMPRIMER
             </Button>
@@ -800,39 +1014,21 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Pin Lock Dialog */}
-      <PinLockDialog
-        open={isLocked}
-        onUnlock={() => setIsLocked(false)}
-      />
+      <PinLockDialog open={isLocked} onUnlock={() => setIsLocked(false)} />
 
-      {/* Refund Dialog */}
-      <RefundDialog
-        open={refundDialogOpen}
-        onOpenChange={setRefundDialogOpen}
-        onRefundComplete={() => {
-          setRefundDialogOpen(false);
-          toast.success('Remboursement effectué');
-        }}
-      />
+      <RefundDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen} />
 
-      {/* Remote Scan Dialog */}
       <RemoteScanDialog
-        open={!!remoteScanSessionId}
-        sessionId={remoteScanSessionId}
+        isOpen={!!remoteScanSessionId}
+        sessionId={remoteScanSessionId || ''}
         onClose={() => setRemoteScanSessionId(null)}
-        onScan={(barcode) => {
-          handleBarcodeScan(barcode);
-          markItemProcessed.mutate({ sessionId: remoteScanSessionId!, barcode });
-        }}
       />
 
-      {/* Physical Scan Action Dialog */}
       <PhysicalScanActionDialog
         open={physicalScanDialogOpen}
+        onOpenChange={setPhysicalScanDialogOpen}
         barcode={scannedBarcode}
         product={scannedProduct}
-        onClose={() => setPhysicalScanDialogOpen(false)}
         onAddToCart={() => {
           if (scannedProduct) {
             handleProductSelect(scannedProduct);
@@ -841,26 +1037,24 @@ const Index = () => {
         }}
       />
 
-      {/* Open Day Dialog */}
       <OpenDayDialog
         open={openDayDialogOpen}
         onOpenChange={setOpenDayDialogOpen}
-        onOpenDay={handleOpenDay}
+        onConfirm={handleOpenDay}
       />
 
-      {/* Report X Dialog */}
       <ReportXDialog
         open={reportXDialogOpen}
         onOpenChange={setReportXDialogOpen}
         reportData={reportData}
+        todayReport={todayReport}
       />
 
-      {/* Close Day Dialog */}
       <CloseDayDialog
         open={closeDayDialogOpen}
         onOpenChange={setCloseDayDialogOpen}
-        onCloseDay={handleCloseDay}
-        todayReport={todayReport}
+        onConfirm={handleCloseDay}
+        todayReport={todayReport!}
       />
     </div>
   );
