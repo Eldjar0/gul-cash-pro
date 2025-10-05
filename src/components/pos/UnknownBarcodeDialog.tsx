@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProducts, useCreateProduct } from '@/hooks/useProducts';
+import { useCategories } from '@/hooks/useCategories';
 import { useToast } from '@/hooks/use-toast';
 import { Search } from 'lucide-react';
 
@@ -23,9 +24,11 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
     price: '',
     vat_rate: '21',
     type: 'unit' as 'unit' | 'weight',
+    category_id: '',
   });
 
   const { data: products = [] } = useProducts();
+  const { data: categories = [] } = useCategories();
   const createProduct = useCreateProduct();
   const { toast } = useToast();
 
@@ -66,10 +69,10 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
   };
 
   const handleCreateNew = async () => {
-    if (!newProduct.name || !newProduct.price) {
+    if (!newProduct.name || !newProduct.price || !newProduct.category_id) {
       toast({
         title: 'Champs requis',
-        description: 'Veuillez remplir le nom et le prix.',
+        description: 'Veuillez remplir le nom, le prix et la catégorie.',
         variant: 'destructive',
       });
       return;
@@ -82,6 +85,7 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
         price: parseFloat(newProduct.price),
         vat_rate: parseFloat(newProduct.vat_rate),
         type: newProduct.type,
+        category_id: newProduct.category_id,
         is_active: true,
         stock: 0,
         min_stock: 0,
@@ -200,6 +204,26 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
                   placeholder="0.00"
                   className="h-12 text-base mt-2"
                 />
+              </div>
+              <div>
+                <Label htmlFor="category" className="text-base font-semibold">Catégorie *</Label>
+                <Select
+                  value={newProduct.category_id}
+                  onValueChange={(value) =>
+                    setNewProduct({ ...newProduct, category_id: value })
+                  }
+                >
+                  <SelectTrigger id="category" className="h-12 text-base mt-2">
+                    <SelectValue placeholder="Sélectionner une catégorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="vat" className="text-base font-semibold">TVA (%)</Label>
