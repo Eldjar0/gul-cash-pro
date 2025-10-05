@@ -27,6 +27,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { useCreateSale } from '@/hooks/useSales';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { downloadInvoicePDF } from '@/utils/generateInvoicePDF';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -44,6 +45,7 @@ interface InvoiceLine {
 export default function InvoiceCreate() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { data: customers = [] } = useCustomers();
   const { data: products = [] } = useProducts();
   const createSale = useCreateSale();
@@ -223,16 +225,19 @@ export default function InvoiceCreate() {
       });
 
       await createSale.mutateAsync({
-        items: saleItems,
-        customer_id: selectedCustomerId,
-        payment_method: 'card',
-        is_invoice: true,
-        is_cancelled: false,
-        subtotal: totals.subtotal,
-        total_vat: totals.totalVat,
-        total_discount: 0,
-        total: totals.total,
-        notes,
+        sale: {
+          items: saleItems,
+          customer_id: selectedCustomerId,
+          payment_method: 'card' as const,
+          is_invoice: true,
+          is_cancelled: false,
+          cashier_id: user?.id || '',
+          subtotal: totals.subtotal,
+          total_vat: totals.totalVat,
+          total_discount: 0,
+          total: totals.total,
+          notes,
+        }
       });
 
       toast({

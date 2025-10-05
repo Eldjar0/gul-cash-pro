@@ -40,13 +40,15 @@ export const useCreateSale = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (sale: Sale) => {
+    mutationFn: async ({ sale, forceStockOverride = false }: { sale: Sale; forceStockOverride?: boolean }) => {
       // Validation simplifiée - les validations détaillées sont faites côté client
       if (!sale || !sale.items || !Array.isArray(sale.items) || sale.items.length === 0) {
         throw new Error('PANIER VIDE: Ajoutez au moins un article');
       }
       
       // Verify stock availability BEFORE creating the sale
+      const stockIssues: Array<{ productName: string; available: number; requested: number }> = [];
+      
       for (const item of sale.items) {
         if (item.product_id) {
           const { data: product, error: productError } = await supabase
@@ -64,10 +66,21 @@ export const useCreateSale = () => {
             
             // Check if stock would become negative
             if (newStock < 0) {
-              throw new Error(`STOCK INSUFFISANT pour "${product.name}"\n💡 Disponible: ${product.stock}, Demandé: ${item.quantity}`);
+              stockIssues.push({
+                productName: product.name,
+                available: product.stock,
+                requested: item.quantity
+              });
             }
           }
         }
+      }
+      
+      // Si problèmes de stock et pas de forçage, lancer une erreur spéciale
+      if (stockIssues.length > 0 && !forceStockOverride) {
+        const error = new Error('STOCK_INSUFFICIENT');
+        (error as any).stockIssues = stockIssues;
+        throw error;
       }
 
       // Get sale number with correct format (ticket or invoice)
