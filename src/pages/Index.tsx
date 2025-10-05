@@ -1515,7 +1515,20 @@ const Index = () => {
             </div>
             <div className="space-y-1 max-h-[200px] overflow-y-auto">
               {todaySales?.filter(s => !s.is_cancelled).slice(0, 4).map(sale => <button key={sale.id} onClick={() => {
-              setCurrentSale(sale);
+              // Transform sale data to match receipt component structure
+              const saleForReceipt = {
+                ...sale,
+                saleNumber: sale.sale_number,
+                items: sale.sale_items || [],
+                subtotal: sale.subtotal,
+                totalVat: sale.total_vat,
+                totalDiscount: sale.total_discount,
+                total: sale.total,
+                paymentMethod: sale.payment_method,
+                amountPaid: sale.amount_paid,
+                change: sale.change_amount
+              };
+              setCurrentSale(saleForReceipt);
               setReceiptDialogOpen(true);
             }} className="w-full p-1.5 bg-white hover:bg-primary/5 border border-border/50 rounded-lg text-left transition-all hover:shadow-sm hover:border-primary/30 group">
                   <div className="flex items-center justify-between gap-2">
