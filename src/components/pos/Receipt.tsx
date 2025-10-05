@@ -13,6 +13,7 @@ interface CartItem {
   subtotal: number;
   vatAmount: number;
   total: number;
+  is_gift?: boolean;
 }
 
 interface Customer {
@@ -117,7 +118,10 @@ export function Receipt({ sale }: ReceiptProps) {
           return (
             <div key={index} className="mb-2">
               <div className="flex justify-between leading-tight">
-                <span className="flex-1 uppercase text-xs font-black tracking-wide">{item.product.name}</span>
+                <span className="flex-1 uppercase text-xs font-black tracking-wide">
+                  {item.product.name}
+                  {item.is_gift && <span className="ml-1 text-pink-600">🎁</span>}
+                </span>
               </div>
               <div className="flex justify-between text-[10px] mt-0.5">
                 <span className="font-semibold">
@@ -125,9 +129,9 @@ export function Receipt({ sale }: ReceiptProps) {
                   {item.product.type === 'weight' ? 'kg' : 'x'}
                   {item.product.type === 'weight' ? '' : ` ${item.product.price.toFixed(2)}€`}
                 </span>
-                <span className="font-black">{item.subtotal.toFixed(2)}</span>
+                <span className="font-black">{item.is_gift ? 'OFFERT' : item.subtotal.toFixed(2)}</span>
               </div>
-              {item.discount && (
+              {item.discount && !item.is_gift && (
                 <div className="text-[9px] font-bold italic">
                   REMISE -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
                 </div>

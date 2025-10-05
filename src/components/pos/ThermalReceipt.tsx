@@ -14,6 +14,7 @@ interface CartItem {
   subtotal: number;
   vatAmount: number;
   total: number;
+  is_gift?: boolean;
 }
 
 interface Customer {
@@ -195,13 +196,15 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                   maxWidth: '200px'
                 }}>
                   {item.product.name}
+                  {item.is_gift && <span style={{ marginLeft: '4px' }}>🎁</span>}
                 </span>
                 <span style={{ 
                   fontWeight: '900', 
                   whiteSpace: 'nowrap',
-                  fontSize: '13px'
+                  fontSize: '13px',
+                  color: item.is_gift ? '#ec4899' : '#000'
                 }}>
-                  {item.total.toFixed(2)}€
+                  {item.is_gift ? 'OFFERT' : `${item.total.toFixed(2)}€`}
                 </span>
               </div>
               
@@ -211,7 +214,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                 fontWeight: '800'
               }}>
                 {qtyDisplay} {unitDisplay} x {pricePerUnit}€
-                {item.discount && (
+                {item.discount && !item.is_gift && (
                   <span style={{ fontStyle: 'italic', marginLeft: '5px' }}>
                     REM -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
                   </span>
