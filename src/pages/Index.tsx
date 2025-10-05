@@ -213,19 +213,29 @@ const Index = () => {
       total -= promoCodeAmount;
     }
     
-    // Déduire le montant de la carte cadeau si appliquée
-    let giftCardAmount = 0;
-    if (appliedGiftCard) {
-      giftCardAmount = Math.min(appliedGiftCard.availableBalance, total);
-      total -= giftCardAmount;
-    }
-    
     const totalDiscount = itemDiscounts + globalDiscountAmount + promoCodeAmount;
     return {
       subtotal,
       totalVat,
       totalDiscount,
-      total: Math.max(0, total),
+      total: Math.max(0, total)
+    };
+  };
+  
+  // Totaux pour l'affichage (avec déduction carte cadeau)
+  const getTotalsForDisplay = () => {
+    const baseTotals = getTotals();
+    let displayTotal = baseTotals.total;
+    let giftCardAmount = 0;
+    
+    if (appliedGiftCard) {
+      giftCardAmount = Math.min(appliedGiftCard.availableBalance, displayTotal);
+      displayTotal -= giftCardAmount;
+    }
+    
+    return {
+      ...baseTotals,
+      total: Math.max(0, displayTotal),
       giftCardAmount
     };
   };
@@ -1002,29 +1012,25 @@ const Index = () => {
   };
 
   // Handler pour appliquer une carte cadeau comme moyen de paiement
-  const handleApplyGiftCard = async (cardNumber: string, cardId: string, availableBalance: number) => {
+  const handleApplyGiftCard = (cardNumber: string, cardId: string, availableBalance: number) => {
+    setAppliedGiftCard({
+      cardNumber,
+      cardId,
+      availableBalance
+    });
+    
+    setGiftCardDialogOpen(false);
+    
     const totals = getTotals();
     
     if (availableBalance >= totals.total) {
-      // Solde suffisant - Paiement complet par carte cadeau
-      setAppliedGiftCard({
-        cardNumber,
-        cardId,
-        availableBalance
+      toast.success(`Carte cadeau appliquée (${availableBalance.toFixed(2)}€) - Cliquez sur PAYER pour valider`, {
+        duration: 5000
       });
-      
-      // Valider automatiquement le paiement
-      await handleConfirmPayment('gift_card');
     } else {
-      // Solde insuffisant - Appliquer la carte et ouvrir le paiement mixte
-      setAppliedGiftCard({
-        cardNumber,
-        cardId,
-        availableBalance
+      toast.info(`Carte cadeau appliquée (${availableBalance.toFixed(2)}€) - Payez le reste (${(totals.total - availableBalance).toFixed(2)}€)`, {
+        duration: 5000
       });
-      
-      // Ouvrir le dialogue de paiement mixte
-      setMixedPaymentDialogOpen(true);
     }
   };
 
@@ -1300,7 +1306,7 @@ const Index = () => {
     setReportData(data);
     setReportXDialogOpen(true);
   };
-  const totals = getTotals();
+  const totals = getTotalsForDisplay();
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   return <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Pin Lock Dialog */}

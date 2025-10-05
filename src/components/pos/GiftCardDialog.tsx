@@ -70,17 +70,7 @@ export const GiftCardDialog = ({ open, onOpenChange, onAddGiftCardToCart, onAppl
 
   const handleApplyToCart = () => {
     if (verifiedCard && onApplyGiftCard) {
-      const cardBalance = verifiedCard.current_balance;
-      
-      if (cardBalance >= cartTotal) {
-        // Solde suffisant - paiement complet
-        toast.success(`Paiement complet par carte cadeau (${cardBalance.toFixed(2)}€)`);
-      } else {
-        // Solde insuffisant - paiement mixte nécessaire
-        toast.info(`Solde de ${cardBalance.toFixed(2)}€ appliqué, paiement du reste requis`);
-      }
-      
-      onApplyGiftCard(verifiedCard.card_number, verifiedCard.id, cardBalance);
+      onApplyGiftCard(verifiedCard.card_number, verifiedCard.id, verifiedCard.current_balance);
       onOpenChange(false);
     }
   };
@@ -200,10 +190,10 @@ export const GiftCardDialog = ({ open, onOpenChange, onAddGiftCardToCart, onAppl
                 
                 <div className={`${verifiedCard.current_balance >= cartTotal ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'} border p-3 rounded-lg mt-3`}>
                   <p className={`text-sm ${verifiedCard.current_balance >= cartTotal ? 'text-green-800' : 'text-orange-800'}`}>
-                    <strong>{verifiedCard.current_balance >= cartTotal ? '✓ Paiement complet' : '⚠ Paiement partiel'}:</strong> 
+                    <strong>{verifiedCard.current_balance >= cartTotal ? '✓ Solde suffisant' : '⚠ Solde insuffisant'}:</strong> 
                     {verifiedCard.current_balance >= cartTotal 
-                      ? ' Le solde de la carte couvre le total. Le paiement sera validé automatiquement.'
-                      : ' Le solde de la carte ne couvre pas le total. Le montant de la carte sera déduit et vous devrez payer le reste.'}
+                      ? ' Le solde de la carte couvre le total. Cliquez sur Appliquer puis sur PAYER.'
+                      : ' Le solde de la carte sera déduit et vous devrez payer le reste.'}
                   </p>
                 </div>
 
