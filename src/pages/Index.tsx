@@ -1147,8 +1147,8 @@ const Index = () => {
     }
   };
 
-  // Handler pour quand un produit est créé/lié depuis le UnknownBarcodeDialog
-  const handleUnknownBarcodeProductLinked = useCallback((productId: string) => {
+  // Handler quand un produit est créé/lié depuis le UnknownBarcodeDialog
+  const handleUnknownBarcodeProductLinked = (productId: string) => {
     // Trouver le produit créé/lié
     const product = products?.find(p => p.id === productId);
     if (product) {
@@ -1159,7 +1159,7 @@ const Index = () => {
       setPrefixQuantity(null);
     }
     setUnknownBarcodeDialogOpen(false);
-  }, [products, handleProductSelect, prefixQuantity]);
+  };
 
   // Gestionnaire pour paiement mixte
   const handleMixedPayment = async (payments: Array<{
