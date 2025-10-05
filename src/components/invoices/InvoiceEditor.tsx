@@ -38,6 +38,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   const { data: products } = useProducts();
   const [loading, setLoading] = useState(false);
   const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [structuredCommunication, setStructuredCommunication] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [dueDate, setDueDate] = useState(format(addDays(new Date(), 7), 'yyyy-MM-dd'));
   
@@ -67,6 +68,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     if (open && !invoiceId) {
       // Generate invoice number and reset form
       generateInvoiceNumber();
+      setStructuredCommunication(generateStructuredCommunication());
       setDueDate(format(addDays(new Date(), 7), 'yyyy-MM-dd'));
       setSelectedCustomerId(null);
       setClientName('');
@@ -86,6 +88,45 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     if (!error && data) {
       setInvoiceNumber(data);
     }
+  };
+
+  const generateStructuredCommunication = () => {
+    // Génère une communication structurée belge (format +++XXX/XXXX/XXXXX+++)
+    const random = Math.floor(Math.random() * 9999999999).toString().padStart(10, '0');
+    const part1 = random.substring(0, 3);
+    const part2 = random.substring(3, 7);
+    const part3 = random.substring(7, 10);
+    
+    // Calcul du modulo 97 pour les 2 derniers chiffres
+    const num = parseInt(random);
+    const mod = num % 97;
+    const checksum = mod === 0 ? 97 : mod;
+    
+    return `+++${part1}/${part2}/${part3}${checksum.toString().padStart(2, '0')}+++`;
+  };
+
+  const validateInvoiceNumber = async (number: string): Promise<boolean> => {
+    if (!number) return false;
+    
+    const { data, error } = await supabase
+      .from('sales')
+      .select('id')
+      .eq('sale_number', number)
+      .eq('is_invoice', true)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error validating invoice number:', error);
+      return false;
+    }
+    
+    // Si on est en mode édition et que le numéro appartient à la facture en cours, c'est ok
+    if (invoiceId && data?.id === invoiceId) {
+      return true;
+    }
+    
+    // Sinon, le numéro ne doit pas exister
+    return !data;
   };
 
   const loadInvoice = async (id: string) => {
@@ -211,6 +252,13 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
     if (items.length === 0 || !items[0].description) {
       toast.error('Veuillez ajouter au moins un article');
+      return;
+    }
+
+    // Valider le numéro de facture
+    const isValid = await validateInvoiceNumber(invoiceNumber);
+    if (!isValid) {
+      toast.error('Ce numéro de facture existe déjà. Veuillez en choisir un autre.');
       return;
     }
 
@@ -454,7 +502,15 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                 <div className="w-72 space-y-3 text-sm">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold">Numéro de facture</span>
-                    <span className="font-mono bg-gray-50 px-3 py-1 rounded border">{invoiceNumber}</span>
+                    <Input
+                      value={invoiceNumber}
+                      onChange={(e) => setInvoiceNumber(e.target.value)}
+                      className="h-8 w-36 text-xs border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors font-mono"
+                    />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-xs">Communication structurée</span>
+                    <span className="font-mono text-xs bg-gray-50 px-2 py-1 rounded border">{structuredCommunication}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="font-semibold">Date de facturation</span>

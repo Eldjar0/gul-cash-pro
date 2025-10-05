@@ -8,6 +8,7 @@ interface InvoiceData {
   saleNumber: string;
   date: Date;
   dueDate?: Date;
+  structuredCommunication?: string;
   company: {
     name: string;
     address: string;
@@ -188,15 +189,21 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
 
   // ============ RÉFÉRENCE DE PAIEMENT (BLEU) ============
   doc.setFillColor(0, 122, 204);
-  const refBoxHeight = 15;
+  const refBoxHeight = 20;
   doc.roundedRect(15, yPos, 80, refBoxHeight, 2, 2, 'F');
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  doc.text('Référence de paiement', 18, yPos + 5);
+  doc.text('Référence de paiement', 18, yPos + 6);
   doc.setFontSize(11);
-  doc.text(invoice.saleNumber, 18, yPos + 11);
+  doc.text(invoice.saleNumber, 18, yPos + 12);
+  
+  if (invoice.structuredCommunication) {
+    doc.setFontSize(9);
+    doc.text(invoice.structuredCommunication, 18, yPos + 17);
+  }
+  
   doc.setTextColor(0, 0, 0);
 
   // ============ TOTAUX (DROITE) ============
@@ -254,7 +261,7 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   yPos += 8;
 
   // ============ FOOTER ============
-  const footerY = pageHeight - 35;
+  const footerY = pageHeight - 40;
   
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
@@ -277,9 +284,9 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   doc.text(invoice.company.address, col1X, yPos + 4);
   doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, col1X, yPos + 8);
   
-  // Bureau
+  // Adresse magasin
   doc.setFont('helvetica', 'bold');
-  doc.text('Bureau', col2X, yPos);
+  doc.text('Adresse magasin', col2X, yPos);
   doc.setFont('helvetica', 'normal');
   doc.text(invoice.company.address, col2X, yPos + 4);
   doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, col2X, yPos + 8);
@@ -288,18 +295,13 @@ export const generateInvoicePDF = (invoice: InvoiceData): jsPDF => {
   doc.setFont('helvetica', 'bold');
   doc.text('Compte bancaire', col3X, yPos);
   doc.setFont('helvetica', 'normal');
-  doc.text('IBAN à configurer', col3X, yPos + 4);
+  doc.text('BE00 0000 0000 0000', col3X, yPos + 4);
   
-  // Questions
+  // TVA
   doc.setFont('helvetica', 'bold');
-  doc.text('Questions ?', col4X, yPos);
+  doc.text('TVA', col4X, yPos);
   doc.setFont('helvetica', 'normal');
-  if (invoice.company.phone) {
-    doc.text(invoice.company.phone, col4X, yPos + 4);
-  }
-  if (invoice.company.email) {
-    doc.text(invoice.company.email, col4X, yPos + 8);
-  }
+  doc.text(invoice.company.vatNumber, col4X, yPos + 4);
 
   // Propulsé par
   yPos = pageHeight - 10;
