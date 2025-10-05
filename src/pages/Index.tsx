@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { createSafeBroadcastChannel } from '@/lib/safeBroadcast';
 import { useCartPersistence } from '@/hooks/useCartPersistence';
 import { usePhysicalScanner } from '@/hooks/usePhysicalScanner';
+import { useDebounce } from '@/hooks/useDebounce';
 
 type DiscountType = 'percentage' | 'amount';
 interface CartItem {
@@ -242,8 +243,8 @@ const Index = () => {
     }
   }, [cart, activePromotions, selectedCustomer]);
 
-  // Calculate totals - defined before useEffect to avoid initialization errors
-  const getTotals = () => {
+  // Calculate totals with useMemo for optimization
+  const totals = useMemo(() => {
     const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
     const totalVat = cart.reduce((sum, item) => sum + item.vatAmount, 0);
     const itemDiscounts = cart.reduce((sum, item) => {
@@ -290,12 +291,11 @@ const Index = () => {
       total: Math.max(0, total),
       autoPromotionAmount
     };
-  };
+  }, [cart, globalDiscount, appliedPromoCode, appliedAutoPromotion, selectedCustomer]);
 
   // Synchroniser l'affichage client avec le panier
   useEffect(() => {
     const updateCustomerDisplay = () => {
-      const totals = getTotals();
       const displayItems = cart.map(item => ({
         name: item.product.name,
         quantity: item.quantity,
@@ -348,7 +348,7 @@ const Index = () => {
       localStorage.setItem('customer_display_state', JSON.stringify(state));
     };
     updateCustomerDisplay();
-  }, [cart, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer]);
+  }, [cart, globalDiscount, appliedPromoCode, isInvoiceMode, selectedCustomer, totals]);
 
   // Ouvrir l'affichage client dans une nouvelle fenêtre
   const openCustomerDisplay = () => {
@@ -504,8 +504,8 @@ const Index = () => {
     }
   };
 
-  // Traitement du code-barres scanné (utilisé pour les scans manuels)
-  const handleBarcodeScan = (raw: string) => {
+  // Traitement du code-barres scanné (utilisé pour les scans physiques)
+  const handleBarcodeScan = useCallback((raw: string) => {
     const normalized = normalizeBarcode(raw.trim());
     const normalizedDigits = normalized.replace(/\D+/g, ''); // Fallback: chiffres uniquement
 
@@ -535,154 +535,15 @@ const Index = () => {
       }
     });
     setScanInput("");
-  };
+  }, [products, navigate]);
 
-  // Détection ultra-robuste des scans de lecteur code-barres (HID)
-  useEffect(() => {
-    let buffer = "";
-    let lastKeyTime = 0;
-    let isScanning = false;
-    let timeoutId: NodeJS.Timeout | null = null;
-    let scanStartTime = 0;
-    const isEditableField = (target: EventTarget | null): boolean => {
-      if (!target || !(target instanceof HTMLElement)) return false;
-
-      // Si un dialogue est ouvert, ignorer TOUS les scans
-      const hasOpenDialog = document.querySelector('[role="dialog"]') !== null;
-      if (hasOpenDialog) return true;
-
-      // Vérifier si l'élément ou un parent a l'attribut data-scan-ignore
-      let element: HTMLElement | null = target;
-      while (element) {
-        if (element.hasAttribute('data-scan-ignore')) {
-          return true;
-        }
-        element = element.parentElement;
-      }
-      const tagName = target.tagName.toLowerCase();
-      const isContentEditable = target.isContentEditable;
-      const isInput = tagName === 'input' || tagName === 'textarea' || tagName === 'select';
-      return isInput || isContentEditable;
-    };
-
-    // Convertit un événement clavier en chiffre fiable, indépendamment du layout (AZERTY/Numpad)
-    const mapEventToDigit = (e: KeyboardEvent): string | null => {
-      const code = e.code;
-
-      // 1) Rangée de chiffres physique (Digit0..Digit9) - PRIORITÉ ABSOLUE
-      if (code && code.startsWith('Digit')) {
-        const d = code.replace('Digit', '');
-        return /^[0-9]$/.test(d) ? d : null;
-      }
-
-      // 2) Pavé numérique (Numpad0..Numpad9)
-      if (code && code.startsWith('Numpad')) {
-        const d = code.replace('Numpad', '');
-        return /^[0-9]$/.test(d) ? d : null;
-      }
-
-      // 3) UNIQUEMENT si code n'est pas disponible (très rare)
-      if (!code && /^[0-9]$/.test(e.key)) {
-        return e.key;
-      }
-      return null;
-    };
-    const processScan = () => {
-      if (buffer.length >= 3) {
-        handlePhysicalScan(buffer);
-      }
-      buffer = "";
-      isScanning = false;
-      scanStartTime = 0;
-    };
-    const handler = (e: KeyboardEvent) => {
-      // Ignorer si fenêtre inactive
-      if (document.hidden) return;
-      const now = Date.now();
-      const delta = now - lastKeyTime;
-      lastKeyTime = now;
-
-      // Touches de finalisation envoyées par certains lecteurs
-      if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'NumpadEnter') {
-        if (isScanning && buffer.length >= 3) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (timeoutId) clearTimeout(timeoutId);
-          processScan();
-        }
-        return;
-      }
-
-      // On ne s'intéresse qu'aux touches imprimables pour les chiffres
-      if (e.key.length === 1) {
-        // Pas de reset en cours de scan; on laisse le timeout finaliser
-        if (!isScanning && delta > 400 && buffer.length > 0) {
-          buffer = "";
-          isScanning = false;
-          scanStartTime = 0;
-        }
-        const digit = mapEventToDigit(e);
-
-        // Première touche: démarrer le scan SI PAS dans un champ éditable
-        if (buffer.length === 0) {
-          if (isEditableField(e.target)) {
-            // Laisser l'utilisateur taper normalement dans les champs
-            return;
-          }
-          // Démarre un scan uniquement si on reçoit bien un chiffre
-          if (digit !== null) {
-            scanStartTime = now;
-            isScanning = true;
-            e.preventDefault();
-            e.stopPropagation();
-            buffer += digit;
-          } else {
-            // Pas un chiffre → ignorer
-            return;
-          }
-        } else {
-          // Déjà en cours de scan
-          if (digit !== null) {
-            // Deuxième touche: si < 50ms, on confirme le scan
-            if (buffer.length === 1 && delta < 50) {
-              isScanning = true;
-            }
-            buffer += digit;
-            // Empêcher toute écriture à l'écran pendant le scan
-            e.preventDefault();
-            e.stopPropagation();
-          } else {
-            // Non chiffre au milieu d'un scan → ignorer mais ne pas casser le flux
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }
-
-        // Timeout: finaliser si pas de nouvelle touche après 500ms
-        if (timeoutId) clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          if (buffer.length >= 8) {
-            processScan();
-          } else if (buffer.length > 0) {
-            buffer = "";
-            isScanning = false;
-            scanStartTime = 0;
-          }
-        }, 500);
-      }
-    };
-
-    // Utiliser seulement keydown pour éviter les doublons (keypress est obsolète)
-    window.addEventListener('keydown', handler, {
-      capture: true
-    });
-    return () => {
-      window.removeEventListener('keydown', handler, {
-        capture: true
-      } as any);
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [products]);
+  // Physical barcode scanner using dedicated hook
+  usePhysicalScanner({
+    onScan: handleBarcodeScan,
+    enabled: isDayOpenEffective,
+    minLength: 3,
+    timeout: 100,
+  });
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-pos-display">
         <div className="text-center">
@@ -853,8 +714,7 @@ const Index = () => {
       setCustomerDialogOpen(true);
       return;
     }
-    const totals = getTotals();
-
+    
     // Map payment methods to DB enum types
     let dbPaymentMethod: 'cash' | 'card' | 'mobile' | 'check' | 'voucher' = 'cash';
     if (method === 'customer_credit' || method === 'gift_card') {
@@ -1020,7 +880,6 @@ const Index = () => {
       setMixedPaymentDialogOpen(false);
       return;
     }
-    const totals = getTotals();
 
     // Calculer le montant espèces pour le tiroir-caisse
     const cashAmount = payments.filter(p => p.method === 'cash').reduce((sum, p) => sum + p.amount, 0);
@@ -1101,7 +960,6 @@ const Index = () => {
   };
   const handlePreviewReceipt = () => {
     if (cart.length === 0) return;
-    const totals = getTotals();
     const previewSale = {
       saleNumber: 'PREVIEW-' + Date.now(),
       date: new Date(),
@@ -1258,7 +1116,6 @@ const Index = () => {
     setReportData(data);
     setReportXDialogOpen(true);
   };
-  const totals = getTotals();
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   return <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Pin Lock Dialog */}
