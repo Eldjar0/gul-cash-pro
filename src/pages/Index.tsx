@@ -43,6 +43,7 @@ interface CartItem {
     type: DiscountType;
     value: number;
   };
+  is_gift?: boolean; // Article offert
   subtotal: number;
   vatAmount: number;
   total: number;
@@ -332,7 +333,7 @@ const Index = () => {
   };
 
   // Calcul du total d'un article avec TVA TTC
-  const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount'], customPrice?: number) => {
+  const calculateItemTotal = (product: Product, quantity: number, discount?: CartItem['discount'], customPrice?: number, isGift?: boolean) => {
     const unitPriceTTC = customPrice ?? product.price;
 
     // Prix TTC → HT : diviser par (1 + taux_TVA/100)
@@ -344,10 +345,13 @@ const Index = () => {
       const totalTTC = unitPriceTTC * quantity;
       discountAmount = discount.type === 'percentage' ? totalTTC * discount.value / 100 : discount.value;
     }
-    const total = unitPriceTTC * quantity - discountAmount;
+    
+    // Si c'est un cadeau, le total est 0
+    const total = isGift ? 0 : (unitPriceTTC * quantity - discountAmount);
+    
     return {
-      subtotal,
-      vatAmount,
+      subtotal: isGift ? 0 : subtotal,
+      vatAmount: isGift ? 0 : vatAmount,
       total
     };
   };
@@ -691,7 +695,7 @@ const Index = () => {
       subtotal,
       vatAmount,
       total
-    } = calculateItemTotal(item.product, quantity, item.discount, item.custom_price);
+    } = calculateItemTotal(item.product, quantity, item.discount, item.custom_price, item.is_gift);
     newCart[index] = {
       ...item,
       quantity,
@@ -708,7 +712,7 @@ const Index = () => {
       subtotal,
       vatAmount,
       total
-    } = calculateItemTotal(item.product, item.quantity, item.discount, newPrice);
+    } = calculateItemTotal(item.product, item.quantity, item.discount, newPrice, item.is_gift);
     newCart[index] = {
       ...item,
       custom_price: newPrice,
@@ -718,6 +722,26 @@ const Index = () => {
     };
     setCart(newCart);
     toast.success('Prix modifié');
+  };
+  
+  const handleToggleGift = (index: number) => {
+    const newCart = [...cart];
+    const item = newCart[index];
+    const newIsGift = !item.is_gift;
+    const {
+      subtotal,
+      vatAmount,
+      total
+    } = calculateItemTotal(item.product, item.quantity, item.discount, item.custom_price, newIsGift);
+    newCart[index] = {
+      ...item,
+      is_gift: newIsGift,
+      subtotal,
+      vatAmount,
+      total
+    };
+    setCart(newCart);
+    toast.success(newIsGift ? 'Article offert' : 'Cadeau annulé');
   };
   const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check', amountPaid?: number, metadata?: any) => {
     if (!user) {
@@ -1000,7 +1024,7 @@ const Index = () => {
         subtotal,
         vatAmount,
         total
-      } = calculateItemTotal(item.product, item.quantity, discount, item.custom_price);
+      } = calculateItemTotal(item.product, item.quantity, discount, item.custom_price, item.is_gift);
       newCart[discountTarget.index] = {
         ...item,
         discount,
@@ -1028,7 +1052,7 @@ const Index = () => {
       subtotal,
       vatAmount,
       total
-    } = calculateItemTotal(item.product, item.quantity, undefined, item.custom_price);
+    } = calculateItemTotal(item.product, item.quantity, undefined, item.custom_price, item.is_gift);
     newCart[index] = {
       ...item,
       discount: undefined,
@@ -1240,7 +1264,10 @@ const Index = () => {
                 {cart.map((item, index) => <div key={index} className="bg-white border border-border p-1.5 rounded-lg hover:border-primary/40 transition-all group">
                     <div className="flex justify-between items-start mb-0.5">
                       <div className="flex-1 min-w-0">
-                        <div className="text-foreground font-bold text-[10px] truncate">{item.product.name}</div>
+                        <div className="flex items-center gap-1">
+                          <div className="text-foreground font-bold text-[10px] truncate flex-1">{item.product.name}</div>
+                          {item.is_gift && <span className="text-[8px] bg-gradient-to-r from-pink-500 to-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">🎁 OFFERT</span>}
+                        </div>
                         <div className="flex items-center gap-0.5 mt-0.5">
                           <Input data-scan-ignore="true" type="text" key={`price-${index}-${item.custom_price ?? item.product.price}`} defaultValue={item.custom_price ?? item.product.price} onBlur={e => {
                       const value = e.target.value.replace(',', '.');
@@ -1250,7 +1277,7 @@ const Index = () => {
                       } else {
                         e.target.value = (item.custom_price ?? item.product.price).toString();
                       }
-                    }} className="h-4 w-10 text-[9px] px-0.5 text-center bg-background" />
+                    }} className="h-4 w-10 text-[9px] px-0.5 text-center bg-background" disabled={item.is_gift} />
                           <span className="text-muted-foreground text-[9px]">€/{item.product.unit || 'u'} × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}</span>
                         </div>
                         {item.discount && <div className="flex items-center gap-0.5 mt-0.5">
@@ -1266,13 +1293,16 @@ const Index = () => {
                         <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(index)} className="h-4 w-4 hover:bg-destructive/20 text-destructive flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Trash2 className="h-2.5 w-2.5" />
                         </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleToggleGift(index)} className={`h-4 w-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${item.is_gift ? 'bg-pink-500/20 text-pink-600 hover:bg-pink-500/30' : 'hover:bg-pink-500/20 text-pink-500'}`} title={item.is_gift ? "Annuler cadeau" : "Offrir cet article"}>
+                          <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" /></svg>
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => {
                     setDiscountTarget({
                       type: 'item',
                       index
                     });
                     setDiscountDialogOpen(true);
-                  }} className="h-4 w-4 hover:bg-accent/20 text-accent flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  }} className="h-4 w-4 hover:bg-accent/20 text-accent flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" disabled={item.is_gift}>
                           <Percent className="h-2.5 w-2.5" />
                         </Button>
                       </div>
@@ -1296,8 +1326,8 @@ const Index = () => {
                           +
                         </Button>
                       </div>
-                      <div className="text-primary text-xs font-bold">
-                        {item.total.toFixed(2)}€
+                      <div className={`text-xs font-bold ${item.is_gift ? 'text-pink-600' : 'text-primary'}`}>
+                        {item.is_gift ? 'OFFERT' : `${item.total.toFixed(2)}€`}
                       </div>
                     </div>
                   </div>)}
