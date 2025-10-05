@@ -1371,74 +1371,77 @@ const Index = () => {
                 </div>
                 <p className="text-muted-foreground font-medium text-[10px]">Panier vide</p>
               </div> : <div className="space-y-1">
-                {cart.map((item, index) => <div key={index} className="bg-white border border-border p-1.5 rounded-lg hover:border-primary/40 transition-all group">
-                    <div className="flex justify-between items-start mb-0.5">
+                {cart.map((item, index) => <div key={index} className="bg-white border border-border p-2 rounded-lg hover:border-primary/40 transition-all group hover:shadow-sm">
+                    {/* En-tête avec nom et boutons */}
+                    <div className="flex justify-between items-start gap-2 mb-2">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1">
-                          <div className="text-foreground font-bold text-[10px] truncate flex-1">{item.product.name}</div>
-                          {item.is_gift && <span className="text-[8px] bg-gradient-to-r from-pink-500 to-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">🎁 OFFERT</span>}
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-foreground font-bold text-sm truncate flex-1">{item.product.name}</h4>
+                          {item.is_gift && <span className="text-[8px] bg-gradient-to-r from-pink-500 to-red-500 text-white px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap">🎁 OFFERT</span>}
                         </div>
-                        <div className="flex items-center gap-0.5 mt-0.5">
-                          <Input data-scan-ignore="true" type="text" key={`price-${index}-${item.custom_price ?? item.product.price}`} defaultValue={item.custom_price ?? item.product.price} onBlur={e => {
-                      const value = e.target.value.replace(',', '.');
-                      const newPrice = parseFloat(value);
-                      if (!isNaN(newPrice) && newPrice > 0) {
-                        handleUpdatePrice(index, newPrice);
-                      } else {
-                        e.target.value = (item.custom_price ?? item.product.price).toString();
-                      }
-                    }} className="h-4 w-10 text-[9px] px-0.5 text-center bg-background" disabled={item.is_gift} />
-                          <span className="text-muted-foreground text-[9px]">€/{item.product.unit || 'u'} × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}</span>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="text-xs font-semibold text-primary">{(item.custom_price ?? item.product.price).toFixed(2)}€</span>
+                          <span className="text-muted-foreground text-xs">/ {item.product.unit || 'u'}</span>
+                          <span className="text-muted-foreground text-xs mx-1">×</span>
+                          <span className="text-xs font-bold">{item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)} {item.product.unit || 'u'}</span>
                         </div>
-                        {item.discount && <div className="flex items-center gap-0.5 mt-0.5">
-                            <span className="text-[9px] bg-accent/20 text-accent px-1 py-0.5 rounded">
+                        {item.discount && <div className="flex items-center gap-1 mt-1">
+                            <span className="text-[9px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-semibold">
                               -{item.discount.type === 'percentage' ? `${item.discount.value}%` : `${item.discount.value}€`}
                             </span>
-                            <Button variant="ghost" size="sm" onClick={() => handleRemoveDiscount(index)} className="h-3 w-3 p-0 text-muted-foreground hover:text-destructive">
+                            <Button variant="ghost" size="sm" onClick={() => handleRemoveDiscount(index)} className="h-4 w-4 p-0 text-muted-foreground hover:text-destructive">
                               ×
                             </Button>
                           </div>}
                       </div>
-                      <div className="flex flex-col gap-0.5 items-end ml-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(index)} className="h-4 w-4 hover:bg-destructive/20 text-destructive flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Trash2 className="h-2.5 w-2.5" />
+                      <div className="flex gap-1 items-center flex-shrink-0">
+                        <Button variant="outline" size="icon" onClick={() => {
+                          if (item.product.id) {
+                            navigate(`/products?id=${item.product.id}`);
+                          }
+                        }} className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" title="Modifier le produit">
+                          <Edit className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleToggleGift(index)} className={`h-4 w-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${item.is_gift ? 'bg-pink-500/20 text-pink-600 hover:bg-pink-500/30' : 'hover:bg-pink-500/10 text-pink-500'}`} title={item.is_gift ? 'Annuler cadeau' : 'Offrir'}>
-                          <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>
+                        <Button variant="ghost" size="icon" onClick={() => handleToggleGift(index)} className={`h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity ${item.is_gift ? 'bg-pink-500/20 text-pink-600 hover:bg-pink-500/30' : 'hover:bg-pink-500/10 text-pink-500'}`} title={item.is_gift ? 'Annuler cadeau' : 'Offrir'}>
+                          <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>
                           </svg>
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => {
-                    setDiscountTarget({
-                      type: 'item',
-                      index
-                    });
-                    setDiscountDialogOpen(true);
-                  }} className="h-4 w-4 hover:bg-accent/20 text-accent flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" disabled={item.is_gift}>
-                          <Percent className="h-2.5 w-2.5" />
+                      setDiscountTarget({
+                        type: 'item',
+                        index
+                      });
+                      setDiscountDialogOpen(true);
+                    }} className="h-7 w-7 hover:bg-accent/20 text-accent opacity-0 group-hover:opacity-100 transition-opacity" disabled={item.is_gift} title="Remise">
+                          <Percent className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(index)} className="h-7 w-7 hover:bg-destructive/20 text-destructive opacity-0 group-hover:opacity-100 transition-opacity" title="Supprimer">
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex gap-0.5 bg-muted/50 p-0.5 rounded-lg">
-                        <Button size="sm" onClick={() => handleUpdateQuantity(index, Math.max(0.1, item.quantity - 1))} className="h-5 w-5 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-[10px]">
+                    
+                    {/* Contrôles quantité et prix total */}
+                    <div className="flex justify-between items-center gap-2">
+                      <div className="flex gap-1 bg-muted/50 p-1 rounded-lg">
+                        <Button size="sm" onClick={() => handleUpdateQuantity(index, Math.max(0.1, item.quantity - 1))} className="h-6 w-6 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-xs font-bold">
                           -
                         </Button>
                         <Input data-scan-ignore="true" type="text" key={`qty-${index}-${item.quantity}`} defaultValue={item.quantity.toFixed(3)} onBlur={e => {
-                    const value = e.target.value.replace(',', '.');
-                    const newQty = parseFloat(value);
-                    if (!isNaN(newQty) && newQty > 0) {
-                      handleUpdateQuantity(index, newQty);
-                    } else {
-                      e.target.value = item.quantity.toFixed(3);
-                    }
-                  }} className="h-5 w-12 text-[10px] px-0.5 text-center bg-white font-bold" />
-                        <span className="text-[10px] text-muted-foreground self-center">{item.product.unit || 'u'}</span>
-                        <Button size="sm" onClick={() => handleUpdateQuantity(index, item.quantity + 1)} className="h-5 w-5 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-[10px]">
+                      const value = e.target.value.replace(',', '.');
+                      const newQty = parseFloat(value);
+                      if (!isNaN(newQty) && newQty > 0) {
+                        handleUpdateQuantity(index, newQty);
+                      } else {
+                        e.target.value = item.quantity.toFixed(3);
+                      }
+                    }} className="h-6 w-16 text-xs px-1 text-center bg-white font-bold" />
+                        <Button size="sm" onClick={() => handleUpdateQuantity(index, item.quantity + 1)} className="h-6 w-6 p-0 bg-white hover:bg-primary/10 text-foreground border border-border hover:border-primary text-xs font-bold">
                           +
                         </Button>
                       </div>
-                      <div className={`text-xs font-bold ${item.is_gift ? 'text-pink-600' : 'text-primary'}`}>
+                      <div className={`text-sm font-bold ${item.is_gift ? 'text-pink-600' : 'text-primary'}`}>
                         {item.is_gift ? 'OFFERT' : `${item.total.toFixed(2)}€`}
                       </div>
                     </div>
