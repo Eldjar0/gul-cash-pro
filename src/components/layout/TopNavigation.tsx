@@ -51,11 +51,6 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
     navigate('/auth');
   };
 
-  const menuItems = {
-    gestion: [
-      { icon: Package, label: "Inventaire", path: "/inventory-management" },
-    ],
-  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-primary to-primary-glow shadow-lg">
@@ -104,27 +99,13 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
 
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="h-10 px-2 flex items-center gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold data-[state=open]:bg-indigo-600 text-xs whitespace-nowrap">
+                <Button
+                  onClick={() => navigate("/inventory-management")}
+                  className="h-10 px-2 flex items-center gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold text-xs whitespace-nowrap"
+                >
                   <Package className="h-4 w-4" />
-                  <span>Stock</span>
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4">
-                    {menuItems.gestion.map((item) => (
-                      <li key={item.path}>
-                        <NavigationMenuLink asChild>
-                          <button
-                            onClick={() => navigate(item.path)}
-                            className="flex items-center gap-3 w-full rounded-md p-3 text-sm leading-none hover:bg-accent transition-colors"
-                          >
-                            <item.icon className="h-5 w-5 text-primary" />
-                            <span className="font-medium">{item.label}</span>
-                          </button>
-                        </NavigationMenuLink>
-                      </li>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
+                  <span>Produits</span>
+                </Button>
               </NavigationMenuItem>
 
               <NavigationMenuItem>
