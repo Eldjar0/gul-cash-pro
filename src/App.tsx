@@ -32,7 +32,6 @@ const InvoiceCreate = lazy(() => import("./pages/InvoiceCreate"));
 const Inventory = lazy(() => import("./pages/Inventory"));
 const Orders = lazy(() => import("./pages/Orders"));
 const Loyalty = lazy(() => import("./pages/Loyalty"));
-const Payments = lazy(() => import("./pages/Payments"));
 const DownloadApp = lazy(() => import("./pages/DownloadApp"));
 const MobileManagement = lazy(() => import("./pages/MobileManagement"));
 const MobileCategories = lazy(() => import("./pages/MobileCategories"));
@@ -94,7 +93,6 @@ const App = () => (
             <Route path="/inventory" element={<ProtectedRoute><ProtectedLayout><Inventory /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><ProtectedLayout><Orders /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/loyalty" element={<ProtectedRoute><ProtectedLayout><Loyalty /></ProtectedLayout></ProtectedRoute>} />
-            <Route path="/payments" element={<ProtectedRoute><ProtectedLayout><Payments /></ProtectedLayout></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

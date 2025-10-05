@@ -1417,7 +1417,7 @@ const Index = () => {
                 <Undo2 className="h-3 w-3 mr-0.5" />
                 Rembour.
               </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/payments')} className="h-7 text-[9px] border-pink-500 text-pink-500 hover:bg-pink-500/10" title="Gérer les cartes cadeaux">
+              <Button variant="outline" size="sm" onClick={() => setGiftCardDialogOpen(true)} className="h-7 text-[9px] border-pink-500 text-pink-500 hover:bg-pink-500/10" title="Gérer les cartes cadeaux">
                 <Gift className="h-3 w-3 mr-0.5" />
                 Cartes
               </Button>
@@ -1758,13 +1758,7 @@ const Index = () => {
 
       <GiftCardDialog 
         open={giftCardDialogOpen} 
-        onOpenChange={setGiftCardDialogOpen} 
-        totalAmount={totals.total}
-        onApply={(amount) => {
-          toast.success(`Carte cadeau appliquée: ${amount}€`);
-          // TODO: Handle gift card payment
-          setGiftCardDialogOpen(false);
-        }}
+        onOpenChange={setGiftCardDialogOpen}
       />
 
       {selectedCustomer && (
