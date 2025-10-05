@@ -76,8 +76,8 @@ export const CustomerCreditDialog = ({
       return;
     }
 
+    // Appeler onApply qui va déclencher le paiement et la création de la transaction
     onApply(amount);
-    onOpenChange(false);
   };
 
   const availableCredit = creditAccount 

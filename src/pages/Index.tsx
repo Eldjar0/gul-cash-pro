@@ -27,7 +27,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCreateSale, useSales } from '@/hooks/useSales';
 import { useCategories } from '@/hooks/useCategories';
 import { Customer, useCustomers } from '@/hooks/useCustomers';
-import { useCustomerCredit } from '@/hooks/useCustomerCredit';
+import { useCustomerCredit, useChargeCredit } from '@/hooks/useCustomerCredit';
 import { useTodayReport, useOpenDay, useCloseDay, getTodayReportData, ReportData } from '@/hooks/useDailyReports';
 import { useWeather } from '@/hooks/useWeather';
 import { toast } from 'sonner';
@@ -173,6 +173,7 @@ const Index = () => {
   // Fetch customers
   const { data: customers } = useCustomers();
   const { data: creditAccounts } = useCustomerCredit();
+  const chargeCredit = useChargeCredit();
   
   // Filter customers based on search term
   const filteredCustomers = customers?.filter(customer => 
@@ -775,6 +776,14 @@ const Index = () => {
       return;
     }
 
+    // Si mode crédit client, vérifier qu'un client est sélectionné
+    if (method === 'customer_credit' && !selectedCustomer) {
+      toast.error('Client requis', {
+        description: 'Veuillez sélectionner un client pour le paiement à crédit'
+      });
+      return;
+    }
+
     // Si mode facture, vérifier qu'un client est sélectionné
     if (isInvoiceMode && !selectedCustomer) {
       toast.error('Client requis', {
@@ -799,12 +808,12 @@ const Index = () => {
       total_discount: totals.totalDiscount,
       total: totals.total,
       payment_method: dbPaymentMethod,
-      amount_paid: amountPaid,
-      change_amount: amountPaid ? amountPaid - totals.total : 0,
+      amount_paid: amountPaid || totals.total,
+      change_amount: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
       is_invoice: isInvoiceMode,
       is_cancelled: false,
       cashier_id: user.id,
-      customer_id: isInvoiceMode ? selectedCustomer?.id : undefined,
+      customer_id: selectedCustomer?.id,
       items: cart.map(item => ({
         product_id: item.product.id,
         product_name: item.product.name,
@@ -822,6 +831,22 @@ const Index = () => {
     try {
       const sale = await createSale.mutateAsync(saleData);
 
+      // Si paiement par crédit client, créer la transaction de crédit
+      if (method === 'customer_credit' && selectedCustomer && metadata?.creditAmount) {
+        try {
+          await chargeCredit.mutateAsync({
+            customerId: selectedCustomer.id,
+            amount: metadata.creditAmount,
+            saleId: sale.id,
+            notes: `Vente ${sale.sale_number}`
+          });
+          toast.success(`${metadata.creditAmount.toFixed(2)}€ ajouté au crédit client`);
+        } catch (error) {
+          console.error('Error charging credit:', error);
+          toast.error('Erreur lors de l\'enregistrement du crédit');
+        }
+      }
+
       // Préparer les données de vente pour le reçu
       const saleForReceipt = {
         ...sale,
@@ -833,10 +858,10 @@ const Index = () => {
         totalDiscount: totals.totalDiscount,
         total: totals.total,
         paymentMethod: method,
-        amountPaid: amountPaid,
-        change: amountPaid ? amountPaid - totals.total : 0,
+        amountPaid: amountPaid || totals.total,
+        change: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
         is_invoice: isInvoiceMode,
-        customer: isInvoiceMode ? selectedCustomer : undefined
+        customer: selectedCustomer
       };
       setCurrentSale(saleForReceipt);
 
@@ -868,7 +893,13 @@ const Index = () => {
 
       // Demander si l'utilisateur veut imprimer
       setPrintConfirmDialogOpen(true);
-      toast.success(isInvoiceMode ? 'Facture créée' : 'Paiement validé');
+      toast.success(
+        method === 'customer_credit' 
+          ? 'Paiement à crédit enregistré' 
+          : isInvoiceMode 
+            ? 'Facture créée' 
+            : 'Paiement validé'
+      );
     } catch (error) {
       console.error('Error creating sale:', error);
       toast.error('Erreur paiement');
@@ -1924,8 +1955,8 @@ const Index = () => {
           customerName={selectedCustomer.name}
           totalAmount={totals.total}
           onApply={(amount) => {
-            toast.success(`Crédit client appliqué: ${amount}€`);
-            // TODO: Handle customer credit payment
+            // Appeler handleConfirmPayment avec le mode crédit client
+            handleConfirmPayment('customer_credit', amount, { creditAmount: amount });
             setCustomerCreditDialogOpen(false);
           }}
         />
