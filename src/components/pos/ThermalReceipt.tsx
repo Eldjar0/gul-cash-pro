@@ -40,6 +40,7 @@ interface Sale {
   total: number;
   payment_method?: 'cash' | 'card' | 'mobile' | 'customer_credit';
   paymentMethod?: 'cash' | 'card' | 'mobile' | 'customer_credit';
+  payment_split?: Record<string, number>;
   amount_paid?: number;
   amountPaid?: number;
   change_amount?: number;
@@ -245,15 +246,38 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
 
       {/* Payment */}
       <div style={{ fontSize: '13.7px', marginTop: '6px', marginBottom: '6px', fontWeight: '900', paddingRight: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', marginBottom: '2px', gap: '3px' }}>
-          <span style={{ flex: '1', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
-             (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE' : 
-             (sale.paymentMethod || sale.payment_method) === 'customer_credit' ? 'CRÉDIT' :
-             'PAIEMENT'}
-          </span>
-          <span style={{ whiteSpace: 'nowrap' }}>{sale.total.toFixed(2)}€</span>
-        </div>
+        {sale.payment_split && Object.keys(sale.payment_split).length > 1 ? (
+          // Paiement mixte
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', marginBottom: '3px', gap: '3px' }}>
+              <span>PAIEMENT MIXTE</span>
+              <span style={{ whiteSpace: 'nowrap' }}>{sale.total.toFixed(2)}€</span>
+            </div>
+            {Object.entries(sale.payment_split).map(([method, amount]) => (
+              <div key={method} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.3px', paddingLeft: '8px', gap: '3px' }}>
+                <span>
+                  {method === 'cash' ? 'Espèces' : 
+                   method === 'card' ? 'Carte' : 
+                   method === 'customer_credit' ? 'Crédit' :
+                   method === 'mobile' ? 'Mobile' :
+                   method === 'check' ? 'Chèque' : method}
+                </span>
+                <span style={{ whiteSpace: 'nowrap' }}>{amount.toFixed(2)}€</span>
+              </div>
+            ))}
+          </>
+        ) : (
+          // Paiement simple
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', marginBottom: '2px', gap: '3px' }}>
+            <span style={{ flex: '1', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
+               (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE' : 
+               (sale.paymentMethod || sale.payment_method) === 'customer_credit' ? 'CRÉDIT' :
+               'PAIEMENT'}
+            </span>
+            <span style={{ whiteSpace: 'nowrap' }}>{sale.total.toFixed(2)}€</span>
+          </div>
+        )}
         {(sale.paymentMethod || sale.payment_method) === 'cash' && (sale.amountPaid || sale.amount_paid) && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.3px', gap: '3px' }}>

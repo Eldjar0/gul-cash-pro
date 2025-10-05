@@ -39,6 +39,7 @@ interface Sale {
   total: number;
   payment_method?: 'cash' | 'card' | 'mobile' | 'customer_credit';
   paymentMethod?: 'cash' | 'card' | 'mobile' | 'customer_credit';
+  payment_split?: Record<string, number>;
   amount_paid?: number;
   amountPaid?: number;
   change_amount?: number;
@@ -163,15 +164,38 @@ export function Receipt({ sale }: ReceiptProps) {
       {/* Paiement */}
       <div className="border-t border-dashed border-black mt-3 pt-2">
         <div className="text-[10px] space-y-1">
-          <div className="flex justify-between">
-            <span className="font-black">
-              {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
-               (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE BANCAIRE' : 
-               (sale.paymentMethod || sale.payment_method) === 'customer_credit' ? 'CRÉDIT' :
-               'PAIEMENT MOBILE'}
-            </span>
-            <span className="font-black">{sale.total.toFixed(2)}</span>
-          </div>
+          {sale.payment_split && Object.keys(sale.payment_split).length > 1 ? (
+            // Paiement mixte
+            <>
+              <div className="flex justify-between font-black mb-1">
+                <span>PAIEMENT MIXTE</span>
+                <span>{sale.total.toFixed(2)}</span>
+              </div>
+              {Object.entries(sale.payment_split).map(([method, amount]) => (
+                <div key={method} className="flex justify-between pl-2">
+                  <span className="font-bold">
+                    {method === 'cash' ? 'Espèces' : 
+                     method === 'card' ? 'Carte bancaire' : 
+                     method === 'customer_credit' ? 'Crédit' :
+                     method === 'mobile' ? 'Paiement mobile' :
+                     method === 'check' ? 'Chèque' : method}
+                  </span>
+                  <span className="font-bold">{amount.toFixed(2)}</span>
+                </div>
+              ))}
+            </>
+          ) : (
+            // Paiement simple
+            <div className="flex justify-between">
+              <span className="font-black">
+                {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
+                 (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE BANCAIRE' : 
+                 (sale.paymentMethod || sale.payment_method) === 'customer_credit' ? 'CRÉDIT' :
+                 'PAIEMENT MOBILE'}
+              </span>
+              <span className="font-black">{sale.total.toFixed(2)}</span>
+            </div>
+          )}
           {(sale.paymentMethod || sale.payment_method) === 'cash' && (sale.amountPaid || sale.amount_paid) && (
             <>
               <div className="flex justify-between">
