@@ -316,41 +316,41 @@ export function PaymentDialog({
             </div>
           </div>
         ) : method === 'cash' ? (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {/* MONTANT À PAYER */}
-            <Card className="bg-muted/50 border-2 p-4">
-              <div className="flex items-center gap-3 mb-2">
-                <Wallet className="h-8 w-8" />
-                <p className="text-xl font-bold">Montant à payer</p>
+            <Card className="bg-muted/50 border-2 p-2">
+              <div className="flex items-center gap-2 mb-1">
+                <Wallet className="h-5 w-5" />
+                <p className="text-base font-bold">Montant à payer</p>
               </div>
-              <div className="text-5xl font-black text-center py-3">
+              <div className="text-3xl font-black text-center py-1">
                 {total.toFixed(2)}€
               </div>
             </Card>
 
             {/* MONTANT REÇU DU CLIENT */}
-            <Card className="bg-green-500/10 border-2 border-green-500 p-4">
-              <div className="flex items-center gap-3 mb-2">
-                <HandCoins className="h-8 w-8 text-green-500" />
-                <p className="text-xl font-bold">Montant reçu</p>
+            <Card className="bg-green-500/10 border-2 border-green-500 p-2">
+              <div className="flex items-center gap-2 mb-1">
+                <HandCoins className="h-5 w-5 text-green-500" />
+                <p className="text-base font-bold">Montant reçu</p>
               </div>
-              <div className="text-5xl font-black text-center py-3 text-green-500">
+              <div className="text-3xl font-black text-center py-1 text-green-500">
                 {amountPaid || '0.00'}€
               </div>
             </Card>
 
             {/* RENDU DE MONNAIE */}
             {amountPaid && parseFloat(amountPaid) >= total && (
-              <Card className="bg-blue-500/10 border-2 border-blue-500 p-4 animate-in">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="h-8 w-8 text-blue-500" />
+              <Card className="bg-blue-500/10 border-2 border-blue-500 p-2 animate-in">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-blue-500" />
                     <div>
-                      <p className="font-bold text-xl">Rendu de monnaie</p>
-                      <Badge className="bg-blue-500 text-white mt-1">À remettre au client</Badge>
+                      <p className="font-bold text-base">Rendu de monnaie</p>
+                      <Badge className="bg-blue-500 text-white text-xs">À remettre au client</Badge>
                     </div>
                   </div>
-                  <div className="text-5xl font-black text-blue-500">
+                  <div className="text-3xl font-black text-blue-500">
                     {getCashChange().toFixed(2)}€
                   </div>
                 </div>
@@ -358,13 +358,13 @@ export function PaymentDialog({
             )}
 
             {suggestedAmounts.length > 0 && (
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-6 gap-1">
                 {suggestedAmounts.map((amount) => (
                   <Button
                     key={amount}
                     onClick={() => setAmountPaid(amount.toFixed(2))}
                     variant="outline"
-                    className="h-12 font-bold"
+                    className="h-9 text-sm font-bold"
                   >
                     {amount}€
                   </Button>
@@ -372,13 +372,13 @@ export function PaymentDialog({
               </div>
             )}
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1">
               {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
                 <Button
                   key={key}
                   onClick={() => handleNumberClick(key)}
                   variant="outline"
-                  className="h-14 text-xl font-bold"
+                  className="h-11 text-lg font-bold"
                 >
                   {key}
                 </Button>
@@ -389,7 +389,7 @@ export function PaymentDialog({
               <Button 
                 onClick={handleBack} 
                 variant="outline"
-                className="flex-1 h-12"
+                className="flex-1 h-10"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Retour
@@ -397,7 +397,7 @@ export function PaymentDialog({
               <Button
                 onClick={handleConfirm}
                 disabled={!amountPaid || parseFloat(amountPaid) < total}
-                className="flex-1 h-12 font-bold text-lg"
+                className="flex-1 h-10 font-bold text-base"
               >
                 Valider
               </Button>

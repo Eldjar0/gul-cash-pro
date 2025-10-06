@@ -454,7 +454,7 @@ const CustomerDisplay = () => {
 
       {/* Zone scrollable pour les articles - avec padding top et bottom pour header/footer fixes */}
       <div className="flex-1 overflow-y-auto pt-40 pb-60 px-6">
-        <div className="max-w-7xl mx-auto space-y-4 flex flex-col-reverse">
+        <div className="max-w-7xl mx-auto space-y-4">
           {displayState.items.map((item, index) => {
             const subtotal = calculateSubtotal(item);
             const vat = calculateVAT(item);
@@ -511,36 +511,15 @@ const CustomerDisplay = () => {
         </div>
       </div>
 
-      {/* Footer fixe avec total en bas à droite */}
+      {/* Footer fixe avec total en bas */}
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary via-accent to-primary shadow-2xl z-10 border-t-4 border-white/20">
-        <div className="max-w-7xl mx-auto p-10">
-          <div className="flex justify-between items-center gap-8">
-            {/* Infos TVA à gauche */}
-            <div className="space-y-4">
-              {(() => {
-                const vatByRate = displayState.items.reduce((acc, item) => {
-                  const vat = calculateVAT(item);
-                  if (!acc[item.vatRate]) {
-                    acc[item.vatRate] = 0;
-                  }
-                  acc[item.vatRate] += vat;
-                  return acc;
-                }, {} as Record<number, number>);
-
-                return Object.entries(vatByRate).map(([rate, amount]) => (
-                  <div key={rate} className="flex items-center gap-4 bg-white/20 backdrop-blur-md rounded-2xl px-8 py-4 border-2 border-white/40 shadow-lg">
-                    <span className="text-2xl font-black text-white uppercase tracking-wide drop-shadow-md">TVA {parseFloat(rate).toFixed(0)}%:</span>
-                    <span className="text-3xl font-black text-white tabular-nums drop-shadow-md">{amount.toFixed(2)} €</span>
-                  </div>
-                ));
-              })()}
-            </div>
-
-            {/* Total TTC à droite - ÉNORME */}
-            <div className="text-right">
-              <div className="bg-white/20 backdrop-blur-md rounded-3xl px-12 py-8 border-4 border-white/50 shadow-glow-lg">
-                <div className="text-4xl font-black text-white mb-4 uppercase tracking-widest drop-shadow-lg">TOTAL À PAYER</div>
-                <div className="text-9xl font-black text-white tracking-tighter leading-none tabular-nums drop-shadow-2xl animate-pulse-soft">
+        <div className="max-w-7xl mx-auto p-8">
+          <div className="flex justify-center items-center">
+            {/* Total TTC centré */}
+            <div className="text-center">
+              <div className="bg-white/20 backdrop-blur-md rounded-3xl px-10 py-6 border-4 border-white/50 shadow-glow-lg">
+                <div className="text-3xl font-black text-white mb-3 uppercase tracking-widest drop-shadow-lg">TOTAL À PAYER</div>
+                <div className="text-7xl font-black text-white tracking-tighter leading-none tabular-nums drop-shadow-2xl animate-pulse-soft">
                   {getTotalTTC().toFixed(2)} €
                 </div>
               </div>
