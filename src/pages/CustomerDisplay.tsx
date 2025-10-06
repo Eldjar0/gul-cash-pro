@@ -219,34 +219,14 @@ const CustomerDisplay = () => {
   if (displayState.status === 'idle') {
     return (
       <div className="h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex items-center justify-center p-6 relative overflow-hidden">
-        {/* Animation de bulles flottantes en arrière-plan */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Bulles flottantes */}
-          <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '6s', animationDelay: '0s' }}></div>
-          <div className="absolute top-40 right-20 w-40 h-40 bg-accent/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
-          <div className="absolute bottom-32 left-1/4 w-36 h-36 bg-category-purple/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7s', animationDelay: '2s' }}></div>
-          <div className="absolute top-1/3 right-1/3 w-28 h-28 bg-category-orange/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '9s', animationDelay: '3s' }}></div>
-          <div className="absolute bottom-20 right-10 w-44 h-44 bg-category-teal/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '10s', animationDelay: '1.5s' }}></div>
-          <div className="absolute top-1/2 left-16 w-24 h-24 bg-category-pink/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8.5s', animationDelay: '2.5s' }}></div>
-          <div className="absolute bottom-1/4 right-1/4 w-38 h-38 bg-primary-glow/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7.5s', animationDelay: '0.5s' }}></div>
-          <div className="absolute top-1/4 left-1/2 w-30 h-30 bg-accent/15 rounded-full blur-xl animate-float" style={{ animationDuration: '6.5s', animationDelay: '3.5s' }}></div>
-          
-          {/* Grands cercles style DVD bouncing */}
-          <div className="absolute w-32 h-32 bg-primary/40 rounded-full blur-xl animate-dvd-bounce" style={{ animationDuration: '12s' }}></div>
-          <div className="absolute w-40 h-40 bg-accent/40 rounded-full blur-xl animate-dvd-bounce-2" style={{ animationDuration: '15s', animationDelay: '2s' }}></div>
-          <div className="absolute w-36 h-36 bg-category-purple/40 rounded-full blur-xl animate-dvd-bounce-3" style={{ animationDuration: '18s', animationDelay: '4s' }}></div>
-        </div>
-        
         <div className="w-full max-w-6xl space-y-8 relative z-10">
           {/* Logo centré */}
           <div className="text-center animate-fade-in">
             <div className="relative inline-block">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary blur-3xl rounded-full animate-pulse-soft opacity-60"></div>
               <img src={logoMarket} alt="Logo" className="relative w-72 h-72 mx-auto object-contain animate-scale-in drop-shadow-2xl brightness-110" />
             </div>
             
             <div className="mt-8 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary blur-2xl opacity-40 animate-pulse-soft"></div>
               <h1 className="relative text-[10rem] font-black tracking-tight animate-scale-in drop-shadow-2xl bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
                 Bienvenue
               </h1>
@@ -453,8 +433,8 @@ const CustomerDisplay = () => {
       </div>
 
       {/* Zone scrollable pour les articles - avec padding top et bottom pour header/footer fixes */}
-      <div className="flex-1 overflow-y-auto pt-40 pb-60 px-6">
-        <div className="max-w-7xl mx-auto space-y-4">
+      <div className="flex-1 overflow-y-auto pt-40 pb-40 px-4">
+        <div className="max-w-7xl mx-auto space-y-2">
           {displayState.items.map((item, index) => {
             const subtotal = calculateSubtotal(item);
             const vat = calculateVAT(item);
@@ -463,44 +443,44 @@ const CustomerDisplay = () => {
             return (
               <div
                 key={`${item.name}-${index}`}
-                className="bg-card rounded-3xl shadow-2xl p-8 border-4 border-primary/30 hover:shadow-glow-lg hover:border-primary/60 transition-all duration-300 hover:scale-[1.01] animate-fade-in"
+                className="bg-card rounded-2xl shadow-lg p-4 border-2 border-primary/30 hover:shadow-glow hover:border-primary/60 transition-all duration-300 animate-fade-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <div className="flex justify-between items-start gap-8">
+                <div className="flex justify-between items-start gap-4">
                   <div className="flex-1">
-                    <h3 className="text-4xl font-black text-foreground uppercase tracking-tight mb-4 flex items-center gap-4">
-                      <div className="w-3 h-10 bg-gradient-to-b from-primary to-accent rounded-full shadow-lg"></div>
+                    <h3 className="text-2xl font-black text-foreground uppercase tracking-tight mb-2 flex items-center gap-2">
+                      <div className="w-2 h-6 bg-gradient-to-b from-primary to-accent rounded-full shadow-lg"></div>
                       {item.name}
                     </h3>
-                    <div className="flex gap-4 items-center flex-wrap">
-                      <div className="flex items-center gap-4 bg-primary/10 rounded-2xl px-6 py-3 border-2 border-primary/20">
-                        <span className="text-3xl font-black text-foreground">
+                    <div className="flex gap-2 items-center flex-wrap">
+                      <div className="flex items-center gap-2 bg-primary/10 rounded-xl px-3 py-2 border border-primary/20">
+                        <span className="text-xl font-black text-foreground">
                           {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)} {unitDisplay}
                         </span>
-                        <span className="text-2xl text-muted-foreground font-bold">×</span>
-                        <span className="text-3xl font-black text-primary">
+                        <span className="text-lg text-muted-foreground font-bold">×</span>
+                        <span className="text-xl font-black text-primary">
                           {item.price.toFixed(2)} €
                         </span>
                       </div>
                       {item.hasCustomPrice && (
-                        <span className="px-6 py-3 rounded-2xl text-lg font-black bg-accent/20 text-accent border-2 border-accent/50 shadow-lg">
+                        <span className="px-3 py-2 rounded-xl text-sm font-black bg-accent/20 text-accent border border-accent/50 shadow">
                           Prix modifié
                         </span>
                       )}
                       {item.discount && (
-                        <span className="px-6 py-3 rounded-2xl text-lg font-black bg-destructive/20 text-destructive border-2 border-destructive/50 shadow-lg">
+                        <span className="px-3 py-2 rounded-xl text-sm font-black bg-destructive/20 text-destructive border border-destructive/50 shadow">
                           -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="bg-gradient-to-br from-primary/15 to-accent/15 rounded-3xl px-8 py-6 border-4 border-primary/40 shadow-glow-lg">
-                      <div className="text-6xl font-black text-primary mb-2 tabular-nums drop-shadow-lg">
+                    <div className="bg-gradient-to-br from-primary/15 to-accent/15 rounded-2xl px-4 py-3 border-2 border-primary/40 shadow-lg">
+                      <div className="text-3xl font-black text-primary mb-1 tabular-nums drop-shadow-lg">
                         {item.total.toFixed(2)} €
                       </div>
-                      <div className="text-base text-muted-foreground font-bold">
-                        TVA {item.vatRate}%: <span className="text-foreground font-black text-lg">{vat.toFixed(2)}€</span>
+                      <div className="text-xs text-muted-foreground font-bold">
+                        TVA {item.vatRate}%: <span className="text-foreground font-black text-sm">{vat.toFixed(2)}€</span>
                       </div>
                     </div>
                   </div>
@@ -513,13 +493,13 @@ const CustomerDisplay = () => {
 
       {/* Footer fixe avec total en bas */}
       <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary via-accent to-primary shadow-2xl z-10 border-t-4 border-white/20">
-        <div className="max-w-7xl mx-auto p-8">
+        <div className="max-w-7xl mx-auto p-4">
           <div className="flex justify-center items-center">
             {/* Total TTC centré */}
             <div className="text-center">
-              <div className="bg-white/20 backdrop-blur-md rounded-3xl px-10 py-6 border-4 border-white/50 shadow-glow-lg">
-                <div className="text-3xl font-black text-white mb-3 uppercase tracking-widest drop-shadow-lg">TOTAL À PAYER</div>
-                <div className="text-7xl font-black text-white tracking-tighter leading-none tabular-nums drop-shadow-2xl animate-pulse-soft">
+              <div className="bg-white/20 backdrop-blur-md rounded-2xl px-6 py-4 border-2 border-white/50 shadow-glow-lg">
+                <div className="text-xl font-black text-white mb-2 uppercase tracking-widest drop-shadow-lg">TOTAL À PAYER</div>
+                <div className="text-5xl font-black text-white tracking-tighter leading-none tabular-nums drop-shadow-2xl animate-pulse-soft">
                   {getTotalTTC().toFixed(2)} €
                 </div>
               </div>
