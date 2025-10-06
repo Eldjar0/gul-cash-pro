@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, CheckCircle2, Thermometer, Calendar, Clock, CreditCard, Banknote } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import logoMarket from '@/assets/logo-market.png';
@@ -72,6 +72,7 @@ const CustomerDisplay = () => {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [temperature, setTemperature] = useState<number | null>(null);
+  const itemsEndRef = useRef<HTMLDivElement>(null);
 
   // Mise à jour de l'heure toutes les secondes
   useEffect(() => {
@@ -194,6 +195,13 @@ const CustomerDisplay = () => {
       clearInterval(interval);
     };
   }, []);
+
+  // Auto-scroll to latest item when items change
+  useEffect(() => {
+    if (displayState.status === 'shopping' && displayState.items.length > 0) {
+      itemsEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [displayState.items.length, displayState.status]);
 
   const calculateSubtotal = (item: DisplayItem) => {
     return (item.price * item.quantity) / (1 + item.vatRate / 100);
@@ -488,6 +496,7 @@ const CustomerDisplay = () => {
               </div>
             );
           })}
+          <div ref={itemsEndRef} />
         </div>
       </div>
 
