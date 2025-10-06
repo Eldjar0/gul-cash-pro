@@ -1,6 +1,5 @@
 import { Product } from '@/hooks/useProducts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
-import { ExternalLink } from 'lucide-react';
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -59,16 +58,7 @@ export function Receipt({ sale }: ReceiptProps) {
   const { settings } = useCompanySettings();
   
   return (
-    <div className="font-mono text-[11px] leading-tight max-w-[320px] mx-auto bg-white text-black p-4 print:p-0 relative">
-      {/* Bouton AFSCA en haut à droite */}
-      <a
-        href="https://favv-afsca.be/fr/produits"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors print:hidden"
-      >
-        AFSCA <ExternalLink size={12} />
-      </a>
+    <div className="font-mono text-[11px] leading-tight max-w-[320px] mx-auto bg-white text-black p-4 print:p-0">
       {/* En-tête magasin */}
       <div className="text-center mb-4">
         <h1 className="text-xl font-black tracking-wider mb-1">{settings.name}</h1>
@@ -181,8 +171,8 @@ export function Receipt({ sale }: ReceiptProps) {
       </div>
 
       {/* Paiement */}
-      <div className="border-t border-dashed border-black mt-3 pt-2">
-        <div className="text-[10px] space-y-1">
+      <div className="border-t border-dashed border-black mt-2 pt-1.5">
+        <div className="text-[9px] space-y-0.5">
           {sale.payment_split && Object.keys(sale.payment_split).length > 1 ? (
             // Paiement mixte
             <>
@@ -231,7 +221,7 @@ export function Receipt({ sale }: ReceiptProps) {
       </div>
 
       {/* Footer */}
-      <div className="text-center mt-4 pt-3 border-t border-dashed border-black">
+      <div className="text-center mt-2 pt-2 border-t border-dashed border-black">
         {isInvoice ? (
           <div className="text-[10px] space-y-1">
             <p className="font-bold">FACTURE</p>
