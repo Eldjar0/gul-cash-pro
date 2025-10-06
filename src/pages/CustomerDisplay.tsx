@@ -219,29 +219,29 @@ const CustomerDisplay = () => {
   if (displayState.status === 'idle') {
     return (
       <div className="h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex items-center justify-center p-6 relative overflow-hidden">
-        <div className="w-full max-w-6xl space-y-8 relative z-10">
-          {/* Logo centré */}
-          <div className="text-center animate-fade-in">
-            <div className="relative inline-block">
-              <img src={logoMarket} alt="Logo" className="relative w-72 h-72 mx-auto object-contain animate-scale-in drop-shadow-2xl brightness-110" />
-            </div>
-            
-            <div className="mt-8 relative">
-              <h1 className="relative text-[10rem] font-black tracking-tight animate-scale-in drop-shadow-2xl bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
-                Bienvenue
-              </h1>
-            </div>
+      <div className="w-full max-w-6xl space-y-4 relative z-10">
+        {/* Logo centré */}
+        <div className="text-center animate-fade-in">
+          <div className="relative inline-block">
+            <img src={logoMarket} alt="Logo" className="relative w-40 h-40 mx-auto object-contain animate-scale-in drop-shadow-2xl brightness-110" />
           </div>
+          
+          <div className="mt-4 relative">
+            <h1 className="relative text-6xl font-black tracking-tight animate-scale-in drop-shadow-2xl bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
+              Bienvenue
+            </h1>
+          </div>
+        </div>
 
-          {/* Textes centrés entre logo et infos */}
-          <div className="text-center space-y-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <p className="text-6xl font-black text-primary drop-shadow-lg">
-              Veuillez patienter
-            </p>
-            <p className="text-4xl font-bold bg-gradient-to-r from-accent to-primary text-transparent bg-clip-text">
-              Un collaborateur va prendre votre commande
-            </p>
-          </div>
+        {/* Textes centrés entre logo et infos */}
+        <div className="text-center space-y-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <p className="text-3xl font-black text-primary drop-shadow-lg">
+            Veuillez patienter
+          </p>
+          <p className="text-2xl font-bold bg-gradient-to-r from-accent to-primary text-transparent bg-clip-text">
+            Un collaborateur va prendre votre commande
+          </p>
+        </div>
 
           {/* Promotion Banner */}
           <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
