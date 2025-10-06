@@ -242,12 +242,12 @@ const CustomerDisplay = () => {
           <div className="text-center animate-fade-in">
             <div className="relative inline-block">
               <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary blur-3xl rounded-full animate-pulse-soft opacity-60"></div>
-              <img src={logoMarket} alt="Logo" className="relative w-32 h-32 mx-auto object-contain animate-scale-in drop-shadow-2xl brightness-110" />
+              <img src={logoMarket} alt="Logo" className="relative w-56 h-56 mx-auto object-contain animate-scale-in drop-shadow-2xl brightness-110" />
             </div>
             
-            <div className="mt-4 relative">
+            <div className="mt-6 relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary blur-2xl opacity-40 animate-pulse-soft"></div>
-              <h1 className="relative text-5xl font-black tracking-tight animate-scale-in drop-shadow-2xl bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
+              <h1 className="relative text-8xl font-black tracking-tight animate-scale-in drop-shadow-2xl bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
                 Bienvenue
               </h1>
             </div>
