@@ -218,164 +218,82 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'idle') {
     return (
-      <div className="h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 flex items-center justify-center p-6 relative overflow-hidden">
-        {/* Animation de bulles flottantes en arrière-plan */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Bulles flottantes */}
-          <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '6s', animationDelay: '0s' }}></div>
-          <div className="absolute top-40 right-20 w-40 h-40 bg-accent/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
-          <div className="absolute bottom-32 left-1/4 w-36 h-36 bg-category-purple/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7s', animationDelay: '2s' }}></div>
-          <div className="absolute top-1/3 right-1/3 w-28 h-28 bg-category-orange/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '9s', animationDelay: '3s' }}></div>
-          <div className="absolute bottom-20 right-10 w-44 h-44 bg-category-teal/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '10s', animationDelay: '1.5s' }}></div>
-          <div className="absolute top-1/2 left-16 w-24 h-24 bg-category-pink/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8.5s', animationDelay: '2.5s' }}></div>
-          <div className="absolute bottom-1/4 right-1/4 w-38 h-38 bg-primary-glow/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7.5s', animationDelay: '0.5s' }}></div>
-          <div className="absolute top-1/4 left-1/2 w-30 h-30 bg-accent/15 rounded-full blur-xl animate-float" style={{ animationDuration: '6.5s', animationDelay: '3.5s' }}></div>
-          
-          {/* Grands cercles style DVD bouncing */}
-          <div className="absolute w-32 h-32 bg-primary/40 rounded-full blur-xl animate-dvd-bounce" style={{ animationDuration: '12s' }}></div>
-          <div className="absolute w-40 h-40 bg-accent/40 rounded-full blur-xl animate-dvd-bounce-2" style={{ animationDuration: '15s', animationDelay: '2s' }}></div>
-          <div className="absolute w-36 h-36 bg-category-purple/40 rounded-full blur-xl animate-dvd-bounce-3" style={{ animationDuration: '18s', animationDelay: '4s' }}></div>
-        </div>
-        
-        <div className="w-full max-w-6xl space-y-8 relative z-10">
+      <div className="h-screen bg-background flex items-center justify-center p-8">
+        <div className="w-full max-w-6xl space-y-12">
           {/* Logo centré */}
-          <div className="text-center animate-fade-in">
-            <div className="relative inline-block">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary blur-3xl rounded-full animate-pulse-soft opacity-60"></div>
-              <img src={logoMarket} alt="Logo" className="relative w-72 h-72 mx-auto object-contain animate-scale-in drop-shadow-2xl brightness-110" />
-            </div>
+          <div className="text-center">
+            <img src={logoMarket} alt="Logo" className="w-64 h-64 mx-auto object-contain" />
             
-            <div className="mt-8 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary blur-2xl opacity-40 animate-pulse-soft"></div>
-              <h1 className="relative text-[10rem] font-black tracking-tight animate-scale-in drop-shadow-2xl bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
-                Bienvenue
-              </h1>
-            </div>
+            <h1 className="mt-8 text-8xl font-bold tracking-tight text-foreground">
+              Bienvenue
+            </h1>
           </div>
 
           {/* Textes centrés entre logo et infos */}
-          <div className="text-center space-y-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <p className="text-6xl font-black text-primary drop-shadow-lg">
+          <div className="text-center space-y-4">
+            <p className="text-5xl font-bold text-foreground">
               Veuillez patienter
             </p>
-            <p className="text-4xl font-bold bg-gradient-to-r from-accent to-primary text-transparent bg-clip-text">
+            <p className="text-3xl text-muted-foreground">
               Un collaborateur va prendre votre commande
             </p>
           </div>
 
           {/* Promotion Banner */}
-          <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <div>
             <PromotionBanner />
           </div>
 
-          {/* Section infos (date, heure, température) - carrousel infini */}
-          <div className="relative overflow-hidden animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <div className="flex gap-4 animate-scroll-left">
-              {/* Premier set de cartes */}
-              {/* Date */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-primary/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Calendar className="h-5 w-5 text-primary" />
-                  </div>
-                  <p className="text-sm font-bold text-primary uppercase tracking-wide">Date</p>
-                </div>
-                <p className="text-base font-bold text-foreground leading-tight">
-                  {currentTime.toLocaleDateString('fr-BE', { 
-                    weekday: 'long', 
-                    day: '2-digit', 
-                    month: 'long', 
-                    year: 'numeric' 
-                  })}
-                </p>
+          {/* Section infos (date, heure, température) */}
+          <div className="grid grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Date */}
+            <div className="bg-card rounded-xl p-6 border border-border">
+              <div className="flex items-center gap-3 mb-3">
+                <Calendar className="h-6 w-6 text-primary" />
+                <p className="text-sm font-semibold text-primary uppercase">Date</p>
               </div>
+              <p className="text-lg font-semibold text-foreground">
+                {currentTime.toLocaleDateString('fr-BE', { 
+                  weekday: 'long', 
+                  day: '2-digit', 
+                  month: 'long', 
+                  year: 'numeric' 
+                })}
+              </p>
+            </div>
 
-              {/* Heure */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-accent/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-accent/10 rounded-lg">
-                    <Clock className="h-5 w-5 text-accent" />
-                  </div>
-                  <p className="text-sm font-bold text-accent uppercase tracking-wide">Heure</p>
-                </div>
-                <p className="text-3xl font-black text-foreground font-mono tabular-nums">
-                  {currentTime.toLocaleTimeString('fr-BE', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    second: '2-digit'
-                  })}
-                </p>
+            {/* Heure */}
+            <div className="bg-card rounded-xl p-6 border border-border">
+              <div className="flex items-center gap-3 mb-3">
+                <Clock className="h-6 w-6 text-primary" />
+                <p className="text-sm font-semibold text-primary uppercase">Heure</p>
               </div>
+              <p className="text-3xl font-bold text-foreground font-mono">
+                {currentTime.toLocaleTimeString('fr-BE', { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  second: '2-digit'
+                })}
+              </p>
+            </div>
 
-              {/* Température */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-category-orange/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-category-orange/10 rounded-lg">
-                    <Thermometer className="h-5 w-5 text-category-orange" />
-                  </div>
-                  <p className="text-sm font-bold text-category-orange uppercase tracking-wide">Jumet</p>
-                </div>
-                <p className="text-3xl font-black text-foreground tabular-nums">
-                  {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
-                </p>
+            {/* Température */}
+            <div className="bg-card rounded-xl p-6 border border-border">
+              <div className="flex items-center gap-3 mb-3">
+                <Thermometer className="h-6 w-6 text-primary" />
+                <p className="text-sm font-semibold text-primary uppercase">Jumet</p>
               </div>
-
-              {/* Deuxième set de cartes (copie pour effet infini) */}
-              {/* Date */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-primary/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Calendar className="h-5 w-5 text-primary" />
-                  </div>
-                  <p className="text-sm font-bold text-primary uppercase tracking-wide">Date</p>
-                </div>
-                <p className="text-base font-bold text-foreground leading-tight">
-                  {currentTime.toLocaleDateString('fr-BE', { 
-                    weekday: 'long', 
-                    day: '2-digit', 
-                    month: 'long', 
-                    year: 'numeric' 
-                  })}
-                </p>
-              </div>
-
-              {/* Heure */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-accent/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-accent/10 rounded-lg">
-                    <Clock className="h-5 w-5 text-accent" />
-                  </div>
-                  <p className="text-sm font-bold text-accent uppercase tracking-wide">Heure</p>
-                </div>
-                <p className="text-3xl font-black text-foreground font-mono tabular-nums">
-                  {currentTime.toLocaleTimeString('fr-BE', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    second: '2-digit'
-                  })}
-                </p>
-              </div>
-
-              {/* Température */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-category-orange/20 shadow-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-category-orange/10 rounded-lg">
-                    <Thermometer className="h-5 w-5 text-category-orange" />
-                  </div>
-                  <p className="text-sm font-bold text-category-orange uppercase tracking-wide">Jumet</p>
-                </div>
-                <p className="text-3xl font-black text-foreground tabular-nums">
-                  {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
-                </p>
-              </div>
+              <p className="text-3xl font-bold text-foreground">
+                {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
+              </p>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex justify-center animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <div className="px-8 py-3 bg-card/80 backdrop-blur-sm rounded-full border border-border/50 shadow-lg">
-              <p className="text-base text-muted-foreground font-medium">
-                Système de caisse développé par <span className="text-primary font-bold">Jlprod.be</span>
+          <div className="flex justify-center">
+            <div className="px-6 py-2 bg-card rounded-full border border-border">
+              <p className="text-sm text-muted-foreground">
+                Système de caisse développé par <span className="text-primary font-semibold">Jlprod.be</span>
               </p>
             </div>
           </div>
@@ -386,25 +304,19 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'completed') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-accent/10 via-background to-primary/10 flex items-center justify-center p-8">
-        <div className="text-center space-y-12 animate-bounce-in">
-          <div className="relative">
-            <div className="absolute inset-0 bg-accent/20 blur-3xl rounded-full animate-pulse-soft"></div>
-            <img src={logoMarket} alt="Logo" className="relative w-80 h-80 mx-auto object-contain drop-shadow-2xl" />
-          </div>
-          <div className="relative">
-            <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full"></div>
-            <CheckCircle2 className="relative w-48 h-48 mx-auto text-accent animate-bounce-in drop-shadow-2xl" style={{ animationDelay: '0.2s' }} />
-          </div>
-          <div className="space-y-8">
-            <h1 className="text-9xl font-black animate-fade-in gradient-text tracking-tight" style={{ animationDelay: '0.3s' }}>
+      <div className="min-h-screen bg-background flex items-center justify-center p-8">
+        <div className="text-center space-y-12">
+          <img src={logoMarket} alt="Logo" className="w-64 h-64 mx-auto object-contain" />
+          <CheckCircle2 className="w-32 h-32 mx-auto text-primary" />
+          <div className="space-y-6">
+            <h1 className="text-8xl font-bold text-foreground">
               Merci !
             </h1>
-            <p className="text-6xl animate-fade-in text-foreground font-bold" style={{ animationDelay: '0.5s' }}>
+            <p className="text-5xl text-foreground font-semibold">
               À bientôt !
             </p>
-            <div className="inline-block px-8 py-4 bg-card rounded-full border-2 border-accent shadow-glow-lg animate-fade-in" style={{ animationDelay: '0.7s' }}>
-              <p className="text-2xl text-accent font-bold">Passez une excellente journée !</p>
+            <div className="inline-block px-6 py-3 bg-card rounded-full border border-border">
+              <p className="text-xl text-foreground">Passez une excellente journée !</p>
             </div>
           </div>
         </div>
