@@ -1,6 +1,6 @@
 import { Product } from '@/hooks/useProducts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
-import { CheckCircle, AlertCircle, XCircle, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -125,22 +125,6 @@ export function Receipt({ sale }: ReceiptProps) {
           // Vérifier que le produit existe
           if (!item.product) return null;
           
-          // Déterminer l'indicateur de stock
-          const currentStock = item.product.stock || 0;
-          const minStock = item.product.min_stock || 0;
-          const afterSaleStock = currentStock - item.quantity;
-          
-          let stockColor = 'text-green-600';
-          let StockIcon = CheckCircle;
-          
-          if (afterSaleStock <= 0) {
-            stockColor = 'text-red-600';
-            StockIcon = XCircle;
-          } else if (afterSaleStock <= minStock) {
-            stockColor = 'text-orange-600';
-            StockIcon = AlertCircle;
-          }
-          
           return (
             <div key={index} className="mb-2">
               <div className="flex justify-between leading-tight">
@@ -155,13 +139,7 @@ export function Receipt({ sale }: ReceiptProps) {
                   {item.product.type === 'weight' ? 'kg' : 'x'}
                   {item.product.type === 'weight' ? '' : ` ${item.product.price.toFixed(2)}€`}
                 </span>
-                <div className="flex items-center gap-2">
-                  <div className={`flex items-center gap-1 ${stockColor}`}>
-                    <StockIcon size={12} />
-                    <span className="text-[9px]">{afterSaleStock.toFixed(item.product.type === 'weight' ? 1 : 0)}</span>
-                  </div>
-                  <span className="font-black">{item.is_gift ? 'OFFERT' : item.subtotal.toFixed(2)}</span>
-                </div>
+                <span className="font-black">{item.is_gift ? 'OFFERT' : item.subtotal.toFixed(2)}</span>
               </div>
               {item.discount && !item.is_gift && (
                 <div className="text-[9px] font-bold italic">

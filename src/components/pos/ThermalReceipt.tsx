@@ -1,7 +1,7 @@
 import { Product } from '@/hooks/useProducts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import logoMarket from '@/assets/logo-market.png';
-import { CheckCircle, AlertCircle, XCircle, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -184,22 +184,6 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           const qtyDisplay = item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0);
           const pricePerUnit = item.product.price.toFixed(2);
           
-          // Déterminer l'indicateur de stock
-          const currentStock = item.product.stock || 0;
-          const minStock = item.product.min_stock || 0;
-          const afterSaleStock = currentStock - item.quantity;
-          
-          let stockColor = '#22c55e'; // Vert par défaut
-          let StockIcon = CheckCircle;
-          
-          if (afterSaleStock <= 0) {
-            stockColor = '#ef4444'; // Rouge
-            StockIcon = XCircle;
-          } else if (afterSaleStock <= minStock) {
-            stockColor = '#f97316'; // Orange
-            StockIcon = AlertCircle;
-          }
-          
           return (
             <div key={index} style={{ marginBottom: '3px' }}>
               {/* Nom du produit ET infos sur la MÊME ligne */}
@@ -235,32 +219,17 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                 </span>
               </div>
               
-              {/* Ligne avec quantité, prix unitaire - REMISE + STOCK */}
+              {/* Ligne avec quantité, prix unitaire - REMISE */}
               <div style={{ 
                 fontSize: '11px',
-                fontWeight: '800',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
+                fontWeight: '800'
               }}>
-                <div>
-                  {qtyDisplay} {unitDisplay} x {pricePerUnit}€
-                  {item.discount && !item.is_gift && (
-                    <span style={{ fontStyle: 'italic', marginLeft: '5px' }}>
-                      REM -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
-                    </span>
-                  )}
-                </div>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '3px',
-                  fontSize: '10px',
-                  color: stockColor
-                }}>
-                  <StockIcon size={12} style={{ color: stockColor }} />
-                  <span>{afterSaleStock.toFixed(item.product.type === 'weight' ? 1 : 0)}</span>
-                </div>
+                {qtyDisplay} {unitDisplay} x {pricePerUnit}€
+                {item.discount && !item.is_gift && (
+                  <span style={{ fontStyle: 'italic', marginLeft: '5px' }}>
+                    REM -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
+                  </span>
+                )}
               </div>
             </div>
           );
