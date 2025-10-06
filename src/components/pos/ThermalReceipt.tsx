@@ -1,7 +1,7 @@
 import { Product } from '@/hooks/useProducts';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import logoMarket from '@/assets/logo-market.png';
-import { ExternalLink } from 'lucide-react';
+
 
 type DiscountType = 'percentage' | 'amount';
 
@@ -101,16 +101,6 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         boxSizing: 'border-box'
       }}
     >
-      {/* Bouton AFSCA en haut à droite */}
-      <a
-        href="https://favv-afsca.be/fr/produits"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors no-print"
-        style={{ fontSize: '10px', fontWeight: '700' }}
-      >
-        AFSCA <ExternalLink size={12} />
-      </a>
       {/* Logo centré */}
       <div className="text-center mb-2">
         <img 
