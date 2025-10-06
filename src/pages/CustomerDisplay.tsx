@@ -415,45 +415,30 @@ const CustomerDisplay = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background flex flex-col overflow-hidden">
       {/* Header fixe avec logo */}
-      <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-primary/95 via-accent/95 to-primary/95 backdrop-blur-md border-b-4 border-primary shadow-2xl p-6 z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
+      <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-primary/95 via-accent/95 to-primary/95 backdrop-blur-md border-b-2 border-primary shadow-xl p-3 z-10">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="relative">
-            <div className="absolute inset-0 bg-white/20 blur-xl rounded-full"></div>
-            <img src={logoMarket} alt="Logo" className="relative h-24 object-contain drop-shadow-2xl brightness-110" />
+            <img src={logoMarket} alt="Logo" className="h-14 object-contain drop-shadow-lg" />
           </div>
           <div className="text-center flex-1">
-            <div className="inline-block px-8 py-3 bg-white/20 rounded-full border-2 border-white/40 mb-2 backdrop-blur-sm">
-              <h1 className="text-6xl font-black text-white tracking-tight drop-shadow-lg">
+            <div className="inline-block px-4 py-1.5 bg-white/20 rounded-full border border-white/40 backdrop-blur-sm">
+              <h1 className="text-2xl font-black text-white tracking-tight">
                 {displayState.isInvoice ? 'FACTURE' : 'TICKET'} {displayState.saleNumber || 'EN COURS'}
               </h1>
             </div>
             {displayState.isInvoice && displayState.customer && (
-              <p className="text-3xl text-white font-bold mt-2 drop-shadow-md">{displayState.customer.name}</p>
+              <p className="text-lg text-white font-bold mt-1">{displayState.customer.name}</p>
             )}
-            <div className="text-xl text-white/90 mt-2 font-bold drop-shadow-md">
-              {currentTime.toLocaleDateString('fr-BE', { 
-                weekday: 'long', 
-                day: '2-digit', 
-                month: 'long', 
-                year: 'numeric' 
-              })}
-              {' • '}
-              {currentTime.toLocaleTimeString('fr-BE', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit'
-              })}
-            </div>
           </div>
-          <div className="text-right bg-white/20 rounded-2xl px-8 py-4 border-2 border-white/40 backdrop-blur-sm">
-            <p className="text-base text-white/90 uppercase tracking-wide font-bold">Caisse</p>
-            <p className="text-4xl font-black text-white drop-shadow-lg">{displayState.cashierName || 'N/A'}</p>
+          <div className="text-right bg-white/20 rounded-lg px-3 py-2 border border-white/40 backdrop-blur-sm">
+            <p className="text-xs text-white/90 uppercase tracking-wide font-bold">Caisse</p>
+            <p className="text-lg font-black text-white">{displayState.cashierName || 'N/A'}</p>
           </div>
         </div>
       </div>
 
       {/* Zone scrollable pour les articles - avec padding top et bottom pour header/footer fixes */}
-      <div className="flex-1 overflow-y-auto pt-40 pb-60 px-6">
+      <div className="flex-1 overflow-y-auto pt-24 pb-32 px-6">
         <div className="max-w-7xl mx-auto space-y-4">
           {displayState.items.map((item, index) => {
             const subtotal = calculateSubtotal(item);
@@ -512,16 +497,14 @@ const CustomerDisplay = () => {
       </div>
 
       {/* Footer fixe avec total en bas */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary via-accent to-primary shadow-2xl z-10 border-t-4 border-white/20">
-        <div className="max-w-7xl mx-auto p-8">
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary via-accent to-primary shadow-xl z-10 border-t-2 border-white/20">
+        <div className="max-w-7xl mx-auto p-4">
           <div className="flex justify-center items-center">
             {/* Total TTC centré */}
-            <div className="text-center">
-              <div className="bg-white/20 backdrop-blur-md rounded-3xl px-10 py-6 border-4 border-white/50 shadow-glow-lg">
-                <div className="text-3xl font-black text-white mb-3 uppercase tracking-widest drop-shadow-lg">TOTAL À PAYER</div>
-                <div className="text-7xl font-black text-white tracking-tighter leading-none tabular-nums drop-shadow-2xl animate-pulse-soft">
-                  {getTotalTTC().toFixed(2)} €
-                </div>
+            <div className="bg-white/20 backdrop-blur-md rounded-2xl px-8 py-4 border-2 border-white/40 shadow-lg">
+              <div className="text-xl font-black text-white mb-2 uppercase tracking-wide">TOTAL À PAYER</div>
+              <div className="text-5xl font-black text-white tracking-tight leading-none tabular-nums">
+                {getTotalTTC().toFixed(2)} €
               </div>
             </div>
           </div>
