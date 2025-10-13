@@ -230,6 +230,37 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
 
             <div style={{ borderTop: '2px solid #000', margin: '6px 0' }}></div>
 
+            {/* Totaux récapitulatifs */}
+            <div style={{ marginBottom: '6px', paddingRight: '24px', backgroundColor: '#E0F2FE', padding: '8px', margin: '0 -8px 6px -8px', border: '2px solid #0EA5E9' }}>
+              <div style={{ fontSize: '15px', fontWeight: '900', marginBottom: '6px', textAlign: 'center', color: '#0369A1' }}>
+                TOTAUX RECAPITULATIFS
+              </div>
+              
+              {/* Total Hors TVA */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontSize: '15px', fontWeight: '900', paddingBottom: '3px' }}>
+                <span style={{ fontWeight: '900' }}>Total Hors TVA:</span>
+                <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>
+                  {Object.values(reportData.vatByRate).reduce((sum, amounts) => sum + amounts.totalHT, 0).toFixed(2)}€
+                </span>
+              </div>
+              
+              {/* Total TVA */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontSize: '15px', fontWeight: '900', paddingBottom: '3px' }}>
+                <span style={{ fontWeight: '900' }}>Total TVA:</span>
+                <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>
+                  {Object.values(reportData.vatByRate).reduce((sum, amounts) => sum + amounts.totalVAT, 0).toFixed(2)}€
+                </span>
+              </div>
+              
+              {/* Total TVAC */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '900', borderTop: '2px solid #0EA5E9', paddingTop: '6px', marginTop: '3px', color: '#0369A1' }}>
+                <span style={{ fontWeight: '900' }}>TOTAL TVAC:</span>
+                <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{reportData.totalSales.toFixed(2)}€</span>
+              </div>
+            </div>
+
+            <div style={{ borderTop: '2px solid #000', margin: '6px 0' }}></div>
+
             {/* État caisse */}
             {todayReport && (
               <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
