@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { 
-  Bell, 
-  Lock, 
+  Lock,
   LogOut, 
   ShoppingCart, 
   TrendingUp, 
@@ -23,10 +22,6 @@ import {
 } from 'lucide-react';
 import logoHeader from '@/assets/logo-gul-reyhan-header.png';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUnreadNotificationsCount } from '@/hooks/useNotifications';
-import { NotificationPanel } from '@/components/notifications/NotificationPanel';
-import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -43,8 +38,6 @@ interface TopNavigationProps {
 export function TopNavigation({ onLockScreen }: TopNavigationProps) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [showNotifications, setShowNotifications] = useState(false);
-  const { data: unreadCount = 0 } = useUnreadNotificationsCount();
 
   const handleSignOut = async () => {
     await signOut();
@@ -144,26 +137,6 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-1 ml-auto">
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="h-10 w-10 text-white hover:bg-white/20"
-            >
-              <Bell className="h-4 w-4" />
-              {unreadCount > 0 && (
-                <Badge variant="destructive" className="absolute -top-0.5 -right-0.5 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
-                  {unreadCount}
-                </Badge>
-              )}
-            </Button>
-            <NotificationPanel 
-              isOpen={showNotifications} 
-              onClose={() => setShowNotifications(false)} 
-            />
-          </div>
-
           <Button
             variant="ghost"
             size="icon"

@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { ProtectedLayout } from "./components/layout/ProtectedLayout";
-import { GlobalAlerts } from "./components/alerts/GlobalAlerts";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -46,7 +45,6 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
-        <GlobalAlerts />
         <Toaster />
         <Sonner />
         <ErrorBoundary>
