@@ -101,31 +101,13 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         boxSizing: 'border-box'
       }}
     >
-      {/* Logo centré */}
-      <div className="text-center mb-2">
-        <img 
-          src={logoMarket} 
-          alt="Logo"
-          style={{ 
-            width: '180px', 
-            height: 'auto', 
-            margin: '0 auto',
-            display: 'block'
-          }} 
-        />
+      {/* Company Info - simple */}
+      <div className="text-center mb-2" style={{ fontWeight: '900', fontSize: '12px' }}>
+        <div style={{ fontSize: '14px', marginBottom: '2px' }}>{settings.name}</div>
+        <div style={{ fontSize: '11px' }}>TVA: {settings.vat_number}</div>
       </div>
 
-      {/* Company Info - centrée */}
-      <div className="text-center mb-2" style={{ fontWeight: '900', fontSize: '12.3px' }}>
-        <div style={{ lineHeight: '1.2' }}>
-          <div>{settings.address}</div>
-          <div>{settings.postal_code} {settings.city}</div>
-          {settings.phone && <div>Tel: {settings.phone}</div>}
-          <div style={{ marginTop: '1px' }}>TVA: {settings.vat_number}</div>
-        </div>
-      </div>
-
-      <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
+      <div style={{ borderTop: '1px dashed #000', margin: '4px 0' }}></div>
 
       {/* Customer info - Only for invoices */}
       {isInvoice && sale.customer && (
@@ -144,25 +126,20 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         </>
       )}
 
-      {/* Sale info */}
-      <div style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900', paddingRight: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900' }}>
-          <span>{isInvoice ? 'FACTURE' : 'TICKET'} N°:</span>
-          <span style={{ fontSize: '13.7px' }}>{sale.saleNumber || sale.sale_number}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1px' }}>
-          <span>DATE:</span>
-          <span style={{ fontSize: '10.9px' }}>{saleDate.toLocaleString('fr-BE', { 
+      {/* Sale info - compact */}
+      <div style={{ fontSize: '11px', marginBottom: '4px', fontWeight: '900', paddingRight: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>{sale.saleNumber || sale.sale_number}</span>
+          <span>{saleDate.toLocaleString('fr-BE', { 
             day: '2-digit', 
-            month: '2-digit', 
-            year: 'numeric',
+            month: '2-digit',
             hour: '2-digit',
             minute: '2-digit'
           })}</span>
         </div>
       </div>
 
-      <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
+      <div style={{ borderTop: '1px dashed #000', margin: '4px 0' }}></div>
 
       {/* Items - Style Lidl */}
       <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
@@ -226,33 +203,17 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         })}
       </div>
 
-      <div style={{ borderTop: '1.4px solid #000', margin: '6px 0' }}></div>
+      <div style={{ borderTop: '1px solid #000', margin: '4px 0' }}></div>
 
-      {/* Totaux */}
-      <div style={{ fontSize: '13.7px', marginBottom: '4px', fontWeight: '900', paddingRight: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px', gap: '3px' }}>
-          <span>SOUS-TOTAL HT</span>
-          <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{sale.subtotal.toFixed(2)}€</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px', gap: '3px' }}>
-          <span>TVA TOTALE</span>
-          <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{(sale.totalVat || sale.total_vat || 0).toFixed(2)}€</span>
-        </div>
-        {(sale.totalDiscount || sale.total_discount || 0) > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px', gap: '3px' }}>
-            <span>REMISE</span>
-            <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>-{(sale.totalDiscount || sale.total_discount || 0).toFixed(2)}€</span>
-          </div>
-        )}
-      </div>
-
-      {/* Total principal - Style Lidl */}
-      <div style={{ borderTop: '2.8px solid #000', borderBottom: '2.8px solid #000', padding: '4px 24px', margin: '6px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '900', gap: '8px' }}>
+      {/* Total principal - simplifié */}
+      <div style={{ padding: '4px 0', margin: '4px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '20px', fontWeight: '900', gap: '8px', paddingRight: '24px' }}>
           <span>TOTAL</span>
           <span style={{ whiteSpace: 'nowrap' }}>{sale.total.toFixed(2)}€</span>
         </div>
       </div>
+      
+      <div style={{ borderTop: '1px solid #000', margin: '4px 0' }}></div>
 
       {/* Payment */}
       <div style={{ fontSize: '13.7px', marginTop: '6px', marginBottom: '6px', fontWeight: '900', paddingRight: '24px' }}>
@@ -302,26 +263,12 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         )}
       </div>
 
-      <div style={{ borderTop: '1.4px dashed #000', margin: '7px 0' }}></div>
-
-      {/* Footer */}
-      <div className="text-center" style={{ marginTop: '7px', fontWeight: '900' }}>
-        {isInvoice ? (
-          <div style={{ fontSize: '12.3px' }}>
-            <div style={{ fontWeight: '900', marginBottom: '2px' }}>FACTURE</div>
-            <div>Payable sous 30 jours</div>
-          </div>
-        ) : (
-          <div>
-            <div style={{ fontSize: '17.8px', fontWeight: '900', letterSpacing: '0.7px', marginBottom: '2px' }}>
-              MERCI DE VOTRE VISITE
-            </div>
-            <div style={{ fontSize: '15px', fontWeight: '900' }}>
-              A BIENTOT !
-            </div>
-          </div>
-        )}
-        <div style={{ fontSize: '10.9px', marginTop: '6px', color: '#666', fontWeight: '900' }}>
+      {/* Footer - simple */}
+      <div className="text-center" style={{ marginTop: '6px', fontWeight: '900' }}>
+        <div style={{ fontSize: '14px', marginBottom: '2px' }}>
+          MERCI
+        </div>
+        <div style={{ fontSize: '10px', color: '#666' }}>
           www.JLprod.be
         </div>
       </div>
