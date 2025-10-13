@@ -181,10 +181,30 @@ export function useCloseDay() {
 }
 
 export async function getTodayReportData(): Promise<ReportData> {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
+  // Récupérer le rapport du jour pour connaître l'heure d'ouverture
+  const todayDate = new Date().toISOString().split('T')[0];
+  
+  const { data: todayReport } = await supabase
+    .from('daily_reports')
+    .select('*')
+    .eq('report_date', todayDate)
+    .is('closing_amount', null)
+    .limit(1)
+    .maybeSingle();
+
+  // Si la journée est ouverte, utiliser l'heure d'ouverture, sinon utiliser minuit
+  let startTime: string;
+  if (todayReport) {
+    startTime = todayReport.created_at;
+  } else {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    startTime = today.toISOString();
+  }
+
+  const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
 
   // Exclure les ventes annulées (conformité légale belge)
   const { data: sales, error } = await supabase
@@ -193,7 +213,7 @@ export async function getTodayReportData(): Promise<ReportData> {
       *,
       sale_items (*)
     `)
-    .gte('date', today.toISOString())
+    .gte('date', startTime)
     .lt('date', tomorrow.toISOString())
     .eq('is_cancelled', false);
 
