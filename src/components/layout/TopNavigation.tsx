@@ -22,7 +22,7 @@ import {
   Truck,
 } from 'lucide-react';
 import logoHeader from '@/assets/logo-gul-reyhan-header.png';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useUnreadNotificationsCount } from '@/hooks/useNotifications';
 import { NotificationPanel } from '@/components/notifications/NotificationPanel';
 import { useState } from 'react';

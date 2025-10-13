@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useCustomers } from './useCustomers';
 import { useCreateNotification } from './useNotifications';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MILESTONE_THRESHOLDS = [100, 250, 500, 1000, 2500, 5000];
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useProducts } from './useProducts';
 import { useCreateNotification } from './useNotifications';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useStockAlerts = () => {
   const { data: products = [] } = useProducts();

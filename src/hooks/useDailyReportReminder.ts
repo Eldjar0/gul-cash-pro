@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useDailyReports } from './useDailyReports';
 import { useCreateNotification } from './useNotifications';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { format, isToday } from 'date-fns';
 
 export const useDailyReportReminder = () => {

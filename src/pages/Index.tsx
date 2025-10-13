@@ -26,7 +26,7 @@ import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
 import { ReportXDialog } from '@/components/pos/ReportXDialog';
 import { CloseDayDialog } from '@/components/pos/CloseDayDialog';
 import { Product, useProducts } from '@/hooks/useProducts';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCreateSale, useSales } from '@/hooks/useSales';
 import { useCategories } from '@/hooks/useCategories';
 import { Customer, useCustomers } from '@/hooks/useCustomers';

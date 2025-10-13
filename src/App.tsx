@@ -8,6 +8,7 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { ProtectedLayout } from "./components/layout/ProtectedLayout";
 import { GlobalAlerts } from "./components/alerts/GlobalAlerts";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { AuthProvider } from "./contexts/AuthContext";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -43,12 +44,13 @@ const LoadingFallback = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <GlobalAlerts />
-      <Toaster />
-      <Sonner />
-      <ErrorBoundary>
-        <BrowserRouter>
+    <AuthProvider>
+      <TooltipProvider>
+        <GlobalAlerts />
+        <Toaster />
+        <Sonner />
+        <ErrorBoundary>
+          <BrowserRouter>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
             {/* Public routes */}
@@ -91,6 +93,7 @@ const App = () => (
       </BrowserRouter>
       </ErrorBoundary>
     </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

@@ -3,7 +3,7 @@ import { useProducts } from './useProducts';
 import { useProductBatches } from './useProductBatches';
 import { usePromotions } from './usePromotions';
 import { useCreateNotification } from './useNotifications';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { differenceInDays, parseISO, isWithinInterval, addDays } from 'date-fns';
 
 /**

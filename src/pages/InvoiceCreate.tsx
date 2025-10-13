@@ -27,7 +27,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { useCreateSale } from '@/hooks/useSales';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { downloadInvoicePDF } from '@/utils/generateInvoicePDF';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';

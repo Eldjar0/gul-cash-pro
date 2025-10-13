@@ -58,7 +58,7 @@ import {
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { useWeather } from '@/hooks/useWeather';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { PRODUCT_UNITS } from '@/data/units';
 import { DialogDescription } from '@/components/ui/dialog';
 import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
