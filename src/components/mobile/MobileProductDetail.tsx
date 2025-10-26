@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Edit, Scan, Plus, Trash2, Star, Package, TrendingUp, AlertTriangle, History, BarChart3, Tag } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Edit, Scan, Plus, Trash2, Star, Package, TrendingUp, AlertTriangle, History, BarChart3, Tag, Keyboard } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { useProductBarcodes, useAddProductBarcode, useDeleteProductBarcode, useSetPrimaryBarcode } from '@/hooks/useProductBarcodes';
 import { useCategories } from '@/hooks/useCategories';
@@ -23,6 +27,8 @@ export const MobileProductDetail = () => {
   const deleteBarcode = useDeleteProductBarcode();
   const setPrimary = useSetPrimaryBarcode();
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [manualInputOpen, setManualInputOpen] = useState(false);
+  const [manualBarcode, setManualBarcode] = useState('');
 
   const product = products.find(p => p.id === id);
   const category = categories.find(c => c.id === product?.category_id);
@@ -73,6 +79,18 @@ export const MobileProductDetail = () => {
 
   const handleSetPrimary = async (barcodeId: string) => {
     await setPrimary.mutateAsync({ id: barcodeId, productId: product.id });
+  };
+
+  const handleManualSubmit = async () => {
+    const trimmedBarcode = manualBarcode.trim();
+    if (!trimmedBarcode) {
+      toast.error('Veuillez saisir un code-barres');
+      return;
+    }
+    
+    await handleAddBarcode(trimmedBarcode);
+    setManualBarcode('');
+    setManualInputOpen(false);
   };
 
   return (
@@ -246,14 +264,27 @@ export const MobileProductDetail = () => {
                 <Scan className="h-4 w-4" />
                 Codes-barres ({barcodes.length})
               </h3>
-              <Button 
-                size="sm"
-                onClick={() => setScannerOpen(true)}
-                className="gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Ajouter
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Ajouter
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setScannerOpen(true)}>
+                    <Scan className="h-4 w-4 mr-2" />
+                    Scanner
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setManualInputOpen(true)}>
+                    <Keyboard className="h-4 w-4 mr-2" />
+                    Saisie manuelle
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             <div className="space-y-2">
@@ -365,6 +396,47 @@ export const MobileProductDetail = () => {
           setScannerOpen(false);
         }}
       />
+
+      {/* Dialog de saisie manuelle */}
+      <Dialog open={manualInputOpen} onOpenChange={setManualInputOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Saisir un code-barres</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="manual-barcode">Code-barres</Label>
+              <Input
+                id="manual-barcode"
+                placeholder="Ex: 3700123456789"
+                value={manualBarcode}
+                onChange={(e) => setManualBarcode(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleManualSubmit();
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setManualBarcode('');
+                setManualInputOpen(false);
+              }}
+            >
+              Annuler
+            </Button>
+            <Button onClick={handleManualSubmit}>
+              Ajouter
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MobileLayout>
   );
 };
