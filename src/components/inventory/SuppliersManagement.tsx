@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, Phone, Mail, MapPin, Search, Truck, FileText, Package, Eye, Printer } from 'lucide-react';
 import { useSuppliers, useSaveSuppliers, Supplier } from '@/hooks/useSuppliers';
@@ -333,8 +333,13 @@ export const SuppliersManagement = () => {
       <Dialog open={supplierProductsOpen} onOpenChange={setSupplierProductsOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>Produits de {viewingSupplier?.name}</span>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle>Produits de {viewingSupplier?.name}</DialogTitle>
+                <DialogDescription>
+                  Liste des produits liés à ce fournisseur avec leur état de stock
+                </DialogDescription>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -344,7 +349,7 @@ export const SuppliersManagement = () => {
                 <Printer className="h-4 w-4" />
                 Imprimer État des Stocks
               </Button>
-            </DialogTitle>
+            </div>
           </DialogHeader>
           
           <div className="space-y-4 overflow-y-auto max-h-[60vh]">
