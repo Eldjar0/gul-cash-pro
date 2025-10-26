@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Edit, Plus, X, TrendingUp, Tag, FolderKanban, Barcode, Package } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
+import { ProductInfoCard } from '@/components/products/ProductInfoCard';
 
 interface MobilePhysicalScanDialogProps {
   open: boolean;
@@ -61,56 +62,8 @@ export function MobilePhysicalScanDialog({
         <div className="flex flex-col gap-3 py-2">
           {product ? (
             <>
-              {/* Informations du produit */}
-              <Card className="p-4 bg-gradient-to-br from-primary/5 to-secondary/5">
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="text-lg font-bold">{product.name}</h3>
-                    {product.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{product.description}</p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-lg font-bold px-3 py-1">
-                      {product.price.toFixed(2)}€
-                    </Badge>
-                    <Badge variant="outline">
-                      {product.type === 'weight' ? 'Au kilo' : 'À l\'unité'}
-                    </Badge>
-                    {product.vat_rate && (
-                      <Badge variant="outline">TVA {product.vat_rate}%</Badge>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t">
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Stock actuel</p>
-                      <p className="text-lg font-bold flex items-center gap-1">
-                        <Package className="h-4 w-4" />
-                        {product.stock ?? 0} {product.unit || 'unité'}
-                      </p>
-                    </div>
-                    {product.min_stock !== undefined && (
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">Stock min</p>
-                        <p className="text-lg font-semibold text-muted-foreground">
-                          {product.min_stock} {product.unit || 'unité'}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {product.barcode && (
-                    <div className="pt-2 border-t">
-                      <p className="text-xs text-muted-foreground mb-1">Code-barres</p>
-                      <Badge variant="secondary" className="font-mono">
-                        {product.barcode}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              </Card>
+              {/* Informations détaillées du produit */}
+              <ProductInfoCard product={product} variant="compact" showImage={true} />
 
               {/* Actions principales */}
               <div className="space-y-2">

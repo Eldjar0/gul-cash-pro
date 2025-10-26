@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Eye, Plus, X } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
+import { ProductInfoCard } from '@/components/products/ProductInfoCard';
 
 interface PhysicalScanActionDialogProps {
   open: boolean;
@@ -65,24 +66,29 @@ export function PhysicalScanActionDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            Code-barres scanné: {barcode}
+            Code-barres scanné
           </DialogTitle>
-          <DialogDescription>
-            {product 
-              ? `Produit trouvé: ${product.name} - ${product.price.toFixed(2)}€`
-              : "Produit non trouvé dans la base de données"}
+          <DialogDescription className="font-mono text-base">
+            {barcode}
           </DialogDescription>
         </DialogHeader>
         
         <div className="flex flex-col gap-3 py-4">
           {product ? (
             <>
-              <div className="text-center mb-4">
-                <p className="text-sm text-muted-foreground">
-                  Ajout automatique dans <span className="text-2xl font-bold text-primary">{countdown}</span> secondes
+              {/* Informations détaillées du produit */}
+              <ProductInfoCard product={product} variant="full" showImage={true} />
+
+              {/* Countdown */}
+              <div className="text-center p-4 bg-primary/5 rounded-lg border-2 border-primary/20 animate-pulse">
+                <p className="text-sm text-muted-foreground mb-1">
+                  Ajout automatique dans
                 </p>
+                <p className="text-4xl font-bold text-primary">{countdown}</p>
+                <p className="text-xs text-muted-foreground mt-1">secondes</p>
               </div>
 
+              {/* Actions */}
               <Button
                 size="lg"
                 className="w-full gap-2 h-16 text-lg"
@@ -104,9 +110,12 @@ export function PhysicalScanActionDialog({
             </>
           ) : (
             <>
-              <div className="text-center mb-4 p-4 bg-destructive/10 rounded-lg">
-                <p className="text-sm text-destructive font-medium">
-                  Aucun produit trouvé avec ce code-barres
+              <div className="text-center mb-4 p-6 bg-destructive/10 rounded-lg border-2 border-destructive/20">
+                <p className="text-lg text-destructive font-bold mb-2">
+                  ⚠️ Produit non trouvé
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Aucun produit avec ce code-barres
                 </p>
               </div>
 

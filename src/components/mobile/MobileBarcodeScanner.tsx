@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, Camera, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Camera, CheckCircle, AlertCircle, Flashlight, FlashlightOff } from 'lucide-react';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { Capacitor } from '@capacitor/core';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { supabase } from '@/integrations/supabase/client';
 import { useMobileScan } from '@/hooks/useMobileScan';
+import { toast } from 'sonner';
 
 interface MobileBarcodeScannerProps {
   open: boolean;
@@ -23,6 +24,8 @@ export const MobileBarcodeScanner = ({ open, onClose, onProductFound, onProductN
   const audioContextRef = useRef<AudioContext | null>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const isNative = Capacitor.isNativePlatform();
+  const [isTorchOn, setIsTorchOn] = useState(false);
+  const [isTorchAvailable, setIsTorchAvailable] = useState(false);
   
   // Initialiser le contexte audio
   useEffect(() => {
@@ -82,8 +85,62 @@ export const MobileBarcodeScanner = ({ open, onClose, onProductFound, onProductN
     oscillator.stop(ctx.currentTime + 0.5);
     
     // Vibration longue
-    if (navigator.vibrate) navigator.vibrate(200);
+    if (navigator.vibrate) navigator.vibrate(300);
   };
+
+  // Gestion de la lampe torche
+  const toggleTorch = async () => {
+    if (isNative) {
+      try {
+        await BarcodeScanner.toggleTorch();
+        setIsTorchOn(!isTorchOn);
+      } catch (error) {
+        console.error('Error toggling torch:', error);
+        toast.error('Erreur lors de l\'activation de la lampe');
+      }
+    } else {
+      // Pour le web, utiliser MediaStream API
+      try {
+        if (videoRef.current?.srcObject) {
+          const stream = videoRef.current.srcObject as MediaStream;
+          const track = stream.getVideoTracks()[0];
+          const capabilities = track.getCapabilities() as any;
+          
+          if (capabilities.torch) {
+            await track.applyConstraints({
+              advanced: [{ torch: !isTorchOn } as any]
+            });
+            setIsTorchOn(!isTorchOn);
+          } else {
+            toast.info('Lampe torche non disponible sur ce navigateur');
+          }
+        }
+      } catch (error) {
+        console.error('Error toggling torch on web:', error);
+        toast.error('Erreur lors de l\'activation de la lampe');
+      }
+    }
+  };
+
+  // Vérifier la disponibilité de la torche
+  useEffect(() => {
+    const checkTorch = async () => {
+      if (isNative) {
+        try {
+          const available = await BarcodeScanner.isTorchAvailable();
+          setIsTorchAvailable(available.available);
+        } catch (error) {
+          console.error('Error checking torch:', error);
+        }
+      } else {
+        // Pour le web, vérifier lors de l'ouverture de la caméra
+        setIsTorchAvailable(false);
+      }
+    };
+    if (open) {
+      checkTorch();
+    }
+  }, [open, isNative]);
 
   const handleScan = async (barcode: string) => {
     // Anti-duplication via le store
@@ -254,6 +311,22 @@ export const MobileBarcodeScanner = ({ open, onClose, onProductFound, onProductN
                 className="w-full h-full object-cover"
                 playsInline
               />
+            )}
+            
+            {/* Bouton torche */}
+            {mobileScan.isScanning && isTorchAvailable && (
+              <Button
+                variant={isTorchOn ? "default" : "outline"}
+                size="icon"
+                className={`absolute top-4 right-4 z-50 ${isTorchOn && 'bg-yellow-500 hover:bg-yellow-600 text-white shadow-lg'}`}
+                onClick={toggleTorch}
+              >
+                {isTorchOn ? (
+                  <Flashlight className="h-5 w-5" />
+                ) : (
+                  <FlashlightOff className="h-5 w-5" />
+                )}
+              </Button>
             )}
             
             {/* Overlay avec feedback visuel */}
