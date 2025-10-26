@@ -12,7 +12,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { toast } from 'sonner';
 import { generateSuppliersPDF } from '@/utils/generateSuppliersPDF';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 export const SuppliersManagement = () => {
   const { data: suppliers = [], isLoading } = useSuppliers();
@@ -163,7 +163,7 @@ export const SuppliersManagement = () => {
       `${(p.price || 0).toFixed(2)} €`
     ]);
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: supplier.phone ? 63 : 56,
       head: [['Produit', 'Code-barres', 'Stock', 'Stock Min', 'État', 'Prix']],
       body: tableData,
