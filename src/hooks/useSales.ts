@@ -105,6 +105,7 @@ export const useCreateSale = () => {
           customer_id: saleData.customer_id,
           cashier_id: saleData.cashier_id,
           sale_number: saleNumber as string,
+          source: (saleData as any).source || 'pos', // Support source field (mobile or pos)
         })
         .select()
         .single();

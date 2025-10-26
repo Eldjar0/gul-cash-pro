@@ -534,7 +534,7 @@ export default function Documents() {
 
         {/* Tabs */}
         <Tabs defaultValue="sales" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="sales" className="gap-2">
               <Receipt className="h-4 w-4" />
               <span className="hidden sm:inline">Ventes</span>
@@ -554,10 +554,6 @@ export default function Documents() {
             <TabsTrigger value="refunds" className="gap-2">
               <Undo2 className="h-4 w-4" />
               <span className="hidden sm:inline">Remboursements</span>
-            </TabsTrigger>
-            <TabsTrigger value="mobile-sales" className="gap-2">
-              <Smartphone className="h-4 w-4" />
-              <span className="hidden sm:inline">Ventes Mobile</span>
             </TabsTrigger>
           </TabsList>
 
@@ -602,7 +598,15 @@ export default function Documents() {
                         <TableRow key={sale.id} className={sale.is_cancelled ? 'bg-red-50 opacity-60' : ''}>
                           <TableCell className="font-mono font-semibold">
                             <div className="flex flex-col gap-1">
-                              <span>{sale.sale_number}</span>
+                              <div className="flex items-center gap-2">
+                                <span>{sale.sale_number}</span>
+                                {(sale as any).source === 'mobile' && (
+                                  <Badge variant="outline" className="gap-1 text-xs">
+                                    <Smartphone className="h-3 w-3" />
+                                    Mobile
+                                  </Badge>
+                                )}
+                              </div>
                               {sale.is_cancelled && (
                                 <Badge variant="destructive" className="text-xs w-fit">ANNULÉE</Badge>
                               )}
@@ -918,116 +922,6 @@ export default function Documents() {
             </ScrollArea>
           </TabsContent>
 
-          {/* Onglet Ventes Mobile */}
-          <TabsContent value="mobile-sales" className="space-y-4">
-            <Alert className="bg-purple-50 border-purple-200">
-              <Smartphone className="h-4 w-4 text-purple-600" />
-              <AlertDescription className="text-purple-800">
-                <strong>Ventes effectuées via l'application mobile</strong> - Ces commandes sont créées par les vendeurs sur le terrain.
-              </AlertDescription>
-            </Alert>
-
-            <Card className="bg-white overflow-hidden">
-              <div className="overflow-x-auto">
-                <ScrollArea className="h-[calc(100vh-400px)]">
-                  {mobileOrdersLoading ? (
-                    <div className="flex justify-center items-center py-12">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                    </div>
-                  ) : mobileOrders.length === 0 ? (
-                    <Card className="p-12 bg-white text-center m-4">
-                      <Smartphone className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">Aucune vente mobile trouvée</p>
-                    </Card>
-                  ) : (
-                    <div className="grid gap-4 p-4">
-                      {mobileOrders.map((order) => (
-                        <Card key={order.id} className="hover:shadow-md transition-all">
-                          <div className="p-6">
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="flex gap-4 flex-1">
-                                <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center">
-                                  <Smartphone className="h-8 w-8 text-purple-600" />
-                                </div>
-                                
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <span className="font-mono font-bold text-lg">{order.order_number}</span>
-                                    <Badge variant={
-                                      order.status === 'completed' ? 'default' : 
-                                      order.status === 'cancelled' ? 'destructive' : 
-                                      'secondary'
-                                    }>
-                                      {order.status === 'completed' ? 'Complétée' : 
-                                       order.status === 'cancelled' ? 'Annulée' : 
-                                       'En attente'}
-                                    </Badge>
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-2 gap-4 text-sm">
-                                    {order.customer_name && (
-                                      <div className="flex items-center gap-2 text-muted-foreground">
-                                        <User className="h-4 w-4" />
-                                        <span>{order.customer_name}</span>
-                                      </div>
-                                    )}
-                                    {order.customer_phone && (
-                                      <div className="flex items-center gap-2 text-muted-foreground">
-                                        <span>{order.customer_phone}</span>
-                                      </div>
-                                    )}
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                      <Calendar className="h-4 w-4" />
-                                      <span>{format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                      <Package className="h-4 w-4" />
-                                      <span>{order.items.length} article{order.items.length > 1 ? 's' : ''}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div className="text-right">
-                                <div className="text-2xl font-bold text-primary">
-                                  {order.total_amount.toFixed(2)}€
-                                </div>
-                              </div>
-                            </div>
-
-                            {order.notes && (
-                              <div className="mt-3 p-3 bg-muted rounded text-sm">
-                                <span className="font-semibold">Notes: </span>
-                                {order.notes}
-                              </div>
-                            )}
-
-                            {/* Liste des articles */}
-                            <div className="mt-4 border-t pt-4">
-                              <p className="text-sm font-semibold mb-2">Articles commandés:</p>
-                              <div className="space-y-2">
-                                {order.items.map((item, idx) => (
-                                  <div key={idx} className="flex justify-between items-center text-sm p-2 bg-muted/50 rounded">
-                                    <div>
-                                      <span className="font-medium">{item.product_name}</span>
-                                      <span className="text-muted-foreground ml-2">× {item.quantity}</span>
-                                    </div>
-                                    <div className="font-semibold">
-                                      {item.total_price.toFixed(2)}€
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
-              </div>
-            </Card>
-          </TabsContent>
         </Tabs>
       </div>
 

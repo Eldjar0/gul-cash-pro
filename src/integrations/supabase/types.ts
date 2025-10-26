@@ -1931,6 +1931,7 @@ export type Database = {
           payment_methods: Json | null
           payment_split: Json | null
           sale_number: string
+          source: string | null
           subtotal: number
           total: number
           total_discount: number | null
@@ -1954,6 +1955,7 @@ export type Database = {
           payment_methods?: Json | null
           payment_split?: Json | null
           sale_number: string
+          source?: string | null
           subtotal: number
           total: number
           total_discount?: number | null
@@ -1977,6 +1979,7 @@ export type Database = {
           payment_methods?: Json | null
           payment_split?: Json | null
           sale_number?: string
+          source?: string | null
           subtotal?: number
           total?: number
           total_discount?: number | null

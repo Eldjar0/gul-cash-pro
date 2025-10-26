@@ -11,6 +11,9 @@ import { useProducts, Product } from '@/hooks/useProducts';
 import { toast } from 'sonner';
 import { MobileBarcodeScanner } from '@/components/mobile/MobileBarcodeScanner';
 import { useUnifiedScanner } from '@/hooks/useUnifiedScanner';
+import { useCreateSale } from '@/hooks/useSales';
+import { useAuth } from '@/contexts/AuthContext';
+import type { CartItem as SaleCartItem } from '@/types/pos';
 
 interface CartItem {
   product: Product;
@@ -19,6 +22,8 @@ interface CartItem {
 
 export default function MobilePOS() {
   const { data: products = [] } = useProducts();
+  const { user } = useAuth();
+  const createSale = useCreateSale();
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -86,14 +91,66 @@ export default function MobilePOS() {
       return;
     }
 
-    const methodLabels = {
-      cash: 'Espèces',
-      card: 'Carte bancaire',
-      mobile: 'Paiement mobile'
-    };
+    // Construire les items de vente avec TVA et calculs complets
+    const saleItems = cart.map(item => {
+      const unitPrice = item.product.price;
+      const vatRate = item.product.vat_rate;
+      const subtotal = unitPrice * item.quantity;
+      const vatAmount = subtotal * (vatRate / 100);
+      const total = subtotal + vatAmount;
 
-    toast.success(`Paiement ${methodLabels[method]} de ${total.toFixed(2)}€ enregistré`);
-    setCart([]);
+      return {
+        product_id: item.product.id,
+        product_name: item.product.name,
+        product_barcode: item.product.barcode,
+        quantity: item.quantity,
+        unit_price: unitPrice,
+        vat_rate: vatRate,
+        subtotal,
+        vat_amount: vatAmount,
+        total,
+      };
+    });
+
+    // Calculer les totaux
+    const subtotal = saleItems.reduce((sum, item) => sum + item.subtotal, 0);
+    const totalVat = saleItems.reduce((sum, item) => sum + item.vat_amount, 0);
+    const totalAmount = saleItems.reduce((sum, item) => sum + item.total, 0);
+
+    // Créer la vente via le hook unifié
+    createSale.mutate({
+      sale: {
+        items: saleItems,
+        payment_method: method,
+        amount_paid: totalAmount,
+        change_amount: 0,
+        is_invoice: false,
+        is_cancelled: false,
+        customer_id: undefined,
+        cashier_id: user?.id,
+        subtotal,
+        total_vat: totalVat,
+        total_discount: 0,
+        total: totalAmount,
+        notes: 'Vente mobile',
+        source: 'mobile',
+      } as any,
+      forceStockOverride: false,
+    }, {
+      onSuccess: () => {
+        const methodLabels = {
+          cash: 'Espèces',
+          card: 'Carte bancaire',
+          mobile: 'Paiement mobile'
+        };
+        toast.success(`Vente enregistrée - ${methodLabels[method]} ${totalAmount.toFixed(2)}€`);
+        setCart([]);
+      },
+      onError: (error) => {
+        console.error('Erreur lors de la vente:', error);
+        toast.error('Erreur lors de l\'enregistrement de la vente');
+      }
+    });
   };
 
   return (
