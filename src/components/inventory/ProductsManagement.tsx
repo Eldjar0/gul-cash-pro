@@ -11,6 +11,8 @@ import { useCategories } from '@/hooks/useCategories';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
 import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
 import { ProductBarcodesManager } from '@/components/products/ProductBarcodesManager';
+import { ProductFormDialog } from './ProductFormDialog';
+import { SupplierQuickCreateDialog } from '@/components/mobile/SupplierQuickCreateDialog';
 import { usePhysicalScanner } from '@/hooks/usePhysicalScanner';
 import { PRODUCT_UNITS } from '@/data/units';
 import { useToast } from '@/hooks/use-toast';
@@ -56,6 +58,7 @@ export const ProductsManagement = () => {
   const [stockFilter, setStockFilter] = useState<'all' | 'low' | 'out'>('all');
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
 
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
@@ -153,50 +156,11 @@ export const ProductsManagement = () => {
     setProductDialogOpen(true);
   };
 
-  const handleSaveProduct = () => {
-    const name = form.name.trim();
-    const price = parseFloat(form.price);
-    const stock = parseFloat(form.stock || '0');
-    const vat_rate = parseFloat(form.vat_rate || '21');
-    const min_stock = parseFloat(form.min_stock || '0');
-    
-    if (!name || isNaN(price)) {
-      toast({
-        title: 'Erreur',
-        description: 'Le nom et le prix sont requis',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!form.category_id) {
-      toast({
-        title: 'Erreur',
-        description: 'La catégorie est obligatoire',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const barcodeNormalized = normalizeBarcodeInput((form.barcode || '').trim());
-
-    const payload: any = {
-      name,
-      barcode: barcodeNormalized || null,
-      price,
-      stock,
-      vat_rate,
-      min_stock,
-      unit: form.unit || 'pièce',
-      type: form.type,
-      category_id: form.category_id,
-      is_active: true,
-    };
-
+  const handleSaveProduct = (data: any) => {
     if (editingProduct) {
-      updateProduct({ id: editingProduct.id, ...payload });
+      updateProduct({ id: editingProduct.id, ...data });
     } else {
-      createProduct(payload);
+      createProduct(data);
     }
     setProductDialogOpen(false);
   };
@@ -535,107 +499,13 @@ export const ProductsManagement = () => {
         </div>
       )}
 
-      <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingProduct ? 'Modifier le produit' : 'Nouveau produit'}</DialogTitle>
-            <DialogDescription>
-              Remplissez les informations du produit. Les champs marqués d'un * sont obligatoires.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="name">Nom *</Label>
-              <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="barcode">Code-barres</Label>
-              <Input id="barcode" value={form.barcode}
-                inputMode="numeric" pattern="[0-9]*" autoComplete="off" maxLength={32}
-                onChange={(e) => setForm({ ...form, barcode: normalizeBarcodeInput(e.target.value) })}
-                onPaste={(e) => { e.preventDefault(); const text = e.clipboardData.getData('text'); setForm({ ...form, barcode: normalizeBarcodeInput(text) }); }}
-                onKeyDown={(e) => {
-                  const allowed = ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'];
-                  if (allowed.includes(e.key)) return;
-                  const isDigit = /[0-9]/.test(e.key);
-                  const map: Record<string,string> = { '&':'1','é':'2','"':'3','\'':'4','(':'5','-':'6','è':'7','_':'8','ç':'9','à':'0','!':'8' };
-                  const mapped = map[e.key];
-                  if (!isDigit && !mapped) { e.preventDefault(); }
-                  if (mapped) {
-                    e.preventDefault();
-                    setForm((f) => ({ ...f, barcode: (f.barcode || '') + mapped }));
-                  }
-                }}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="category">Catégorie *</Label>
-              <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Sélectionner..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="type">Type de produit</Label>
-              <Select value={form.type} onValueChange={(v: 'unit' | 'weight') => setForm({ ...form, type: v })}>
-                <SelectTrigger id="type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unit">Unité</SelectItem>
-                  <SelectItem value="weight">Poids</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="unit">Unité de mesure</Label>
-              <Select value={form.unit} onValueChange={(v) => setForm({ ...form, unit: v })}>
-                <SelectTrigger id="unit">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRODUCT_UNITS.map((u) => (
-                    <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="price">Prix *</Label>
-              <Input id="price" type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="stock">Stock</Label>
-              <Input id="stock" type="number" step="0.01" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="vat_rate">TVA %</Label>
-              <Input id="vat_rate" type="number" step="0.01" value={form.vat_rate} onChange={(e) => setForm({ ...form, vat_rate: e.target.value })} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="min_stock">Stock min.</Label>
-              <Input id="min_stock" type="number" step="0.01" value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: e.target.value })} />
-            </div>
-          </div>
-          
-          {editingProduct && (
-            <div className="mt-4">
-              <ProductBarcodesManager productId={editingProduct.id} />
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setProductDialogOpen(false)}>Annuler</Button>
-            <Button onClick={handleSaveProduct}>{editingProduct ? 'Enregistrer' : 'Créer'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ProductFormDialog
+        open={productDialogOpen}
+        onOpenChange={setProductDialogOpen}
+        product={editingProduct}
+        onSave={handleSaveProduct}
+        onSupplierCreate={() => setSupplierDialogOpen(true)}
+      />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
@@ -654,6 +524,11 @@ export const ProductsManagement = () => {
 
       <CategoryDialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen} />
       <ImportProductsDialog open={importDialogOpen} onOpenChange={setImportDialogOpen} />
+      <SupplierQuickCreateDialog 
+        open={supplierDialogOpen} 
+        onClose={() => setSupplierDialogOpen(false)}
+        onCreated={() => setSupplierDialogOpen(false)}
+      />
       </TabsContent>
 
       <TabsContent value="labels" className="space-y-6">
