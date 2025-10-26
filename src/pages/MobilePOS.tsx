@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Search, ShoppingCart, Plus, Minus, X, CreditCard, Banknote, Smartphone } from 'lucide-react';
+import { Search, ShoppingCart, Plus, Minus, X, CreditCard, Banknote, Smartphone, Scan } from 'lucide-react';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { toast } from 'sonner';
+import { MobileBarcodeScanner } from '@/components/mobile/MobileBarcodeScanner';
+import { useUnifiedScanner } from '@/hooks/useUnifiedScanner';
 
 interface CartItem {
   product: Product;
@@ -19,6 +21,20 @@ export default function MobilePOS() {
   const { data: products = [] } = useProducts();
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [scannerOpen, setScannerOpen] = useState(false);
+
+  // Scanner physique automatique
+  useUnifiedScanner({
+    onScan: (barcode, product) => {
+      if (product) {
+        addToCart(product);
+      } else {
+        toast.error(`Produit non trouvé: ${barcode}`);
+      }
+    },
+    enabled: true,
+    cooldown: 500,
+  });
 
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -89,14 +105,24 @@ export default function MobilePOS() {
         
         {/* Recherche produit */}
         <div className="p-3 border-b bg-background">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher un produit..."
-              className="pl-10"
-            />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Rechercher un produit..."
+                className="pl-10"
+              />
+            </div>
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={() => setScannerOpen(true)}
+              className="shrink-0"
+            >
+              <Scan className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
@@ -271,6 +297,20 @@ export default function MobilePOS() {
           </div>
         )}
       </div>
+
+      {/* Scanner de codes-barres */}
+      <MobileBarcodeScanner
+        open={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onProductFound={(product) => {
+          addToCart(product);
+          setScannerOpen(false);
+        }}
+        onProductNotFound={(barcode) => {
+          toast.error(`Produit non trouvé: ${barcode}`);
+          setScannerOpen(false);
+        }}
+      />
     </MobileLayout>
   );
 }
