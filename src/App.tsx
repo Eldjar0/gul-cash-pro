@@ -38,6 +38,11 @@ const MobileProductDetail = lazy(() => import("./components/mobile/MobileProduct
 const MobileProductForm = lazy(() => import("./components/mobile/MobileProductForm"));
 const MobileOrderDetail = lazy(() => import("./components/mobile/MobileOrderDetail"));
 const DirectCameraScanner = lazy(() => import("./pages/DirectCameraScanner"));
+const MobileStats = lazy(() => import("./pages/MobileStats"));
+const MobileAlerts = lazy(() => import("./pages/MobileAlerts"));
+const MobileSales = lazy(() => import("./pages/MobileSales"));
+const MobileCustomers = lazy(() => import("./pages/MobileCustomers"));
+const MobileCashRegister = lazy(() => import("./pages/MobileCashRegister"));
 
 const queryClient = new QueryClient();
 
@@ -74,6 +79,11 @@ const App = () => (
             <Route path="/mobile/order/:id" element={<ProtectedRoute><MobileOrderDetail /></ProtectedRoute>} />
             <Route path="/mobile/promotions" element={<ProtectedRoute><Promotions /></ProtectedRoute>} />
             <Route path="/mobile/calculator" element={<ProtectedRoute><MobileCalculator /></ProtectedRoute>} />
+            <Route path="/mobile/stats" element={<ProtectedRoute><MobileStats /></ProtectedRoute>} />
+            <Route path="/mobile/alerts" element={<ProtectedRoute><MobileAlerts /></ProtectedRoute>} />
+            <Route path="/mobile/sales" element={<ProtectedRoute><MobileSales /></ProtectedRoute>} />
+            <Route path="/mobile/customers" element={<ProtectedRoute><MobileCustomers /></ProtectedRoute>} />
+            <Route path="/mobile/cash-register" element={<ProtectedRoute><MobileCashRegister /></ProtectedRoute>} />
             <Route path="/camera-scanner" element={<ProtectedRoute><DirectCameraScanner /></ProtectedRoute>} />
             <Route path="/camera-scanner/:sessionCode" element={<ProtectedRoute><DirectCameraScanner /></ProtectedRoute>} />
             
