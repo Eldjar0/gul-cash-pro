@@ -39,12 +39,42 @@ export const useMobileNavigation = () => {
   }, [navigate]);
 
   const goBack = useCallback(() => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate('/mobile');
+    const path = location.pathname;
+    
+    // Pages principales → Menu principal
+    if (path === '/mobile/products' || 
+        path === '/mobile/categories' || 
+        path === '/mobile/orders' ||
+        path === '/mobile/scan-rapid' ||
+        path === '/mobile/customers') {
+      navigate('/mobile/management');
+      return;
     }
-  }, [navigate]);
+    
+    // Pages de détail → Liste correspondante
+    if (path.startsWith('/mobile/product/')) {
+      navigate('/mobile/products');
+      return;
+    }
+    
+    if (path.startsWith('/mobile/category/')) {
+      navigate('/mobile/categories');
+      return;
+    }
+    
+    if (path.startsWith('/mobile/order/')) {
+      navigate('/mobile/orders');
+      return;
+    }
+
+    if (path.startsWith('/mobile/customer/')) {
+      navigate('/mobile/customers');
+      return;
+    }
+    
+    // Par défaut → Menu principal
+    navigate('/mobile/management');
+  }, [navigate, location]);
 
   const getBreadcrumb = useCallback(() => {
     const path = location.pathname;
