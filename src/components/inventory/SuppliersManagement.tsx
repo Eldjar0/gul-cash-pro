@@ -1,23 +1,29 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Phone, Mail, MapPin, Search, Truck, FileText } from 'lucide-react';
+import { Plus, Edit, Trash2, Phone, Mail, MapPin, Search, Truck, FileText, Package, Eye, Printer } from 'lucide-react';
 import { useSuppliers, useSaveSuppliers, Supplier } from '@/hooks/useSuppliers';
+import { useProducts } from '@/hooks/useProducts';
 import { toast } from 'sonner';
 import { generateSuppliersPDF } from '@/utils/generateSuppliersPDF';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 export const SuppliersManagement = () => {
   const { data: suppliers = [], isLoading } = useSuppliers();
+  const { data: products = [] } = useProducts();
   const saveMutation = useSaveSuppliers();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewingSupplier, setViewingSupplier] = useState<Supplier | null>(null);
+  const [supplierProductsOpen, setSupplierProductsOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -108,6 +114,110 @@ export const SuppliersManagement = () => {
     )
   );
 
+  const handleViewSupplier = (supplier: Supplier) => {
+    setViewingSupplier(supplier);
+    setSupplierProductsOpen(true);
+  };
+
+  const getSupplierProducts = (supplierName: string) => {
+    return products.filter(p => 
+      p.supplier?.toLowerCase() === supplierName.toLowerCase()
+    );
+  };
+
+  const generateSupplierStockPDF = (supplier: Supplier) => {
+    const supplierProducts = getSupplierProducts(supplier.name);
+    
+    if (supplierProducts.length === 0) {
+      toast.error('Aucun produit pour ce fournisseur');
+      return;
+    }
+
+    const doc = new jsPDF();
+    const today = new Date().toLocaleDateString('fr-FR');
+
+    // En-tête
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('État des Stocks par Fournisseur', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Fournisseur: ${supplier.name}`, 14, 35);
+    doc.text(`Date: ${today}`, 14, 42);
+    
+    if (supplier.contact_name) {
+      doc.text(`Contact: ${supplier.contact_name}`, 14, 49);
+    }
+    if (supplier.phone) {
+      doc.text(`Tél: ${supplier.phone}`, 14, 56);
+    }
+
+    // Tableau des produits
+    const tableData = supplierProducts.map(p => [
+      p.name,
+      p.barcode || '-',
+      `${p.stock || 0} ${p.unit || ''}`,
+      `${p.min_stock || 0}`,
+      p.stock === 0 ? 'Rupture' : p.stock <= (p.min_stock || 0) ? 'Faible' : 'OK',
+      `${(p.price || 0).toFixed(2)} €`
+    ]);
+
+    (doc as any).autoTable({
+      startY: supplier.phone ? 63 : 56,
+      head: [['Produit', 'Code-barres', 'Stock', 'Stock Min', 'État', 'Prix']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [20, 184, 166],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      styles: { 
+        fontSize: 9,
+        cellPadding: 3
+      },
+      columnStyles: {
+        0: { cellWidth: 50 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 25 }
+      },
+      didParseCell: (data: any) => {
+        if (data.row.section === 'body' && data.column.index === 4) {
+          const status = data.cell.raw;
+          if (status === 'Rupture') {
+            data.cell.styles.textColor = [220, 38, 38];
+            data.cell.styles.fontStyle = 'bold';
+          } else if (status === 'Faible') {
+            data.cell.styles.textColor = [249, 115, 22];
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    });
+
+    // Résumé
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    const totalProducts = supplierProducts.length;
+    const outOfStock = supplierProducts.filter(p => p.stock === 0).length;
+    const lowStock = supplierProducts.filter(p => p.stock > 0 && p.stock <= (p.min_stock || 0)).length;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Résumé:', 14, finalY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total produits: ${totalProducts}`, 14, finalY + 7);
+    doc.text(`En rupture: ${outOfStock}`, 14, finalY + 14);
+    doc.text(`Stock faible: ${lowStock}`, 14, finalY + 21);
+
+    // Sauvegarder
+    doc.save(`stock-${supplier.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('PDF généré avec succès');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex gap-2">
@@ -152,52 +262,168 @@ export const SuppliersManagement = () => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredSuppliers.map((supplier) => (
-            <Card key={supplier.id} className="hover:shadow-md transition-all">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{supplier.name}</h3>
-                    {supplier.contact_name && (
-                      <p className="text-sm text-muted-foreground">{supplier.contact_name}</p>
+          {filteredSuppliers.map((supplier) => {
+            const supplierProducts = getSupplierProducts(supplier.name);
+            const productsCount = supplierProducts.length;
+            const lowStockCount = supplierProducts.filter(p => p.stock > 0 && p.stock <= (p.min_stock || 0)).length;
+            const outOfStockCount = supplierProducts.filter(p => p.stock === 0).length;
+
+            return (
+              <Card key={supplier.id} className="hover:shadow-md transition-all cursor-pointer" onClick={() => handleViewSupplier(supplier)}>
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">{supplier.name}</h3>
+                      {supplier.contact_name && (
+                        <p className="text-sm text-muted-foreground">{supplier.contact_name}</p>
+                      )}
+                      <Badge variant="outline" className="mt-2">
+                        {productsCount} produit{productsCount > 1 ? 's' : ''}
+                      </Badge>
+                    </div>
+                    <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                      <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(supplier)} title="Modifier">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(supplier.id)} title="Supprimer">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    {supplier.email && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Mail className="h-4 w-4" />
+                        <span className="truncate">{supplier.email}</span>
+                      </div>
+                    )}
+                    {supplier.phone && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Phone className="h-4 w-4" />
+                        <span>{supplier.phone}</span>
+                      </div>
+                    )}
+                    {supplier.address && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        <span className="truncate">{supplier.address}</span>
+                      </div>
                     )}
                   </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(supplier)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(supplier.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
 
-                <div className="space-y-2 text-sm">
-                  {supplier.email && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Mail className="h-4 w-4" />
-                      <span className="truncate">{supplier.email}</span>
+                  {productsCount > 0 && (
+                    <div className="mt-4 pt-3 border-t flex justify-between text-xs">
+                      {outOfStockCount > 0 && (
+                        <span className="text-destructive font-medium">{outOfStockCount} en rupture</span>
+                      )}
+                      {lowStockCount > 0 && (
+                        <span className="text-orange-600 font-medium">{lowStockCount} stock faible</span>
+                      )}
                     </div>
                   )}
-                  {supplier.phone && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Phone className="h-4 w-4" />
-                      <span>{supplier.phone}</span>
-                    </div>
-                  )}
-                  {supplier.address && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      <span className="truncate">{supplier.address}</span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
+      {/* Dialog Produits Fournisseur */}
+      <Dialog open={supplierProductsOpen} onOpenChange={setSupplierProductsOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Produits de {viewingSupplier?.name}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => viewingSupplier && generateSupplierStockPDF(viewingSupplier)}
+                className="gap-2"
+              >
+                <Printer className="h-4 w-4" />
+                Imprimer État des Stocks
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 overflow-y-auto max-h-[60vh]">
+            {viewingSupplier && getSupplierProducts(viewingSupplier.name).length === 0 ? (
+              <div className="text-center py-8">
+                <Package className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                <p className="text-muted-foreground">Aucun produit pour ce fournisseur</p>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {viewingSupplier && getSupplierProducts(viewingSupplier.name).map((product) => (
+                  <Card key={product.id}>
+                    <CardContent className="p-4">
+                      <div className="flex gap-3">
+                        {product.image ? (
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 flex items-center justify-center bg-muted rounded">
+                            <Package className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                        )}
+                        
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="font-semibold">{product.name}</h4>
+                              {product.barcode && (
+                                <Badge variant="outline" className="mt-1 font-mono text-xs">
+                                  {product.barcode}
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="font-bold text-lg">{product.price.toFixed(2)} €</span>
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Stock actuel:</span>
+                              <div className="font-semibold mt-1">
+                                {product.stock || 0} {product.unit}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Stock minimum:</span>
+                              <div className="font-semibold mt-1">
+                                {product.min_stock || 0}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">État:</span>
+                              <div className="mt-1">
+                                <Badge variant={
+                                  product.stock === 0 ? 'destructive' : 
+                                  product.stock <= (product.min_stock || 0) ? 'secondary' : 
+                                  'default'
+                                }>
+                                  {product.stock === 0 ? 'Rupture' : 
+                                   product.stock <= (product.min_stock || 0) ? 'Stock faible' : 
+                                   'OK'}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Édition Fournisseur */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
