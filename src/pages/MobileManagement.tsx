@@ -117,37 +117,35 @@ export default function MobileManagement() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-primary/5">
-        {/* Header moderne avec glassmorphism */}
-        <div className="sticky top-0 z-10 backdrop-blur-2xl bg-background/70 border-b border-border/50 shadow-sm">
+      <div className="min-h-screen bg-background">
+        {/* Header optimisé iOS */}
+        <div className="sticky top-0 z-10 bg-background/95 border-b border-border shadow-sm" style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+          <div className="safe-area-inset-top" />
           <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3 animate-fade-in">
-              <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shadow-lg">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/40 to-transparent opacity-50" />
-                <img src={logoJlprod} alt="Logo" className="h-9 w-auto relative z-10" />
+            <div className="flex items-center gap-3">
+              <div className="relative w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <img src={logoJlprod} alt="Logo" className="h-8 w-auto" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                  Gestion Mobile
-                </h1>
+                <h1 className="text-lg font-bold">Gestion Mobile</h1>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="font-medium">{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                  <span>{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                   {weather.temperature && (
                     <>
                       <span>•</span>
-                      <span className="font-medium">{weather.temperature}°C</span>
+                      <span>{weather.temperature}°C</span>
                     </>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-xl hover:bg-accent/50 transition-all"
+                className="rounded-xl"
                 onClick={() => setDarkMode(!darkMode)}
               >
                 {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -155,7 +153,7 @@ export default function MobileManagement() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-xl hover:bg-destructive/10 hover:text-destructive transition-all"
+                className="rounded-xl"
                 onClick={handleLogout}
               >
                 <LogOut className="h-5 w-5" />
@@ -164,65 +162,48 @@ export default function MobileManagement() {
           </div>
         </div>
 
-        {/* Message de bienvenue avec animation */}
-        <div className="px-5 pt-8 pb-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
-            Bonjour 👋
-          </h2>
-          <p className="text-muted-foreground text-base">Que souhaitez-vous gérer aujourd'hui ?</p>
+        {/* Message de bienvenue */}
+        <div className="px-4 pt-6 pb-4">
+          <h2 className="text-2xl font-bold mb-1">Bonjour 👋</h2>
+          <p className="text-muted-foreground">Que souhaitez-vous gérer ?</p>
         </div>
 
-        {/* Menu principal - Design ultra moderne */}
-        <div className="px-5 pb-8">
+        {/* Menu principal - Optimisé iOS */}
+        <div className="px-4 pb-6">
           <div className="grid grid-cols-2 gap-4">
-            {menuItems.map((item, index) => (
-              <Card
+            {menuItems.map((item) => (
+              <button
                 key={item.title}
-                className="group cursor-pointer overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.03] active:scale-[0.97] animate-scale-in backdrop-blur-sm"
+                className="group relative overflow-hidden rounded-2xl shadow-lg active:scale-95 transition-transform touch-manipulation"
                 onClick={item.action}
                 style={{
-                  animationDelay: `${200 + index * 100}ms`,
-                  animationFillMode: 'backwards',
+                  WebkitTapHighlightColor: 'transparent',
                 }}
               >
-                <div className={`relative bg-gradient-to-br ${item.color} p-6 aspect-square flex flex-col items-center justify-center overflow-hidden`}>
-                  {/* Pattern de fond subtil */}
+                <div className={`bg-gradient-to-br ${item.color} p-6 aspect-square flex flex-col items-center justify-center relative`}>
+                  {/* Pattern de fond simplifié pour iOS */}
                   <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 left-0 w-32 h-32 bg-white/20 rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 right-0 w-24 h-24 bg-white/20 rounded-full blur-2xl" />
+                    <div className="absolute top-0 left-0 w-24 h-24 bg-white/30 rounded-full" style={{ filter: 'blur(40px)' }} />
+                    <div className="absolute bottom-0 right-0 w-20 h-20 bg-white/20 rounded-full" style={{ filter: 'blur(30px)' }} />
                   </div>
                   
-                  {/* Effet de brillance au hover */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                  
-                  {/* Badge indicateur */}
-                  <div className="absolute top-3 right-3 w-2 h-2 bg-white/80 rounded-full shadow-lg" />
-                  
-                  {/* Conteneur icône avec animation */}
-                  <div className="relative z-10 mb-4 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                    <div className="absolute inset-0 bg-white/20 blur-xl rounded-full" />
-                    <item.icon className="relative h-16 w-16 text-white drop-shadow-2xl" />
+                  {/* Icône */}
+                  <div className="relative z-10 mb-3">
+                    <item.icon className="h-14 w-14 text-white" style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
                   </div>
                   
-                  {/* Titre avec meilleure lisibilité */}
-                  <h3 className="relative z-10 font-bold text-white text-lg text-center drop-shadow-lg tracking-tight">
+                  {/* Titre */}
+                  <h3 className="relative z-10 font-bold text-white text-base text-center" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                     {item.title}
                   </h3>
-                  
-                  {/* Ligne décorative */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-white/0 via-white/40 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
-              </Card>
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Indication de swipe (optionnel) */}
-        <div className="px-5 pb-6 text-center animate-fade-in" style={{ animationDelay: '600ms' }}>
-          <p className="text-xs text-muted-foreground/60">
-            Appuyez sur une carte pour commencer
-          </p>
-        </div>
+        {/* Safe area bottom pour iOS */}
+        <div className="safe-area-inset-bottom" />
       </div>
 
       {/* Scanner mobile */}
