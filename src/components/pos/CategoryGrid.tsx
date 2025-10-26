@@ -27,20 +27,20 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
       {!selectedCategory ? (
         // Affichage des catégories
         <ScrollArea className="h-full">
-          <div className="grid grid-cols-2 gap-1 p-1">
+          <div className="grid grid-cols-2 gap-2 p-2">
             {categories?.map((category) => (
               <Button
                 key={category.id}
                 onClick={() => onCategorySelect(category.id)}
-                className="min-h-[2.5rem] h-auto flex flex-col items-center justify-center gap-1 p-1.5 text-white font-semibold transition-all hover:brightness-110"
+                className="min-h-[5rem] h-auto flex flex-col items-center justify-center gap-2 p-3 text-white font-semibold transition-all hover:brightness-110"
                 style={{ 
                   backgroundColor: category.color,
                   borderColor: category.color,
                   borderWidth: '2px'
                 }}
               >
-                <Package className="h-4 w-4 shrink-0" />
-                <span className="text-xs font-medium text-center line-clamp-2 leading-tight break-words">
+                <Package className="h-6 w-6 shrink-0" />
+                <span className="text-sm font-medium text-center line-clamp-2 leading-snug break-words">
                   {category.name}
                 </span>
               </Button>
