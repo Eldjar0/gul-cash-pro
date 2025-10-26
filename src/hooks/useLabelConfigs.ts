@@ -24,7 +24,13 @@ export const useLabelConfigs = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as LabelConfiguration[];
+      
+      // Cast the JSONB fields to proper types
+      return (data || []).map(item => ({
+        ...item,
+        format: item.format as unknown as StickerFormat,
+        template: item.template as any,
+      })) as LabelConfiguration[];
     },
   });
 
@@ -34,8 +40,8 @@ export const useLabelConfigs = () => {
         .from('label_configurations')
         .insert({
           name: config.name,
-          format: config.format,
-          template: config.template,
+          format: config.format as any,
+          template: config.template as any,
         })
         .select()
         .single();
@@ -61,9 +67,15 @@ export const useLabelConfigs = () => {
 
   const updateConfig = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<LabelConfiguration> & { id: string }) => {
+      const updateData: any = {};
+      
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.format !== undefined) updateData.format = updates.format as any;
+      if (updates.template !== undefined) updateData.template = updates.template as any;
+      
       const { data, error } = await supabase
         .from('label_configurations')
-        .update(updates)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();

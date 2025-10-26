@@ -851,6 +851,30 @@ export type Database = {
         }
         Relationships: []
       }
+      label_configurations: {
+        Row: {
+          created_at: string | null
+          format: Json
+          id: string
+          name: string
+          template: Json
+        }
+        Insert: {
+          created_at?: string | null
+          format: Json
+          id?: string
+          name: string
+          template: Json
+        }
+        Update: {
+          created_at?: string | null
+          format?: Json
+          id?: string
+          name?: string
+          template?: Json
+        }
+        Relationships: []
+      }
       loyalty_tiers: {
         Row: {
           benefits: string | null

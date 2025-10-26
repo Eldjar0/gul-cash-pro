@@ -311,11 +311,19 @@ export const LabelDesignEditor = ({
             <div className="pt-4 border-t">
               <h3 className="font-semibold mb-3">Variables disponibles</h3>
               <div className="text-sm space-y-1 text-muted-foreground">
-                <p>• {'{{NOM_PRODUIT}}'}</p>
-                <p>• {'{{PRIX}}'}</p>
-                <p>• {'{{CODE_BARRE}}'}</p>
-                <p>• {'{{UNITE}}'}</p>
-                <p>• {'{{CDT}}'}</p>
+                <p className="font-mono">• {'{{NOM_PRODUIT}}'}</p>
+                <p className="font-mono">• {'{{PRIX}}'} - Prix TTC</p>
+                <p className="font-mono">• {'{{PRIX_UNIT}}'} - Prix par unité</p>
+                <p className="font-mono">• {'{{CODE_BARRE}}'}</p>
+                <p className="font-mono">• {'{{TVA}}'} - Taux de TVA</p>
+                <p className="font-mono">• {'{{UNITE}}'} - Unité de mesure</p>
+                <p className="font-mono">• {'{{STOCK}}'} - Quantité en stock</p>
+                <p className="font-mono">• {'{{CATEGORIE}}'}</p>
+              </div>
+              <div className="mt-3 p-2 bg-muted/50 rounded text-xs">
+                <p className="text-muted-foreground">
+                  Ces variables seront remplacées automatiquement par les données du produit lors de l'impression.
+                </p>
               </div>
             </div>
           </div>
