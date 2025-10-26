@@ -83,45 +83,64 @@ export const MobileProductManager = () => {
                     className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
                     onClick={() => goToProduct(product.id)}
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-base">{product.name}</h3>
-                        {category && (
-                          <Badge variant="secondary" className="mt-1">
-                            {category.name}
-                          </Badge>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          goToProduct(product.id);
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Prix:</span>
-                        <span className="font-bold text-base">{product.price.toFixed(2)}€</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Stock:</span>
-                        <Badge 
-                          variant={isOutOfStock ? 'destructive' : isLowStock ? 'outline' : 'default'}
-                        >
-                          {product.stock || 0} {product.unit || 'unités'}
-                        </Badge>
-                      </div>
-                      {product.barcode && (
-                        <div className="text-xs text-muted-foreground font-mono pt-1">
-                          {product.barcode}
+                    <div className="flex gap-3">
+                      {/* Image du produit */}
+                      {product.image ? (
+                        <div className="shrink-0 w-20 h-20 rounded overflow-hidden border border-border">
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="shrink-0 w-20 h-20 rounded bg-muted flex items-center justify-center border border-border">
+                          <Package className="h-10 w-10 text-muted-foreground/40" />
                         </div>
                       )}
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <h3 className="font-bold text-base">{product.name}</h3>
+                            {category && (
+                              <Badge variant="secondary" className="mt-1">
+                                {category.name}
+                              </Badge>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              goToProduct(product.id);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Prix:</span>
+                            <span className="font-bold text-base">{product.price.toFixed(2)}€</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Stock:</span>
+                            <Badge 
+                              variant={isOutOfStock ? 'destructive' : isLowStock ? 'outline' : 'default'}
+                            >
+                              {product.stock || 0} {product.unit || 'unités'}
+                            </Badge>
+                          </div>
+                          {product.barcode && (
+                            <div className="text-xs text-muted-foreground font-mono pt-1">
+                              {product.barcode}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </Card>
                 );
