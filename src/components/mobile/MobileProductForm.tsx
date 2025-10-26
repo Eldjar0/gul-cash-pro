@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Save, Scan, Plus, TrendingUp, TrendingDown } from 'lucide-react';
+import { Save, Scan, Plus, TrendingUp, TrendingDown, Camera, X, Image as ImageIcon } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { useSuppliers } from '@/hooks/useSuppliers';
@@ -17,6 +17,9 @@ import { MobileBarcodeScanner } from './MobileBarcodeScanner';
 import { SupplierQuickCreateDialog } from './SupplierQuickCreateDialog';
 import { DynamicIcon } from '@/components/ui/dynamic-icon';
 import { PRODUCT_UNITS } from '@/data/units';
+import { supabase } from '@/integrations/supabase/client';
+import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
 import { toast } from 'sonner';
 
 export const MobileProductForm = () => {
@@ -30,6 +33,9 @@ export const MobileProductForm = () => {
   const updateProduct = useUpdateProduct();
   const [scannerOpen, setScannerOpen] = useState(false);
   const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const isEditing = id !== 'new';
   const product = isEditing ? products.find(p => p.id === id) : null;
@@ -86,8 +92,92 @@ export const MobileProductForm = () => {
         min_stock: product.min_stock?.toString() || '',
         supplier_id: matchingSupplier?.id || '',
       });
+      
+      // Charger l'image existante
+      if (product.image) {
+        setImageUrl(product.image);
+      }
     }
   }, [product, suppliers]);
+
+  const takePhoto = async () => {
+    try {
+      if (!Capacitor.isNativePlatform()) {
+        // Sur web, utiliser input file
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';
+        input.onchange = async (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              setImageUrl(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+        input.click();
+        return;
+      }
+
+      // Sur native, utiliser Capacitor Camera
+      const photo = await CapacitorCamera.getPhoto({
+        quality: 80,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Camera,
+      });
+
+      if (photo.dataUrl) {
+        setImageUrl(photo.dataUrl);
+        // Convertir dataUrl en File
+        const response = await fetch(photo.dataUrl);
+        const blob = await response.blob();
+        const file = new File([blob], 'product-photo.jpg', { type: 'image/jpeg' });
+        setImageFile(file);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la prise de photo:', error);
+      toast.error('Impossible de prendre la photo');
+    }
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile) return imageUrl; // Retourner l'URL existante si pas de nouveau fichier
+
+    try {
+      setIsUploadingImage(true);
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, imageFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Erreur upload image:', error);
+      toast.error('Erreur lors de l\'upload de l\'image');
+      return null;
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const removeImage = () => {
+    setImageUrl(null);
+    setImageFile(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +186,9 @@ export const MobileProductForm = () => {
       toast.error('Nom et prix obligatoires');
       return;
     }
+
+    // Upload de l'image si nécessaire
+    const uploadedImageUrl = await uploadImage();
 
     // Trouver le nom du fournisseur
     const selectedSupplier = suppliers.find(s => s.id === formData.supplier_id);
@@ -114,6 +207,7 @@ export const MobileProductForm = () => {
       unit: formData.unit,
       supplier: selectedSupplier?.name || null,
       is_active: true,
+      image: uploadedImageUrl,
     };
 
     try {
@@ -145,6 +239,42 @@ export const MobileProductForm = () => {
     >
       <ScrollArea className="h-[calc(100vh-80px)]">
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {/* Photo du produit */}
+          <Card className="p-4">
+            <div className="space-y-3">
+              <Label>Photo du produit</Label>
+              
+              {imageUrl ? (
+                <div className="relative">
+                  <img 
+                    src={imageUrl} 
+                    alt="Produit" 
+                    className="w-full h-48 object-cover rounded-lg border-2 border-primary/20"
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="destructive"
+                    className="absolute top-2 right-2"
+                    onClick={removeImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-32 flex flex-col gap-2 border-dashed border-2"
+                  onClick={takePhoto}
+                >
+                  <Camera className="h-8 w-8" />
+                  <span>Prendre une photo</span>
+                </Button>
+              )}
+            </div>
+          </Card>
+
           {/* Code-barres */}
           <Card className="p-4">
             <div className="space-y-2">
@@ -371,10 +501,10 @@ export const MobileProductForm = () => {
           <Button
             type="submit"
             className="w-full h-14 text-lg"
-            disabled={createProduct.isPending || updateProduct.isPending}
+            disabled={createProduct.isPending || updateProduct.isPending || isUploadingImage}
           >
             <Save className="h-5 w-5 mr-2" />
-            {isEditing ? 'Enregistrer' : 'Créer le produit'}
+            {isUploadingImage ? 'Upload en cours...' : isEditing ? 'Enregistrer' : 'Créer le produit'}
           </Button>
         </form>
       </ScrollArea>
