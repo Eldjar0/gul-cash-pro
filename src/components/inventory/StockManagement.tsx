@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, FileDown, Save, AlertTriangle } from 'lucide-react';
+import { Search, FileDown, Save, AlertTriangle, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { generateOrderPDF } from '@/utils/generateOrderPDF';
@@ -119,6 +119,18 @@ export function StockManagement() {
                 key={product.id} 
                 className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors flex-wrap"
               >
+                {product.image ? (
+                  <img 
+                    src={product.image} 
+                    alt={product.name}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                ) : (
+                  <div className="w-16 h-16 flex items-center justify-center bg-muted rounded">
+                    <Package className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+                
                 <div className="flex-1 min-w-[200px]">
                   <div className="flex items-center gap-2">
                     <p className="font-medium truncate">{product.name}</p>
