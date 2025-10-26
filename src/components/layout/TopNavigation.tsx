@@ -19,6 +19,7 @@ import {
   FileBarChart,
   UserCog,
   Truck,
+  Smartphone,
 } from 'lucide-react';
 import logoHeader from '@/assets/logo-gul-reyhan-header.png';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,6 +31,8 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
+import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
+import { useState } from 'react';
 
 interface TopNavigationProps {
   onLockScreen: () => void;
@@ -38,6 +41,7 @@ interface TopNavigationProps {
 export function TopNavigation({ onLockScreen }: TopNavigationProps) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [remoteScanOpen, setRemoteScanOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -131,6 +135,16 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                   <span>Réglages</span>
                 </Button>
               </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Button
+                  onClick={() => setRemoteScanOpen(true)}
+                  className="h-10 px-2 flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs whitespace-nowrap"
+                >
+                  <Smartphone className="h-4 w-4" />
+                  <span>Scan Mobile</span>
+                </Button>
+              </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
         </div>
@@ -156,6 +170,8 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           </Button>
         </div>
       </div>
+
+      <RemoteScanDialog open={remoteScanOpen} onOpenChange={setRemoteScanOpen} />
     </nav>
   );
 }
