@@ -1,291 +1,339 @@
-import { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Camera, X, CheckCircle2, XCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { X, Camera, CheckCircle, AlertCircle } from 'lucide-react';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { Capacitor } from '@capacitor/core';
-import { toast } from 'sonner';
-import { useProducts } from '@/hooks/useProducts';
 import { BrowserMultiFormatReader } from '@zxing/browser';
-import { DecodeHintType } from '@zxing/library';
 import { supabase } from '@/integrations/supabase/client';
+import { useMobileScan } from '@/hooks/useMobileScan';
 
 interface MobileBarcodeScannerProps {
   open: boolean;
   onClose: () => void;
-  onProductFound?: (product: any) => void;
-  onProductNotFound?: (barcode: string) => void;
+  onProductFound: (product: any) => void;
+  onProductNotFound: (barcode: string) => void;
 }
 
+const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+
 export const MobileBarcodeScanner = ({ open, onClose, onProductFound, onProductNotFound }: MobileBarcodeScannerProps) => {
-  const [isScanning, setIsScanning] = useState(false);
-  const [lastResult, setLastResult] = useState<{ type: 'success' | 'error'; product?: any; barcode?: string } | null>(null);
-  const { data: products = [] } = useProducts();
+  const mobileScan = useMobileScan();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
-  const scanAudioRef = useRef<HTMLAudioElement | null>(null);
-  const lastScannedRef = useRef<{ code: string; at: number } | null>(null);
   const isNative = Capacitor.isNativePlatform();
-
-  // Son continu pendant le scan
+  
+  // Initialiser le contexte audio
   useEffect(() => {
-    if (isScanning && !scanAudioRef.current) {
-      scanAudioRef.current = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
-      scanAudioRef.current.loop = true;
-      scanAudioRef.current.volume = 0.2;
-      scanAudioRef.current.play().catch(() => {});
-    } else if (!isScanning && scanAudioRef.current) {
-      scanAudioRef.current.pause();
-      scanAudioRef.current = null;
+    if (AudioContext) {
+      audioContextRef.current = new AudioContext();
     }
-    
-    return () => {
-      if (scanAudioRef.current) {
-        scanAudioRef.current.pause();
-        scanAudioRef.current = null;
-      }
-    };
-  }, [isScanning]);
+  }, []);
 
-  const playSuccessBeep = () => {
-    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjuY3/LNfzYFII/P8d2RRwoXZLnq66lWFQxGnODyvmwhBzuZ3/LNgDYFIJDP8d2QRwoXY7jq66lWFQxFnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRw==');
-    audio.volume = 0.8;
-    audio.play().catch(() => {});
+  // Bip d'activation (court, 0.2s)
+  const playActivationBeep = () => {
+    if (!audioContextRef.current) return;
+    const ctx = audioContextRef.current;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.2);
   };
 
+  // Bip de succès (aigu, 0.3s)
+  const playSuccessBeep = () => {
+    if (!audioContextRef.current) return;
+    const ctx = audioContextRef.current;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    oscillator.frequency.value = 1200;
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.3);
+    
+    // Vibration courte
+    if (navigator.vibrate) navigator.vibrate(100);
+  };
+
+  // Bip d'erreur (grave, 0.5s)
   const playErrorBeep = () => {
-    const audio = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
-    audio.volume = 0.5;
-    audio.play().catch(() => {});
+    if (!audioContextRef.current) return;
+    const ctx = audioContextRef.current;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    oscillator.frequency.value = 300;
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.5);
+    
+    // Vibration longue
+    if (navigator.vibrate) navigator.vibrate(200);
   };
 
   const handleScan = async (barcode: string) => {
-    const now = Date.now();
-    if (lastScannedRef.current && lastScannedRef.current.code === barcode && now - lastScannedRef.current.at < 2000) {
+    // Anti-duplication via le store
+    if (!mobileScan.canScan(barcode)) {
+      console.log('[Scanner] Cooldown actif, scan ignoré');
       return;
     }
-    lastScannedRef.current = { code: barcode, at: now };
 
-    let product = products.find(p => p.barcode === barcode);
-    
-    if (!product) {
-      const { data: barcodeData } = await supabase
-        .from('product_barcodes')
-        .select('product_id')
+    console.log('[Scanner] Code détecté:', barcode);
+
+    try {
+      // Recherche par code-barres principal
+      let { data: productsMain, error: errorMain } = await supabase
+        .from('products')
+        .select('*')
         .eq('barcode', barcode)
+        .eq('is_active', true)
         .maybeSingle();
-      
-      if (barcodeData) {
-        product = products.find(p => p.id === barcodeData.product_id);
+
+      if (errorMain) {
+        console.error('[Scanner] Erreur recherche principale:', errorMain);
       }
-    }
-    
-    if (product) {
-      playSuccessBeep();
-      setLastResult({ type: 'success', product });
-      toast.success(`Produit trouvé: ${product.name}`);
-      setTimeout(() => {
-        onProductFound?.(product);
-      }, 800);
-    } else {
+
+      let product = productsMain;
+
+      // Si pas trouvé, chercher dans product_barcodes
+      if (!product) {
+        const { data: barcodes, error: errorBarcodes } = await supabase
+          .from('product_barcodes')
+          .select('product_id')
+          .eq('barcode', barcode)
+          .maybeSingle();
+
+        if (!errorBarcodes && barcodes) {
+          const { data: foundProduct } = await supabase
+            .from('products')
+            .select('*')
+            .eq('id', barcodes.product_id)
+            .eq('is_active', true)
+            .maybeSingle();
+
+          product = foundProduct;
+        }
+      }
+
+      if (product) {
+        console.log('[Scanner] ✅ Produit trouvé:', product.name);
+        playSuccessBeep();
+        mobileScan.handleScanResult({
+          barcode,
+          product,
+          result: 'success',
+          message: product.name
+        });
+        
+        // Appel IMMÉDIAT sans délai
+        setTimeout(() => onProductFound(product), 1500);
+      } else {
+        console.log('[Scanner] ❌ Produit non trouvé:', barcode);
+        playErrorBeep();
+        mobileScan.handleScanResult({
+          barcode,
+          product: null,
+          result: 'error',
+          message: `Code ${barcode} non trouvé`
+        });
+        
+        // Appel IMMÉDIAT sans délai
+        setTimeout(() => onProductNotFound(barcode), 1500);
+      }
+    } catch (error) {
+      console.error('[Scanner] Erreur:', error);
       playErrorBeep();
-      setLastResult({ type: 'error', barcode });
-      toast.error('Produit non trouvé');
-      setTimeout(() => {
-        onProductNotFound?.(barcode);
-      }, 800);
+      mobileScan.handleScanResult({
+        barcode,
+        product: null,
+        result: 'error',
+        message: 'Erreur de recherche'
+      });
     }
   };
 
   const startScanning = async () => {
+    playActivationBeep();
+    mobileScan.startScan();
+
     if (isNative) {
       try {
-        const { camera } = await BarcodeScanner.requestPermissions();
-        if (camera !== 'granted') {
-          toast.error('Permission caméra refusée');
-          return;
-        }
-
-        setIsScanning(true);
-        document.body.classList.add('barcode-scanning-active');
-        
-        const result = await BarcodeScanner.scan({ formats: [] });
-
-        if (result.barcodes.length > 0) {
-          await handleScan(result.barcodes[0].rawValue);
+        const { barcodes } = await BarcodeScanner.scan();
+        if (barcodes && barcodes.length > 0) {
+          const scannedCode = barcodes[0].displayValue;
+          handleScan(scannedCode);
         }
       } catch (error) {
-        console.error('Erreur scan natif:', error);
-        toast.error('Erreur lors du scan');
-      } finally {
-        setIsScanning(false);
-        document.body.classList.remove('barcode-scanning-active');
+        console.error('[Scanner] Erreur scan natif:', error);
+        mobileScan.stopScan();
       }
     } else {
       try {
-        setIsScanning(true);
-        
-        if (!codeReaderRef.current) {
-          const hints = new Map();
-          hints.set(DecodeHintType.TRY_HARDER, true);
-          codeReaderRef.current = new BrowserMultiFormatReader(hints);
-        }
-
-        const videoInputDevices = await BrowserMultiFormatReader.listVideoInputDevices();
-        if (videoInputDevices.length === 0) {
-          toast.error('Aucune caméra détectée');
-          setIsScanning(false);
-          return;
-        }
-
-        const selectedDevice = videoInputDevices.find(device => 
-          device.label.toLowerCase().includes('back') || 
-          device.label.toLowerCase().includes('rear')
-        ) || videoInputDevices[0];
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' }
+        });
 
         if (videoRef.current) {
-          await codeReaderRef.current.decodeFromVideoDevice(
-            selectedDevice.deviceId,
-            videoRef.current,
-            (result) => {
-              if (result) {
-                handleScan(result.getText());
-                stopWebScanning();
-              }
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+
+          codeReaderRef.current = new BrowserMultiFormatReader();
+          
+          codeReaderRef.current.decodeFromVideoElement(videoRef.current, (result, error) => {
+            if (result) {
+              const scannedCode = result.getText();
+              handleScan(scannedCode);
             }
-          );
+          });
         }
       } catch (error) {
-        console.error('Erreur scan web:', error);
-        toast.error('Erreur accès caméra');
-        setIsScanning(false);
+        console.error('[Scanner] Erreur caméra:', error);
+        mobileScan.stopScan();
       }
     }
   };
 
   const stopWebScanning = () => {
-    if (codeReaderRef.current && videoRef.current) {
+    if (videoRef.current?.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
+      stream.getTracks().forEach(track => track.stop());
       videoRef.current.srcObject = null;
     }
-    setIsScanning(false);
+    if (codeReaderRef.current) {
+      codeReaderRef.current = null;
+    }
+    mobileScan.stopScan();
   };
 
   useEffect(() => {
     return () => {
-      if (!isNative && videoRef.current) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-        }
-      }
-    };
-  }, [isNative]);
-
-  return (
-    <Dialog open={open} onOpenChange={(newOpen) => {
-      if (!newOpen && isScanning && !isNative) {
+      if (!isNative) {
         stopWebScanning();
       }
-      if (!newOpen) {
-        setLastResult(null);
-        onClose();
-      }
-    }}>
-      <DialogContent className="sm:max-w-md">
+      mobileScan.clearScan();
+    };
+  }, []);
+
+  const { scanResult, resultMessage } = mobileScan;
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Camera className="h-5 w-5" />
-            Scanner Mobile
+          <DialogTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Camera className="h-5 w-5" />
+              Scanner un code-barres
+            </span>
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
           </DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-6 py-4">
-          {/* Visualisation caméra */}
-          <div className="relative aspect-square w-full bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg overflow-hidden border-2 border-dashed border-primary/20">
-            {!isNative && isScanning && (
+
+        <div className="space-y-4">
+          {/* Zone de scan */}
+          <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+            {!isNative && (
               <video
                 ref={videoRef}
-                className="absolute inset-0 w-full h-full object-cover"
-                autoPlay
+                className="w-full h-full object-cover"
                 playsInline
-                muted
               />
             )}
             
-            {!isScanning && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Camera className="h-24 w-24 text-primary/30" />
-              </div>
-            )}
-            
-            {/* Cadre de guidage */}
-            <div className="absolute inset-0 flex items-center justify-center p-8 pointer-events-none">
-              <div className="relative w-full h-32 border-2 border-primary rounded-lg">
-                <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-lg" />
-                <div className="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-primary rounded-tr-lg" />
-                <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-primary rounded-bl-lg" />
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg" />
-                
-                {isScanning && (
-                  <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary/50 shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-pulse" />
+            {/* Overlay avec feedback visuel */}
+            <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300 ${
+              scanResult === 'success' ? 'bg-green-500/20' : 
+              scanResult === 'error' ? 'bg-red-500/20' : ''
+            }`}>
+              <div className="relative">
+                {mobileScan.isScanning ? (
+                  <div className="w-64 h-40 border-2 border-primary rounded-lg animate-pulse">
+                    <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-primary"></div>
+                    <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-primary"></div>
+                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-primary"></div>
+                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-primary"></div>
+                  </div>
+                ) : scanResult ? (
+                  <div className="text-center text-white animate-fade-in">
+                    {scanResult === 'success' ? (
+                      <>
+                        <CheckCircle className="h-16 w-16 mx-auto mb-2 text-green-400" />
+                        <p className="font-semibold">{resultMessage}</p>
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="h-16 w-16 mx-auto mb-2 text-red-400" />
+                        <p className="font-semibold">{resultMessage}</p>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center text-white">
+                    <Camera className="h-16 w-16 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Prêt à scanner</p>
+                  </div>
                 )}
               </div>
             </div>
-            
-            {/* Résultat du scan */}
-            {lastResult && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-background/95 flex items-center gap-2 shadow-lg">
-                {lastResult.type === 'success' ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    <span className="text-sm font-medium">{lastResult.product?.name}</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-4 w-4 text-red-500" />
-                    <span className="text-sm font-medium">Non trouvé</span>
-                  </>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Instructions */}
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p className="font-medium text-foreground">Instructions:</p>
-            <ol className="list-decimal list-inside space-y-1">
-              <li>Appuyez sur "Démarrer"</li>
-              <li>Autorisez l'accès caméra</li>
-              <li>Positionnez le code-barres</li>
-              <li>Attendez le bip de confirmation</li>
-            </ol>
+          <div className="text-center space-y-2">
+            {mobileScan.isScanning ? (
+              <>
+                <p className="font-semibold">Scan en cours...</p>
+                <p className="text-sm text-muted-foreground">
+                  Positionnez le code-barres dans le cadre
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Cliquez pour démarrer le scan
+                </p>
+              </>
+            )}
           </div>
 
-          {/* Boutons */}
+          {/* Actions */}
           <div className="flex gap-2">
-            {isScanning && !isNative && (
+            {mobileScan.isScanning ? (
               <Button
-                variant="outline"
-                size="lg"
-                onClick={stopWebScanning}
-                className="flex-1 h-14"
+                onClick={() => {
+                  if (!isNative) stopWebScanning();
+                }}
+                variant="destructive"
+                className="flex-1"
               >
-                <X className="h-5 w-5 mr-2" />
                 Arrêter
               </Button>
+            ) : (
+              <Button
+                onClick={startScanning}
+                className="flex-1 gap-2"
+              >
+                <Camera className="h-5 w-5" />
+                Démarrer
+              </Button>
             )}
-            <Button
-              size="lg"
-              onClick={startScanning}
-              disabled={isScanning}
-              className="flex-1 h-14"
-            >
-              <Camera className="h-5 w-5 mr-2" />
-              {isScanning ? 'Scan...' : 'Démarrer'}
+            <Button onClick={onClose} variant="outline">
+              Fermer
             </Button>
           </div>
         </div>

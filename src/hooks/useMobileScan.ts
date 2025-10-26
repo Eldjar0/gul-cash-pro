@@ -5,38 +5,76 @@ interface ScanState {
   lastScanned: { barcode: string; timestamp: number } | null;
   scanResult: 'success' | 'error' | null;
   scannedProduct: any | null;
+  scannedBarcode: string | null;
+  resultMessage: string | null;
 }
 
 interface ScanActions {
   startScan: () => void;
   stopScan: () => void;
-  setScanResult: (result: 'success' | 'error', product?: any) => void;
+  handleScanResult: (params: {
+    barcode: string;
+    product: any | null;
+    result: 'success' | 'error';
+    message?: string;
+  }) => void;
   clearScan: () => void;
-  setLastScanned: (barcode: string) => void;
+  canScan: (barcode: string) => boolean;
 }
 
-export const useMobileScan = create<ScanState & ScanActions>((set) => ({
+const COOLDOWN_MS = 2000;
+
+export const useMobileScan = create<ScanState & ScanActions>((set, get) => ({
   isScanning: false,
   lastScanned: null,
   scanResult: null,
   scannedProduct: null,
+  scannedBarcode: null,
+  resultMessage: null,
 
-  startScan: () => set({ isScanning: true, scanResult: null }),
+  startScan: () => set({ 
+    isScanning: true, 
+    scanResult: null,
+    resultMessage: null 
+  }),
+  
   stopScan: () => set({ isScanning: false }),
   
-  setScanResult: (result, product) => set({ 
-    scanResult: result, 
-    scannedProduct: product,
-    isScanning: false 
-  }),
+  handleScanResult: ({ barcode, product, result, message }) => {
+    const state = get();
+    
+    // Anti-duplication: vérifier le cooldown
+    if (state.lastScanned?.barcode === barcode) {
+      const timeSinceLastScan = Date.now() - state.lastScanned.timestamp;
+      if (timeSinceLastScan < COOLDOWN_MS) {
+        console.log(`[MobileScan] Cooldown actif pour ${barcode}, ignoré`);
+        return;
+      }
+    }
+
+    set({
+      isScanning: false,
+      scanResult: result,
+      scannedProduct: product,
+      scannedBarcode: barcode,
+      resultMessage: message || (result === 'success' ? product?.name : `Code ${barcode} non trouvé`),
+      lastScanned: { barcode, timestamp: Date.now() }
+    });
+  },
   
   clearScan: () => set({ 
     scanResult: null, 
     scannedProduct: null,
-    lastScanned: null 
+    scannedBarcode: null,
+    resultMessage: null
   }),
   
-  setLastScanned: (barcode) => set({ 
-    lastScanned: { barcode, timestamp: Date.now() } 
-  }),
+  canScan: (barcode: string) => {
+    const state = get();
+    if (state.lastScanned?.barcode === barcode) {
+      const timeSinceLastScan = Date.now() - state.lastScanned.timestamp;
+      return timeSinceLastScan >= COOLDOWN_MS;
+    }
+    return true;
+  }
 }));
