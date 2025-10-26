@@ -40,7 +40,7 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
                 }}
               >
                 <Package className="h-6 w-6 shrink-0" />
-                <span className="text-sm font-medium text-center line-clamp-2 leading-snug break-words">
+                <span className="text-sm font-medium text-center line-clamp-2 leading-tight break-words w-full">
                   {category.name}
                 </span>
               </Button>
