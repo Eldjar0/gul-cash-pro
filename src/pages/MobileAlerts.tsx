@@ -63,7 +63,14 @@ export default function MobileAlerts() {
                   <Card
                     key={alert.id}
                     className="p-3 sm:p-4 cursor-pointer hover:bg-accent transition-colors"
-                    onClick={() => alert.actionUrl && navigate(alert.actionUrl)}
+                    onClick={() => {
+                      // Si c'est une alerte de stock, aller vers la liste complète
+                      if (alert.type === 'stock_low' || alert.type === 'stock_out') {
+                        navigate('/mobile/low-stock');
+                      } else if (alert.actionUrl) {
+                        navigate(alert.actionUrl);
+                      }
+                    }}
                   >
                     <div className="flex items-start gap-3">
                       {getSeverityIcon(alert.severity)}
