@@ -42,14 +42,25 @@ export function TopProductsCard() {
             {topProducts.map((product, index) => (
               <div
                 key={product.product_id}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors gap-3"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {product.product_image ? (
+                    <img 
+                      src={product.product_image} 
+                      alt={product.product_name}
+                      className="w-12 h-12 object-cover rounded shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-muted rounded flex items-center justify-center shrink-0">
+                      <Package className="h-6 w-6 text-muted-foreground/40" />
+                    </div>
+                  )}
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold shrink-0">
                     {index + 1}
                   </div>
-                  <div>
-                    <p className="font-medium">{product.product_name}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{product.product_name}</p>
                     <p className="text-sm text-muted-foreground">
                       {product.total_quantity} unités vendues
                     </p>

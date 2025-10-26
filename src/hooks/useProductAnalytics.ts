@@ -5,6 +5,7 @@ import { startOfDay, endOfDay, subDays } from 'date-fns';
 export interface ProductPerformance {
   product_id: string;
   product_name: string;
+  product_image?: string | null;
   total_quantity: number;
   total_revenue: number;
   sale_count: number;
@@ -46,6 +47,22 @@ export const useTopProducts = (days: number = 30) => {
           });
         }
       });
+
+      // Get product images
+      const productIds = Array.from(productMap.keys()).filter(id => id !== 'unknown');
+      if (productIds.length > 0) {
+        const { data: products } = await supabase
+          .from('products')
+          .select('id, image')
+          .in('id', productIds);
+        
+        products?.forEach(product => {
+          const perf = productMap.get(product.id);
+          if (perf) {
+            perf.product_image = product.image;
+          }
+        });
+      }
 
       // Calculate averages and sort
       const products = Array.from(productMap.values())

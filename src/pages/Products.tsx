@@ -460,6 +460,17 @@ export default function Products() {
                   <div className="space-y-4">
                     {/* Header */}
                     <div className="flex items-start justify-between gap-3">
+                      {/* Image du produit */}
+                      {product.image && (
+                        <div className="shrink-0 w-24 h-24 rounded overflow-hidden border-2 border-border">
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      
                       <div className="flex items-start gap-3 flex-1">
                         <input
                           type="checkbox"
