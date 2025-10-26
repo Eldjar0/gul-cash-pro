@@ -44,6 +44,7 @@ const MobileSales = lazy(() => import("./pages/MobileSales"));
 const MobileCustomers = lazy(() => import("./pages/MobileCustomers"));
 const MobileCashRegister = lazy(() => import("./pages/MobileCashRegister"));
 const MobileCustomerDetail = lazy(() => import("./components/mobile/MobileCustomerDetail"));
+const MobileRapidScan = lazy(() => import("./pages/MobileRapidScan"));
 
 const queryClient = new QueryClient();
 
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/mobile/customers" element={<ProtectedRoute><MobileCustomers /></ProtectedRoute>} />
             <Route path="/mobile/customer/:id" element={<ProtectedRoute><MobileCustomerDetail /></ProtectedRoute>} />
             <Route path="/mobile/cash-register" element={<ProtectedRoute><MobileCashRegister /></ProtectedRoute>} />
+            <Route path="/mobile/scan-rapid" element={<ProtectedRoute><MobileRapidScan /></ProtectedRoute>} />
             <Route path="/camera-scanner" element={<ProtectedRoute><DirectCameraScanner /></ProtectedRoute>} />
             <Route path="/camera-scanner/:sessionCode" element={<ProtectedRoute><DirectCameraScanner /></ProtectedRoute>} />
             

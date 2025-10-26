@@ -197,7 +197,7 @@ export const MobileBarcodeScanner = ({ open, onClose, onProductFound, onProductN
         });
         
         // Appel IMMÉDIAT sans délai
-        setTimeout(() => onProductFound(product), 1500);
+        setTimeout(() => onProductFound(product), 100);
       } else {
         console.log('[Scanner] ❌ Produit non trouvé:', barcode);
         playErrorBeep();
@@ -209,7 +209,7 @@ export const MobileBarcodeScanner = ({ open, onClose, onProductFound, onProductN
         });
         
         // Appel IMMÉDIAT sans délai
-        setTimeout(() => onProductNotFound(barcode), 1500);
+        setTimeout(() => onProductNotFound(barcode), 300);
       }
     } catch (error) {
       console.error('[Scanner] Erreur:', error);

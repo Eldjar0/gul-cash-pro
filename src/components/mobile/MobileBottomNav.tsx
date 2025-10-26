@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import {
   Package,
   ShoppingCart,
-  Tag,
+  Scan,
   FolderKanban,
   Home,
 } from 'lucide-react';
@@ -18,8 +18,8 @@ export function MobileBottomNav({ currentPath }: MobileBottomNavProps) {
   const navItems = [
     { path: '/mobile/management', icon: Home, label: 'Menu' },
     { path: '/mobile/products', icon: Package, label: 'Produits' },
+    { path: '/mobile/scan-rapid', icon: Scan, label: 'Scan', isSpecial: true },
     { path: '/mobile/orders', icon: ShoppingCart, label: 'Commandes' },
-    { path: '/mobile/promotions', icon: Tag, label: 'Promos' },
     { path: '/mobile/categories', icon: FolderKanban, label: 'Catégories' },
   ];
 
@@ -30,16 +30,20 @@ export function MobileBottomNav({ currentPath }: MobileBottomNavProps) {
           const Icon = item.icon;
           const isActive = currentPath === item.path;
           
+          const isSpecial = 'isSpecial' in item && item.isSpecial;
+          
           return (
             <Button
               key={item.path}
-              variant={isActive ? 'default' : 'ghost'}
+              variant={isActive ? 'default' : isSpecial ? 'default' : 'ghost'}
               size="sm"
               onClick={() => navigate(item.path)}
-              className="flex-col h-auto py-1.5 sm:py-2 px-2 sm:px-3 gap-0.5 sm:gap-1 min-w-0"
+              className={`flex-col h-auto py-1.5 sm:py-2 px-2 sm:px-3 gap-0.5 sm:gap-1 min-w-0 ${
+                isSpecial ? 'bg-primary hover:bg-primary/90 scale-110' : ''
+              }`}
             >
-              <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
-              <span className={`text-[10px] sm:text-xs truncate ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
+              <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${isActive || isSpecial ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
+              <span className={`text-[10px] sm:text-xs truncate ${isActive || isSpecial ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
                 {item.label}
               </span>
             </Button>
