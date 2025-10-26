@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Camera, X, Scan } from 'lucide-react';
@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { useProducts } from '@/hooks/useProducts';
 import { UnknownBarcodeDialog } from '@/components/pos/UnknownBarcodeDialog';
 import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
+import { BrowserMultiFormatReader } from '@zxing/browser';
+import { DecodeHintType } from '@zxing/library';
 
 interface MobileBarcodeScannerProps {
   open: boolean;
@@ -21,6 +23,9 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
   const [showUnknownDialog, setShowUnknownDialog] = useState(false);
   const [showProductDialog, setShowProductDialog] = useState(false);
   const { data: products = [] } = useProducts();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
+  const isNative = Capacitor.isNativePlatform();
 
   // Sons
   const playSuccessSound = () => {
@@ -35,41 +40,98 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
   };
 
   const startScanning = async () => {
-    if (!Capacitor.isNativePlatform()) {
-      toast.info('Scanner caméra disponible uniquement sur mobile');
-      return;
-    }
+    if (isNative) {
+      // Scanner natif Capacitor
+      try {
+        const { camera } = await BarcodeScanner.requestPermissions();
+        if (camera !== 'granted') {
+          toast.error('Permission caméra refusée');
+          return;
+        }
 
-    try {
-      // Demander les permissions
-      const { camera } = await BarcodeScanner.requestPermissions();
-      if (camera !== 'granted') {
-        toast.error('Permission caméra refusée');
-        return;
+        setIsScanning(true);
+        document.body.classList.add('barcode-scanning-active');
+        
+        const result = await BarcodeScanner.scan({ formats: [] });
+
+        if (result.barcodes.length > 0) {
+          const barcode = result.barcodes[0].rawValue;
+          await handleScan(barcode);
+        }
+      } catch (error) {
+        console.error('Erreur scan natif:', error);
+        toast.error('Erreur lors du scan');
+      } finally {
+        setIsScanning(false);
+        document.body.classList.remove('barcode-scanning-active');
       }
+    } else {
+      // Scanner web pour navigateur
+      try {
+        setIsScanning(true);
+        
+        if (!codeReaderRef.current) {
+          const hints = new Map();
+          hints.set(DecodeHintType.TRY_HARDER, true);
+          codeReaderRef.current = new BrowserMultiFormatReader(hints);
+        }
 
-      setIsScanning(true);
-      
-      // Ajouter la classe pour cacher le background
-      document.body.classList.add('barcode-scanning-active');
-      
-      // Lancer le scan avec overlay
-      const result = await BarcodeScanner.scan({
-        formats: [],
-      });
+        const videoInputDevices = await BrowserMultiFormatReader.listVideoInputDevices();
+        if (videoInputDevices.length === 0) {
+          toast.error('Aucune caméra détectée');
+          setIsScanning(false);
+          return;
+        }
 
-      if (result.barcodes.length > 0) {
-        const barcode = result.barcodes[0].rawValue;
-        await handleScan(barcode);
+        // Préférer la caméra arrière
+        const selectedDevice = videoInputDevices.find(device => 
+          device.label.toLowerCase().includes('back') || 
+          device.label.toLowerCase().includes('rear')
+        ) || videoInputDevices[0];
+
+        if (videoRef.current) {
+          await codeReaderRef.current.decodeFromVideoDevice(
+            selectedDevice.deviceId,
+            videoRef.current,
+            (result, error) => {
+              if (result) {
+                const barcode = result.getText();
+                handleScan(barcode);
+                stopWebScanning();
+              }
+            }
+          );
+        }
+      } catch (error) {
+        console.error('Erreur scan web:', error);
+        toast.error('Erreur accès caméra');
+        setIsScanning(false);
       }
-    } catch (error) {
-      console.error('Erreur scan:', error);
-      toast.error('Erreur lors du scan');
-    } finally {
-      setIsScanning(false);
-      document.body.classList.remove('barcode-scanning-active');
     }
   };
+
+  const stopWebScanning = () => {
+    if (codeReaderRef.current && videoRef.current) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      videoRef.current.srcObject = null;
+    }
+    setIsScanning(false);
+  };
+
+  // Cleanup au démontage
+  useEffect(() => {
+    return () => {
+      if (!isNative && videoRef.current) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+      }
+    };
+  }, [isNative]);
 
   const handleScan = async (barcode: string) => {
     setScannedBarcode(barcode);
@@ -99,7 +161,14 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
 
   return (
     <>
-      <Dialog open={open && !isScanning} onOpenChange={onClose}>
+      <Dialog open={open} onOpenChange={(newOpen) => {
+        if (!newOpen && isScanning && !isNative) {
+          stopWebScanning();
+        }
+        if (!newOpen) {
+          onClose();
+        }
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -111,12 +180,25 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
           <div className="space-y-6 py-4">
             {/* Visualisation du scanner */}
             <div className="relative aspect-square w-full bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg overflow-hidden border-2 border-dashed border-primary/20">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Camera className="h-24 w-24 text-primary/30" />
-              </div>
+              {/* Vidéo pour le scan web */}
+              {!isNative && isScanning && (
+                <video
+                  ref={videoRef}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  autoPlay
+                  playsInline
+                  muted
+                />
+              )}
+              
+              {!isScanning && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Camera className="h-24 w-24 text-primary/30" />
+                </div>
+              )}
               
               {/* Lignes de guidage */}
-              <div className="absolute inset-0 flex items-center justify-center p-8">
+              <div className="absolute inset-0 flex items-center justify-center p-8 pointer-events-none">
                 <div className="relative w-full h-32 border-2 border-primary rounded-lg">
                   {/* Coins du cadre */}
                   <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-lg" />
@@ -125,13 +207,15 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg" />
                   
                   {/* Ligne de scan animée */}
-                  <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary/50 shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-pulse" />
+                  {isScanning && (
+                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary/50 shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-pulse" />
+                  )}
                 </div>
               </div>
               
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center pointer-events-none">
                 <p className="text-sm font-medium text-primary px-4 py-2 bg-background/90 rounded-full">
-                  Alignez le code-barres
+                  {isScanning ? 'Scannez le code-barres' : 'Alignez le code-barres'}
                 </p>
               </div>
             </div>
@@ -141,22 +225,35 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
               <p className="font-medium text-foreground">Instructions:</p>
               <ol className="list-decimal list-inside space-y-1">
                 <li>Appuyez sur "Démarrer le scan"</li>
+                <li>Autorisez l'accès à la caméra</li>
                 <li>Positionnez le code-barres dans le cadre</li>
-                <li>Maintenez l'appareil stable</li>
                 <li>La détection est automatique</li>
               </ol>
             </div>
 
-            {/* Bouton de scan */}
-            <Button
-              size="lg"
-              onClick={startScanning}
-              disabled={isScanning}
-              className="w-full h-14 text-base"
-            >
-              <Camera className="h-5 w-5 mr-2" />
-              {isScanning ? 'Scan en cours...' : 'Démarrer le scan'}
-            </Button>
+            {/* Boutons */}
+            <div className="flex gap-2">
+              {isScanning && !isNative && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={stopWebScanning}
+                  className="flex-1 h-14 text-base"
+                >
+                  <X className="h-5 w-5 mr-2" />
+                  Arrêter
+                </Button>
+              )}
+              <Button
+                size="lg"
+                onClick={startScanning}
+                disabled={isScanning}
+                className="flex-1 h-14 text-base"
+              >
+                <Camera className="h-5 w-5 mr-2" />
+                {isScanning ? 'Scan en cours...' : 'Démarrer le scan'}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
