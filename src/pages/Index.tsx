@@ -1702,6 +1702,16 @@ const Index = () => {
                 {cart.map((item, index) => <div key={index} className="bg-white border border-border p-2 rounded-lg hover:border-primary/40 transition-all group hover:shadow-sm">
                     {/* En-tête avec nom et boutons */}
                     <div className="flex justify-between items-start gap-2 mb-2">
+                      {/* Image du produit */}
+                      {item.product.image && (
+                        <div className="shrink-0 w-12 h-12 rounded overflow-hidden border border-border">
+                          <img 
+                            src={item.product.image} 
+                            alt={item.product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h4 className="text-foreground font-bold text-sm truncate flex-1">{item.product.name}</h4>

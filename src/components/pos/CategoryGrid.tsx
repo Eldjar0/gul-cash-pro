@@ -3,7 +3,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCategories } from '@/hooks/useCategories';
 import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/hooks/useProducts';
-import { Package, ArrowLeft } from 'lucide-react';
+import { Package, ArrowLeft, ImageIcon } from 'lucide-react';
 import { useState } from 'react';
 
 interface CategoryGridProps {
@@ -83,9 +83,22 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
                     key={product.id}
                     variant="outline"
                     onClick={() => onProductSelect(product)}
-                    className="min-h-[6rem] h-auto flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10"
+                    className="min-h-[6rem] h-auto flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10 relative overflow-hidden"
                     disabled={product.stock <= 0}
                   >
+                    {product.image ? (
+                      <div className="w-full h-16 relative mb-1">
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="w-full h-full object-cover rounded"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-16 bg-muted/30 rounded flex items-center justify-center mb-1">
+                        <Package className="h-6 w-6 text-muted-foreground/40" />
+                      </div>
+                    )}
                     <span className="text-xs font-medium text-center line-clamp-2 leading-snug break-words">
                       {product.name}
                     </span>
