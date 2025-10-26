@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Search, ShoppingCart, Plus, Minus, X, CreditCard, Banknote, Smartphone, Scan } from 'lucide-react';
+import { Search, ShoppingCart, Plus, Minus, X, CreditCard, Banknote, Smartphone, Scan, Package } from 'lucide-react';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { toast } from 'sonner';
 import { MobileBarcodeScanner } from '@/components/mobile/MobileBarcodeScanner';
@@ -186,6 +186,21 @@ export default function MobilePOS() {
                   {cart.map(item => (
                     <Card key={item.product.id} className="p-3">
                       <div className="flex items-start gap-3">
+                        {/* Image du produit */}
+                        {item.product.image ? (
+                          <div className="shrink-0 w-16 h-16 rounded overflow-hidden border border-border">
+                            <img 
+                              src={item.product.image} 
+                              alt={item.product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="shrink-0 w-16 h-16 rounded bg-muted flex items-center justify-center border border-border">
+                            <Package className="h-8 w-8 text-muted-foreground/40" />
+                          </div>
+                        )}
+                        
                         <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-sm truncate">{item.product.name}</h4>
                           <p className="text-sm text-muted-foreground">
