@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Search, Package, Upload, Tag, Trash2, Plus, FileText, Printer, Pencil, Save, Edit } from 'lucide-react';
+import { Search, Package, Upload, Tag, Trash2, Plus, FileText, Printer, Pencil } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
@@ -26,11 +26,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { generateStockPDF } from '@/utils/generateStockPDF';
-import { A4LabelLayout, PREDEFINED_FORMATS, type LabelSlot, type StickerFormat } from '@/components/inventory/A4LabelLayout';
-import { LabelProductSelector } from '@/components/inventory/LabelProductSelector';
-import { LabelDesignEditor } from '@/components/inventory/LabelDesignEditor';
-import { generateA4LabelsPDF } from '@/utils/generateA4LabelsPDF';
-import { useLabelConfigs } from '@/hooks/useLabelConfigs';
+import JsBarcode from 'jsbarcode';
 
 const normalizeBarcodeInput = (raw: string) => {
   const map: Record<string, string> = {
@@ -48,7 +44,7 @@ const normalizeBarcodeInput = (raw: string) => {
     .replace(/\D+/g, ''); // Supprimer tous les caractères non-numériques à la fin
 };
 
-export const ProductsManagement = ({ initialTab = 'products' }: { initialTab?: 'products' | 'labels' }) => {
+export const ProductsManagement = () => {
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
   const { mutate: createProduct } = useCreateProduct();
@@ -78,15 +74,28 @@ export const ProductsManagement = ({ initialTab = 'products' }: { initialTab?: '
   const [productToDelete, setProductToDelete] = useState<any | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  // État pour l'onglet étiquettes A4
-  const [selectedFormat, setSelectedFormat] = useState<StickerFormat>(PREDEFINED_FORMATS[0]);
-  const [labelSlots, setLabelSlots] = useState<LabelSlot[]>([]);
-  const [labelTemplate, setLabelTemplate] = useState<any>(null);
-  const [templateEditorOpen, setTemplateEditorOpen] = useState(false);
-  const [saveConfigDialogOpen, setSaveConfigDialogOpen] = useState(false);
-  const [configName, setConfigName] = useState('');
-  
-  const { configs, createConfig } = useLabelConfigs();
+  // État pour l'onglet étiquettes
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [labelCount, setLabelCount] = useState<Record<string, number>>({});
+  const [showPrice, setShowPrice] = useState(true);
+  const [labelSize, setLabelSize] = useState<'small' | 'medium' | 'large' | '7x3cm' | 'custom'>('7x3cm');
+  const [customWidth, setCustomWidth] = useState(70);
+  const [customHeight, setCustomHeight] = useState(30);
+  // Configuration de personnalisation des étiquettes
+  const [labelConfig, setLabelConfig] = useState({
+    productNameSize: 14,
+    productNameWeight: 700,
+    priceSize: 20,
+    priceWeight: 700,
+    barcodeNumberSize: 9,
+    barcodeNumberWeight: 400,
+    priceUnitSize: 10,
+    priceUnitWeight: 400,
+    vatRateSize: 9,
+    vatRateWeight: 400,
+    vatAmountSize: 9,
+    vatAmountWeight: 400
+  });
 
   // Scanner physique pour remplir automatiquement le code-barres
   // Désactivé par défaut pour permettre la saisie normale
@@ -205,78 +214,211 @@ export const ProductsManagement = ({ initialTab = 'products' }: { initialTab?: '
     setProductToDelete(null);
   };
 
-  // Gestion du système d'étiquettes A4
-  const handleAutoAssign = (selectedProducts: { product: any; copies: number }[]) => {
-    const newSlots: LabelSlot[] = [];
-    let position = 1;
-    
-    selectedProducts.forEach(({ product, copies }) => {
-      for (let i = 0; i < copies; i++) {
-        newSlots.push({
-          position: position++,
-          productId: product.id,
-          productName: product.name,
-          barcode: product.barcode,
-          price: product.price,
-        });
+  // Gestion des étiquettes
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+        const newCount = { ...labelCount };
+        delete newCount[productId];
+        setLabelCount(newCount);
+      } else {
+        newSet.add(productId);
+        setLabelCount(prev => ({ ...prev, [productId]: 1 }));
+      }
+      return newSet;
+    });
+  };
+
+  const updateLabelCount = (productId: string, count: number) => {
+    setLabelCount(prev => ({ ...prev, [productId]: Math.max(1, count) }));
+  };
+
+  const generateLabels = () => {
+    const selectedProductsList = products.filter(p => selectedProducts.has(p.id));
+    if (selectedProductsList.length === 0) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const labelSizes = {
+      small: { width: '60mm', height: '40mm', barcodeHeight: '40' },
+      medium: { width: '80mm', height: '50mm', barcodeHeight: '50' },
+      large: { width: '100mm', height: '60mm', barcodeHeight: '60' },
+      '7x3cm': { width: '70mm', height: '30mm', barcodeHeight: '30' },
+      'custom': { 
+        width: `${customWidth}mm`, 
+        height: `${customHeight}mm`, 
+        barcodeHeight: '35'
+      }
+    };
+
+    const size = labelSizes[labelSize];
+
+    // Générer les SVG de code-barres
+    const barcodes: Record<string, string> = {};
+    selectedProductsList.forEach(product => {
+      if (product.barcode) {
+        try {
+          const canvas = document.createElement('canvas');
+          JsBarcode(canvas, product.barcode, {
+            format: 'CODE128',
+            width: 2,
+            height: parseInt(size.barcodeHeight),
+            displayValue: false,
+            margin: 0
+          });
+          barcodes[product.id] = canvas.toDataURL('image/png');
+        } catch (error) {
+          console.error('Erreur génération code-barres:', error);
+        }
       }
     });
+
+    let htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Étiquettes Produits</title>
+          <style>
+            @page { margin: 5mm; }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+              font-family: Arial, sans-serif; 
+              display: flex;
+              flex-wrap: wrap;
+              gap: 5mm;
+              padding: 5mm;
+              background: white;
+            }
+            .label {
+              width: ${size.width};
+              height: ${size.height};
+              border: 2px solid #000;
+              padding: 3mm;
+              display: flex;
+              flex-direction: column;
+              gap: 2mm;
+              page-break-inside: avoid;
+              background: white;
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+            }
+            .product-name {
+              font-size: ${labelConfig.productNameSize}px;
+              font-weight: ${labelConfig.productNameWeight};
+              max-width: 60%;
+              line-height: 1.2;
+            }
+            .header-price {
+              font-size: ${labelConfig.priceSize}px;
+              font-weight: ${labelConfig.priceWeight};
+              text-align: right;
+            }
+            .barcode-container {
+              text-align: center;
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+            }
+            .barcode-image {
+              max-width: 100%;
+              height: auto;
+              margin: 0 auto;
+            }
+            .barcode-number {
+              font-size: ${labelConfig.barcodeNumberSize}px;
+              font-weight: ${labelConfig.barcodeNumberWeight};
+              font-family: monospace;
+              margin-top: 1mm;
+            }
+            .info-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 1mm 0;
+            }
+            .price-with-unit {
+              font-size: ${labelConfig.priceUnitSize}px;
+              font-weight: ${labelConfig.priceUnitWeight};
+            }
+            .vat-info {
+              font-size: ${labelConfig.vatRateSize}px;
+              font-weight: ${labelConfig.vatRateWeight};
+              text-align: right;
+            }
+            .vat-amount {
+              font-size: ${labelConfig.vatAmountSize}px;
+              font-weight: ${labelConfig.vatAmountWeight};
+            }
+            @media print {
+              body { padding: 0; gap: 3mm; }
+              .label { border: 1.5px solid #000; }
+            }
+          </style>
+        </head>
+        <body>
+    `;
+
+    selectedProductsList.forEach(product => {
+      const copies = labelCount[product.id] || 1;
+      const unitText = product.unit || 'unité';
+      const priceUnit = product.type === 'weight' ? '/kg' : (unitText === 'carton' ? '/carton' : (unitText === 'litre' ? '/litre' : ''));
+      const barcodeImage = barcodes[product.id];
+      const vatRate = product.vat_rate || 0;
+      const priceHT = product.price / (1 + vatRate / 100);
+      const vatAmount = product.price - priceHT;
+      
+      for (let i = 0; i < copies; i++) {
+        htmlContent += `
+          <div class="label">
+            <div class="header">
+              <div class="product-name">${product.name}</div>
+              <div class="header-price">${product.price.toFixed(2)}€</div>
+            </div>
+            
+            <div class="barcode-container">
+              ${barcodeImage ? `
+                <img src="${barcodeImage}" class="barcode-image" alt="code-barres"/>
+                <div class="barcode-number">${product.barcode}</div>
+              ` : '<div style="font-size: 8px; color: #999;">Aucun code-barres</div>'}
+            </div>
+            
+            <div class="info-row">
+              <div class="price-with-unit">Prix: ${product.price.toFixed(2)}€${priceUnit}</div>
+              <div class="vat-info">TVA: ${vatRate.toFixed(1)}%</div>
+            </div>
+            
+            <div class="info-row">
+              <div class="vat-amount">Montant TVA: ${vatAmount.toFixed(2)}€</div>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    htmlContent += `
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
     
-    setLabelSlots(newSlots);
-    toast({
-      title: 'Produits assignés',
-      description: `${newSlots.length} étiquette(s) ont été assignées automatiquement.`,
-    });
-  };
-
-  const handlePrintA4Labels = () => {
-    if (labelSlots.length === 0) {
-      toast({
-        title: 'Aucune étiquette',
-        description: 'Veuillez d\'abord assigner des produits.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const doc = generateA4LabelsPDF({
-      format: selectedFormat,
-      slots: labelSlots,
-      template: labelTemplate,
-      showCutLines: true,
-    });
-
-    doc.autoPrint();
-    window.open(doc.output('bloburl'), '_blank');
-    
-    toast({
-      title: 'Impression lancée',
-      description: 'Le document PDF a été généré et envoyé à l\'imprimante.',
-    });
-  };
-
-  const handleSaveConfiguration = () => {
-    if (!configName.trim()) {
-      toast({
-        title: 'Nom requis',
-        description: 'Veuillez entrer un nom pour la configuration.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    createConfig({
-      name: configName,
-      format: selectedFormat,
-      template: labelTemplate,
-    });
-
-    setSaveConfigDialogOpen(false);
-    setConfigName('');
+    setTimeout(() => {
+      printWindow.print();
+      setTimeout(() => printWindow.close(), 100);
+    }, 500);
   };
 
   return (
-    <Tabs defaultValue={initialTab} className="space-y-6">
+    <Tabs defaultValue="products" className="space-y-6">
       <TabsList>
         <TabsTrigger value="products">
           <Package className="h-4 w-4 mr-2" />
@@ -517,48 +659,154 @@ export const ProductsManagement = ({ initialTab = 'products' }: { initialTab?: '
       <TabsContent value="labels" className="space-y-6">
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Impression d'étiquettes sur feuille A4</h2>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setTemplateEditorOpen(true)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Modifier le design
-                </Button>
-                <Button variant="outline" onClick={() => setSaveConfigDialogOpen(true)} disabled={labelSlots.length === 0}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Sauver la config
-                </Button>
-                <Button onClick={handlePrintA4Labels} disabled={labelSlots.length === 0}>
-                  <Printer className="h-4 w-4 mr-2" />
-                  Imprimer A4
-                </Button>
+            <h2 className="text-lg font-semibold mb-4">Configuration des étiquettes</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="space-y-2">
+                <Label>Taille d'étiquette</Label>
+                <Select value={labelSize} onValueChange={(v: any) => setLabelSize(v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7x3cm">7x3cm (70x30mm)</SelectItem>
+                    <SelectItem value="small">Petite (60×40mm)</SelectItem>
+                    <SelectItem value="medium">Moyenne (80×50mm)</SelectItem>
+                    <SelectItem value="large">Grande (100×60mm)</SelectItem>
+                    <SelectItem value="custom">Personnalisée</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {labelSize === 'custom' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Largeur (mm)</Label>
+                    <Input
+                      type="number"
+                      min="20"
+                      max="200"
+                      value={customWidth}
+                      onChange={(e) => setCustomWidth(parseInt(e.target.value) || 70)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Hauteur (mm)</Label>
+                    <Input
+                      type="number"
+                      min="20"
+                      max="200"
+                      value={customHeight}
+                      onChange={(e) => setCustomHeight(parseInt(e.target.value) || 30)}
+                    />
+                  </div>
+                </>
+              )}
+
+            </div>
+
+            <div className="mt-6 p-4 border rounded-lg space-y-4">
+              <h3 className="font-semibold text-sm">Personnalisation des étiquettes</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Nom produit (px)</Label>
+                  <Input type="number" min="8" max="30" value={labelConfig.productNameSize} onChange={(e) => setLabelConfig({...labelConfig, productNameSize: Number(e.target.value)})} className="h-8" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Épaisseur nom</Label>
+                  <Select value={String(labelConfig.productNameWeight)} onValueChange={(v) => setLabelConfig({...labelConfig, productNameWeight: Number(v)})}>
+                    <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="400">Normal</SelectItem>
+                      <SelectItem value="600">Semi-gras</SelectItem>
+                      <SelectItem value="700">Gras</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Prix TTC (px)</Label>
+                  <Input type="number" min="10" max="40" value={labelConfig.priceSize} onChange={(e) => setLabelConfig({...labelConfig, priceSize: Number(e.target.value)})} className="h-8" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">N° code-barres (px)</Label>
+                  <Input type="number" min="6" max="20" value={labelConfig.barcodeNumberSize} onChange={(e) => setLabelConfig({...labelConfig, barcodeNumberSize: Number(e.target.value)})} className="h-8" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Prix/unité (px)</Label>
+                  <Input type="number" min="6" max="20" value={labelConfig.priceUnitSize} onChange={(e) => setLabelConfig({...labelConfig, priceUnitSize: Number(e.target.value)})} className="h-8" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Taux TVA (px)</Label>
+                  <Input type="number" min="6" max="20" value={labelConfig.vatRateSize} onChange={(e) => setLabelConfig({...labelConfig, vatRateSize: Number(e.target.value)})} className="h-8" />
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Colonne gauche : Sélection des produits */}
-              <div className="lg:col-span-1">
-                <LabelProductSelector
-                  products={filteredProducts}
-                  onAutoAssign={handleAutoAssign}
-                />
-              </div>
+            <div className="flex gap-2 mb-6">
+              <Button 
+                onClick={generateLabels} 
+                disabled={selectedProducts.size === 0}
+                className="flex-1"
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                Imprimer ({selectedProducts.size} produit{selectedProducts.size > 1 ? 's' : ''})
+              </Button>
+            </div>
 
-              {/* Colonne droite : Layout A4 */}
-              <div className="lg:col-span-2">
-                <A4LabelLayout
-                  format={selectedFormat}
-                  onFormatChange={setSelectedFormat}
-                  slots={labelSlots}
-                  onSlotsChange={setLabelSlots}
-                />
-              </div>
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher des produits..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            <div className="space-y-2 max-h-[500px] overflow-y-auto">
+              {filteredProducts.map((product) => (
+                <Card key={product.id} className="hover:bg-accent/50 transition-colors">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      <Checkbox
+                        checked={selectedProducts.has(product.id)}
+                        onCheckedChange={() => toggleProductSelection(product.id)}
+                      />
+                      
+                      <div className="flex-1">
+                        <div className="font-medium">{product.name}</div>
+                        <div className="text-sm text-muted-foreground flex items-center gap-2">
+                          {product.barcode && (
+                            <Badge variant="outline" className="font-mono text-xs">
+                              {product.barcode}
+                            </Badge>
+                          )}
+                          <span>{product.price.toFixed(2)} €</span>
+                        </div>
+                      </div>
+
+                      {selectedProducts.has(product.id) && (
+                        <div className="flex items-center gap-2">
+                          <Label className="text-sm">Copies:</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            max="100"
+                            value={labelCount[product.id] || 1}
+                            onChange={(e) => updateLabelCount(product.id, parseInt(e.target.value) || 1)}
+                            className="w-20"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </CardContent>
         </Card>
       </TabsContent>
 
-      {/* Dialogs */}
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -574,44 +822,7 @@ export const ProductsManagement = ({ initialTab = 'products' }: { initialTab?: '
         </AlertDialogContent>
       </AlertDialog>
 
-      <LabelDesignEditor
-        open={templateEditorOpen}
-        onOpenChange={setTemplateEditorOpen}
-        labelSize="custom"
-        customWidth={selectedFormat.width}
-        customHeight={selectedFormat.height}
-        onSaveTemplate={setLabelTemplate}
-        currentTemplate={labelTemplate}
-      />
-
-      <Dialog open={saveConfigDialogOpen} onOpenChange={setSaveConfigDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Sauvegarder la configuration</DialogTitle>
-            <DialogDescription>
-              Enregistrez votre disposition d'étiquettes pour la réutiliser plus tard.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Nom de la configuration</Label>
-              <Input
-                value={configName}
-                onChange={(e) => setConfigName(e.target.value)}
-                placeholder="Ex: Étiquettes promotionnelles"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setSaveConfigDialogOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handleSaveConfiguration}>
-              Sauvegarder
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* LabelDesignEditor supprimé - remplacé par configuration simple */}
     </Tabs>
   );
 };

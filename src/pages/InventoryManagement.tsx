@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,7 +12,6 @@ import { useSuppliers } from '@/hooks/useSuppliers';
 
 export default function InventoryManagement() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [activeTab, setActiveTab] = useState('products');
   const { data: products = [] } = useProducts();
   const { data: suppliers = [] } = useSuppliers();
@@ -133,7 +132,7 @@ export default function InventoryManagement() {
 
             <div className="p-6">
               <TabsContent value="products" className="mt-0">
-                <ProductsManagement initialTab={(location.state as any)?.openLabels ? 'labels' : 'products'} />
+                <ProductsManagement />
               </TabsContent>
 
               <TabsContent value="stock" className="mt-0">
