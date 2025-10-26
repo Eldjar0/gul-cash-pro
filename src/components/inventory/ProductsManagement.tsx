@@ -48,7 +48,7 @@ const normalizeBarcodeInput = (raw: string) => {
     .replace(/\D+/g, ''); // Supprimer tous les caractères non-numériques à la fin
 };
 
-export const ProductsManagement = () => {
+export const ProductsManagement = ({ initialTab = 'products' }: { initialTab?: 'products' | 'labels' }) => {
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
   const { mutate: createProduct } = useCreateProduct();
@@ -276,7 +276,7 @@ export const ProductsManagement = () => {
   };
 
   return (
-    <Tabs defaultValue="products" className="space-y-6">
+    <Tabs defaultValue={initialTab} className="space-y-6">
       <TabsList>
         <TabsTrigger value="products">
           <Package className="h-4 w-4 mr-2" />

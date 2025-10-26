@@ -43,7 +43,6 @@ import { useCategories } from '@/hooks/useCategories';
 import { toast } from 'sonner';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
 import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
-import { BarcodeLabelDialog } from '@/components/products/BarcodeLabelDialog';
 import { QuickStockAdjustDialog } from '@/components/products/QuickStockAdjustDialog';
 import { PRODUCT_UNITS } from '@/data/units';
 import { DialogDescription } from '@/components/ui/dialog';
@@ -280,7 +279,7 @@ export default function Products() {
             </Button>
             {selectedProducts.length > 0 && (
               <Button
-                onClick={() => setBarcodeLabelDialogOpen(true)}
+                onClick={() => navigate('/inventory-management', { state: { openLabels: true } })}
                 variant="outline"
                 size="lg"
                 className="h-12"
@@ -788,20 +787,7 @@ export default function Products() {
         onOpenChange={setImportDialogOpen}
       />
 
-      {/* Barcode Label Dialog */}
-      <BarcodeLabelDialog
-        open={barcodeLabelDialogOpen}
-        onOpenChange={setBarcodeLabelDialogOpen}
-        products={selectedProducts.map(id => {
-          const p = products.find(prod => prod.id === id);
-          return {
-            id: p?.id || '',
-            name: p?.name || '',
-            barcode: p?.barcode,
-            price: p?.price || 0,
-          };
-        })}
-      />
+      {/* Quick Stock Adjust Dialog */}
 
       {/* Quick Stock Adjust Dialog */}
       {selectedProductForStock && (
