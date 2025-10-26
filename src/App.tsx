@@ -35,6 +35,8 @@ const MobileProductManager = lazy(() => import("./components/mobile/MobileProduc
 const MobileCategoryManager = lazy(() => import("./components/mobile/MobileCategoryManager"));
 const MobileOrderManager = lazy(() => import("./components/mobile/MobileOrderManager"));
 const MobileProductDetail = lazy(() => import("./components/mobile/MobileProductDetail"));
+const MobileProductForm = lazy(() => import("./components/mobile/MobileProductForm"));
+const MobileOrderDetail = lazy(() => import("./components/mobile/MobileOrderDetail"));
 const DirectCameraScanner = lazy(() => import("./pages/DirectCameraScanner"));
 
 const queryClient = new QueryClient();
@@ -65,10 +67,11 @@ const App = () => (
             <Route path="/mobile/management" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
             <Route path="/mobile/products" element={<ProtectedRoute><MobileProductManager /></ProtectedRoute>} />
             <Route path="/mobile/product/:id" element={<ProtectedRoute><MobileProductDetail /></ProtectedRoute>} />
-            <Route path="/mobile/product/:id/edit" element={<ProtectedRoute><MobileProductManager /></ProtectedRoute>} />
-            <Route path="/mobile/product/new" element={<ProtectedRoute><MobileProductManager /></ProtectedRoute>} />
+            <Route path="/mobile/product/:id/edit" element={<ProtectedRoute><MobileProductForm /></ProtectedRoute>} />
+            <Route path="/mobile/product/new" element={<ProtectedRoute><MobileProductForm /></ProtectedRoute>} />
             <Route path="/mobile/categories" element={<ProtectedRoute><MobileCategoryManager /></ProtectedRoute>} />
             <Route path="/mobile/orders" element={<ProtectedRoute><MobileOrderManager /></ProtectedRoute>} />
+            <Route path="/mobile/order/:id" element={<ProtectedRoute><MobileOrderDetail /></ProtectedRoute>} />
             <Route path="/mobile/promotions" element={<ProtectedRoute><Promotions /></ProtectedRoute>} />
             <Route path="/mobile/calculator" element={<ProtectedRoute><MobileCalculator /></ProtectedRoute>} />
             <Route path="/camera-scanner" element={<ProtectedRoute><DirectCameraScanner /></ProtectedRoute>} />
