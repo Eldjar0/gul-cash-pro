@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Package, FolderKanban, ShoppingCart, Scan, LogOut, Moon, Sun,
-  Users, AlertTriangle
+  Users, AlertTriangle, CreditCard
 } from 'lucide-react';
 import { useWeather } from '@/hooks/useWeather';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,6 +54,7 @@ export default function MobileManagement() {
   });
 
   const menuItems = [
+    { title: 'Encaisser', icon: CreditCard, color: 'from-emerald-500 to-emerald-600', action: () => navigate('/mobile/pos') },
     { title: 'Produits', icon: Package, color: 'from-blue-500 to-blue-600', action: () => navigate('/mobile/products') },
     { title: 'Catégories', icon: FolderKanban, color: 'from-purple-500 to-purple-600', action: () => navigate('/mobile/categories') },
     { title: 'Commandes', icon: ShoppingCart, color: 'from-green-500 to-green-600', action: () => navigate('/mobile/orders'), badge: stats?.pendingOrdersCount },
