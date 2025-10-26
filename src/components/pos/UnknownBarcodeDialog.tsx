@@ -8,12 +8,13 @@ import { useProducts, useCreateProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { useToast } from '@/hooks/use-toast';
 import { Search } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UnknownBarcodeDialogProps {
   open: boolean;
   onClose: () => void;
   barcode: string;
-  onProductLinked: (productId: string) => void;
+  onProductLinked?: (productId: string) => void;
 }
 
 export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }: UnknownBarcodeDialogProps) => {
@@ -64,9 +65,42 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
     return false;
   });
 
-  const handleLinkExisting = (productId: string) => {
-    onProductLinked(productId);
-    onClose();
+  const handleLinkExisting = async (productId: string) => {
+    try {
+      // Ajouter le code-barres au produit existant
+      const { error } = await supabase
+        .from('product_barcodes')
+        .insert({
+          product_id: productId,
+          barcode: barcode,
+          is_primary: false,
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast({
+            title: 'Code-barres déjà lié',
+            description: 'Ce code-barres est déjà lié à ce produit.',
+            variant: 'destructive',
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: 'Code-barres lié',
+          description: 'Le code-barres a été ajouté au produit.',
+        });
+        onProductLinked?.(productId);
+      }
+      onClose();
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Impossible de lier le code-barres.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleCreateNew = async () => {
@@ -98,7 +132,7 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
         description: `${result.name} créé avec le code-barres ${barcode}`,
       });
 
-      onProductLinked(result.id);
+      onProductLinked?.(result.id);
       onClose();
     } catch (error: any) {
       toast({

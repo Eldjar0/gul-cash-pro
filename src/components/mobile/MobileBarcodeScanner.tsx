@@ -10,6 +10,7 @@ import { UnknownBarcodeDialog } from '@/components/pos/UnknownBarcodeDialog';
 import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { DecodeHintType } from '@zxing/library';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MobileBarcodeScannerProps {
   open: boolean;
@@ -134,29 +135,49 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
   }, [isNative]);
 
   const handleScan = async (barcode: string) => {
+    // Éviter les scans répétés du même code
+    if (scannedBarcode === barcode && (showUnknownDialog || showProductDialog)) {
+      return;
+    }
+    
     setScannedBarcode(barcode);
     
-    const product = products.find(p => p.barcode === barcode);
+    // Rechercher le produit dans les codes-barres principaux et secondaires
+    let product = products.find(p => p.barcode === barcode);
+    
+    // Si pas trouvé, chercher dans les codes-barres additionnels via product_barcodes
+    if (!product) {
+      const { data: barcodeData } = await supabase
+        .from('product_barcodes')
+        .select('product_id')
+        .eq('barcode', barcode)
+        .single();
+      
+      if (barcodeData) {
+        product = products.find(p => p.id === barcodeData.product_id);
+      }
+    }
     
     if (product) {
       // Produit trouvé
       playSuccessSound();
       setFoundProduct(product);
       setShowProductDialog(true);
-      toast.success(`Produit trouvé: ${product.name}`);
     } else {
       // Produit non trouvé
       playErrorSound();
       setShowUnknownDialog(true);
-      toast.error('Produit non trouvé');
     }
   };
 
   const handleCloseDialogs = () => {
     setShowUnknownDialog(false);
     setShowProductDialog(false);
-    setScannedBarcode(null);
-    setFoundProduct(null);
+    // Garder les valeurs scannées pour éviter les rescans
+    setTimeout(() => {
+      setScannedBarcode(null);
+      setFoundProduct(null);
+    }, 1000);
   };
 
   return (
@@ -263,7 +284,10 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
         open={showUnknownDialog}
         onClose={handleCloseDialogs}
         barcode={scannedBarcode || ''}
-        onProductLinked={handleCloseDialogs}
+        onProductLinked={(productId) => {
+          toast.success('Produit lié avec succès');
+          handleCloseDialogs();
+        }}
       />
 
       {/* Dialog produit trouvé */}
