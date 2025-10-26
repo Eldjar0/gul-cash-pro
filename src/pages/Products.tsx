@@ -43,7 +43,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { toast } from 'sonner';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
 import { ImportProductsDialog } from '@/components/products/ImportProductsDialog';
-import { BarcodeLabelDialog } from '@/components/products/BarcodeLabelDialog';
+import { SimpleLabelPrinter } from '@/components/products/SimpleLabelPrinter';
 import { QuickStockAdjustDialog } from '@/components/products/QuickStockAdjustDialog';
 import { PRODUCT_UNITS } from '@/data/units';
 import { DialogDescription } from '@/components/ui/dialog';
@@ -61,7 +61,7 @@ export default function Products() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [barcodeLabelDialogOpen, setBarcodeLabelDialogOpen] = useState(false);
+  const [labelPrinterOpen, setLabelPrinterOpen] = useState(false);
   const [stockAdjustDialogOpen, setStockAdjustDialogOpen] = useState(false);
   const [selectedProductForStock, setSelectedProductForStock] = useState<any>(null);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -280,7 +280,7 @@ export default function Products() {
             </Button>
             {selectedProducts.length > 0 && (
               <Button
-                onClick={() => setBarcodeLabelDialogOpen(true)}
+                onClick={() => setLabelPrinterOpen(true)}
                 variant="outline"
                 size="lg"
                 className="h-12"
@@ -788,10 +788,10 @@ export default function Products() {
         onOpenChange={setImportDialogOpen}
       />
 
-      {/* Barcode Label Dialog */}
-      <BarcodeLabelDialog
-        open={barcodeLabelDialogOpen}
-        onOpenChange={setBarcodeLabelDialogOpen}
+      {/* Label Printer Dialog */}
+      <SimpleLabelPrinter
+        open={labelPrinterOpen}
+        onOpenChange={setLabelPrinterOpen}
         products={selectedProducts.map(id => {
           const p = products.find(prod => prod.id === id);
           return {
@@ -799,6 +799,8 @@ export default function Products() {
             name: p?.name || '',
             barcode: p?.barcode,
             price: p?.price || 0,
+            unit: p?.unit,
+            vat_rate: p?.vat_rate,
           };
         })}
       />
