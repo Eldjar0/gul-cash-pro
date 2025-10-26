@@ -118,23 +118,26 @@ export default function MobileManagement() {
   return (
     <>
       <div className="min-h-screen bg-background">
-        {/* Header optimisé iOS */}
-        <div className="sticky top-0 z-10 bg-background/95 border-b border-border shadow-sm" style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+        {/* Header responsive avec safe areas */}
+        <div 
+          className="sticky top-0 z-10 bg-background/95 border-b border-border shadow-sm" 
+          style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+        >
           <div className="safe-area-inset-top" />
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
-              <div className="relative w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <img src={logoJlprod} alt="Logo" className="h-8 w-auto" />
+          <div className="flex items-center justify-between p-3 sm:p-4 md:p-5 max-w-7xl mx-auto">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <img src={logoJlprod} alt="Logo" className="h-6 sm:h-8 w-auto" />
               </div>
               <div>
-                <h1 className="text-lg font-bold">Gestion Mobile</h1>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                <h1 className="text-base sm:text-lg md:text-xl font-bold">Gestion Mobile</h1>
+                <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                  <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-green-500" />
                   <span>{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                   {weather.temperature && (
                     <>
-                      <span>•</span>
-                      <span>{weather.temperature}°C</span>
+                      <span className="hidden xs:inline">•</span>
+                      <span className="hidden xs:inline">{weather.temperature}°C</span>
                     </>
                   )}
                 </div>
@@ -145,60 +148,84 @@ export default function MobileManagement() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-xl"
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
                 onClick={() => setDarkMode(!darkMode)}
               >
-                {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                {darkMode ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-xl"
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
                 onClick={handleLogout}
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Message de bienvenue */}
-        <div className="px-4 pt-6 pb-4">
-          <h2 className="text-2xl font-bold mb-1">Bonjour 👋</h2>
-          <p className="text-muted-foreground">Que souhaitez-vous gérer ?</p>
-        </div>
+        {/* Container principal avec max-width pour desktop */}
+        <div className="max-w-7xl mx-auto">
+          {/* Message de bienvenue responsive */}
+          <div className="px-3 sm:px-4 md:px-6 pt-4 sm:pt-6 md:pt-8 pb-3 sm:pb-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1">Bonjour 👋</h2>
+            <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
+              Que souhaitez-vous gérer ?
+            </p>
+          </div>
 
-        {/* Menu principal - Optimisé iOS */}
-        <div className="px-4 pb-6">
-          <div className="grid grid-cols-2 gap-4">
-            {menuItems.map((item) => (
-              <button
-                key={item.title}
-                className="group relative overflow-hidden rounded-2xl shadow-lg active:scale-95 transition-transform touch-manipulation"
-                onClick={item.action}
-                style={{
-                  WebkitTapHighlightColor: 'transparent',
-                }}
-              >
-                <div className={`bg-gradient-to-br ${item.color} p-6 aspect-square flex flex-col items-center justify-center relative`}>
-                  {/* Pattern de fond simplifié pour iOS */}
-                  <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 left-0 w-24 h-24 bg-white/30 rounded-full" style={{ filter: 'blur(40px)' }} />
-                    <div className="absolute bottom-0 right-0 w-20 h-20 bg-white/20 rounded-full" style={{ filter: 'blur(30px)' }} />
+          {/* Menu principal - Grid responsive */}
+          <div className="px-3 sm:px-4 md:px-6 pb-6 sm:pb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+              {menuItems.map((item) => (
+                <button
+                  key={item.title}
+                  className="group relative overflow-hidden rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl active:scale-95 transition-all touch-manipulation"
+                  onClick={item.action}
+                  style={{
+                    WebkitTapHighlightColor: 'transparent',
+                  }}
+                >
+                  <div className={`bg-gradient-to-br ${item.color} p-4 sm:p-5 md:p-6 aspect-square flex flex-col items-center justify-center relative`}>
+                    {/* Pattern de fond */}
+                    <div className="absolute inset-0 opacity-10">
+                      <div 
+                        className="absolute top-0 left-0 w-16 sm:w-20 md:w-24 h-16 sm:h-20 md:h-24 bg-white/30 rounded-full" 
+                        style={{ filter: 'blur(30px)' }} 
+                      />
+                      <div 
+                        className="absolute bottom-0 right-0 w-12 sm:w-16 md:w-20 h-12 sm:h-16 md:h-20 bg-white/20 rounded-full" 
+                        style={{ filter: 'blur(25px)' }} 
+                      />
+                    </div>
+                    
+                    {/* Icône responsive */}
+                    <div className="relative z-10 mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+                      <item.icon 
+                        className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16 text-white" 
+                        style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} 
+                      />
+                    </div>
+                    
+                    {/* Titre responsive */}
+                    <h3 
+                      className="relative z-10 font-bold text-white text-xs sm:text-sm md:text-base lg:text-lg text-center leading-tight" 
+                      style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}
+                    >
+                      {item.title}
+                    </h3>
                   </div>
-                  
-                  {/* Icône */}
-                  <div className="relative z-10 mb-3">
-                    <item.icon className="h-14 w-14 text-white" style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
-                  </div>
-                  
-                  {/* Titre */}
-                  <h3 className="relative z-10 font-bold text-white text-base text-center" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-                    {item.title}
-                  </h3>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Message d'aide responsive */}
+          <div className="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 text-center">
+            <p className="text-[10px] sm:text-xs text-muted-foreground/60">
+              Appuyez sur une carte pour commencer
+            </p>
           </div>
         </div>
 
