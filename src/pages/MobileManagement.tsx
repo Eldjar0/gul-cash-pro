@@ -117,16 +117,18 @@ export default function MobileManagement() {
 
   return (
     <>
-      <div className="min-h-screen bg-background">
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-background border-b">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
+        {/* Header moderne */}
+        <div className="sticky top-0 z-10 backdrop-blur-xl bg-background/80 border-b border-border/50">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
-              <img src={logoJlprod} alt="Logo" className="h-10 w-auto" />
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <img src={logoJlprod} alt="Logo" className="h-8 w-auto" />
+              </div>
               <div>
-                <h1 className="text-xl font-bold">Gestion Mobile</h1>
+                <h1 className="text-lg font-bold">Gestion Mobile</h1>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{currentTime.toLocaleTimeString('fr-FR')}</span>
+                  <span>{currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                   {weather.temperature && (
                     <span>• {weather.temperature}°C</span>
                   )}
@@ -134,10 +136,11 @@ export default function MobileManagement() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
+                className="rounded-full"
                 onClick={() => setDarkMode(!darkMode)}
               >
                 {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -145,6 +148,7 @@ export default function MobileManagement() {
               <Button
                 variant="ghost"
                 size="icon"
+                className="rounded-full"
                 onClick={handleLogout}
               >
                 <LogOut className="h-5 w-5" />
@@ -153,20 +157,35 @@ export default function MobileManagement() {
           </div>
         </div>
 
-        {/* Menu principal */}
-        <div className="p-4">
+        {/* Message de bienvenue */}
+        <div className="px-4 pt-6 pb-4">
+          <h2 className="text-2xl font-bold mb-1">Bonjour 👋</h2>
+          <p className="text-muted-foreground">Que souhaitez-vous gérer aujourd'hui ?</p>
+        </div>
+
+        {/* Menu principal - Design moderne */}
+        <div className="px-4 pb-6">
           <div className="grid grid-cols-2 gap-4">
-            {menuItems.map((item) => (
+            {menuItems.map((item, index) => (
               <Card
                 key={item.title}
-                className="cursor-pointer hover:shadow-lg transition-all"
+                className="group cursor-pointer overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-95"
                 onClick={item.action}
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                }}
               >
-                <div className={`bg-gradient-to-br ${item.color} p-6 rounded-t-lg`}>
-                  <item.icon className="h-12 w-12 text-white mx-auto" />
-                </div>
-                <div className="p-4 text-center">
-                  <h3 className="font-bold text-lg">{item.title}</h3>
+                <div className={`relative bg-gradient-to-br ${item.color} p-8 aspect-square flex flex-col items-center justify-center`}>
+                  {/* Effet de brillance */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  
+                  {/* Icône */}
+                  <item.icon className="h-16 w-16 text-white mb-3 drop-shadow-lg transform group-hover:scale-110 transition-transform" />
+                  
+                  {/* Titre */}
+                  <h3 className="font-bold text-white text-lg text-center drop-shadow-md">
+                    {item.title}
+                  </h3>
                 </div>
               </Card>
             ))}
