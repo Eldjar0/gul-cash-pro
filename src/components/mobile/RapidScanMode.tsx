@@ -29,6 +29,12 @@ export function RapidScanMode({ open, onClose, onValidate, onAssociateCustomer }
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [isTorchAvailable, setIsTorchAvailable] = useState(false);
 
+  // Verrou global
+  useEffect(() => {
+    (window as any).__SCAN_LOCK = open;
+    return () => { (window as any).__SCAN_LOCK = false; };
+  }, [open]);
+
   const { processScan } = useUnifiedScanner({
     onScan: (barcode, product) => {
       if (product) {
@@ -95,17 +101,17 @@ export function RapidScanMode({ open, onClose, onValidate, onAssociateCustomer }
 
       // Start scanning
       document.body.style.background = 'transparent';
-      
-      // Use scan() method instead of listeners for better compatibility
-      const result = await BarcodeScanner.scan();
-      
-      if (result.barcodes && result.barcodes.length > 0) {
-        await processScan(result.barcodes[0].displayValue);
-        // Continue scanning
-        startCameraScanning();
-      }
-      
       setIsCameraActive(true);
+      
+      // Loop tant que la vue est ouverte
+      while ((window as any).__SCAN_LOCK === true) {
+        const result = await BarcodeScanner.scan();
+        if (result.barcodes && result.barcodes.length > 0) {
+          await processScan(result.barcodes[0].displayValue);
+        }
+        // Petite pause de 100ms pour éviter boucle serrée
+        await new Promise(r => setTimeout(r, 100));
+      }
     } catch (error) {
       console.error('Error starting camera scan:', error);
     }

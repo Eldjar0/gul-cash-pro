@@ -151,8 +151,10 @@ export const useUnifiedScanner = ({
 
   // Scanner physique (détection clavier)
   useEffect(() => {
-    if (!enabled) {
-      // Nettoyer le buffer et les refs quand désactivé
+    // Désactiver si non activé ou si un autre scanner caméra est actif globalement
+    const locked = (window as any).__SCAN_LOCK === true;
+    if (!enabled || locked) {
+      // Nettoyer le buffer et les refs quand désactivé/lock
       bufferRef.current = '';
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -163,6 +165,9 @@ export const useUnifiedScanner = ({
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ne rien faire si lock global actif
+      if ((window as any).__SCAN_LOCK === true) return;
+
       const target = e.target as HTMLElement;
       const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
       

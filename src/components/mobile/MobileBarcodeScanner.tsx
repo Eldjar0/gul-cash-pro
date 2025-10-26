@@ -23,6 +23,7 @@ export const MobileBarcodeScanner = ({ open, onClose, onProductFound, onProductN
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
+  const scannedOnceRef = useRef(false);
   const isNative = Capacitor.isNativePlatform();
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [isTorchAvailable, setIsTorchAvailable] = useState(false);
@@ -33,6 +34,14 @@ export const MobileBarcodeScanner = ({ open, onClose, onProductFound, onProductN
       audioContextRef.current = new AudioContext();
     }
   }, []);
+
+  // Verrou global pour désactiver le scanner physique pendant l'ouverture
+  useEffect(() => {
+    (window as any).__SCAN_LOCK = open;
+    return () => {
+      (window as any).__SCAN_LOCK = false;
+    };
+  }, [open]);
 
   // Bip d'activation (court, 0.2s)
   const playActivationBeep = () => {
@@ -226,6 +235,7 @@ export const MobileBarcodeScanner = ({ open, onClose, onProductFound, onProductN
   const startScanning = async () => {
     playActivationBeep();
     mobileScan.startScan();
+    scannedOnceRef.current = false;
 
     if (isNative) {
       try {
@@ -251,8 +261,11 @@ export const MobileBarcodeScanner = ({ open, onClose, onProductFound, onProductN
           codeReaderRef.current = new BrowserMultiFormatReader();
           
           codeReaderRef.current.decodeFromVideoElement(videoRef.current, (result, error) => {
-            if (result) {
+            if (result && !scannedOnceRef.current) {
+              scannedOnceRef.current = true;
               const scannedCode = result.getText();
+              // Stopper immédiatement la caméra pour éviter les scans multiples
+              stopWebScanning();
               handleScan(scannedCode);
             }
           });
