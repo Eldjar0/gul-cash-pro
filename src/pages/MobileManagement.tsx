@@ -3,19 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Package, FolderKanban, ShoppingCart, Scan, LogOut, Moon, Sun,
-  Users, Receipt, AlertTriangle, BarChart3, Wallet, Settings,
-  Euro, TrendingUp, Clock
+  Users, AlertTriangle
 } from 'lucide-react';
 import { useWeather } from '@/hooks/useWeather';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBarcodeScanner } from '@/hooks/useBarcodeScanner';
 import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 import { useMobileStats } from '@/hooks/useMobileStats';
-import { useMobileActivity } from '@/hooks/useMobileActivity';
 import { useMobileAlerts } from '@/hooks/useMobileAlerts';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileBarcodeScanner } from '@/components/mobile/MobileBarcodeScanner';
@@ -27,7 +23,6 @@ export default function MobileManagement() {
   const weather = useWeather();
   const { signOut } = useAuth();
   const { data: stats, isLoading: statsLoading } = useMobileStats();
-  const { data: activities } = useMobileActivity(5);
   const { data: alerts } = useMobileAlerts();
   
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -67,20 +62,6 @@ export default function MobileManagement() {
     { title: 'Alertes', icon: AlertTriangle, color: 'from-red-500 to-red-600', action: () => navigate('/mobile/alerts'), badge: stats?.lowStockCount },
   ];
 
-  const getActivityIcon = (type: string) => {
-    const icons = { sale: Receipt, product_added: Package, product_updated: Package, stock_alert: AlertTriangle };
-    const Icon = icons[type as keyof typeof icons] || Clock;
-    return <Icon className="h-4 w-4" />;
-  };
-
-  const formatTimestamp = (timestamp: string) => {
-    const diffMins = Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000);
-    if (diffMins < 1) return 'À l\'instant';
-    if (diffMins < 60) return `Il y a ${diffMins}min`;
-    if (diffMins < 1440) return `Il y a ${Math.floor(diffMins / 60)}h`;
-    return new Date(timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-  };
-
   return (
     <>
       <div className="min-h-screen bg-background">
@@ -92,9 +73,7 @@ export default function MobileManagement() {
           <div className="safe-area-inset-top" />
           <div className="flex items-center justify-between p-3 sm:p-4 md:p-5 max-w-7xl mx-auto">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <img src={companyLogo} alt="Logo" className="h-6 sm:h-8 w-auto" />
-              </div>
+              <img src={companyLogo} alt="Logo" className="h-10 sm:h-12 w-auto" />
               <div>
                 <h1 className="text-base sm:text-lg md:text-xl font-bold">Gestion Mobile</h1>
                 <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
@@ -159,11 +138,11 @@ export default function MobileManagement() {
         </div>
 
         {/* Container principal avec max-width pour desktop */}
-        <div className="max-w-7xl mx-auto">
-          {/* Message de bienvenue responsive */}
-          <div className="px-3 sm:px-4 md:px-6 pt-4 sm:pt-6 md:pt-8 pb-3 sm:pb-4">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1">Bonjour 👋</h2>
-            <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
+        <div className="max-w-7xl mx-auto h-[calc(100vh-5rem)] flex flex-col">
+          {/* Message de bienvenue responsive et centré */}
+          <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-6 text-center">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2">Bonjour 👋</h2>
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground">
               Que souhaitez-vous gérer ?
             </p>
           </div>
@@ -183,9 +162,9 @@ export default function MobileManagement() {
             </div>
           )}
 
-          {/* Menu principal - Grid responsive */}
-          <div className="px-3 sm:px-4 md:px-6 pb-6 sm:pb-8">
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+          {/* Menu principal - Grid responsive avec flex-1 pour remplir l'espace */}
+          <div className="flex-1 px-3 sm:px-4 md:px-6 pb-4 flex items-center">
+            <div className="w-full grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -236,36 +215,6 @@ export default function MobileManagement() {
                 );
               })}
             </div>
-          </div>
-
-          {/* Activité Récente */}
-          {activities && activities.length > 0 && (
-            <div className="px-3 sm:px-4 md:px-6 pb-6">
-              <h2 className="text-base sm:text-lg font-bold mb-3">Activité Récente</h2>
-              <Card className="divide-y">
-                {activities.map((activity) => (
-                  <div key={activity.id} className="p-3 sm:p-4 flex items-center gap-3 hover:bg-accent/50 transition-colors">
-                    <div className="shrink-0">
-                      {getActivityIcon(activity.type)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{activity.title}</p>
-                      <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
-                    </div>
-                    <span className="text-xs text-muted-foreground shrink-0">
-                      {formatTimestamp(activity.timestamp)}
-                    </span>
-                  </div>
-                ))}
-              </Card>
-            </div>
-          )}
-
-          {/* Message d'aide responsive */}
-          <div className="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 text-center">
-            <p className="text-[10px] sm:text-xs text-muted-foreground/60">
-              Appuyez sur une carte pour commencer
-            </p>
           </div>
         </div>
 
