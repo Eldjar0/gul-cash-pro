@@ -31,6 +31,9 @@ const MobileCategories = lazy(() => import("./pages/MobileCategories"));
 const MobileOrders = lazy(() => import("./pages/MobileOrders"));
 const MobileCalculator = lazy(() => import("./pages/MobileCalculator"));
 const MobileProducts = lazy(() => import("./pages/MobileProducts"));
+const MobileProductManager = lazy(() => import("./components/mobile/MobileProductManager"));
+const MobileCategoryManager = lazy(() => import("./components/mobile/MobileCategoryManager"));
+const MobileOrderManager = lazy(() => import("./components/mobile/MobileOrderManager"));
 const DirectCameraScanner = lazy(() => import("./pages/DirectCameraScanner"));
 
 const queryClient = new QueryClient();
@@ -59,10 +62,10 @@ const App = () => (
             <Route path="/getting-started" element={<GettingStarted />} />
             <Route path="/mobile" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
             <Route path="/mobile/management" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
-            <Route path="/mobile/products" element={<ProtectedRoute><MobileProducts /></ProtectedRoute>} />
-            <Route path="/mobile/categories" element={<ProtectedRoute><MobileCategories /></ProtectedRoute>} />
+            <Route path="/mobile/products" element={<ProtectedRoute><MobileProductManager /></ProtectedRoute>} />
+            <Route path="/mobile/categories" element={<ProtectedRoute><MobileCategoryManager /></ProtectedRoute>} />
+            <Route path="/mobile/orders" element={<ProtectedRoute><MobileOrderManager /></ProtectedRoute>} />
             <Route path="/mobile/promotions" element={<ProtectedRoute><Promotions /></ProtectedRoute>} />
-            <Route path="/mobile/orders" element={<ProtectedRoute><MobileOrders /></ProtectedRoute>} />
             <Route path="/mobile/calculator" element={<ProtectedRoute><MobileCalculator /></ProtectedRoute>} />
             <Route path="/camera-scanner" element={<ProtectedRoute><DirectCameraScanner /></ProtectedRoute>} />
             <Route path="/camera-scanner/:sessionCode" element={<ProtectedRoute><DirectCameraScanner /></ProtectedRoute>} />

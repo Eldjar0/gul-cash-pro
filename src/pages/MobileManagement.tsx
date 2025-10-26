@@ -535,6 +535,15 @@ export default function MobileManagement() {
         <MobileBarcodeScanner
           open={mobileScannerOpen}
           onClose={() => setMobileScannerOpen(false)}
+          onProductFound={(product) => {
+            setMobileScannerOpen(false);
+            handleOpenProductForm(product);
+          }}
+          onProductNotFound={(barcode) => {
+            setMobileScannerOpen(false);
+            setFormData(prev => ({ ...prev, barcode, vat_rate: '6' }));
+            setView('product-form');
+          }}
         />
         
         <ProductSearchDialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen} onCreateProduct={barcode => {
@@ -653,7 +662,7 @@ export default function MobileManagement() {
 
           {/* Actions principales */}
           <div className="space-y-3">
-            <Button onClick={() => setView('products')} className="w-full h-16 bg-accent hover:bg-accent/90 text-lg font-bold" size="lg" variant="secondary">
+            <Button onClick={() => navigate('/mobile/products')} className="w-full h-16 bg-accent hover:bg-accent/90 text-lg font-bold" size="lg" variant="secondary">
               <Package className="h-6 w-6 mr-3" />
               Gérer les Produits
             </Button>
