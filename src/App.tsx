@@ -46,6 +46,7 @@ const MobileCashRegister = lazy(() => import("./pages/MobileCashRegister"));
 const MobileCustomerDetail = lazy(() => import("./components/mobile/MobileCustomerDetail"));
 const MobileRapidScan = lazy(() => import("./pages/MobileRapidScan"));
 const MobileLowStockList = lazy(() => import("./pages/MobileLowStockList"));
+const MobileStockAdjust = lazy(() => import("./pages/MobileStockAdjust"));
 
 const queryClient = new QueryClient();
 
@@ -76,6 +77,7 @@ const App = () => (
             <Route path="/mobile/products" element={<ProtectedRoute><MobileProductManager /></ProtectedRoute>} />
             <Route path="/mobile/product/:id" element={<ProtectedRoute><MobileProductDetail /></ProtectedRoute>} />
             <Route path="/mobile/product/:id/edit" element={<ProtectedRoute><MobileProductForm /></ProtectedRoute>} />
+            <Route path="/mobile/product/:id/adjust-stock" element={<ProtectedRoute><MobileStockAdjust /></ProtectedRoute>} />
             <Route path="/mobile/product/new" element={<ProtectedRoute><MobileProductForm /></ProtectedRoute>} />
             <Route path="/mobile/categories" element={<ProtectedRoute><MobileCategoryManager /></ProtectedRoute>} />
             <Route path="/mobile/orders" element={<ProtectedRoute><MobileOrderManager /></ProtectedRoute>} />

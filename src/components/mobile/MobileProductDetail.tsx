@@ -322,32 +322,18 @@ export const MobileProductDetail = () => {
               </div>
             </Button>
 
-            <div className="grid grid-cols-2 gap-2">
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="gap-2 h-14"
-                onClick={() => toast.info('Fonctionnalité à venir')}
-              >
-                <Package className="h-5 w-5" />
-                <div className="text-left">
-                  <div className="text-sm font-semibold">Ajuster</div>
-                  <div className="text-xs text-muted-foreground">Stock</div>
-                </div>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="gap-2 h-14"
-                onClick={() => toast.info('Fonctionnalité à venir')}
-              >
-                <History className="h-5 w-5" />
-                <div className="text-left">
-                  <div className="text-sm font-semibold">Voir</div>
-                  <div className="text-xs text-muted-foreground">Historique</div>
-                </div>
-              </Button>
-            </div>
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="w-full gap-3 h-14"
+              onClick={() => navigate(`/mobile/product/${product.id}/adjust-stock`)}
+            >
+              <Package className="h-5 w-5" />
+              <div className="flex-1 text-left">
+                <div className="font-semibold">Ajuster le stock</div>
+                <div className="text-xs text-muted-foreground">Ajouter ou retirer</div>
+              </div>
+            </Button>
 
             <Button 
               variant="outline"
