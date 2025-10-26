@@ -16,6 +16,7 @@ interface TicketConfig {
   showCompanyInfo: boolean;
   showVATDetails: boolean;
   showQRCode: boolean;
+  showFiscalNumber: boolean;
   footerText: string;
   ticketWidth: '58mm' | '80mm' | 'A4';
   marginTop: number;
@@ -48,6 +49,7 @@ export function TicketSettings() {
     showCompanyInfo: true,
     showVATDetails: true,
     showQRCode: false,
+    showFiscalNumber: true,
     footerText: 'Merci de votre visite',
     ticketWidth: '80mm',
     marginTop: 10,
@@ -177,6 +179,19 @@ export function TicketSettings() {
             <Switch
               checked={config.showQRCode}
               onCheckedChange={(checked) => setConfig({ ...config, showQRCode: checked })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label>Afficher le numéro fiscal</Label>
+              <p className="text-xs text-muted-foreground">
+                ⚠️ Requis pour la conformité fiscale belge
+              </p>
+            </div>
+            <Switch
+              checked={config.showFiscalNumber}
+              onCheckedChange={(checked) => setConfig({ ...config, showFiscalNumber: checked })}
             />
           </div>
         </div>

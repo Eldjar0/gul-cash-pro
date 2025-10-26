@@ -19,6 +19,7 @@ export interface SaleItem {
 export interface Sale {
   id?: string;
   sale_number?: string;
+  fiscal_number?: string;
   date?: Date;
   customer_id?: string;
   cashier_id?: string;
@@ -173,7 +174,20 @@ export const useCreateSale = () => {
           });
       }
 
-      return createdSale;
+      // Créer un numéro fiscal unique (conformité légale belge)
+      const { data: fiscalData, error: fiscalError } = await supabase
+        .rpc('create_fiscal_receipt', { p_sale_id: createdSale.id });
+
+      if (fiscalError) {
+        console.error('Erreur création numéro fiscal:', fiscalError);
+        // Ne pas bloquer la vente si erreur, mais logger
+      }
+
+      // Retourner la vente avec le numéro fiscal
+      return {
+        ...createdSale,
+        fiscal_number: fiscalData?.[0]?.fiscal_number || null
+      };
     },
     onSuccess: () => {
       // Invalider toutes les queries liées et forcer le refetch
@@ -226,6 +240,9 @@ export const useSales = (startDate?: Date, endDate?: Date) => {
             email,
             phone,
             vat_number
+          ),
+          fiscal_receipts(
+            fiscal_number
           )
         `)
         .order('date', { ascending: false });
@@ -240,7 +257,11 @@ export const useSales = (startDate?: Date, endDate?: Date) => {
       const { data, error } = await query;
       if (error) throw error;
       
-      return data;
+      // Aplatir le numéro fiscal dans l'objet sale
+      return data?.map(sale => ({
+        ...sale,
+        fiscal_number: sale.fiscal_receipts?.[0]?.fiscal_number || null
+      }));
     },
   });
 };
@@ -251,12 +272,23 @@ export const useSale = (id: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('sales')
-        .select('*, sale_items(*)')
+        .select(`
+          *, 
+          sale_items(*),
+          fiscal_receipts(
+            fiscal_number
+          )
+        `)
         .eq('id', id)
         .single();
 
       if (error) throw error;
-      return data;
+      
+      // Aplatir le numéro fiscal dans l'objet sale
+      return {
+        ...data,
+        fiscal_number: data.fiscal_receipts?.[0]?.fiscal_number || null
+      };
     },
     enabled: !!id,
   });

@@ -622,6 +622,41 @@ export type Database = {
           },
         ]
       }
+      fiscal_receipts: {
+        Row: {
+          created_at: string | null
+          fiscal_number: string
+          fiscal_year: number
+          id: string
+          issue_date: string
+          sale_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          fiscal_number: string
+          fiscal_year?: number
+          id?: string
+          issue_date?: string
+          sale_id: string
+        }
+        Update: {
+          created_at?: string | null
+          fiscal_number?: string
+          fiscal_year?: number
+          id?: string
+          issue_date?: string
+          sale_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fiscal_receipts_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gift_card_transactions: {
         Row: {
           amount: number
@@ -2155,38 +2190,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_customer_order_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
+      create_fiscal_receipt: {
+        Args: { p_sale_id: string }
+        Returns: {
+          fiscal_number: string
+        }[]
       }
-      generate_inventory_count_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_mobile_order_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_po_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_quote_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_refund_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_customer_order_number: { Args: never; Returns: string }
+      generate_fiscal_number: { Args: never; Returns: string }
+      generate_inventory_count_number: { Args: never; Returns: string }
+      generate_mobile_order_number: { Args: never; Returns: string }
+      generate_po_number: { Args: never; Returns: string }
+      generate_quote_number: { Args: never; Returns: string }
+      generate_refund_number: { Args: never; Returns: string }
       generate_sale_number: {
         Args: { is_invoice_param?: boolean }
         Returns: string
       }
-      generate_z_serial_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_z_serial_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2194,10 +2215,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "manager" | "cashier" | "viewer"

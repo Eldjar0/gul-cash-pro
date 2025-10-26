@@ -32,6 +32,7 @@ interface Sale {
   id?: string;
   sale_number?: string;
   saleNumber?: string;
+  fiscal_number?: string;
   date?: Date;
   items: CartItem[];
   subtotal: number;
@@ -101,11 +102,43 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         boxSizing: 'border-box'
       }}
     >
-      {/* Company Info - simple */}
-      <div className="text-center mb-2" style={{ fontWeight: '900', fontSize: '12px' }}>
-        <div style={{ fontSize: '14px', marginBottom: '2px' }}>{settings.name}</div>
-        <div style={{ fontSize: '11px' }}>TVA: {settings.vat_number}</div>
+      {/* Logo - centré en haut */}
+      <div className="text-center mb-2">
+        <img 
+          src={logoMarket} 
+          alt="Logo" 
+          style={{ 
+            width: '120px', 
+            height: 'auto', 
+            margin: '0 auto',
+            display: 'block'
+          }} 
+        />
       </div>
+
+      {/* Company Info - Conformité légale belge */}
+      <div className="text-center mb-2" style={{ fontWeight: '900', fontSize: '11px', lineHeight: '1.4' }}>
+        <div style={{ fontSize: '14px', fontWeight: '900', marginBottom: '2px' }}>{settings.name}</div>
+        <div style={{ fontSize: '10px' }}>{settings.address}</div>
+        <div style={{ fontSize: '10px' }}>{settings.postal_code} {settings.city}</div>
+        <div style={{ fontSize: '11px', fontWeight: '900', marginTop: '2px' }}>
+          TVA: BE {settings.vat_number?.replace(/^BE\s*/, '').replace(/(\d{4})(\d{3})(\d{3})/, '$1.$2.$3')}
+        </div>
+      </div>
+
+      {/* Numéro fiscal - Obligatoire pour conformité */}
+      {sale.fiscal_number && (
+        <div className="text-center" style={{ 
+          fontSize: '12px', 
+          fontWeight: '900',
+          backgroundColor: '#f0f0f0',
+          padding: '4px',
+          margin: '4px 0',
+          border: '1px solid #000'
+        }}>
+          N° FISCAL: {sale.fiscal_number}
+        </div>
+      )}
 
       <div style={{ borderTop: '1px dashed #000', margin: '4px 0' }}></div>
 
@@ -263,12 +296,15 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         )}
       </div>
 
-      {/* Footer - simple */}
-      <div className="text-center" style={{ marginTop: '6px', fontWeight: '900' }}>
-        <div style={{ fontSize: '14px', marginBottom: '2px' }}>
-          MERCI
+      {/* Footer - Conformité légale */}
+      <div className="text-center" style={{ marginTop: '8px', fontWeight: '900' }}>
+        <div style={{ fontSize: '14px', marginBottom: '4px' }}>
+          MERCI DE VOTRE VISITE
         </div>
-        <div style={{ fontSize: '10px', color: '#666' }}>
+        <div style={{ fontSize: '9px', fontWeight: '600', marginTop: '4px', padding: '2px 0' }}>
+          Ticket fiscal obligatoire - À conserver
+        </div>
+        <div style={{ fontSize: '10px', color: '#666', marginTop: '2px' }}>
           www.JLprod.be
         </div>
       </div>
