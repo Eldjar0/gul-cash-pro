@@ -8,7 +8,7 @@ import { useProducts, useCreateProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { useToast } from '@/hooks/use-toast';
 import { Search } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { useAddProductBarcode } from '@/hooks/useProductBarcodes';
 
 interface UnknownBarcodeDialogProps {
   open: boolean;
@@ -32,6 +32,7 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
   const createProduct = useCreateProduct();
+  const addBarcode = useAddProductBarcode();
   const { toast } = useToast();
 
   const filteredProducts = products.filter(p => {
@@ -67,32 +68,12 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
 
   const handleLinkExisting = async (productId: string) => {
     try {
-      // Ajouter le code-barres au produit existant
-      const { error } = await supabase
-        .from('product_barcodes')
-        .insert({
-          product_id: productId,
-          barcode: barcode,
-          is_primary: false,
-        });
-
-      if (error) {
-        if (error.code === '23505') {
-          toast({
-            title: 'Code-barres déjà lié',
-            description: 'Ce code-barres est déjà lié à ce produit.',
-            variant: 'destructive',
-          });
-        } else {
-          throw error;
-        }
-      } else {
-        toast({
-          title: 'Code-barres lié',
-          description: 'Le code-barres a été ajouté au produit.',
-        });
-        onProductLinked?.(productId);
-      }
+      await addBarcode.mutateAsync({ productId, barcode, isPrimary: false });
+      toast({
+        title: 'Code-barres lié',
+        description: 'Le code-barres a été ajouté au produit.',
+      });
+      onProductLinked?.(productId);
       onClose();
     } catch (error: any) {
       toast({
@@ -131,6 +112,12 @@ export const UnknownBarcodeDialog = ({ open, onClose, barcode, onProductLinked }
         title: 'Produit créé',
         description: `${result.name} créé avec le code-barres ${barcode}`,
       });
+
+      try {
+        await addBarcode.mutateAsync({ productId: result.id, barcode, isPrimary: true });
+      } catch (_) {
+        // Si déjà présent, on ignore
+      }
 
       onProductLinked?.(result.id);
       onClose();

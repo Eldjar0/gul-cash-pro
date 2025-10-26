@@ -27,6 +27,7 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const isNative = Capacitor.isNativePlatform();
+  const lastScannedRef = useRef<{ code: string; at: number } | null>(null);
 
   // Sons
   const playSuccessSound = () => {
@@ -135,7 +136,13 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
   }, [isNative]);
 
   const handleScan = async (barcode: string) => {
-    // Éviter les scans répétés du même code
+    const now = Date.now();
+    if (lastScannedRef.current && lastScannedRef.current.code === barcode && now - lastScannedRef.current.at < 2000) {
+      return; // ignore duplicate within 2s
+    }
+    lastScannedRef.current = { code: barcode, at: now };
+
+    // Éviter les scans répétés quand un dialog est ouvert
     if (scannedBarcode === barcode && (showUnknownDialog || showProductDialog)) {
       return;
     }
@@ -151,7 +158,7 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
         .from('product_barcodes')
         .select('product_id')
         .eq('barcode', barcode)
-        .single();
+        .maybeSingle();
       
       if (barcodeData) {
         product = products.find(p => p.id === barcodeData.product_id);
@@ -169,7 +176,6 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
       setShowUnknownDialog(true);
     }
   };
-
   const handleCloseDialogs = () => {
     setShowUnknownDialog(false);
     setShowProductDialog(false);
@@ -284,8 +290,7 @@ export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProp
         open={showUnknownDialog}
         onClose={handleCloseDialogs}
         barcode={scannedBarcode || ''}
-        onProductLinked={(productId) => {
-          toast.success('Produit lié avec succès');
+        onProductLinked={() => {
           handleCloseDialogs();
         }}
       />
