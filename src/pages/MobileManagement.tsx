@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit, Search, Package, FolderKanban, QrCode, TrendingUp, TrendingDown, AlertTriangle, ArrowLeft, RefreshCw, Save, Boxes, Tag, ShoppingCart, Download, Moon, Sun, Star, Filter, SortAsc, History, Grid3x3, List, Wallet, BarChart3, CheckSquare, Upload, LogOut, Calculator, Camera } from 'lucide-react';
+import { Plus, Edit, Search, Package, FolderKanban, QrCode, TrendingUp, TrendingDown, AlertTriangle, ArrowLeft, RefreshCw, Save, Boxes, Tag, ShoppingCart, Download, Moon, Sun, Star, Filter, SortAsc, History, Grid3x3, List, Wallet, BarChart3, CheckSquare, Upload, LogOut, Calculator, Camera, Scan } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { useWeather } from '@/hooks/useWeather';
@@ -19,6 +19,7 @@ import { PRODUCT_UNITS } from '@/data/units';
 import { DialogDescription } from '@/components/ui/dialog';
 import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
 import { ProductSearchDialog } from '@/components/pos/ProductSearchDialog';
+import { MobileBarcodeScanner } from '@/components/mobile/MobileBarcodeScanner';
 import { toast } from 'sonner';
 import logoJlprod from '@/assets/logo-jlprod-new.png';
 export default function MobileManagement() {
@@ -50,6 +51,9 @@ export default function MobileManagement() {
 
   // Manual product search dialog
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
+
+  // Mobile camera scanner
+  const [mobileScannerOpen, setMobileScannerOpen] = useState(false);
 
   // New features states
   const [darkMode, setDarkMode] = useState(() => {
@@ -528,6 +532,11 @@ export default function MobileManagement() {
     return <>
         <MobilePhysicalScanDialog open={physicalScanDialogOpen} onOpenChange={setPhysicalScanDialogOpen} barcode={scannedBarcode} product={scannedProduct} onEditProduct={handlePhysicalScanAddToForm} onAdjustStock={handlePhysicalScanAdjustStock} onCreateProduct={handlePhysicalScanCreateProduct} onChangeCategory={handlePhysicalScanChangeCategory} onCreatePromotion={handlePhysicalScanCreatePromotion} onChangeBarcode={handlePhysicalScanChangeBarcode} />
         
+        <MobileBarcodeScanner
+          open={mobileScannerOpen}
+          onClose={() => setMobileScannerOpen(false)}
+        />
+        
         <ProductSearchDialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen} onCreateProduct={barcode => {
         setFormData(prev => ({
           ...prev,
@@ -662,6 +671,11 @@ export default function MobileManagement() {
             <Button onClick={() => navigate('/mobile/orders')} className="w-full h-16 bg-primary hover:bg-primary/90 text-white text-lg font-bold border-0" size="lg">
               <ShoppingCart className="h-6 w-6 mr-3" />
               Gérer les Commandes
+            </Button>
+
+            <Button onClick={() => setMobileScannerOpen(true)} className="w-full h-16 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-lg font-bold border-0" size="lg">
+              <Scan className="h-6 w-6 mr-3" />
+              Scan Mobile
             </Button>
 
             <Button onClick={() => handleOpenProductForm()} className="w-full h-16 border-2 border-primary text-primary hover:bg-primary/10 text-lg font-bold" size="lg" variant="outline">

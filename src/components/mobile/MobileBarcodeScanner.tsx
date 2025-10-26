@@ -1,0 +1,207 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Camera, X, Scan } from 'lucide-react';
+import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import { Capacitor } from '@capacitor/core';
+import { toast } from 'sonner';
+import { useProducts } from '@/hooks/useProducts';
+import { UnknownBarcodeDialog } from '@/components/pos/UnknownBarcodeDialog';
+import { MobilePhysicalScanDialog } from '@/components/pos/MobilePhysicalScanDialog';
+
+interface MobileBarcodeScannerProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export const MobileBarcodeScanner = ({ open, onClose }: MobileBarcodeScannerProps) => {
+  const [isScanning, setIsScanning] = useState(false);
+  const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
+  const [foundProduct, setFoundProduct] = useState<any>(null);
+  const [showUnknownDialog, setShowUnknownDialog] = useState(false);
+  const [showProductDialog, setShowProductDialog] = useState(false);
+  const { data: products = [] } = useProducts();
+
+  // Sons
+  const playSuccessSound = () => {
+    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjuY3/LNfzYFII/P8d2RRwoXZLnq66lWFQxGnODyvmwhBzuZ3/LNgDYFIJDP8d2QRwoXY7jq66lWFQxFnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRwoXY7jq66lWFQxGnODyvmwhBzqY3/LNgDYFIJDP8d2RRw==');
+    audio.play().catch(() => {});
+  };
+
+  const playErrorSound = () => {
+    const audio = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+    audio.volume = 0.5;
+    audio.play().catch(() => {});
+  };
+
+  const startScanning = async () => {
+    if (!Capacitor.isNativePlatform()) {
+      toast.info('Scanner caméra disponible uniquement sur mobile');
+      return;
+    }
+
+    try {
+      // Demander les permissions
+      const { camera } = await BarcodeScanner.requestPermissions();
+      if (camera !== 'granted') {
+        toast.error('Permission caméra refusée');
+        return;
+      }
+
+      setIsScanning(true);
+      
+      // Ajouter la classe pour cacher le background
+      document.body.classList.add('barcode-scanning-active');
+      
+      // Lancer le scan avec overlay
+      const result = await BarcodeScanner.scan({
+        formats: [],
+      });
+
+      if (result.barcodes.length > 0) {
+        const barcode = result.barcodes[0].rawValue;
+        await handleScan(barcode);
+      }
+    } catch (error) {
+      console.error('Erreur scan:', error);
+      toast.error('Erreur lors du scan');
+    } finally {
+      setIsScanning(false);
+      document.body.classList.remove('barcode-scanning-active');
+    }
+  };
+
+  const handleScan = async (barcode: string) => {
+    setScannedBarcode(barcode);
+    
+    const product = products.find(p => p.barcode === barcode);
+    
+    if (product) {
+      // Produit trouvé
+      playSuccessSound();
+      setFoundProduct(product);
+      setShowProductDialog(true);
+      toast.success(`Produit trouvé: ${product.name}`);
+    } else {
+      // Produit non trouvé
+      playErrorSound();
+      setShowUnknownDialog(true);
+      toast.error('Produit non trouvé');
+    }
+  };
+
+  const handleCloseDialogs = () => {
+    setShowUnknownDialog(false);
+    setShowProductDialog(false);
+    setScannedBarcode(null);
+    setFoundProduct(null);
+  };
+
+  return (
+    <>
+      <Dialog open={open && !isScanning} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Scan className="h-5 w-5" />
+              Scanner Code-Barres
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Visualisation du scanner */}
+            <div className="relative aspect-square w-full bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg overflow-hidden border-2 border-dashed border-primary/20">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Camera className="h-24 w-24 text-primary/30" />
+              </div>
+              
+              {/* Lignes de guidage */}
+              <div className="absolute inset-0 flex items-center justify-center p-8">
+                <div className="relative w-full h-32 border-2 border-primary rounded-lg">
+                  {/* Coins du cadre */}
+                  <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-lg" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-primary rounded-tr-lg" />
+                  <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-primary rounded-bl-lg" />
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg" />
+                  
+                  {/* Ligne de scan animée */}
+                  <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary/50 shadow-[0_0_10px_rgba(var(--primary),0.5)] animate-pulse" />
+                </div>
+              </div>
+              
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center">
+                <p className="text-sm font-medium text-primary px-4 py-2 bg-background/90 rounded-full">
+                  Alignez le code-barres
+                </p>
+              </div>
+            </div>
+
+            {/* Instructions */}
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">Instructions:</p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Appuyez sur "Démarrer le scan"</li>
+                <li>Positionnez le code-barres dans le cadre</li>
+                <li>Maintenez l'appareil stable</li>
+                <li>La détection est automatique</li>
+              </ol>
+            </div>
+
+            {/* Bouton de scan */}
+            <Button
+              size="lg"
+              onClick={startScanning}
+              disabled={isScanning}
+              className="w-full h-14 text-base"
+            >
+              <Camera className="h-5 w-5 mr-2" />
+              {isScanning ? 'Scan en cours...' : 'Démarrer le scan'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog produit non trouvé */}
+      <UnknownBarcodeDialog
+        open={showUnknownDialog}
+        onClose={handleCloseDialogs}
+        barcode={scannedBarcode || ''}
+        onProductLinked={handleCloseDialogs}
+      />
+
+      {/* Dialog produit trouvé */}
+      {foundProduct && (
+        <MobilePhysicalScanDialog
+          open={showProductDialog}
+          onOpenChange={setShowProductDialog}
+          barcode={scannedBarcode || ''}
+          product={foundProduct}
+          onEditProduct={() => {
+            handleCloseDialogs();
+            onClose();
+          }}
+          onAdjustStock={() => {
+            handleCloseDialogs();
+            onClose();
+          }}
+          onCreateProduct={() => {
+            handleCloseDialogs();
+            onClose();
+          }}
+          onChangeCategory={() => {
+            handleCloseDialogs();
+            onClose();
+          }}
+          onCreatePromotion={() => {
+            handleCloseDialogs();
+            onClose();
+          }}
+          onChangeBarcode={() => {
+            handleCloseDialogs();
+            onClose();
+          }}
+        />
+      )}
+    </>
+  );
+};

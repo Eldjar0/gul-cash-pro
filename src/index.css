@@ -223,6 +223,15 @@
     display: none;  /* Chrome, Safari and Opera */
   }
   
+  /* Barcode scanner overlay styles */
+  body.barcode-scanning-active {
+    background: transparent !important;
+  }
+  
+  body.barcode-scanning-active > * {
+    visibility: hidden;
+  }
+  
   /* Print styles for thermal receipt */
   @media print {
     @page {
