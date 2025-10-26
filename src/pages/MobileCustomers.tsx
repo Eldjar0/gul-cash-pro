@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MobileCustomers() {
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
   const { data: customers, isLoading } = useCustomers();
 
   const filteredCustomers = customers?.filter(customer =>
@@ -65,7 +67,11 @@ export default function MobileCustomers() {
             </Card>
           ) : (
             filteredCustomers.map((customer) => (
-              <Card key={customer.id} className="p-3 sm:p-4">
+              <Card 
+                key={customer.id} 
+                className="p-3 sm:p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+                onClick={() => navigate(`/mobile/customer/${customer.id}`)}
+              >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm sm:text-base font-semibold text-foreground truncate">
@@ -83,17 +89,13 @@ export default function MobileCustomers() {
                   {customer.phone && (
                     <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                       <Phone className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                      <a href={`tel:${customer.phone}`} className="hover:text-foreground transition-colors">
-                        {customer.phone}
-                      </a>
+                      <span>{customer.phone}</span>
                     </div>
                   )}
                   {customer.email && (
                     <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                       <Mail className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                      <a href={`mailto:${customer.email}`} className="hover:text-foreground transition-colors truncate">
-                        {customer.email}
-                      </a>
+                      <span className="truncate">{customer.email}</span>
                     </div>
                   )}
                 </div>

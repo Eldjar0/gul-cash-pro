@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { MobileLayout } from './MobileLayout';
 import { Card } from '@/components/ui/card';
@@ -7,11 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Save, Scan } from 'lucide-react';
+import { Save, Scan, Plus, TrendingUp, TrendingDown } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
+import { useSuppliers } from '@/hooks/useSuppliers';
 import { MobileBarcodeScanner } from './MobileBarcodeScanner';
+import { SupplierQuickCreateDialog } from './SupplierQuickCreateDialog';
+import { DynamicIcon } from '@/components/ui/dynamic-icon';
 import { PRODUCT_UNITS } from '@/data/units';
 import { toast } from 'sonner';
 
@@ -21,9 +25,11 @@ export const MobileProductForm = () => {
   const [searchParams] = useSearchParams();
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
+  const { data: suppliers = [] } = useSuppliers();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
 
   const isEditing = id !== 'new';
   const product = isEditing ? products.find(p => p.id === id) : null;
@@ -41,11 +47,31 @@ export const MobileProductForm = () => {
     vat_rate: '6',
     stock: '',
     min_stock: '',
-    supplier: '',
+    supplier_id: '',
   });
+
+  // Calcul de la marge
+  const margin = useMemo(() => {
+    const price = parseFloat(formData.price);
+    const cost = parseFloat(formData.cost_price);
+    
+    if (!price || !cost || price === 0) return null;
+    
+    const marginAmount = price - cost;
+    const marginPercent = (marginAmount / price) * 100;
+    
+    return {
+      amount: marginAmount,
+      percent: marginPercent,
+      isProfit: marginAmount > 0,
+    };
+  }, [formData.price, formData.cost_price]);
 
   useEffect(() => {
     if (product) {
+      // Trouver le supplier_id si le produit a un supplier (texte)
+      const matchingSupplier = suppliers.find(s => s.name === product.supplier);
+      
       setFormData({
         barcode: product.barcode || '',
         name: product.name,
@@ -58,10 +84,10 @@ export const MobileProductForm = () => {
         vat_rate: product.vat_rate.toString(),
         stock: product.stock?.toString() || '',
         min_stock: product.min_stock?.toString() || '',
-        supplier: product.supplier || '',
+        supplier_id: matchingSupplier?.id || '',
       });
     }
-  }, [product]);
+  }, [product, suppliers]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,14 +97,22 @@ export const MobileProductForm = () => {
       return;
     }
 
+    // Trouver le nom du fournisseur
+    const selectedSupplier = suppliers.find(s => s.id === formData.supplier_id);
+    
     const productData = {
-      ...formData,
+      barcode: formData.barcode || null,
+      name: formData.name,
+      description: formData.description || null,
       price: parseFloat(formData.price),
       cost_price: formData.cost_price ? parseFloat(formData.cost_price) : null,
       vat_rate: parseFloat(formData.vat_rate),
       stock: formData.stock ? parseFloat(formData.stock) : 0,
       min_stock: formData.min_stock ? parseFloat(formData.min_stock) : 0,
       category_id: formData.category_id || null,
+      type: formData.type,
+      unit: formData.unit,
+      supplier: selectedSupplier?.name || null,
       is_active: true,
     };
 
@@ -157,7 +191,10 @@ export const MobileProductForm = () => {
                 <SelectContent>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
+                      <div className="flex items-center gap-2">
+                        {cat.icon && <DynamicIcon name={cat.icon} className="h-4 w-4" />}
+                        <span>{cat.name}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -190,6 +227,32 @@ export const MobileProductForm = () => {
                 />
               </div>
             </div>
+
+            {/* Affichage de la marge */}
+            {margin && (
+              <Card className={`p-3 ${margin.isProfit ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {margin.isProfit ? (
+                      <TrendingUp className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <TrendingDown className="h-4 w-4 text-red-600" />
+                    )}
+                    <span className="text-sm font-medium">
+                      {margin.isProfit ? 'Gain' : 'Perte'}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-lg font-bold ${margin.isProfit ? 'text-green-600' : 'text-red-600'}`}>
+                      {margin.percent > 0 ? '+' : ''}{margin.percent.toFixed(1)}%
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {margin.amount > 0 ? '+' : ''}{margin.amount.toFixed(2)}€
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )}
 
             <div className="space-y-2">
               <Label>TVA (%)</Label>
@@ -275,11 +338,32 @@ export const MobileProductForm = () => {
 
             <div className="space-y-2">
               <Label>Fournisseur</Label>
-              <Input
-                value={formData.supplier}
-                onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                placeholder="Nom du fournisseur"
-              />
+              <div className="flex gap-2">
+                <Select
+                  value={formData.supplier_id}
+                  onValueChange={(value) => setFormData({ ...formData, supplier_id: value })}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Sélectionner..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers.filter(s => s.is_active).map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setSupplierDialogOpen(true)}
+                  title="Créer un fournisseur"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </Card>
 
@@ -307,6 +391,15 @@ export const MobileProductForm = () => {
         onProductNotFound={(barcode) => {
           setFormData({ ...formData, barcode });
           setScannerOpen(false);
+        }}
+      />
+
+      {/* Dialog création fournisseur rapide */}
+      <SupplierQuickCreateDialog
+        open={supplierDialogOpen}
+        onClose={() => setSupplierDialogOpen(false)}
+        onCreated={(supplierId) => {
+          setFormData({ ...formData, supplier_id: supplierId });
         }}
       />
     </MobileLayout>

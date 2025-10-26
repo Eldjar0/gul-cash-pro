@@ -57,6 +57,25 @@ export const useCustomerOrders = (status?: CustomerOrder['status']) => {
   });
 };
 
+export const useCustomerOrdersByCustomerId = (customerId?: string) => {
+  return useQuery({
+    queryKey: ['customer-orders-by-customer', customerId],
+    queryFn: async () => {
+      if (!customerId) return [];
+
+      const { data, error } = await supabase
+        .from('customer_orders')
+        .select('*')
+        .eq('customer_id', customerId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as CustomerOrder[];
+    },
+    enabled: !!customerId,
+  });
+};
+
 export const useCustomerOrderDetails = (id?: string) => {
   return useQuery({
     queryKey: ['customer-order', id],
