@@ -483,22 +483,38 @@ export const ProductsManagement = () => {
           {filteredProducts.map((product) => (
             <Card key={product.id} className="hover:shadow-md transition-all">
               <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{product.name}</h3>
-                    {product.barcode && (
-                      <Badge variant="outline" className="mt-1 font-mono text-xs">
-                        {product.barcode}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => openEditProduct(product)} title="Modifier">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => confirmDelete(product)} title="Supprimer">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                <div className="flex gap-3 mb-3">
+                  {product.image ? (
+                    <img 
+                      src={product.image} 
+                      alt={product.name}
+                      className="w-20 h-20 object-cover rounded"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 flex items-center justify-center bg-muted rounded">
+                      <Package className="h-10 w-10 text-muted-foreground" />
+                    </div>
+                  )}
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{product.name}</h3>
+                        {product.barcode && (
+                          <Badge variant="outline" className="mt-1 font-mono text-xs">
+                            {product.barcode}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 ml-2">
+                        <Button variant="ghost" size="icon" onClick={() => openEditProduct(product)} title="Modifier">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => confirmDelete(product)} title="Supprimer">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-2 text-sm">
