@@ -23,7 +23,7 @@ export default function MobilePOS() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [scannerOpen, setScannerOpen] = useState(false);
 
-  // Scanner physique automatique
+  // Scanner physique automatique (désactivé quand scanner caméra ouvert)
   useUnifiedScanner({
     onScan: (barcode, product) => {
       if (product) {
@@ -32,8 +32,8 @@ export default function MobilePOS() {
         toast.error(`Produit non trouvé: ${barcode}`);
       }
     },
-    enabled: true,
-    cooldown: 500,
+    enabled: !scannerOpen,
+    cooldown: 1000,
   });
 
   const filteredProducts = products.filter(p => 

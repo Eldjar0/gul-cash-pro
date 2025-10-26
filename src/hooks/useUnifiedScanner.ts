@@ -151,7 +151,16 @@ export const useUnifiedScanner = ({
 
   // Scanner physique (détection clavier)
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      // Nettoyer le buffer et les refs quand désactivé
+      bufferRef.current = '';
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      isScanningRef.current = false;
+      return;
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -192,7 +201,11 @@ export const useUnifiedScanner = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      bufferRef.current = '';
     };
   }, [enabled, minLength, timeout, processScan]);
 
