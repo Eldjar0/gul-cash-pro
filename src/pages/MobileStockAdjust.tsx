@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+
 import { Plus, Minus, Package, Save } from 'lucide-react';
 import { useProducts, useUpdateProduct } from '@/hooks/useProducts';
 import { toast } from 'sonner';
@@ -20,7 +20,6 @@ export default function MobileStockAdjust() {
   const product = products.find(p => p.id === id);
   const [adjustmentType, setAdjustmentType] = useState<'add' | 'remove'>('add');
   const [quantity, setQuantity] = useState<string>('1');
-  const [reason, setReason] = useState('');
 
   if (!product) {
     return (
@@ -44,11 +43,6 @@ export default function MobileStockAdjust() {
   const handleSave = async () => {
     if (quantityNum <= 0) {
       toast.error('La quantité doit être supérieure à 0');
-      return;
-    }
-
-    if (!reason.trim()) {
-      toast.error('Veuillez indiquer une raison');
       return;
     }
 
@@ -198,33 +192,13 @@ export default function MobileStockAdjust() {
           )}
         </Card>
 
-        {/* Raison */}
-        <Card className="p-4">
-          <Label htmlFor="reason" className="text-base font-semibold mb-3 block">
-            Raison de l'ajustement *
-          </Label>
-          <Textarea
-            id="reason"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder={adjustmentType === 'add' 
-              ? "Ex: Réception commande fournisseur, Inventaire, Retour client..."
-              : "Ex: Vente, Casse, Vol, Péremption, Inventaire..."
-            }
-            className="min-h-24"
-          />
-          <p className="text-xs text-muted-foreground mt-2">
-            Cette raison sera enregistrée dans l'historique
-          </p>
-        </Card>
-
         {/* Boutons d'action */}
         <div className="space-y-2">
           <Button
             size="lg"
             className="w-full h-14 gap-2"
             onClick={handleSave}
-            disabled={updateProduct.isPending || quantityNum <= 0 || !reason.trim()}
+            disabled={updateProduct.isPending || quantityNum <= 0}
           >
             <Save className="h-5 w-5" />
             <span className="font-semibold">
