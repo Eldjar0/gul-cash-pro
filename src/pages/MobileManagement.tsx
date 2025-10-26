@@ -126,6 +126,22 @@ export default function MobileManagement() {
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
+                onClick={() => navigate('/mobile/calculator')}
+                title="Calculatrice"
+              >
+                <svg 
+                  className="h-4 w-4 sm:h-5 sm:w-5"
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl"
                 onClick={() => setDarkMode(!darkMode)}
               >
                 {darkMode ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
@@ -219,41 +235,6 @@ export default function MobileManagement() {
                   </button>
                 );
               })}
-              
-              {/* Bouton Calculatrice */}
-              <button
-                className="group relative overflow-hidden rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl active:scale-95 transition-all touch-manipulation"
-                onClick={() => navigate('/mobile/calculator')}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-              >
-                <div className="bg-gradient-to-br from-pink-500 to-pink-600 p-4 sm:p-5 md:p-6 aspect-square flex flex-col items-center justify-center relative">
-                  <div className="absolute inset-0 opacity-10">
-                    <div 
-                      className="absolute top-0 left-0 w-16 sm:w-20 md:w-24 h-16 sm:h-20 md:h-24 bg-white/30 rounded-full" 
-                      style={{ filter: 'blur(30px)' }} 
-                    />
-                  </div>
-                  
-                  <div className="relative z-10 mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
-                    <svg 
-                      className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16 text-white"
-                      style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }}
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  
-                  <h3 
-                    className="relative z-10 font-bold text-white text-xs sm:text-sm md:text-base lg:text-lg text-center leading-tight" 
-                    style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}
-                  >
-                    Calculatrice
-                  </h3>
-                </div>
-              </button>
             </div>
           </div>
 
