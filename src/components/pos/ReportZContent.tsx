@@ -21,194 +21,185 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
         maxWidth: '302px',
         margin: '0 auto',
         fontFamily: "'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif",
-        fontSize: '18px',
-        lineHeight: '1.3',
+        fontSize: '16px',
+        lineHeight: '1.4',
         padding: '8px',
-        paddingRight: '24px',
-        fontWeight: '900',
+        paddingRight: '16px',
+        fontWeight: '700',
         overflow: 'hidden',
         boxSizing: 'border-box'
       }}
     >
-      {/* Géant Z */}
-      <div className="text-center mb-2">
-        <div style={{ 
-          fontSize: '140px',
-          fontWeight: '900',
-          lineHeight: '1',
-          color: '#EF4444',
-          textShadow: '4px 4px 0px rgba(0,0,0,0.1)'
-        }}>
+      {/* En-tête société - OBLIGATOIRE */}
+      <div className="text-center" style={{ fontSize: '13px', marginBottom: '8px', fontWeight: '700', borderBottom: '2px solid #000', paddingBottom: '4px' }}>
+        <div style={{ fontSize: '16px', fontWeight: '900', marginBottom: '2px' }}>{settings.name}</div>
+        <div>{settings.address}</div>
+        <div>{settings.postal_code} {settings.city}</div>
+        <div style={{ marginTop: '2px' }}>N° TVA: {settings.vat_number}</div>
+      </div>
+
+      {/* Type de rapport - RAPPORT Z FISCAL */}
+      <div className="text-center" style={{ fontSize: '13px', marginBottom: '8px', fontWeight: '900', backgroundColor: '#FEE2E2', padding: '8px', margin: '0 -8px 8px -8px', border: '2px solid #EF4444' }}>
+        <div style={{ fontSize: '48px', fontWeight: '900', lineHeight: '1', color: '#EF4444', marginBottom: '4px' }}>
           Z
         </div>
-      </div>
-
-      {/* En-tête société */}
-      <div className="text-center" style={{ fontSize: '14px', marginBottom: '6px', fontWeight: '900' }}>
-        <div style={{ lineHeight: '1.2' }}>
-          <div style={{ fontWeight: '900' }}>{settings.name}</div>
-          <div style={{ fontWeight: '900' }}>{settings.address}</div>
-          <div style={{ fontWeight: '900' }}>{settings.postal_code} {settings.city}</div>
-          {settings.phone && <div style={{ fontWeight: '900' }}>Tel: {settings.phone}</div>}
-          <div style={{ marginTop: '1px', fontWeight: '900' }}>TVA: {settings.vat_number}</div>
+        <div style={{ fontSize: '14px', fontWeight: '900', color: '#DC2626' }}>
+          CLOTURE JOURNALIERE
+        </div>
+        <div style={{ fontSize: '11px', color: '#666', fontWeight: '700', marginTop: '2px' }}>
+          Conforme législation belge
         </div>
       </div>
 
-      <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }}></div>
-
-      {/* Type de rapport - Rapport Z fiscal */}
-      <div className="text-center" style={{ fontSize: '14px', marginBottom: '6px', fontWeight: '900', backgroundColor: '#FEE2E2', padding: '8px', margin: '0 -8px 6px -8px' }}>
-        <div style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '0.7px', marginBottom: '2px', color: '#EF4444' }}>
-          RAPPORT Z
+      {/* Informations rapport - OBLIGATOIRE */}
+      <div style={{ fontSize: '12px', fontWeight: '700', marginBottom: '8px', backgroundColor: '#F3F4F6', padding: '6px', border: '1px solid #000' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+          <span>N° CAISSE:</span>
+          <span style={{ fontWeight: '900' }}>CAISSE-001</span>
         </div>
-        <div style={{ fontSize: '12px', color: '#DC2626', fontWeight: '900' }}>
-          (CLOTURE FISCALE JOURNALIERE)
-        </div>
-        <div style={{ fontSize: '11px', color: '#666', fontWeight: '900', marginTop: '2px' }}>
-          Conforme Loi Belge 2026
-        </div>
-        <div style={{ marginTop: '4px', fontSize: '14px', fontWeight: '900' }}>
-          Date: {new Date().toLocaleDateString('fr-BE')}
-        </div>
-        <div style={{ fontSize: '14px', fontWeight: '900' }}>
-          Heure: {new Date().toLocaleTimeString('fr-BE')}
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>N° SERIE Z:</span>
+          <span style={{ fontWeight: '900' }}>{todayReport?.serial_number || 'NON ATTRIBUÉ'}</span>
         </div>
       </div>
 
-      {/* Info légale obligatoire */}
-      <div style={{ fontSize: '12px', fontWeight: '900', marginBottom: '6px', backgroundColor: '#F3F4F6', padding: '6px', border: '1px solid #000' }}>
-        <div style={{ fontWeight: '900' }}>N° CAISSE: CAISSE-001</div>
-        <div style={{ fontWeight: '900' }}>N° SERIE: {todayReport?.serial_number || 'NON ATTRIBUÉ'}</div>
+      {/* Date et heure - OBLIGATOIRE */}
+      <div style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px', borderBottom: '1px dashed #000', paddingBottom: '4px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>Date clôture:</span>
+          <span style={{ fontWeight: '900' }}>{new Date().toLocaleDateString('fr-BE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>Heure clôture:</span>
+          <span style={{ fontWeight: '900' }}>{new Date().toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+        </div>
       </div>
 
-      <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }}></div>
-
-      {/* Ventes */}
-      <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
-        <div style={{ fontSize: '15px', fontWeight: '900', marginBottom: '4px' }}>
-          RECAPITULATIF DES VENTES
+      {/* Récapitulatif ventes - OBLIGATOIRE */}
+      <div style={{ marginBottom: '8px', paddingRight: '16px' }}>
+        <div style={{ fontSize: '14px', fontWeight: '900', marginBottom: '4px', borderBottom: '1px solid #000' }}>
+          RECAPITULATIF VENTES
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontWeight: '900' }}>
-          <span style={{ fontWeight: '900' }}>Nombre de transactions:</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '13px' }}>
+          <span>Nombre de transactions:</span>
           <span style={{ fontWeight: '900' }}>{reportData.salesCount}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '20px', fontWeight: '900', color: '#EF4444', gap: '8px' }}>
-          <span style={{ fontWeight: '900' }}>TOTAL VENTES:</span>
-          <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{reportData.totalSales.toFixed(2)}€</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '900', color: '#EF4444', borderTop: '1px solid #EF4444', paddingTop: '4px', marginTop: '4px' }}>
+          <span>TOTAL TTC:</span>
+          <span style={{ whiteSpace: 'nowrap' }}>{reportData.totalSales.toFixed(2)}€</span>
         </div>
       </div>
 
-      <div style={{ borderTop: '2px solid #000', margin: '6px 0' }}></div>
+      <div style={{ borderTop: '2px solid #000', margin: '8px 0' }}></div>
 
-      {/* Moyens de paiement */}
-      <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
-        <div style={{ fontSize: '15px', fontWeight: '900', marginBottom: '4px' }}>
+      {/* Moyens de paiement - OBLIGATOIRE LOI BELGE */}
+      <div style={{ marginBottom: '8px', paddingRight: '16px' }}>
+        <div style={{ fontSize: '14px', fontWeight: '900', marginBottom: '4px', borderBottom: '1px solid #000' }}>
           MOYENS DE PAIEMENT
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '14px', fontWeight: '900' }}>
-          <span style={{ fontWeight: '900' }}>Espèces</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '13px' }}>
+          <span>Espèces:</span>
           <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalCash.toFixed(2)}€</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '14px', fontWeight: '900' }}>
-          <span style={{ fontWeight: '900' }}>Carte bancaire</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '13px' }}>
+          <span>Carte bancaire:</span>
           <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalCard.toFixed(2)}€</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: '900' }}>
-          <span style={{ fontWeight: '900' }}>Paiement mobile</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+          <span>Paiement mobile:</span>
           <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalMobile.toFixed(2)}€</span>
         </div>
       </div>
 
-      <div style={{ borderTop: '2px dashed #000', margin: '6px 0' }}></div>
+      <div style={{ borderTop: '2px solid #000', margin: '8px 0' }}></div>
 
-      {/* TVA - OBLIGATOIRE LOI BELGE */}
-      <div style={{ marginBottom: '6px', paddingRight: '24px', backgroundColor: '#FEF3C7', padding: '6px', margin: '0 -8px 6px -8px', border: '2px solid #F59E0B' }}>
-        <div style={{ fontSize: '15px', fontWeight: '900', marginBottom: '4px' }}>
-          DETAIL TVA (OBLIGATOIRE BE)
+      {/* TVA par taux - OBLIGATOIRE LOI BELGE */}
+      <div style={{ marginBottom: '8px', paddingRight: '16px', backgroundColor: '#FEF3C7', padding: '8px', margin: '0 -8px 8px -8px', border: '2px solid #F59E0B' }}>
+        <div style={{ fontSize: '14px', fontWeight: '900', marginBottom: '4px', color: '#92400E' }}>
+          DETAIL TVA PAR TAUX
         </div>
-        {Object.entries(reportData.vatByRate)
-          .sort(([a], [b]) => parseFloat(b) - parseFloat(a))
-          .map(([rate, amounts]) => (
-          <div key={rate} style={{ marginBottom: '4px', fontSize: '13px', fontWeight: '900' }}>
-            <div style={{ fontWeight: '900', fontSize: '14px' }}>TVA {parseFloat(rate).toFixed(2)}%</div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px', fontWeight: '900' }}>
-              <span style={{ fontWeight: '900' }}>Base HT:</span>
-              <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{amounts.totalHT.toFixed(2)}€</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px', fontWeight: '900' }}>
-              <span style={{ fontWeight: '900' }}>Montant TVA:</span>
-              <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{amounts.totalVAT.toFixed(2)}€</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px', fontWeight: '900', borderTop: '1px solid #F59E0B', paddingTop: '2px', marginTop: '2px' }}>
-              <span style={{ fontWeight: '900' }}>Total TTC:</span>
-              <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{(amounts.totalHT + amounts.totalVAT).toFixed(2)}€</span>
-            </div>
+        {Object.entries(reportData.vatByRate).length === 0 ? (
+          <div style={{ fontSize: '12px', fontStyle: 'italic', color: '#666' }}>
+            Aucune vente enregistrée
           </div>
-        ))}
+        ) : (
+          Object.entries(reportData.vatByRate)
+            .sort(([a], [b]) => parseFloat(b) - parseFloat(a))
+            .map(([rate, amounts]) => (
+              <div key={rate} style={{ marginBottom: '6px', fontSize: '12px' }}>
+                <div style={{ fontWeight: '900', fontSize: '13px', color: '#92400E' }}>
+                  TVA {parseFloat(rate).toFixed(2)}%
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px' }}>
+                  <span>Base HT:</span>
+                  <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{amounts.totalHT.toFixed(2)}€</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px' }}>
+                  <span>Montant TVA:</span>
+                  <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{amounts.totalVAT.toFixed(2)}€</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '12px', borderTop: '1px solid #F59E0B', paddingTop: '2px', marginTop: '2px' }}>
+                  <span>Total TTC:</span>
+                  <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{(amounts.totalHT + amounts.totalVAT).toFixed(2)}€</span>
+                </div>
+              </div>
+            ))
+        )}
       </div>
 
-      <div style={{ borderTop: '2px solid #000', margin: '6px 0' }}></div>
-
-      {/* Totaux récapitulatifs */}
-      <div style={{ marginBottom: '6px', paddingRight: '24px', backgroundColor: '#FEE2E2', padding: '8px', margin: '0 -8px 6px -8px', border: '2px solid #EF4444' }}>
-        <div style={{ fontSize: '15px', fontWeight: '900', marginBottom: '6px', textAlign: 'center', color: '#DC2626' }}>
-          TOTAUX RECAPITULATIFS
+      {/* Totaux généraux - OBLIGATOIRE */}
+      <div style={{ marginBottom: '8px', paddingRight: '16px', backgroundColor: '#FEE2E2', padding: '8px', margin: '0 -8px 8px -8px', border: '2px solid #EF4444' }}>
+        <div style={{ fontSize: '14px', fontWeight: '900', marginBottom: '4px', textAlign: 'center', color: '#DC2626' }}>
+          TOTAUX GENERAUX
         </div>
-        
-        {/* Total Hors TVA */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontSize: '15px', fontWeight: '900', paddingBottom: '3px' }}>
-          <span style={{ fontWeight: '900' }}>Total Hors TVA:</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '13px' }}>
+          <span>Total Hors TVA:</span>
           <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>
             {Object.values(reportData.vatByRate).reduce((sum, amounts) => sum + amounts.totalHT, 0).toFixed(2)}€
           </span>
         </div>
-        
-        {/* Total TVA */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontSize: '15px', fontWeight: '900', paddingBottom: '3px' }}>
-          <span style={{ fontWeight: '900' }}>Total TVA:</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '13px' }}>
+          <span>Total TVA:</span>
           <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>
             {Object.values(reportData.vatByRate).reduce((sum, amounts) => sum + amounts.totalVAT, 0).toFixed(2)}€
           </span>
         </div>
-        
-        {/* Total TVAC */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '900', borderTop: '2px solid #EF4444', paddingTop: '6px', marginTop: '3px', color: '#DC2626' }}>
-          <span style={{ fontWeight: '900' }}>TOTAL TVAC:</span>
-          <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{reportData.totalSales.toFixed(2)}€</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: '900', borderTop: '2px solid #EF4444', paddingTop: '4px', marginTop: '4px', color: '#DC2626' }}>
+          <span>TOTAL TTC:</span>
+          <span style={{ whiteSpace: 'nowrap' }}>{reportData.totalSales.toFixed(2)}€</span>
         </div>
       </div>
 
-      <div style={{ borderTop: '2px solid #000', margin: '6px 0' }}></div>
+      <div style={{ borderTop: '2px solid #000', margin: '8px 0' }}></div>
 
-      {/* Caisse - DÉTAIL COMPLET OBLIGATOIRE */}
+      {/* Détail caisse enregistreuse - OBLIGATOIRE */}
       {todayReport && (
-        <div style={{ marginBottom: '6px', paddingRight: '24px' }}>
-          <div style={{ fontSize: '15px', fontWeight: '900', marginBottom: '4px' }}>
+        <div style={{ marginBottom: '8px', paddingRight: '16px' }}>
+          <div style={{ fontSize: '14px', fontWeight: '900', marginBottom: '4px', borderBottom: '1px solid #000' }}>
             DETAIL CAISSE ENREGISTREUSE
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '14px', fontWeight: '900' }}>
-            <span style={{ fontWeight: '900' }}>Fond de caisse ouverture:</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12px' }}>
+            <span>Fond d'ouverture:</span>
             <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{todayReport.opening_amount.toFixed(2)}€</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '14px', fontWeight: '900' }}>
-            <span style={{ fontWeight: '900' }}>Espèces journée:</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12px' }}>
+            <span>+ Espèces journée:</span>
             <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalCash.toFixed(2)}€</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '14px', fontWeight: '900', borderTop: '1px dashed #000', paddingTop: '2px' }}>
-            <span style={{ fontWeight: '900' }}>Espèces attendues:</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12px', borderTop: '1px dashed #000', paddingTop: '2px' }}>
+            <span>= Espèces attendues:</span>
             <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{expectedCash.toFixed(2)}€</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '14px', fontWeight: '900' }}>
-            <span style={{ fontWeight: '900' }}>Espèces comptées:</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', fontSize: '12px' }}>
+            <span>Espèces comptées:</span>
             <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{closingAmount.toFixed(2)}€</span>
           </div>
           <div style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
-            fontSize: '18px', 
+            fontSize: '16px', 
             fontWeight: '900', 
-            color: difference === 0 ? '#10B981' : difference > 0 ? '#3B82F6' : '#EF4444',
-            gap: '8px', 
+            color: difference === 0 ? '#16A34A' : difference > 0 ? '#3B82F6' : '#EF4444',
             borderTop: '2px solid #000', 
             paddingTop: '4px', 
             marginTop: '4px',
@@ -216,92 +207,83 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
             padding: '4px',
             margin: '4px -4px 0 -4px'
           }}>
-            <span style={{ fontWeight: '900' }}>ECART:</span>
-            <span style={{ whiteSpace: 'nowrap', fontWeight: '900' }}>{difference > 0 ? '+' : ''}{difference.toFixed(2)}€</span>
+            <span>ECART:</span>
+            <span style={{ whiteSpace: 'nowrap' }}>{difference > 0 ? '+' : ''}{difference.toFixed(2)}€</span>
           </div>
         </div>
       )}
 
       <div style={{ borderTop: '3px double #000', margin: '8px 0' }}></div>
 
-      {/* AVERTISSEMENT NON-FISCAL */}
-      <div style={{ fontSize: '11px', fontWeight: '900', backgroundColor: '#FEE2E2', padding: '8px', border: '2px solid #DC2626', marginBottom: '6px' }}>
-        <div style={{ fontWeight: '900', marginBottom: '4px', textAlign: 'center', fontSize: '13px', color: '#DC2626' }}>
-          RAPPORT NON-FISCAL
+      {/* MENTIONS LEGALES - OBLIGATOIRE */}
+      <div style={{ fontSize: '11px', fontWeight: '700', backgroundColor: '#FEE2E2', padding: '6px', border: '1px solid #DC2626', marginBottom: '8px' }}>
+        <div style={{ fontWeight: '900', textAlign: 'center', marginBottom: '4px', color: '#DC2626' }}>
+          ⚠️ RAPPORT NON FISCAL
         </div>
-        <div style={{ fontWeight: '900', fontSize: '12px', textAlign: 'center', marginBottom: '4px' }}>
-          USAGE INTERNE UNIQUEMENT
+        <div style={{ fontSize: '10px', textAlign: 'center', marginBottom: '2px' }}>
+          Usage interne uniquement
+        </div>
+        <div style={{ fontSize: '10px', textAlign: 'center' }}>
+          À reporter dans votre carnet obligatoire
         </div>
       </div>
 
-      {/* SECTION: À REPORTER DANS VOTRE CARNET OFFICIEL */}
-      <div style={{ fontSize: '12px', fontWeight: '900', backgroundColor: '#DBEAFE', padding: '8px', border: '2px solid #3B82F6', marginBottom: '6px' }}>
-        <div style={{ fontWeight: '900', marginBottom: '6px', textAlign: 'center', fontSize: '14px', color: '#1E40AF' }}>
-          📋 À REPORTER DANS VOTRE CARNET OFFICIEL
+      {/* Section à reporter - AIDE POUR CARNET OBLIGATOIRE */}
+      <div style={{ fontSize: '11px', fontWeight: '700', backgroundColor: '#DBEAFE', padding: '8px', border: '2px solid #3B82F6', marginBottom: '8px' }}>
+        <div style={{ fontWeight: '900', textAlign: 'center', marginBottom: '4px', fontSize: '12px', color: '#1E40AF' }}>
+          📋 À REPORTER DANS VOTRE CARNET
         </div>
-        <div style={{ backgroundColor: 'white', padding: '6px', borderRadius: '4px', fontFamily: 'monospace' }}>
-          <div style={{ marginBottom: '3px' }}>Date: <strong>{new Date().toLocaleDateString('fr-BE')}</strong></div>
-          <div style={{ borderTop: '1px dashed #ddd', paddingTop: '3px', marginTop: '3px' }}>
-            <div style={{ marginBottom: '2px' }}>Recettes espèces: <strong>{reportData.totalCash.toFixed(2)}€</strong></div>
-            <div style={{ marginBottom: '2px' }}>Recettes carte: <strong>{reportData.totalCard.toFixed(2)}€</strong></div>
-            <div style={{ marginBottom: '2px' }}>Recettes mobile: <strong>{reportData.totalMobile.toFixed(2)}€</strong></div>
+        <div style={{ backgroundColor: 'white', padding: '6px', borderRadius: '2px', fontSize: '10px' }}>
+          <div style={{ marginBottom: '2px' }}>
+            <strong>Date:</strong> {new Date().toLocaleDateString('fr-BE')}
           </div>
-          <div style={{ borderTop: '1px dashed #ddd', paddingTop: '3px', marginTop: '3px' }}>
+          <div style={{ borderTop: '1px dashed #ccc', paddingTop: '2px', marginTop: '2px' }}>
+            <div style={{ marginBottom: '1px' }}>Espèces: <strong>{reportData.totalCash.toFixed(2)}€</strong></div>
+            <div style={{ marginBottom: '1px' }}>Carte: <strong>{reportData.totalCard.toFixed(2)}€</strong></div>
+            <div style={{ marginBottom: '1px' }}>Mobile: <strong>{reportData.totalMobile.toFixed(2)}€</strong></div>
+          </div>
+          <div style={{ borderTop: '1px dashed #ccc', paddingTop: '2px', marginTop: '2px' }}>
             {Object.entries(reportData.vatByRate)
               .sort(([a], [b]) => parseFloat(b) - parseFloat(a))
               .map(([rate, amounts]) => (
-                <div key={rate} style={{ marginBottom: '2px' }}>
-                  TVA {parseFloat(rate).toFixed(0)}%: Base HT <strong>{amounts.totalHT.toFixed(2)}€</strong>, Montant TVA <strong>{amounts.totalVAT.toFixed(2)}€</strong>
+                <div key={rate} style={{ marginBottom: '1px', fontSize: '9px' }}>
+                  TVA {parseFloat(rate).toFixed(0)}%: HT <strong>{amounts.totalHT.toFixed(2)}€</strong>, TVA <strong>{amounts.totalVAT.toFixed(2)}€</strong>
                 </div>
               ))}
           </div>
-          <div style={{ borderTop: '2px solid #3B82F6', paddingTop: '3px', marginTop: '3px', fontSize: '14px' }}>
-            Total journée: <strong style={{ fontSize: '16px' }}>{reportData.totalSales.toFixed(2)}€</strong>
+          <div style={{ borderTop: '2px solid #3B82F6', paddingTop: '2px', marginTop: '2px', fontSize: '12px' }}>
+            <strong>Total journée: {reportData.totalSales.toFixed(2)}€</strong>
           </div>
           {todayReport && (
-            <div style={{ borderTop: '1px dashed #ddd', paddingTop: '3px', marginTop: '3px', fontSize: '11px' }}>
-              <div>Fond caisse ouverture: <strong>{todayReport.opening_amount.toFixed(2)}€</strong></div>
-              <div>Espèces comptées: <strong>{closingAmount.toFixed(2)}€</strong></div>
-              <div style={{ 
-                color: difference === 0 ? '#10B981' : difference > 0 ? '#3B82F6' : '#EF4444',
-                fontWeight: '900'
-              }}>
-                Écart: <strong>{difference > 0 ? '+' : ''}{difference.toFixed(2)}€</strong>
+            <div style={{ borderTop: '1px dashed #ccc', paddingTop: '2px', marginTop: '2px', fontSize: '9px' }}>
+              <div>Fond: {todayReport.opening_amount.toFixed(2)}€ | Compté: {closingAmount.toFixed(2)}€</div>
+              <div style={{ color: difference === 0 ? '#16A34A' : '#EF4444', fontWeight: '900' }}>
+                Écart: {difference > 0 ? '+' : ''}{difference.toFixed(2)}€
               </div>
             </div>
           )}
         </div>
-        <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '4px', color: '#1E40AF', fontWeight: '900' }}>
-          Copiez ces informations dans votre carnet de caisse papier obligatoire
+        <div style={{ fontSize: '8px', textAlign: 'center', marginTop: '4px', color: '#1E40AF' }}>
+          Recopiez ces données dans votre carnet papier officiel
         </div>
       </div>
 
-      {/* Détails techniques */}
-      <div style={{ fontSize: '10px', fontWeight: '900', backgroundColor: '#F3F4F6', padding: '6px', border: '1px solid #000', marginBottom: '6px' }}>
-        <div style={{ fontWeight: '900', fontSize: '10px' }}>
-          ✓ Rapport Z irréversible
-        </div>
-        <div style={{ fontWeight: '900', fontSize: '10px' }}>
-          ✓ Détail TVA par taux
-        </div>
-        <div style={{ fontWeight: '900', fontSize: '10px' }}>
-          ✓ Totaux moyens de paiement
-        </div>
-        <div style={{ fontWeight: '900', fontSize: '10px' }}>
-          ✓ État de caisse complet
-        </div>
-        <div style={{ fontWeight: '900', fontSize: '10px' }}>
-          ✓ Archivage 7 ans recommandé
-        </div>
+      {/* Conformité - MENTIONS LEGALES */}
+      <div style={{ fontSize: '10px', fontWeight: '700', backgroundColor: '#F3F4F6', padding: '6px', border: '1px solid #666', marginBottom: '8px' }}>
+        <div style={{ marginBottom: '2px' }}>✓ Rapport Z irréversible</div>
+        <div style={{ marginBottom: '2px' }}>✓ Détail TVA par taux</div>
+        <div style={{ marginBottom: '2px' }}>✓ Totaux moyens de paiement</div>
+        <div style={{ marginBottom: '2px' }}>✓ État caisse complet</div>
+        <div>✓ Conservation 7 ans recommandée</div>
       </div>
 
-      {/* Signature / Hash */}
-      <div style={{ fontSize: '10px', fontWeight: '900', fontFamily: 'monospace', wordBreak: 'break-all', backgroundColor: '#000', color: '#fff', padding: '4px' }}>
+      {/* Signature numérique */}
+      <div style={{ fontSize: '9px', fontWeight: '700', fontFamily: 'monospace', wordBreak: 'break-all', backgroundColor: '#000', color: '#fff', padding: '4px' }}>
         HASH: {btoa(Date.now() + reportData.totalSales.toString()).slice(0, 32)}
       </div>
 
       {/* Footer */}
-      <div style={{ borderTop: '2px dashed #000', marginTop: '8px', paddingTop: '8px' }}>
+      <div style={{ borderTop: '2px dashed #000', marginTop: '8px', paddingTop: '6px' }}>
       </div>
     </div>
   );
