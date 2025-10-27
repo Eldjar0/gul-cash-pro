@@ -431,50 +431,6 @@ const Index = () => {
     handleSearch();
   }, [debouncedSearchTerm]);
 
-  // Fermeture automatique de la journée après minuit
-  useEffect(() => {
-    const checkAndCloseDay = async () => {
-      if (!todayReport || todayReport.closing_amount !== null) return;
-      
-      const reportDate = new Date(todayReport.report_date);
-      reportDate.setHours(0, 0, 0, 0);
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      
-      // Si on est le jour suivant et la journée précédente est toujours ouverte
-      if (now.getTime() > reportDate.getTime()) {
-        try {
-          // Utiliser les données déjà collectées dans le rapport
-          const reportData: ReportData = {
-            totalSales: todayReport.total_sales,
-            totalCash: todayReport.total_cash,
-            totalCard: todayReport.total_card,
-            totalMobile: todayReport.total_mobile,
-            salesCount: todayReport.sales_count,
-            vatByRate: {} // Les données VAT ne sont pas stockées dans le rapport
-          };
-          
-          // Fermer automatiquement la journée avec le montant d'ouverture comme montant de clôture
-          await closeDay.mutateAsync({
-            reportId: todayReport.id,
-            closingAmount: todayReport.opening_amount,
-            reportData
-          });
-          
-          setIsDayOpenLocal(false);
-          toast.info('Journée précédente fermée automatiquement après minuit');
-        } catch (error) {
-          console.error('Erreur fermeture auto:', error);
-        }
-      }
-    };
-    
-    // Vérifier toutes les 30 secondes
-    const interval = setInterval(checkAndCloseDay, 30000);
-    checkAndCloseDay(); // Vérifier immédiatement au chargement
-    
-    return () => clearInterval(interval);
-  }, [todayReport, closeDay]);
 
   // Normalisation AZERTY → chiffres pour les codes-barres
   const normalizeBarcode = (raw: string): string => {
@@ -565,16 +521,10 @@ const Index = () => {
       return;
     }
     
-    // Vérifier si la journée est ouverte, sinon l'ouvrir automatiquement
+    // Vérifier si la journée est ouverte
     if (!isDayOpenEffective) {
-      try {
-        await openDay.mutateAsync(0);
-        setIsDayOpenLocal(true);
-        toast.success('Journée ouverte automatiquement');
-      } catch (error) {
-        toast.error('Impossible d\'ouvrir la journée');
-        return;
-      }
+      toast.error('Veuillez ouvrir la journée avant de scanner des produits');
+      return;
     }
     
     // Si le produit est au poids, ouvrir le dialog de saisie du poids
@@ -943,15 +893,11 @@ const Index = () => {
       return;
     }
 
-    // 2. Ouvrir automatiquement la journée si fermée
+    // 2. Vérifier que la journée est ouverte
     if (!isDayOpenEffective) {
-      try {
-        await openDay.mutateAsync(0);
-        setIsDayOpenLocal(true);
-      } catch (error) {
-        console.error('Erreur ouverture jour:', error);
-        // Continue quand même
-      }
+      toast.error('Veuillez ouvrir la journée avant d\'effectuer une vente');
+      setPaymentDialogOpen(false);
+      return;
     }
 
     // 3. Si mode facture sans client, convertir en ticket
@@ -1174,15 +1120,11 @@ const Index = () => {
       return;
     }
 
-    // Ouvrir automatiquement la journée si fermée
+    // Vérifier que la journée est ouverte
     if (!isDayOpenEffective) {
-      try {
-        await openDay.mutateAsync(0);
-        setIsDayOpenLocal(true);
-      } catch (error) {
-        console.error('Erreur ouverture jour:', error);
-        // Continue quand même
-      }
+      toast.error('Veuillez ouvrir la journée avant d\'effectuer une vente');
+      setMixedPaymentDialogOpen(false);
+      return;
     }
 
     // Si mode facture sans client, convertir en ticket
