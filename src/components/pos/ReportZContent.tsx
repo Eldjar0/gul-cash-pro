@@ -302,9 +302,6 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
 
       {/* Footer */}
       <div style={{ borderTop: '2px dashed #000', marginTop: '8px', paddingTop: '8px' }}>
-        <div className="text-center" style={{ fontSize: '10px', color: '#999', fontWeight: '900', marginTop: '4px' }}>
-          Document non-fiscal - Conservation interne recommandée
-        </div>
       </div>
     </div>
   );
