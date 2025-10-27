@@ -298,9 +298,6 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
 
             {/* Footer légal */}
             <div style={{ borderTop: '2px dashed #000', marginTop: '8px', paddingTop: '6px' }}>
-              <div className="text-center" style={{ fontSize: '11px', color: '#666', fontWeight: '700' }}>
-                www.JLprod.be
-              </div>
               <div className="text-center" style={{ fontSize: '9px', color: '#999', fontWeight: '700', marginTop: '2px' }}>
                 Document conforme pratique commerciale belge
               </div>
