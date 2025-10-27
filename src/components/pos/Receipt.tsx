@@ -234,8 +234,8 @@ export function Receipt({ sale }: ReceiptProps) {
           </div>
         )}
         
-        <div className="mt-3 text-[10px] text-muted-foreground">
-          <p>www.JLprod.be</p>
+        <div className="mt-3 text-[9px] text-muted-foreground border-t pt-2">
+          <p className="font-semibold">Document à conserver 10 ans (Art. 315bis CIR92)</p>
         </div>
       </div>
     </div>

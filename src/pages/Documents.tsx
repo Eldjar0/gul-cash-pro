@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LegalFooter } from '@/components/pos/LegalFooter';
 import {
   ArrowLeft,
   Search,
@@ -89,11 +90,8 @@ export default function Documents() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [saleToDelete, setSaleToDelete] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
-  const [devMode, setDevMode] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [saleToEdit, setSaleToEdit] = useState<any>(null);
-  const [showPinDialog, setShowPinDialog] = useState(false);
-  const [pinInput, setPinInput] = useState('');
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [deleteRefundDialogOpen, setDeleteRefundDialogOpen] = useState(false);
   const [refundToDelete, setRefundToDelete] = useState<string | null>(null);
@@ -110,39 +108,9 @@ export default function Documents() {
   const deleteRefund = useDeleteRefund();
   const { settings: companySettings } = useCompanySettings();
 
-  // Activer le mode dev avec Ctrl+5 + code PIN
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === '5') {
-        e.preventDefault();
-        if (devMode) {
-          setDevMode(false);
-          toast.success('Mode dev désactivé');
-        } else {
-          setShowPinDialog(true);
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [devMode]);
-
-  const handlePinSubmit = () => {
-    if (pinInput === '3679') {
-      setDevMode(true);
-      setShowPinDialog(false);
-      setPinInput('');
-      console.log('⚠️ MODE DEV ACTIVÉ - ATTENTION: UTILISATION ILLÉGALE EN PRODUCTION');
-      toast.error('MODE DEV ACTIVÉ - INTERDIT EN PRODUCTION');
-    } else {
-      toast.error('Code incorrect');
-      setPinInput('');
-    }
-  };
-
   const handleDeleteClick = (saleId: string) => {
     setSaleToDelete(saleId);
+
     setDeleteDialogOpen(true);
   };
 
@@ -465,17 +433,6 @@ export default function Documents() {
                 <p className="text-sm text-muted-foreground">Ventes, Factures, Commandes & Remboursements</p>
               </div>
             </div>
-            {devMode && (
-              <div className="flex flex-col gap-1 shrink-0">
-                <Badge variant="destructive" className="animate-pulse">
-                  <Settings className="h-3 w-3 mr-1" />
-                  MODE DEV - INTERDIT
-                </Badge>
-                <div className="text-[10px] text-destructive text-right">
-                  JLprod décline toute responsabilité
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -644,11 +601,6 @@ export default function Documents() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex gap-1 justify-end">
-                              {devMode && !sale.is_cancelled && (
-                                <Button variant="ghost" size="sm" onClick={() => { setSaleToEdit(sale); setEditDialogOpen(true); }} className="h-8 text-orange-600">
-                                  <Settings className="h-4 w-4" />
-                                </Button>
-                              )}
                               <Button variant="ghost" size="sm" onClick={() => handleViewReceipt(sale)} className="h-8">
                                 <Eye className="h-4 w-4" />
                               </Button>
@@ -781,16 +733,6 @@ export default function Documents() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex gap-1 justify-end">
-                              {devMode && canModifyInvoice(invoice.invoice_status) && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  onClick={() => { setEditingInvoiceId(invoice.id); setInvoiceEditorOpen(true); }} 
-                                  className="h-8 text-orange-600"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                              )}
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
@@ -976,34 +918,6 @@ export default function Documents() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={showPinDialog} onOpenChange={setShowPinDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Code PIN Développeur</DialogTitle>
-            <DialogDescription>
-              Entrez le code PIN pour activer le mode développeur
-            </DialogDescription>
-          </DialogHeader>
-          <Input
-            type="password"
-            value={pinInput}
-            onChange={(e) => setPinInput(e.target.value)}
-            placeholder="Code PIN"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handlePinSubmit();
-            }}
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPinDialog(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handlePinSubmit}>
-              Valider
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {editDialogOpen && saleToEdit && (
         <EditSaleDialog
           sale={saleToEdit}
@@ -1064,6 +978,11 @@ export default function Documents() {
         onOpenChange={setInvoiceEditorOpen}
         invoiceId={editingInvoiceId}
       />
+      
+      {/* Footer légal */}
+      <div className="container mx-auto px-6 pb-8">
+        <LegalFooter />
+      </div>
     </div>
   );
 }

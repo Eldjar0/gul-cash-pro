@@ -301,6 +301,9 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         <div style={{ fontSize: '14px', marginBottom: '4px' }}>
           MERCI DE VOTRE VISITE
         </div>
+        <div style={{ fontSize: '8px', fontWeight: '600', marginTop: '6px', borderTop: '1px solid #ddd', paddingTop: '4px' }}>
+          Document de vente - Conservation 10 ans (Art. 315bis CIR92)
+        </div>
       </div>
     </div>
   );

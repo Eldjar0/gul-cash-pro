@@ -363,12 +363,12 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setFont('helvetica', 'normal');
   doc.text(invoice.company.vatNumber, col4X, yPos + 4);
 
-  // Propulsé par
+  // Footer avec mention légale
   yPos = pageHeight - 10;
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 100, 100);
-  doc.text('Logiciel de caisse professionnel - JLprod.be - Simplifiez votre gestion quotidienne', pageWidth / 2, yPos, { align: 'center' });
+  doc.text('Document à conserver 10 ans - Art. 315bis CIR92', pageWidth / 2, yPos, { align: 'center' });
 
   return doc;
 };

@@ -1,3 +1,4 @@
+import { CompanyLegalSettings } from '@/components/settings/CompanyLegalSettings';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,14 @@ interface InvoiceSettings {
   email: string;
   bank_accounts: BankAccount[];
   invoice_logo?: string;
+  // Nouveaux champs légaux belges
+  legal_form?: string;
+  bce_number?: string;
+  head_office_address?: string;
+  bank_iban?: string;
+  bank_bic?: string;
+  payment_terms_days?: number;
+  late_interest_rate?: number;
 }
 
 
@@ -74,6 +83,13 @@ export default function Settings() {
     email: '',
     bank_accounts: [],
     invoice_logo: '',
+    legal_form: '',
+    bce_number: '',
+    head_office_address: '',
+    bank_iban: '',
+    bank_bic: '',
+    payment_terms_days: 30,
+    late_interest_rate: 12,
   });
 
   useEffect(() => {
@@ -232,10 +248,14 @@ export default function Settings() {
 
       <div className="container mx-auto px-6 py-8">
         <Tabs defaultValue="billing" className="w-full space-y-6">
-          <TabsList className="grid w-full grid-cols-6 mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-7 mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
             <TabsTrigger value="billing" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               <Building className="h-4 w-4" />
               Facturation
+            </TabsTrigger>
+            <TabsTrigger value="legal" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white">
+              <FileText className="h-4 w-4" />
+              Légal
             </TabsTrigger>
             <TabsTrigger value="fiscal" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white">
               <Calculator className="h-4 w-4" />
@@ -601,6 +621,26 @@ export default function Settings() {
               >
                 <Save className="h-5 w-5 mr-2" />
                 {saving ? 'Enregistrement en cours...' : 'Enregistrer tous les paramètres'}
+              </Button>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="legal" className="space-y-6">
+            <CompanyLegalSettings 
+              settings={settings}
+              onChange={(key, value) => setSettings({ ...settings, [key]: value })}
+            />
+            
+            {/* Bouton sauvegarder */}
+            <Card className="p-6 bg-gradient-to-r from-blue-500 to-cyan-500 border-0 shadow-lg">
+              <Button 
+                onClick={saveSettings} 
+                disabled={saving} 
+                className="w-full h-14 text-lg bg-white text-blue-600 hover:bg-white/90" 
+                size="lg"
+              >
+                <Save className="h-5 w-5 mr-2" />
+                {saving ? 'Enregistrement en cours...' : 'Enregistrer les informations légales'}
               </Button>
             </Card>
           </TabsContent>

@@ -27,6 +27,14 @@ export interface CompanySettings {
   store_city?: string;
   store_postal_code?: string;
   bank_accounts?: BankAccount[];
+  // Nouveaux champs légaux belges
+  legal_form?: string;
+  bce_number?: string;
+  head_office_address?: string;
+  bank_iban?: string;
+  bank_bic?: string;
+  payment_terms_days?: number;
+  late_interest_rate?: number;
 }
 
 // Convertir COMPANY_INFO en format CompanySettings
