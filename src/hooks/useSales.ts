@@ -367,6 +367,42 @@ export const useDeleteSalePermanently = () => {
   });
 };
 
+// Hook pour restaurer une vente annulée (conformité légale belge)
+export const useRestoreSale = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ saleId }: { saleId: string }) => {
+      const { error } = await supabase
+        .from('sales')
+        .update({
+          is_cancelled: false,
+          notes: null, // Effacer la raison d'annulation
+        })
+        .eq('id', saleId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sales'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['cash_movements'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['daily_reports'], refetchType: 'active' });
+      toast({
+        title: 'Ticket restauré',
+        description: 'Le ticket a été restauré avec succès.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Impossible de restaurer le ticket.',
+        variant: 'destructive',
+      });
+    },
+  });
+};
+
 // Keep for backwards compatibility but deprecated
 export const useDeleteSale = useCancelSale;
 

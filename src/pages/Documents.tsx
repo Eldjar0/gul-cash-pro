@@ -21,6 +21,7 @@ import {
   Settings,
   ShoppingCart,
   Undo2,
+  RotateCcw,
   XCircle,
   Download,
   Plus,
@@ -31,7 +32,7 @@ import {
   Smartphone,
   Package,
 } from 'lucide-react';
-import { useSales, useCancelSale } from '@/hooks/useSales';
+import { useSales, useCancelSale, useRestoreSale } from '@/hooks/useSales';
 import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
 import { useMobileOrders } from '@/hooks/useMobileOrders';
 import { RefundDialog } from '@/components/pos/RefundDialog';
@@ -106,6 +107,7 @@ export default function Documents() {
   const { data: refunds = [], isLoading: refundsLoading } = useRefunds();
   const { data: mobileOrders = [], isLoading: mobileOrdersLoading } = useMobileOrders();
   const cancelSale = useCancelSale();
+  const restoreSale = useRestoreSale();
   const deleteRefund = useDeleteRefund();
   const { settings: companySettings } = useCompanySettings();
 
@@ -125,6 +127,15 @@ export default function Documents() {
       setSaleToDelete(null);
       setCancelReason('');
     }
+  };
+
+  const handleRestoreClick = (saleId: string) => {
+    restoreSale.mutate({ saleId });
+  };
+
+  const handleEditClick = (sale: any) => {
+    setSaleToEdit(sale);
+    setEditDialogOpen(true);
   };
 
   const handleDeleteRefundClick = (refundId: string) => {
@@ -604,19 +615,40 @@ export default function Documents() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex gap-1 justify-end">
-                              <Button variant="ghost" size="sm" onClick={() => handleViewReceipt(sale)} className="h-8">
+                              <Button variant="ghost" size="sm" onClick={() => handleViewReceipt(sale)} className="h-8" title="Voir le ticket">
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              {!sale.is_cancelled && (
+                              {sale.is_cancelled ? (
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  onClick={() => handleCancelClick(sale.id)} 
-                                  className="h-8 text-orange-600 hover:text-orange-700"
-                                  title="Annuler cette vente"
+                                  onClick={() => handleRestoreClick(sale.id)} 
+                                  className="h-8 text-green-600 hover:text-green-700"
+                                  title="Restaurer ce ticket"
                                 >
-                                  <XCircle className="h-4 w-4" />
+                                  <RotateCcw className="h-4 w-4" />
                                 </Button>
+                              ) : (
+                                <>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handleEditClick(sale)} 
+                                    className="h-8 text-blue-600 hover:text-blue-700"
+                                    title="Modifier ce ticket"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handleCancelClick(sale.id)} 
+                                    className="h-8 text-orange-600 hover:text-orange-700"
+                                    title="Annuler ce ticket"
+                                  >
+                                    <XCircle className="h-4 w-4" />
+                                  </Button>
+                                </>
                               )}
                             </div>
                           </TableCell>
@@ -749,6 +781,7 @@ export default function Documents() {
                                 size="sm" 
                                 onClick={() => handleViewInvoice(invoice)} 
                                 className="h-8"
+                                title="Voir la facture"
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
@@ -757,19 +790,45 @@ export default function Documents() {
                                 size="sm" 
                                 onClick={() => handleDownloadInvoice(invoice)} 
                                 className="h-8"
+                                title="Télécharger la facture"
                               >
                                 <Download className="h-4 w-4" />
                               </Button>
-                              {canDeleteInvoice(invoice.invoice_status) && (
+                              {invoice.is_cancelled ? (
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  onClick={() => handleCancelClick(invoice.id)} 
-                                  className="h-8 text-orange-600 hover:text-orange-700"
-                                  title="Annuler cette facture"
+                                  onClick={() => handleRestoreClick(invoice.id)} 
+                                  className="h-8 text-green-600 hover:text-green-700"
+                                  title="Restaurer cette facture"
                                 >
-                                  <XCircle className="h-4 w-4" />
+                                  <RotateCcw className="h-4 w-4" />
                                 </Button>
+                              ) : (
+                                <>
+                                  {canModifyInvoice(invoice.invoice_status) && (
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      onClick={() => handleEditClick(invoice)} 
+                                      className="h-8 text-blue-600 hover:text-blue-700"
+                                      title="Modifier cette facture"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  {canDeleteInvoice(invoice.invoice_status) && (
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      onClick={() => handleCancelClick(invoice.id)} 
+                                      className="h-8 text-orange-600 hover:text-orange-700"
+                                      title="Annuler cette facture"
+                                    >
+                                      <XCircle className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </>
                               )}
                             </div>
                           </TableCell>

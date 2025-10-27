@@ -46,6 +46,13 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
   };
 
   const handleRemoveItem = (index: number) => {
+    // Empêcher la suppression si c'est le dernier article (conformité légale)
+    if (items.length <= 1) {
+      toast.error('Impossible de supprimer le dernier article', {
+        description: 'Au moins 1 article doit rester dans le ticket (Art. 315bis CIR92)',
+      });
+      return;
+    }
     const newItems = items.filter((_, i) => i !== index);
     setItems(newItems);
   };
@@ -166,23 +173,27 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
-            <DialogTitle className="text-destructive">MODE DEV - Édition de vente</DialogTitle>
+            <AlertTriangle className="h-5 w-5 text-orange-600" />
+            <DialogTitle className="text-orange-900">⚠️ Modification de ticket de caisse</DialogTitle>
           </div>
-          <DialogDescription className="space-y-2">
-            <div className="text-destructive font-bold text-base">
-              ⚠️ MENU INTERDIT EN PRODUCTION
+          <DialogDescription className="space-y-3">
+            <div className="text-orange-900 font-bold text-base">
+              AVERTISSEMENT LÉGAL - Art. 315bis CIR92
             </div>
-            <div className="text-sm text-destructive">
-              Ce menu est UNIQUEMENT utilisable en fin de test niveau développement.
+            <div className="text-sm text-orange-800 space-y-2">
+              <p className="font-semibold">
+                La modification de tickets de caisse est strictement encadrée par la loi belge :
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-xs">
+                <li>Conservation obligatoire de 10 ans de tous les documents</li>
+                <li>Modification autorisée uniquement en cas d'erreur manifeste</li>
+                <li>Au moins 1 article doit rester dans le ticket</li>
+                <li>Aucune trace des articles supprimés n'est conservée</li>
+                <li>Toute modification abusive peut entraîner des sanctions</li>
+              </ul>
             </div>
-            <div className="text-sm text-destructive font-semibold">
-              La modification des données de vente est ILLÉGALE en environnement de production.
-            </div>
-            <div className="text-xs text-muted-foreground mt-3 p-2 bg-destructive/10 rounded border border-destructive/20">
-              <strong>Décharge de responsabilité :</strong> JLprod retire toute sa responsabilité 
-              en cas d'utilisation de ce menu. L'utilisateur est seul responsable des conséquences 
-              légales et fiscales de toute modification effectuée via ce mode développement.
+            <div className="text-xs text-orange-700 p-3 bg-orange-50 rounded border-2 border-orange-300 font-semibold">
+              ⚖️ Sanctions possibles : Amendes jusqu'à 25 000 € + poursuites pénales
             </div>
           </DialogDescription>
         </DialogHeader>
@@ -255,7 +266,9 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
                       variant="ghost"
                       size="sm"
                       onClick={() => handleRemoveItem(index)}
-                      className="text-destructive hover:text-destructive"
+                      disabled={items.length === 1}
+                      className="text-destructive hover:text-destructive disabled:opacity-30"
+                      title={items.length === 1 ? 'Minimum 1 article requis' : 'Supprimer cet article'}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
