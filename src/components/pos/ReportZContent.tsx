@@ -46,9 +46,6 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
         <div style={{ fontSize: '14px', fontWeight: '900', color: '#DC2626' }}>
           CLOTURE JOURNALIERE
         </div>
-        <div style={{ fontSize: '11px', color: '#666', fontWeight: '700', marginTop: '2px' }}>
-          Conforme législation belge
-        </div>
       </div>
 
       {/* Informations rapport - OBLIGATOIRE */}
@@ -274,7 +271,7 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
         <div style={{ marginBottom: '2px' }}>✓ Détail TVA par taux</div>
         <div style={{ marginBottom: '2px' }}>✓ Totaux moyens de paiement</div>
         <div style={{ marginBottom: '2px' }}>✓ État caisse complet</div>
-        <div>✓ Conservation 7 ans recommandée</div>
+        <div>✓ Conservation 10 ans recommandée</div>
       </div>
 
       {/* Signature numérique */}

@@ -125,18 +125,18 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
               <div style={{ marginTop: '2px' }}>N° TVA: {settings.vat_number}</div>
             </div>
 
-            {/* Type de rapport - MENTION OBLIGATOIRE */}
-            <div className="text-center" style={{ fontSize: '13px', marginBottom: '8px', fontWeight: '900', backgroundColor: '#E0F2FE', padding: '8px', margin: '0 -8px 8px -8px', border: '2px solid #3B82F6' }}>
-              <div style={{ fontSize: '32px', fontWeight: '900', lineHeight: '1', color: '#3B82F6', marginBottom: '4px' }}>
-                X
-              </div>
-              <div style={{ fontSize: '14px', fontWeight: '900', color: '#1E40AF' }}>
-                RAPPORT INTERMEDIAIRE
-              </div>
-              <div style={{ fontSize: '11px', color: '#666', fontWeight: '700', marginTop: '2px' }}>
-                Non fiscal - Usage interne
-              </div>
-            </div>
+      {/* Type de rapport - MENTION OBLIGATOIRE */}
+      <div className="text-center" style={{ fontSize: '13px', marginBottom: '8px', fontWeight: '900', backgroundColor: '#E0F2FE', padding: '8px', margin: '0 -8px 8px -8px', border: '2px solid #3B82F6' }}>
+        <div style={{ fontSize: '32px', fontWeight: '900', lineHeight: '1', color: '#3B82F6', marginBottom: '4px' }}>
+          X
+        </div>
+        <div style={{ fontSize: '14px', fontWeight: '900', color: '#1E40AF' }}>
+          RAPPORT INTERMEDIAIRE
+        </div>
+        <div style={{ fontSize: '11px', color: '#666', fontWeight: '700', marginTop: '2px' }}>
+          Non fiscal - Usage interne
+        </div>
+      </div>
 
             {/* Date et heure - OBLIGATOIRE */}
             <div style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px', borderBottom: '1px dashed #000', paddingBottom: '4px' }}>
@@ -298,6 +298,12 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
 
             {/* Footer légal */}
             <div style={{ borderTop: '2px dashed #000', marginTop: '8px', paddingTop: '6px' }}>
+              <div className="text-center" style={{ fontSize: '9px', color: '#999', fontWeight: '700', marginTop: '2px' }}>
+                Document conforme pratique commerciale belge
+              </div>
+              <div className="text-center" style={{ fontSize: '9px', color: '#999', fontWeight: '700' }}>
+                Conservation recommandée 10 ans
+              </div>
             </div>
           </div>
         </ScrollArea>
