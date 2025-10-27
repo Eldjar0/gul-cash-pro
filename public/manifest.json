@@ -9,31 +9,19 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "/placeholder.svg",
+      "src": "/app-icon.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/placeholder.svg",
+      "src": "/app-icon.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/placeholder.svg",
-      "sizes": "1280x720",
-      "type": "image/svg+xml",
-      "form_factor": "wide"
-    }
-  ],
+  "screenshots": [],
   "categories": ["business", "finance", "productivity"],
   "shortcuts": [
     {
@@ -41,21 +29,21 @@
       "short_name": "POS",
       "description": "Ouvrir la caisse enregistreuse",
       "url": "/",
-      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/app-icon.png", "sizes": "192x192" }]
     },
     {
       "name": "Produits",
       "short_name": "Produits",
       "description": "Gérer les produits",
       "url": "/products",
-      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/app-icon.png", "sizes": "192x192" }]
     },
     {
       "name": "Dashboard",
       "short_name": "Stats",
       "description": "Voir les statistiques",
       "url": "/dashboard",
-      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/app-icon.png", "sizes": "192x192" }]
     }
   ]
 }
