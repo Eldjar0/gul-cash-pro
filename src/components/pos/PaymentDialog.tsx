@@ -129,7 +129,7 @@ export function PaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-gradient-to-br from-background to-muted/50 border-2 mt-4 translate-y-[-10%]">
+      <DialogContent className="max-w-2xl bg-gradient-to-br from-background to-muted/50 border-2 -translate-y-[20vh]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Mode de Paiement</DialogTitle>
           <p className="text-3xl font-bold mt-2">Total: {total.toFixed(2)}€</p>
