@@ -304,9 +304,6 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         <div style={{ fontSize: '9px', fontWeight: '600', marginTop: '4px', padding: '2px 0' }}>
           Ticket fiscal obligatoire - À conserver
         </div>
-        <div style={{ fontSize: '10px', color: '#666', marginTop: '2px' }}>
-          www.JLprod.be
-        </div>
       </div>
     </div>
   );
