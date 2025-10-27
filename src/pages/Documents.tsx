@@ -21,6 +21,7 @@ import {
   Settings,
   ShoppingCart,
   Undo2,
+  XCircle,
   Download,
   Plus,
   Building2,
@@ -30,7 +31,7 @@ import {
   Smartphone,
   Package,
 } from 'lucide-react';
-import { useSales, useDeleteSalePermanently } from '@/hooks/useSales';
+import { useSales, useCancelSale } from '@/hooks/useSales';
 import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
 import { useMobileOrders } from '@/hooks/useMobileOrders';
 import { RefundDialog } from '@/components/pos/RefundDialog';
@@ -104,19 +105,19 @@ export default function Documents() {
   const { data: sales = [], isLoading } = useSales();
   const { data: refunds = [], isLoading: refundsLoading } = useRefunds();
   const { data: mobileOrders = [], isLoading: mobileOrdersLoading } = useMobileOrders();
-  const deleteSale = useDeleteSalePermanently();
+  const cancelSale = useCancelSale();
   const deleteRefund = useDeleteRefund();
   const { settings: companySettings } = useCompanySettings();
 
-  const handleDeleteClick = (saleId: string) => {
+  const handleCancelClick = (saleId: string) => {
     setSaleToDelete(saleId);
 
     setDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleCancelConfirm = () => {
     if (saleToDelete) {
-      deleteSale.mutate({ 
+      cancelSale.mutate({ 
         saleId: saleToDelete, 
         reason: cancelReason || 'Aucune raison fournie' 
       });
@@ -565,7 +566,9 @@ export default function Documents() {
                                 )}
                               </div>
                               {sale.is_cancelled && (
-                                <Badge variant="destructive" className="text-xs w-fit">ANNULÉE</Badge>
+                                <Badge variant="destructive" className="text-xs font-black animate-pulse">
+                                  ❌ ANNULÉE
+                                </Badge>
                               )}
                             </div>
                           </TableCell>
@@ -604,9 +607,17 @@ export default function Documents() {
                               <Button variant="ghost" size="sm" onClick={() => handleViewReceipt(sale)} className="h-8">
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(sale.id)} className="h-8 text-destructive" disabled={sale.is_cancelled}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              {!sale.is_cancelled && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleCancelClick(sale.id)} 
+                                  className="h-8 text-orange-600 hover:text-orange-700"
+                                  title="Annuler cette vente"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -753,10 +764,11 @@ export default function Documents() {
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  onClick={() => handleDeleteClick(invoice.id)} 
-                                  className="h-8 text-destructive"
+                                  onClick={() => handleCancelClick(invoice.id)} 
+                                  className="h-8 text-orange-600 hover:text-orange-700"
+                                  title="Annuler cette facture"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <XCircle className="h-4 w-4" />
                                 </Button>
                               )}
                             </div>
@@ -892,9 +904,18 @@ export default function Documents() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Annuler cette vente ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action va marquer la vente comme annulée. Le montant sera déduit des totaux et un historique sera conservé.
+            <AlertDialogTitle>⚠️ Annuler cette vente ?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p className="font-semibold text-orange-600">
+                Attention : Cette action est IRRÉVERSIBLE selon la loi belge
+              </p>
+              <p>
+                La vente sera marquée comme annulée et restera visible dans vos documents avec la mention "ANNULÉ". 
+                Le montant sera comptabilisé à 0€ dans les statistiques.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Conformément à l'Art. 315bis CIR92, les documents ne peuvent pas être supprimés, uniquement annulés.
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="my-4">
@@ -908,9 +929,9 @@ export default function Documents() {
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={handleDeleteConfirm}
+              onClick={handleCancelConfirm}
               disabled={!cancelReason.trim()}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-orange-600 text-white hover:bg-orange-700"
             >
               Confirmer l'annulation
             </AlertDialogAction>

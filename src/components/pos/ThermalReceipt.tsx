@@ -49,6 +49,7 @@ interface Sale {
   change_amount?: number;
   change?: number;
   is_invoice?: boolean;
+  is_cancelled?: boolean;
   customer?: Customer;
 }
 
@@ -125,6 +126,25 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           TVA: BE {settings.vat_number?.replace(/^BE\s*/, '').replace(/(\d{4})(\d{3})(\d{3})/, '$1.$2.$3')}
         </div>
       </div>
+
+      {/* ANNULÉ - Affichage visible */}
+      {sale.is_cancelled && (
+        <div style={{ 
+          textAlign: 'center',
+          marginBottom: '8px',
+          padding: '8px',
+          backgroundColor: '#FEE2E2',
+          border: '4px solid #DC2626',
+          fontWeight: '900'
+        }}>
+          <div style={{ fontSize: '24px', color: '#DC2626', letterSpacing: '2px' }}>
+            ❌ ANNULÉ ❌
+          </div>
+          <div style={{ fontSize: '10px', color: '#991B1B', marginTop: '4px' }}>
+            Document comptabilisé à 0€
+          </div>
+        </div>
+      )}
 
       {/* Numéro fiscal - Obligatoire pour conformité */}
       {sale.fiscal_number && (

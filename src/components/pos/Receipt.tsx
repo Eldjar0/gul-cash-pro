@@ -46,6 +46,7 @@ interface Sale {
   change_amount?: number;
   change?: number;
   is_invoice?: boolean;
+  is_cancelled?: boolean;
   customer?: Customer;
 }
 
@@ -77,6 +78,12 @@ export function Receipt({ sale }: ReceiptProps) {
           <span className="font-semibold">{isInvoice ? 'FACTURE' : 'TICKET'}</span>
           <span className="text-base font-black">{sale.saleNumber || sale.sale_number}</span>
         </div>
+        {sale.is_cancelled && (
+          <div className="text-center mt-2 mb-2 py-2 px-1 border-4 border-red-600 bg-red-100">
+            <p className="text-red-900 font-black text-lg tracking-wider">❌ ANNULÉ ❌</p>
+            <p className="text-red-700 font-bold text-[9px] mt-1">Document comptabilisé à 0€</p>
+          </div>
+        )}
         <div className="flex justify-between items-center mt-1">
           <span className="font-semibold">DATE</span>
           <span className="font-semibold">{new Date(sale.date || new Date()).toLocaleString('fr-BE', { 
