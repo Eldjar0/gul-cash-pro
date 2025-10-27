@@ -296,13 +296,10 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         )}
       </div>
 
-      {/* Footer - Conformité légale */}
+      {/* Footer */}
       <div className="text-center" style={{ marginTop: '8px', fontWeight: '900' }}>
         <div style={{ fontSize: '14px', marginBottom: '4px' }}>
           MERCI DE VOTRE VISITE
-        </div>
-        <div style={{ fontSize: '9px', fontWeight: '600', marginTop: '4px', padding: '2px 0' }}>
-          Ticket fiscal obligatoire - À conserver
         </div>
       </div>
     </div>
