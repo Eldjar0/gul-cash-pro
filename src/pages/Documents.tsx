@@ -174,7 +174,7 @@ export default function Documents() {
   };
 
   const handleCancelConfirm = async () => {
-    if (!saleToDelete || !cancelReason.trim()) return;
+    if (!saleToDelete) return;
 
     try {
       // Vérifier si c'est une facture en brouillon
@@ -196,7 +196,7 @@ export default function Documents() {
         // Annuler les autres ventes (tickets et factures validées)
         cancelSale.mutate({ 
           saleId: saleToDelete, 
-          reason: cancelReason || 'Aucune raison fournie' 
+          reason: 'Annulation confirmée' 
         });
       }
 
@@ -1895,52 +1895,17 @@ export default function Documents() {
             <AlertDialogTitle>
               {sales?.find(s => s.id === saleToDelete)?.is_invoice && 
                sales?.find(s => s.id === saleToDelete)?.invoice_status === 'brouillon' 
-                ? '🗑️ Supprimer cette facture brouillon ?' 
-                : '⚠️ Annuler cette vente ?'}
+                ? 'Supprimer ?' 
+                : 'Annuler ?'}
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              {sales?.find(s => s.id === saleToDelete)?.is_invoice && 
-               sales?.find(s => s.id === saleToDelete)?.invoice_status === 'brouillon' ? (
-                <>
-                  <p className="font-semibold text-blue-600">
-                    Cette facture est en brouillon, elle sera supprimée définitivement.
-                  </p>
-                  <p>
-                    Aucune trace ne sera conservée dans vos documents.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="font-semibold text-orange-600">
-                    Attention : Cette action est IRRÉVERSIBLE selon la loi belge
-                  </p>
-                  <p>
-                    La vente sera marquée comme annulée et restera visible dans vos documents avec la mention "ANNULÉ". 
-                    Le montant sera comptabilisé à 0€ dans les statistiques.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Conformément à l'Art. 315bis CIR92, les documents ne peuvent pas être supprimés, uniquement annulés.
-                  </p>
-                </>
-              )}
-            </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="my-4">
-            <label className="text-sm font-medium mb-2 block">Raison de l'annulation (obligatoire pour conformité légale)</label>
-            <Input
-              placeholder="Ex: Erreur de saisie, demande client..."
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-            />
-          </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>Non</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleCancelConfirm}
-              disabled={!cancelReason.trim()}
-              className="bg-orange-600 text-white hover:bg-orange-700"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Confirmer l'annulation
+              Oui
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
