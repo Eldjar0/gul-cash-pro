@@ -180,8 +180,16 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
                   <li><strong>Suppression de documents :</strong> INTERDITE après clôture journalière</li>
                   <li><strong>Modification de documents :</strong> AUTORISÉE uniquement le jour J avant clôture</li>
                 </ul>
-                <div className="mt-3 p-2 bg-red-100 border border-red-400 rounded font-bold">
-                  ⚠️ Sanctions : Amendes jusqu'à 25 000 € + poursuites pénales possibles
+                <div className="mt-3 p-3 bg-red-100 border-2 border-red-500 rounded space-y-2">
+                  <p className="font-black text-red-900 text-center">
+                    🚨 MODIFICATION POUR TRICHER = FRAUDE FISCALE
+                  </p>
+                  <p className="font-bold text-red-800">
+                    ⚠️ Sanctions : Amendes jusqu'à 25 000 € + poursuites pénales
+                  </p>
+                  <p className="text-xs text-red-700">
+                    Toute modification frauduleuse constitue une infraction grave au Code pénal belge et peut entraîner des sanctions civiles et pénales.
+                  </p>
                 </div>
               </div>
             </div>
