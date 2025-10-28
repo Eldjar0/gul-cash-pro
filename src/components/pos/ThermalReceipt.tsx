@@ -200,21 +200,9 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
             border: '2px solid #000',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '16px', fontWeight: '900', marginBottom: '3px', letterSpacing: '0.5px' }}>
+            <div style={{ fontSize: '16px', fontWeight: '900', letterSpacing: '0.5px' }}>
               CLIENT: {sale.customer.name}
             </div>
-            {(sale.customer as any).customer_number && (
-              <div style={{ fontSize: '11px', fontWeight: '900', marginBottom: '2px' }}>
-                N° CLIENT: {(sale.customer as any).customer_number}
-              </div>
-            )}
-            {sale.customer.vat_number && <div style={{ fontSize: '11px', wordWrap: 'break-word' }}>TVA: {sale.customer.vat_number}</div>}
-            {sale.customer.address && <div style={{ fontSize: '11px', wordWrap: 'break-word' }}>{sale.customer.address}</div>}
-            {(sale.customer.postal_code || sale.customer.city) && (
-              <div style={{ fontSize: '11px' }}>{sale.customer.postal_code} {sale.customer.city}</div>
-            )}
-            {sale.customer.email && <div style={{ fontSize: '11px' }}>{sale.customer.email}</div>}
-            {sale.customer.phone && <div style={{ fontSize: '11px' }}>{sale.customer.phone}</div>}
           </div>
           <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
         </>
