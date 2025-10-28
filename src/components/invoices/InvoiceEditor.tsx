@@ -231,6 +231,25 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     }, 0);
   };
 
+  const calculateVatByRate = () => {
+    const vatByRate: { [key: number]: { base: number; vat: number } } = {};
+    
+    items.forEach(item => {
+      const rate = item.vatRate;
+      const subtotal = item.quantity * item.unitPrice;
+      const vatAmount = subtotal * (rate / 100);
+      
+      if (!vatByRate[rate]) {
+        vatByRate[rate] = { base: 0, vat: 0 };
+      }
+      
+      vatByRate[rate].base += subtotal;
+      vatByRate[rate].vat += vatAmount;
+    });
+    
+    return vatByRate;
+  };
+
   const calculateTotal = () => {
     return calculateSubtotal() + calculateTotalVat();
   };
@@ -535,7 +554,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                       placeholder="BE..."
                       value={clientVatNumber}
                       onChange={(e) => setClientVatNumber(e.target.value)}
-                      className="h-8 w-36 text-xs border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors"
+                      className="h-8 w-48 text-xs border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors"
                     />
                   </div>
                 </div>
@@ -673,17 +692,30 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                   <p className="text-xl font-mono">{invoiceNumber}</p>
                 </div>
 
-                <div className="space-y-2 text-sm w-64">
+                <div className="space-y-2 text-sm w-80">
                   <div className="flex justify-between pb-2">
                     <span>Montant imposable</span>
                     <span className="font-semibold">{calculateSubtotal().toFixed(2)} €</span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b">
-                    <span>+ TVA (21%)</span>
+                  
+                  {/* TVA détaillée par taux */}
+                  <div className="border-t pt-2 space-y-1">
+                    <div className="font-semibold text-xs text-muted-foreground mb-1">TVA détaillée:</div>
+                    {Object.entries(calculateVatByRate()).map(([rate, amounts]) => (
+                      <div key={rate} className="flex justify-between text-xs pl-4">
+                        <span>TVA {rate}% sur {amounts.base.toFixed(2)}€</span>
+                        <span className="font-medium">{amounts.vat.toFixed(2)} €</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="flex justify-between pb-2 border-b pt-2">
+                    <span className="font-semibold">Total TVA</span>
                     <span className="font-semibold">{calculateTotalVat().toFixed(2)} €</span>
                   </div>
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Total</span>
+                  
+                  <div className="flex justify-between text-lg font-bold pt-2">
+                    <span>Total TTC</span>
                     <span>{calculateTotal().toFixed(2)} €</span>
                   </div>
                 </div>

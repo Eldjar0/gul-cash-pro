@@ -20,6 +20,7 @@ import {
   Building2,
   User,
   Briefcase,
+  Tag,
 } from 'lucide-react';
 import { useCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer, Customer } from '@/hooks/useCustomers';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -40,6 +41,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { CustomerCreditManagementDialog } from '@/components/customers/CustomerCreditManagementDialog';
+import { CustomerSpecialPricesDialog } from '@/components/customers/CustomerSpecialPricesDialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 
@@ -50,6 +52,7 @@ export default function Customers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [creditDialogOpen, setCreditDialogOpen] = useState(false);
+  const [specialPricesDialogOpen, setSpecialPricesDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const { data: customers = [], isLoading } = useCustomers();
@@ -73,6 +76,11 @@ export default function Customers() {
   const handleOpenCreditDialog = (customer: Customer) => {
     setSelectedCustomer(customer);
     setCreditDialogOpen(true);
+  };
+
+  const handleOpenSpecialPricesDialog = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setSpecialPricesDialogOpen(true);
   };
 
   const handleOpenEditDialog = (customer: Customer) => {
@@ -318,6 +326,15 @@ export default function Customers() {
                           <CreditCard className="h-4 w-4 mr-1" />
                           Crédit
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenSpecialPricesDialog(customer)}
+                          className="flex-1"
+                        >
+                          <Tag className="h-4 w-4 mr-1" />
+                          Prix
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(customer)}>
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -388,6 +405,15 @@ export default function Customers() {
                         >
                           <CreditCard className="h-4 w-4 mr-1" />
                           Crédit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenSpecialPricesDialog(customer)}
+                          className="flex-1"
+                        >
+                          <Tag className="h-4 w-4 mr-1" />
+                          Prix
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(customer)}>
                           <Edit className="h-4 w-4" />
@@ -633,6 +659,16 @@ export default function Customers() {
           customerName={selectedCustomer.name}
           open={creditDialogOpen}
           onOpenChange={setCreditDialogOpen}
+        />
+      )}
+
+      {/* Special Prices Dialog */}
+      {selectedCustomer && specialPricesDialogOpen && (
+        <CustomerSpecialPricesDialog
+          customerId={selectedCustomer.id}
+          customerName={selectedCustomer.name}
+          open={specialPricesDialogOpen}
+          onOpenChange={setSpecialPricesDialogOpen}
         />
       )}
     </div>
