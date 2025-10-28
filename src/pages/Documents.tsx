@@ -134,6 +134,8 @@ export default function Documents() {
   const [newStatus, setNewStatus] = useState<string>('');
   const [invoiceEditorOpen, setInvoiceEditorOpen] = useState(false);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | undefined>(undefined);
+  const [cancelReasonDialogOpen, setCancelReasonDialogOpen] = useState(false);
+  const [cancelReasonToShow, setCancelReasonToShow] = useState<string>('');
   
   // Mode sélection pour créer une facture
   const [selectionMode, setSelectionMode] = useState(false);
@@ -1135,9 +1137,24 @@ export default function Documents() {
                                 )}
                               </div>
                               {sale.is_cancelled && (
-                                <Badge variant="destructive" className="text-xs font-black animate-pulse">
-                                  ❌ ANNULÉE
-                                </Badge>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="destructive" className="text-xs font-black animate-pulse">
+                                    ❌ ANNULÉE
+                                  </Badge>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0"
+                                    onClick={() => {
+                                      const reason = sale.notes?.replace('ANNULÉE: ', '') || 'Aucune raison spécifiée';
+                                      setCancelReasonToShow(reason);
+                                      setCancelReasonDialogOpen(true);
+                                    }}
+                                    title="Voir la raison d'annulation"
+                                  >
+                                    <AlertCircle className="h-4 w-4 text-destructive" />
+                                  </Button>
+                                </div>
                               )}
                             </div>
                           </TableCell>
@@ -1961,7 +1978,33 @@ export default function Documents() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <InvoiceEditor 
+      {/* Dialog raison d'annulation */}
+      <Dialog open={cancelReasonDialogOpen} onOpenChange={setCancelReasonDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              Raison de l'annulation
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Ticket annulé</AlertTitle>
+              <AlertDescription className="mt-2 text-base">
+                {cancelReasonToShow}
+              </AlertDescription>
+            </Alert>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setCancelReasonDialogOpen(false)}>
+              Fermer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <InvoiceEditor
         open={invoiceEditorOpen} 
         onOpenChange={setInvoiceEditorOpen}
         invoiceId={editingInvoiceId}
