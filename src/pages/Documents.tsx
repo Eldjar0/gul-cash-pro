@@ -1359,13 +1359,6 @@ export default function Documents() {
               </div>
             </Card>
 
-            {/* Rapport produits */}
-            <ProductSalesReport 
-              documents={filteredInvoices}
-              dateRange={getDateRange(dateFilter) || undefined}
-              title="Produits vendus (Factures)"
-            />
-
             <Card className="p-4 bg-white">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
