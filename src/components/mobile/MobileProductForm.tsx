@@ -100,6 +100,54 @@ export const MobileProductForm = () => {
     }
   }, [product, suppliers]);
 
+  // Permissions caméra (Android/iOS)
+  const ensureCameraPermissions = async () => {
+    const perm = await CapacitorCamera.checkPermissions();
+    if (perm.camera === 'denied' || perm.photos === 'denied') {
+      const req = await CapacitorCamera.requestPermissions();
+      if (req.camera === 'denied') {
+        throw new Error('camera-permission-denied');
+      }
+    }
+  };
+
+  // Traite le résultat de la photo et prépare le fichier à uploader
+  const processPhoto = async (photo: any) => {
+    try {
+      let displayUrl: string | null = null;
+      if (photo?.dataUrl) displayUrl = photo.dataUrl as string;
+      else if (photo?.base64String) displayUrl = `data:image/${photo.format || 'jpeg'};base64,${photo.base64String}`;
+      else if (photo?.webPath) displayUrl = photo.webPath as string;
+
+      if (displayUrl) {
+        setImageUrl(displayUrl);
+      }
+
+      // Convertir en blob pour créer un File
+      let blob: Blob | null = null;
+      try {
+        const res = await fetch(photo?.dataUrl || photo?.webPath || displayUrl!);
+        blob = await res.blob();
+      } catch (e) {
+        // Fallback base64 -> blob
+        if (photo?.base64String) {
+          const byteChars = atob(photo.base64String);
+          const byteNumbers = new Array(byteChars.length);
+          for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+          blob = new Blob([new Uint8Array(byteNumbers)], { type: `image/${photo.format || 'jpeg'}` });
+        }
+      }
+
+      if (blob) {
+        const ext = (photo?.format || 'jpg').toLowerCase();
+        const file = new File([blob], `product-photo.${ext}`, { type: blob.type || `image/${ext}` });
+        setImageFile(file);
+      }
+    } catch (err) {
+      console.error('processPhoto error', err);
+    }
+  };
+
   const takePhoto = async () => {
     try {
       if (!Capacitor.isNativePlatform()) {
@@ -125,33 +173,18 @@ export const MobileProductForm = () => {
         return;
       }
 
-      // Sur native, utiliser Capacitor Camera
+      // Sur native, utiliser Capacitor Camera (URI pour fiabilité)
       console.log('Opening native camera...');
+      await ensureCameraPermissions();
       const photo = await CapacitorCamera.getPhoto({
         quality: 80,
         allowEditing: false,
-        resultType: CameraResultType.DataUrl,
+        resultType: CameraResultType.Uri,
         source: CameraSource.Camera,
       });
 
-      console.log('Photo captured, dataUrl exists:', !!photo.dataUrl);
-      
-      if (photo.dataUrl) {
-        // Mettre à jour l'URL immédiatement pour affichage
-        setImageUrl(photo.dataUrl);
-        console.log('Image URL set');
-        
-        // Convertir en File pour l'upload
-        const response = await fetch(photo.dataUrl);
-        const blob = await response.blob();
-        const file = new File([blob], 'product-photo.jpg', { type: 'image/jpeg' });
-        setImageFile(file);
-        console.log('Image file created');
-        
-        toast.success('Photo capturée');
-      } else {
-        console.log('No dataUrl in photo result');
-      }
+      await processPhoto(photo);
+      toast.success('Photo capturée');
     } catch (error: any) {
       console.error('Erreur lors de la prise de photo:', error);
       // Ne pas afficher d'erreur si l'utilisateur a annulé
@@ -187,31 +220,16 @@ export const MobileProductForm = () => {
 
       // Sur native, choisir depuis la galerie
       console.log('Opening photo gallery...');
+      await ensureCameraPermissions();
       const photo = await CapacitorCamera.getPhoto({
         quality: 80,
         allowEditing: false,
-        resultType: CameraResultType.DataUrl,
+        resultType: CameraResultType.Uri,
         source: CameraSource.Photos,
       });
 
-      console.log('Photo selected, dataUrl exists:', !!photo.dataUrl);
-
-      if (photo.dataUrl) {
-        // Mettre à jour l'URL immédiatement pour affichage
-        setImageUrl(photo.dataUrl);
-        console.log('Gallery image URL set');
-        
-        // Convertir en File pour l'upload
-        const response = await fetch(photo.dataUrl);
-        const blob = await response.blob();
-        const file = new File([blob], 'product-photo.jpg', { type: 'image/jpeg' });
-        setImageFile(file);
-        console.log('Gallery image file created');
-        
-        toast.success('Photo sélectionnée');
-      } else {
-        console.log('No dataUrl in photo result');
-      }
+      await processPhoto(photo);
+      toast.success('Photo sélectionnée');
     } catch (error: any) {
       console.error('Erreur lors du choix de photo:', error);
       // Ne pas afficher d'erreur si l'utilisateur a annulé
