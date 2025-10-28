@@ -158,12 +158,11 @@ export const MobileProductManager = () => {
                   {/* Filtre Fournisseur */}
                   <div className="space-y-2">
                     <Label className="text-base font-semibold">Fournisseur</Label>
-                    <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
+                    <Select value={selectedSupplier || undefined} onValueChange={(value) => setSelectedSupplier(value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Tous les fournisseurs" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Tous les fournisseurs</SelectItem>
                         {suppliers.map((supplier) => (
                           <SelectItem key={supplier} value={supplier}>
                             {supplier}
@@ -171,17 +170,27 @@ export const MobileProductManager = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    {selectedSupplier && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedSupplier('')}
+                        className="h-6 text-xs"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Effacer
+                      </Button>
+                    )}
                   </div>
 
                   {/* Filtre Catégorie */}
                   <div className="space-y-2">
                     <Label className="text-base font-semibold">Catégorie</Label>
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <Select value={selectedCategory || undefined} onValueChange={(value) => setSelectedCategory(value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Toutes les catégories" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Toutes les catégories</SelectItem>
                         {categories.map((category) => (
                           <SelectItem key={category.id} value={category.id}>
                             {category.name}
@@ -189,6 +198,17 @@ export const MobileProductManager = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    {selectedCategory && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedCategory('')}
+                        className="h-6 text-xs"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Effacer
+                      </Button>
+                    )}
                   </div>
 
                   {/* Filtre Stock */}
@@ -217,18 +237,28 @@ export const MobileProductManager = () => {
                   <div className="space-y-2">
                     <Label className="text-base font-semibold">Type de produit</Label>
                     <Select 
-                      value={productType || ''} 
-                      onValueChange={(value) => setProductType(value ? value as 'unit' | 'weight' : undefined)}
+                      value={productType || undefined} 
+                      onValueChange={(value) => setProductType(value as 'unit' | 'weight')}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Tous les types" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Tous les types</SelectItem>
                         <SelectItem value="unit">Unité</SelectItem>
                         <SelectItem value="weight">Poids</SelectItem>
                       </SelectContent>
                     </Select>
+                    {productType && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setProductType(undefined)}
+                        className="h-6 text-xs"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Effacer
+                      </Button>
+                    )}
                   </div>
                 </div>
               </ScrollArea>
