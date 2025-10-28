@@ -1045,8 +1045,12 @@ const Index = () => {
         status: 'completed',
         timestamp: Date.now()
       };
-      displayChannelRef.current.postMessage(completedState);
-      localStorage.setItem('customer_display_state', JSON.stringify(completedState));
+      try {
+        displayChannelRef.current.postMessage(completedState);
+        localStorage.setItem('customer_display_state', JSON.stringify(completedState));
+      } catch (e) {
+        // Canal fermé, on ignore l'erreur
+      }
 
       // Retour à "idle" après 5 secondes avec cleanup
       const timeoutId = setTimeout(() => {
