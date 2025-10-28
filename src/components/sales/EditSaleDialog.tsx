@@ -173,27 +173,22 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
-            <DialogTitle className="text-orange-900">⚠️ Modification de ticket de caisse</DialogTitle>
+            <AlertTriangle className="h-5 w-5 text-amber-600" />
+            <DialogTitle className="text-amber-900">Correction de ticket</DialogTitle>
           </div>
-          <DialogDescription className="space-y-3">
-            <div className="text-orange-900 font-bold text-base">
-              AVERTISSEMENT LÉGAL - Art. 315bis CIR92
-            </div>
-            <div className="text-sm text-orange-800 space-y-2">
-              <p className="font-semibold">
-                La modification de tickets de caisse est strictement encadrée par la loi belge :
+          <DialogDescription className="space-y-2">
+            <div className="text-sm text-muted-foreground space-y-2">
+              <p className="font-medium">
+                Cette fonction permet de corriger les erreurs de saisie conformément à l'Art. 315bis CIR92.
               </p>
-              <ul className="list-disc list-inside space-y-1 text-xs">
-                <li>Conservation obligatoire de 10 ans de tous les documents</li>
-                <li>Modification autorisée uniquement en cas d'erreur manifeste</li>
-                <li>Au moins 1 article doit rester dans le ticket</li>
-                <li>Aucune trace des articles supprimés n'est conservée</li>
-                <li>Toute modification abusive peut entraîner des sanctions</li>
-              </ul>
-            </div>
-            <div className="text-xs text-orange-700 p-3 bg-orange-50 rounded border-2 border-orange-300 font-semibold">
-              ⚖️ Sanctions possibles : Amendes jusqu'à 25 000 € + poursuites pénales
+              <div className="text-xs p-3 bg-amber-50 border border-amber-200 rounded space-y-1">
+                <p><strong>Règles de modification :</strong></p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Un minimum d'1 article doit rester dans le ticket</li>
+                  <li>Les modifications sont autorisées pour corriger des erreurs de saisie</li>
+                  <li>Conservation légale obligatoire : 10 ans</li>
+                </ul>
+              </div>
             </div>
           </DialogDescription>
         </DialogHeader>

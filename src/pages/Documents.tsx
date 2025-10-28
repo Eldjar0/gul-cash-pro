@@ -8,6 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LegalFooter } from '@/components/pos/LegalFooter';
 import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
   ArrowLeft,
   Search,
   Eye,
@@ -31,6 +39,8 @@ import {
   Clock,
   Smartphone,
   Package,
+  Filter,
+  FileDown,
 } from 'lucide-react';
 import { useSales, useCancelSale, useRestoreSale } from '@/hooks/useSales';
 import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
@@ -81,6 +91,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { InvoiceEditor } from '@/components/invoices/InvoiceEditor';
+import { exportDocumentsToPDF } from '@/utils/exportDocumentsPDF';
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, subDays } from 'date-fns';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 
 export default function Documents() {
   const navigate = useNavigate();
@@ -102,6 +121,15 @@ export default function Documents() {
   const [newStatus, setNewStatus] = useState<string>('');
   const [invoiceEditorOpen, setInvoiceEditorOpen] = useState(false);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | undefined>(undefined);
+  
+  // Pagination et filtres
+  const [salesPage, setSalesPage] = useState(1);
+  const [invoicesPage, setInvoicesPage] = useState(1);
+  const [refundsPage, setRefundsPage] = useState(1);
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
+  const itemsPerPage = 10;
 
   const { data: sales = [], isLoading } = useSales();
   const { data: refunds = [], isLoading: refundsLoading } = useRefunds();
@@ -197,8 +225,43 @@ export default function Documents() {
   const canModifyInvoice = (status: string) => status === 'brouillon';
   const canDeleteInvoice = (status: string) => status === 'brouillon';
 
+  // Fonction de filtrage par date
+  const getDateRange = (filter: string): { start: Date; end: Date } | null => {
+    const now = new Date();
+    switch (filter) {
+      case 'today':
+        return { start: startOfDay(now), end: endOfDay(now) };
+      case 'yesterday':
+        return { start: startOfDay(subDays(now, 1)), end: endOfDay(subDays(now, 1)) };
+      case 'week':
+        return { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
+      case 'month':
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+      case 'quarter':
+        return { start: startOfQuarter(now), end: endOfQuarter(now) };
+      case 'custom':
+        if (customStartDate && customEndDate) {
+          return { start: startOfDay(customStartDate), end: endOfDay(customEndDate) };
+        }
+        return null;
+      default:
+        return null;
+    }
+  };
+
+  const filterByDate = (items: any[]) => {
+    if (dateFilter === 'all') return items;
+    const range = getDateRange(dateFilter);
+    if (!range) return items;
+    
+    return items.filter(item => {
+      const itemDate = new Date(item.date || item.created_at);
+      return itemDate >= range.start && itemDate <= range.end;
+    });
+  };
+
   const filteredSales = useMemo(() => {
-    return sales.filter((sale) => {
+    let filtered = sales.filter((sale) => {
       // Exclure les factures des ventes (pour éviter les doublons)
       if (sale.is_invoice) return false;
       
@@ -208,18 +271,23 @@ export default function Documents() {
         format(new Date(sale.date), 'dd/MM/yyyy').includes(searchLower)
       );
     });
-  }, [sales, searchTerm]);
+    
+    return filterByDate(filtered);
+  }, [sales, searchTerm, dateFilter, customStartDate, customEndDate]);
 
-  const filteredRefunds = refunds.filter((refund) =>
-    refund.refund_number.toLowerCase().includes(refundSearchTerm.toLowerCase()) ||
-    refund.reason.toLowerCase().includes(refundSearchTerm.toLowerCase()) ||
-    refund.customers?.name?.toLowerCase().includes(refundSearchTerm.toLowerCase())
-  );
+  const filteredRefunds = useMemo(() => {
+    const filtered = refunds.filter((refund) =>
+      refund.refund_number.toLowerCase().includes(refundSearchTerm.toLowerCase()) ||
+      refund.reason.toLowerCase().includes(refundSearchTerm.toLowerCase()) ||
+      refund.customers?.name?.toLowerCase().includes(refundSearchTerm.toLowerCase())
+    );
+    return filterByDate(filtered);
+  }, [refunds, refundSearchTerm, dateFilter, customStartDate, customEndDate]);
 
   const invoices = useMemo(() => sales.filter(sale => sale.is_invoice), [sales]);
   
   const filteredInvoices = useMemo(() => {
-    return invoices.filter((invoice) => {
+    let filtered = invoices.filter((invoice) => {
       const searchLower = invoiceSearchTerm.toLowerCase();
       return (
         invoice.sale_number?.toLowerCase().includes(searchLower) ||
@@ -227,7 +295,8 @@ export default function Documents() {
         format(new Date(invoice.date), 'dd/MM/yyyy').includes(searchLower)
       );
     });
-  }, [invoices, invoiceSearchTerm]);
+    return filterByDate(filtered);
+  }, [invoices, invoiceSearchTerm, dateFilter, customStartDate, customEndDate]);
 
   const todayRefunds = useMemo(() => {
     return refunds.filter((r) => {
@@ -240,6 +309,81 @@ export default function Documents() {
   const todayRefundsTotal = useMemo(() => {
     return todayRefunds.reduce((sum, r) => sum + r.total, 0);
   }, [todayRefunds]);
+
+  // Pagination
+  const paginatedSales = useMemo(() => {
+    const start = (salesPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredSales.slice(start, end);
+  }, [filteredSales, salesPage]);
+
+  const paginatedInvoices = useMemo(() => {
+    const start = (invoicesPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredInvoices.slice(start, end);
+  }, [filteredInvoices, invoicesPage]);
+
+  const paginatedRefunds = useMemo(() => {
+    const start = (refundsPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredRefunds.slice(start, end);
+  }, [filteredRefunds, refundsPage]);
+
+  const totalSalesPages = Math.ceil(filteredSales.length / itemsPerPage);
+  const totalInvoicesPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+  const totalRefundsPages = Math.ceil(filteredRefunds.length / itemsPerPage);
+
+  // Export PDF
+  const handleExportSalesPDF = async () => {
+    const range = getDateRange(dateFilter);
+    await exportDocumentsToPDF({
+      type: 'sales',
+      documents: filteredSales,
+      dateRange: range || undefined,
+      companyInfo: {
+        name: companySettings.name,
+        address: companySettings.address,
+        city: companySettings.city,
+        postalCode: companySettings.postal_code,
+        vatNumber: companySettings.vat_number,
+      },
+    });
+    toast.success('Export PDF généré');
+  };
+
+  const handleExportInvoicesPDF = async () => {
+    const range = getDateRange(dateFilter);
+    await exportDocumentsToPDF({
+      type: 'invoices',
+      documents: filteredInvoices,
+      dateRange: range || undefined,
+      companyInfo: {
+        name: companySettings.name,
+        address: companySettings.address,
+        city: companySettings.city,
+        postalCode: companySettings.postal_code,
+        vatNumber: companySettings.vat_number,
+      },
+    });
+    toast.success('Export PDF généré');
+  };
+
+  const handleExportRefundsPDF = async () => {
+    const range = getDateRange(dateFilter);
+    await exportDocumentsToPDF({
+      type: 'refunds',
+      documents: filteredRefunds,
+      dateRange: range || undefined,
+      companyInfo: {
+        name: companySettings.name,
+        address: companySettings.address,
+        city: companySettings.city,
+        postalCode: companySettings.postal_code,
+        vatNumber: companySettings.vat_number,
+      },
+    });
+    toast.success('Export PDF généré');
+  };
 
   const handleViewReceipt = (sale: any) => {
     const saleForReceipt = {
@@ -535,6 +679,61 @@ export default function Documents() {
               </AlertDescription>
             </Alert>
 
+            {/* Filtres et Export */}
+            <Card className="p-4 bg-white">
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex-1 flex gap-2">
+                  <Select value={dateFilter} onValueChange={(value) => { setDateFilter(value); setSalesPage(1); }}>
+                    <SelectTrigger className="w-[200px]">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Période" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les dates</SelectItem>
+                      <SelectItem value="today">Aujourd'hui</SelectItem>
+                      <SelectItem value="yesterday">Hier</SelectItem>
+                      <SelectItem value="week">Cette semaine</SelectItem>
+                      <SelectItem value="month">Ce mois</SelectItem>
+                      <SelectItem value="quarter">Ce trimestre</SelectItem>
+                      <SelectItem value="custom">Personnalisé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {dateFilter === 'custom' && (
+                    <>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="justify-start text-left font-normal">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {customStartDate ? format(customStartDate, 'dd/MM/yyyy') : 'Date début'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarComponent mode="single" selected={customStartDate} onSelect={setCustomStartDate} />
+                        </PopoverContent>
+                      </Popover>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="justify-start text-left font-normal">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {customEndDate ? format(customEndDate, 'dd/MM/yyyy') : 'Date fin'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarComponent mode="single" selected={customEndDate} onSelect={setCustomEndDate} />
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  )}
+                </div>
+                
+                <Button onClick={handleExportSalesPDF} variant="outline" className="gap-2">
+                  <FileDown className="h-4 w-4" />
+                  Exporter PDF (Art. 315bis CIR92)
+                </Button>
+              </div>
+            </Card>
+
             <Card className="p-4 bg-white">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -549,7 +748,7 @@ export default function Documents() {
 
             <Card className="bg-white overflow-hidden">
               <div className="overflow-x-auto">
-                <ScrollArea className="h-[calc(100vh-500px)]">
+                <ScrollArea className="h-[calc(100vh-600px)]">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -563,7 +762,7 @@ export default function Documents() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredSales.map((sale) => (
+                      {paginatedSales.map((sale) => (
                         <TableRow key={sale.id} className={sale.is_cancelled ? 'bg-red-50 opacity-60' : ''}>
                           <TableCell className="font-mono font-semibold">
                             <div className="flex flex-col gap-1">
@@ -654,7 +853,7 @@ export default function Documents() {
                           </TableCell>
                         </TableRow>
                       ))}
-                      {filteredSales.length === 0 && (
+                      {paginatedSales.length === 0 && (
                         <TableRow>
                           <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Aucune vente trouvée</TableCell>
                         </TableRow>
@@ -664,6 +863,53 @@ export default function Documents() {
                 </ScrollArea>
               </div>
             </Card>
+
+            {/* Pagination */}
+            {totalSalesPages > 1 && (
+              <div className="flex items-center justify-center gap-2">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => setSalesPage(Math.max(1, salesPage - 1))}
+                        className={salesPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: totalSalesPages }, (_, i) => i + 1)
+                      .filter(page => {
+                        if (totalSalesPages <= 7) return true;
+                        if (page === 1 || page === totalSalesPages) return true;
+                        if (Math.abs(page - salesPage) <= 1) return true;
+                        return false;
+                      })
+                      .map((page, idx, arr) => {
+                        const showEllipsis = idx > 0 && page - arr[idx - 1] > 1;
+                        return (
+                          <PaginationItem key={page}>
+                            {showEllipsis && <span className="px-2">...</span>}
+                            <PaginationLink
+                              onClick={() => setSalesPage(page)}
+                              isActive={page === salesPage}
+                              className="cursor-pointer"
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      })}
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => setSalesPage(Math.min(totalSalesPages, salesPage + 1))}
+                        className={salesPage === totalSalesPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+                <div className="text-sm text-muted-foreground">
+                  Page {salesPage} sur {totalSalesPages} ({filteredSales.length} tickets)
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* Onglet Factures */}
@@ -674,6 +920,61 @@ export default function Documents() {
                 <strong>Note importante :</strong> Les factures sont gérées séparément des ventes de caisse pour éviter les doublons dans les déclarations fiscales.
               </AlertDescription>
             </Alert>
+
+            {/* Filtres et Export */}
+            <Card className="p-4 bg-white">
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex-1 flex gap-2">
+                  <Select value={dateFilter} onValueChange={(value) => { setDateFilter(value); setInvoicesPage(1); }}>
+                    <SelectTrigger className="w-[200px]">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Période" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les dates</SelectItem>
+                      <SelectItem value="today">Aujourd'hui</SelectItem>
+                      <SelectItem value="yesterday">Hier</SelectItem>
+                      <SelectItem value="week">Cette semaine</SelectItem>
+                      <SelectItem value="month">Ce mois</SelectItem>
+                      <SelectItem value="quarter">Ce trimestre</SelectItem>
+                      <SelectItem value="custom">Personnalisé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {dateFilter === 'custom' && (
+                    <>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="justify-start text-left font-normal">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {customStartDate ? format(customStartDate, 'dd/MM/yyyy') : 'Date début'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarComponent mode="single" selected={customStartDate} onSelect={setCustomStartDate} />
+                        </PopoverContent>
+                      </Popover>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="justify-start text-left font-normal">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {customEndDate ? format(customEndDate, 'dd/MM/yyyy') : 'Date fin'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarComponent mode="single" selected={customEndDate} onSelect={setCustomEndDate} />
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  )}
+                </div>
+                
+                <Button onClick={handleExportInvoicesPDF} variant="outline" className="gap-2">
+                  <FileDown className="h-4 w-4" />
+                  Exporter PDF (Art. 315bis CIR92)
+                </Button>
+              </div>
+            </Card>
 
             <Card className="p-4 bg-white">
               <div className="relative">
@@ -705,7 +1006,7 @@ export default function Documents() {
               </div>
 
               <div className="overflow-x-auto">
-                <ScrollArea className="h-[calc(100vh-500px)]">
+                <ScrollArea className="h-[calc(100vh-600px)]">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -720,7 +1021,7 @@ export default function Documents() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredInvoices.map((invoice) => (
+                      {paginatedInvoices.map((invoice) => (
                         <TableRow key={invoice.id}>
                           <TableCell className="font-mono font-semibold">
                             {invoice.sale_number}
@@ -834,7 +1135,7 @@ export default function Documents() {
                           </TableCell>
                         </TableRow>
                       ))}
-                      {filteredInvoices.length === 0 && (
+                      {paginatedInvoices.length === 0 && (
                         <TableRow>
                           <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                             Aucune facture trouvée
@@ -846,6 +1147,53 @@ export default function Documents() {
                 </ScrollArea>
               </div>
             </Card>
+
+            {/* Pagination */}
+            {totalInvoicesPages > 1 && (
+              <div className="flex items-center justify-center gap-2">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => setInvoicesPage(Math.max(1, invoicesPage - 1))}
+                        className={invoicesPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: totalInvoicesPages }, (_, i) => i + 1)
+                      .filter(page => {
+                        if (totalInvoicesPages <= 7) return true;
+                        if (page === 1 || page === totalInvoicesPages) return true;
+                        if (Math.abs(page - invoicesPage) <= 1) return true;
+                        return false;
+                      })
+                      .map((page, idx, arr) => {
+                        const showEllipsis = idx > 0 && page - arr[idx - 1] > 1;
+                        return (
+                          <PaginationItem key={page}>
+                            {showEllipsis && <span className="px-2">...</span>}
+                            <PaginationLink
+                              onClick={() => setInvoicesPage(page)}
+                              isActive={page === invoicesPage}
+                              className="cursor-pointer"
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      })}
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => setInvoicesPage(Math.min(totalInvoicesPages, invoicesPage + 1))}
+                        className={invoicesPage === totalInvoicesPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+                <div className="text-sm text-muted-foreground">
+                  Page {invoicesPage} sur {totalInvoicesPages} ({filteredInvoices.length} factures)
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* Onglet Commandes */}
@@ -860,6 +1208,61 @@ export default function Documents() {
 
           {/* Onglet Remboursements */}
           <TabsContent value="refunds" className="space-y-4">
+            {/* Filtres et Export */}
+            <Card className="p-4 bg-white">
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex-1 flex gap-2">
+                  <Select value={dateFilter} onValueChange={(value) => { setDateFilter(value); setRefundsPage(1); }}>
+                    <SelectTrigger className="w-[200px]">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Période" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les dates</SelectItem>
+                      <SelectItem value="today">Aujourd'hui</SelectItem>
+                      <SelectItem value="yesterday">Hier</SelectItem>
+                      <SelectItem value="week">Cette semaine</SelectItem>
+                      <SelectItem value="month">Ce mois</SelectItem>
+                      <SelectItem value="quarter">Ce trimestre</SelectItem>
+                      <SelectItem value="custom">Personnalisé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {dateFilter === 'custom' && (
+                    <>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="justify-start text-left font-normal">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {customStartDate ? format(customStartDate, 'dd/MM/yyyy') : 'Date début'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarComponent mode="single" selected={customStartDate} onSelect={setCustomStartDate} />
+                        </PopoverContent>
+                      </Popover>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="justify-start text-left font-normal">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {customEndDate ? format(customEndDate, 'dd/MM/yyyy') : 'Date fin'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarComponent mode="single" selected={customEndDate} onSelect={setCustomEndDate} />
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  )}
+                </div>
+                
+                <Button onClick={handleExportRefundsPDF} variant="outline" className="gap-2">
+                  <FileDown className="h-4 w-4" />
+                  Exporter PDF (Art. 315bis CIR92)
+                </Button>
+              </div>
+            </Card>
+
             <div className="flex justify-between items-center">
               <Card className="p-4 bg-white flex-1 mr-4">
                 <div className="relative">
@@ -878,9 +1281,9 @@ export default function Documents() {
               </Button>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-400px)]">
+            <ScrollArea className="h-[calc(100vh-500px)]">
               <div className="space-y-3">
-                {filteredRefunds.map((refund) => (
+                {paginatedRefunds.map((refund) => (
                   <Card key={refund.id} className="p-4 bg-white hover:shadow-lg transition-shadow">
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-2 flex-1">
@@ -925,7 +1328,7 @@ export default function Documents() {
                   </Card>
                 ))}
 
-                {filteredRefunds.length === 0 && (
+                {paginatedRefunds.length === 0 && (
                   <Card className="p-12 bg-white text-center">
                     <Undo2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">Aucun remboursement trouvé</p>
@@ -933,6 +1336,53 @@ export default function Documents() {
                 )}
               </div>
             </ScrollArea>
+
+            {/* Pagination */}
+            {totalRefundsPages > 1 && (
+              <div className="flex items-center justify-center gap-2">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => setRefundsPage(Math.max(1, refundsPage - 1))}
+                        className={refundsPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: totalRefundsPages }, (_, i) => i + 1)
+                      .filter(page => {
+                        if (totalRefundsPages <= 7) return true;
+                        if (page === 1 || page === totalRefundsPages) return true;
+                        if (Math.abs(page - refundsPage) <= 1) return true;
+                        return false;
+                      })
+                      .map((page, idx, arr) => {
+                        const showEllipsis = idx > 0 && page - arr[idx - 1] > 1;
+                        return (
+                          <PaginationItem key={page}>
+                            {showEllipsis && <span className="px-2">...</span>}
+                            <PaginationLink
+                              onClick={() => setRefundsPage(page)}
+                              isActive={page === refundsPage}
+                              className="cursor-pointer"
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      })}
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => setRefundsPage(Math.min(totalRefundsPages, refundsPage + 1))}
+                        className={refundsPage === totalRefundsPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+                <div className="text-sm text-muted-foreground">
+                  Page {refundsPage} sur {totalRefundsPages} ({filteredRefunds.length} remboursements)
+                </div>
+              </div>
+            )}
           </TabsContent>
 
         </Tabs>
