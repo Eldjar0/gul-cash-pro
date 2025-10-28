@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Save, X, Plus, Trash2, Search, Check } from 'lucide-react';
@@ -389,8 +388,8 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1000px] h-[90vh] p-0">
-        <div className="flex flex-col h-full">
+      <DialogContent className="max-w-[95vw] sm:max-w-[90vw] md:max-w-[1000px] max-h-[95vh] p-0 overflow-hidden">
+        <div className="flex flex-col h-full max-h-[95vh]">
           {/* Header */}
           <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b bg-gradient-to-r from-primary to-primary-glow">
             <h2 className="text-base sm:text-lg md:text-xl font-bold text-white truncate">
@@ -408,8 +407,8 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
           </div>
 
           {/* A4 Invoice Content */}
-          <ScrollArea className="flex-1 bg-gray-100 p-8">
-            <div className="mx-auto bg-white shadow-xl" style={{ width: '21cm', minHeight: '29.7cm', padding: '2cm' }}>
+          <div className="flex-1 overflow-y-auto bg-gray-100 p-4 sm:p-6 md:p-8">
+            <div className="mx-auto bg-white shadow-xl w-full max-w-[21cm]" style={{ minHeight: '29.7cm', padding: '1.5cm' }}>
               {/* Header */}
               <div className="flex justify-between items-start mb-8">
                 <div>
@@ -729,7 +728,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                 </div>
               </div>
             </div>
-          </ScrollArea>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
