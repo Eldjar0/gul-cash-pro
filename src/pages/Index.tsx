@@ -995,6 +995,7 @@ const Index = () => {
         product_barcode: item.product.barcode,
         quantity: item.quantity,
         unit_price: item.custom_price ?? item.product.price,
+        original_price: item.product.price,
         vat_rate: item.product.vat_rate,
         discount_type: item.discount?.type,
         discount_value: item.discount?.value || 0,
@@ -1241,6 +1242,7 @@ const Index = () => {
         product_barcode: item.product.barcode,
         quantity: item.quantity,
         unit_price: item.custom_price ?? item.product.price,
+        original_price: item.product.price,
         vat_rate: item.product.vat_rate,
         discount_type: item.discount?.type,
         discount_value: item.discount?.value || 0,
@@ -2122,11 +2124,12 @@ const Index = () => {
                           items: sale.sale_items?.map((item: any) => ({
                             product: {
                               name: item.product_name,
-                              price: item.unit_price,
+                              price: item.original_price || item.unit_price,
                               vat_rate: item.vat_rate,
                               type: 'unit' as const,
                             },
                             quantity: item.quantity,
+                            custom_price: item.original_price && item.unit_price !== item.original_price ? item.unit_price : undefined,
                             discount: item.discount_type ? {
                               type: item.discount_type as 'percentage' | 'amount',
                               value: item.discount_value || 0,

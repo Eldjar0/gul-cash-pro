@@ -851,6 +851,30 @@ export type Database = {
         }
         Relationships: []
       }
+      label_configurations: {
+        Row: {
+          created_at: string | null
+          format: Json
+          id: string
+          name: string
+          template: Json
+        }
+        Insert: {
+          created_at?: string | null
+          format: Json
+          id?: string
+          name: string
+          template: Json
+        }
+        Update: {
+          created_at?: string | null
+          format?: Json
+          id?: string
+          name?: string
+          template?: Json
+        }
+        Relationships: []
+      }
       loyalty_tiers: {
         Row: {
           benefits: string | null
@@ -1853,6 +1877,7 @@ export type Database = {
           discount_type: string | null
           discount_value: number | null
           id: string
+          original_price: number | null
           product_barcode: string | null
           product_id: string | null
           product_name: string
@@ -1869,6 +1894,7 @@ export type Database = {
           discount_type?: string | null
           discount_value?: number | null
           id?: string
+          original_price?: number | null
           product_barcode?: string | null
           product_id?: string | null
           product_name: string
@@ -1885,6 +1911,7 @@ export type Database = {
           discount_type?: string | null
           discount_value?: number | null
           id?: string
+          original_price?: number | null
           product_barcode?: string | null
           product_id?: string | null
           product_name?: string

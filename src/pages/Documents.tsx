@@ -550,12 +550,12 @@ export default function Documents() {
       items: sale.sale_items?.map((item: any) => ({
         product: {
           name: item.product_name,
-          price: item.unit_price, // Prix de base du produit
+          price: item.original_price || item.unit_price,
           vat_rate: item.vat_rate,
           type: 'unit' as const,
         },
         quantity: item.quantity,
-        // Pas de custom_price car unit_price est déjà le prix correct
+        custom_price: item.original_price && item.unit_price !== item.original_price ? item.unit_price : undefined,
         discount: item.discount_type ? {
           type: item.discount_type as 'percentage' | 'amount',
           value: item.discount_value || 0,
@@ -563,7 +563,7 @@ export default function Documents() {
         subtotal: item.subtotal,
         vatAmount: item.vat_amount,
         total: item.total,
-        is_gift: item.total === 0, // Article offert si total = 0
+        is_gift: item.total === 0,
       })) || [],
       subtotal: sale.subtotal,
       totalVat: sale.total_vat,
