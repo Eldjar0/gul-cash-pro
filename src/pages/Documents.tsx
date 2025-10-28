@@ -268,8 +268,8 @@ export default function Documents() {
       setInvoiceToUpdate(null);
       setNewStatus('');
       
-      // Forcer le rechargement
-      window.location.reload();
+      // Rafraîchir les données
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
     } catch (error) {
       console.error('Error updating invoice status:', error);
       toast.error('Erreur lors de la mise à jour du statut');
