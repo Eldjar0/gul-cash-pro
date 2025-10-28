@@ -118,7 +118,7 @@ export function Receipt({ sale }: ReceiptProps) {
 
       {/* Articles */}
       <div className="mb-3">
-        {sale.items.map((item, index) => {
+        {sale.items?.map((item, index) => {
           // Vérifier que le produit existe
           if (!item.product) return null;
           
