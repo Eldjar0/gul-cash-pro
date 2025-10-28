@@ -47,7 +47,6 @@ import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
 import { useMobileOrders } from '@/hooks/useMobileOrders';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { CustomerOrdersTab } from '@/components/orders/CustomerOrdersTab';
-import { QuotesTab } from '@/components/orders/QuotesTab';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -755,10 +754,6 @@ export default function Documents() {
               <ShoppingCart className="h-4 w-4" />
               <span className="hidden sm:inline">Commandes</span>
             </TabsTrigger>
-            <TabsTrigger value="quotes" className="gap-2">
-              <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Devis</span>
-            </TabsTrigger>
             <TabsTrigger value="refunds" className="gap-2">
               <Undo2 className="h-4 w-4" />
               <span className="hidden sm:inline">Remb.</span>
@@ -1405,11 +1400,6 @@ export default function Documents() {
           {/* Onglet Commandes */}
           <TabsContent value="orders">
             <CustomerOrdersTab />
-          </TabsContent>
-
-          {/* Onglet Devis */}
-          <TabsContent value="quotes">
-            <QuotesTab />
           </TabsContent>
 
           {/* Onglet Remboursements */}
