@@ -96,8 +96,8 @@ export function Receipt({ sale }: ReceiptProps) {
         </div>
       </div>
 
-      {/* Customer info - Only for invoices */}
-      {isInvoice && sale.customer && (
+      {/* Customer info - Show on all tickets if customer selected */}
+      {sale.customer && (
         <>
           <div className="border-t border-dashed border-black my-2"></div>
           <div className="text-[10px] mb-2">

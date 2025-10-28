@@ -162,8 +162,8 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
 
       <div style={{ borderTop: '1px dashed #000', margin: '4px 0' }}></div>
 
-      {/* Customer info - Only for invoices */}
-      {isInvoice && sale.customer && (
+      {/* Customer info - Show on all tickets if customer selected */}
+      {sale.customer && (
         <>
           <div style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900', paddingRight: '24px' }}>
             <div style={{ fontWeight: '900', marginBottom: '2px' }}>CLIENT:</div>

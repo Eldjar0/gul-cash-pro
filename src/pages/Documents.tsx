@@ -43,6 +43,7 @@ import {
   Filter,
   FileDown,
   X,
+  AlertTriangle,
 } from 'lucide-react';
 import { useSales, useCancelSale, useRestoreSale } from '@/hooks/useSales';
 import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
@@ -83,7 +84,7 @@ import {
 import { downloadInvoicePDF, previewInvoicePDF } from '@/utils/generateInvoicePDF';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { supabase } from '@/integrations/supabase/client';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
@@ -111,6 +112,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function Documents() {
   const navigate = useNavigate();
@@ -152,6 +154,7 @@ export default function Documents() {
   const restoreSale = useRestoreSale();
   const deleteRefund = useDeleteRefund();
   const { settings: companySettings } = useCompanySettings();
+  const queryClient = useQueryClient();
 
   // Helper pour trouver les remboursements liés à une vente
   const getRefundsForSale = (saleId: string) => {
@@ -170,15 +173,39 @@ export default function Documents() {
     setDeleteDialogOpen(true);
   };
 
-  const handleCancelConfirm = () => {
-    if (saleToDelete) {
-      cancelSale.mutate({ 
-        saleId: saleToDelete, 
-        reason: cancelReason || 'Aucune raison fournie' 
-      });
+  const handleCancelConfirm = async () => {
+    if (!saleToDelete || !cancelReason.trim()) return;
+
+    try {
+      // Vérifier si c'est une facture en brouillon
+      const saleData = sales?.find(s => s.id === saleToDelete);
+      const isDraftInvoice = saleData?.is_invoice && saleData?.invoice_status === 'brouillon';
+
+      if (isDraftInvoice) {
+        // Supprimer complètement les factures en brouillon
+        const { error } = await supabase
+          .from('sales')
+          .delete()
+          .eq('id', saleToDelete);
+        
+        if (error) throw error;
+        
+        queryClient.invalidateQueries({ queryKey: ['sales'] });
+        toast.success('Facture brouillon supprimée');
+      } else {
+        // Annuler les autres ventes (tickets et factures validées)
+        cancelSale.mutate({ 
+          saleId: saleToDelete, 
+          reason: cancelReason || 'Aucune raison fournie' 
+        });
+      }
+
       setDeleteDialogOpen(false);
       setSaleToDelete(null);
       setCancelReason('');
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      toast.error('Erreur lors de la suppression de la facture');
     }
   };
 
@@ -892,6 +919,28 @@ export default function Documents() {
             </div>
           </Card>
         </div>
+
+        {/* Avertissement facturation numérique 2026 */}
+        <Alert variant="destructive" className="mb-6 border-orange-500 bg-orange-50 dark:bg-orange-950/20">
+          <AlertTriangle className="h-5 w-5 text-orange-600" />
+          <AlertTitle className="text-orange-900 dark:text-orange-100 font-bold">
+            ⚠️ Passage obligatoire à la facturation numérique - 1er janvier 2026
+          </AlertTitle>
+          <AlertDescription className="text-orange-800 dark:text-orange-200 space-y-2">
+            <p className="font-semibold">
+              À partir du 1er janvier 2026, la Belgique impose la facturation électronique pour toutes les entreprises.
+            </p>
+            <p>
+              Les factures créées ici ne seront plus conformes et serviront uniquement d'<strong>archives et de consultation</strong>.
+            </p>
+            <p>
+              Vous devrez utiliser un logiciel de facturation certifié recommandé par votre comptable pour être en conformité légale.
+            </p>
+            <p className="text-sm">
+              <strong>Contact recommandé :</strong> Rapprochez-vous de votre comptable dès maintenant pour anticiper cette transition obligatoire.
+            </p>
+          </AlertDescription>
+        </Alert>
 
         {/* Tabs */}
         <Tabs defaultValue="sales" className="space-y-4">
@@ -1843,18 +1892,37 @@ export default function Documents() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>⚠️ Annuler cette vente ?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {sales?.find(s => s.id === saleToDelete)?.is_invoice && 
+               sales?.find(s => s.id === saleToDelete)?.invoice_status === 'brouillon' 
+                ? '🗑️ Supprimer cette facture brouillon ?' 
+                : '⚠️ Annuler cette vente ?'}
+            </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
-              <p className="font-semibold text-orange-600">
-                Attention : Cette action est IRRÉVERSIBLE selon la loi belge
-              </p>
-              <p>
-                La vente sera marquée comme annulée et restera visible dans vos documents avec la mention "ANNULÉ". 
-                Le montant sera comptabilisé à 0€ dans les statistiques.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Conformément à l'Art. 315bis CIR92, les documents ne peuvent pas être supprimés, uniquement annulés.
-              </p>
+              {sales?.find(s => s.id === saleToDelete)?.is_invoice && 
+               sales?.find(s => s.id === saleToDelete)?.invoice_status === 'brouillon' ? (
+                <>
+                  <p className="font-semibold text-blue-600">
+                    Cette facture est en brouillon, elle sera supprimée définitivement.
+                  </p>
+                  <p>
+                    Aucune trace ne sera conservée dans vos documents.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-semibold text-orange-600">
+                    Attention : Cette action est IRRÉVERSIBLE selon la loi belge
+                  </p>
+                  <p>
+                    La vente sera marquée comme annulée et restera visible dans vos documents avec la mention "ANNULÉ". 
+                    Le montant sera comptabilisé à 0€ dans les statistiques.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Conformément à l'Art. 315bis CIR92, les documents ne peuvent pas être supprimés, uniquement annulés.
+                  </p>
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="my-4">
