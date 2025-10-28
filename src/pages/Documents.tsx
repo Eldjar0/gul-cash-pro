@@ -763,15 +763,15 @@ export default function Documents() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="sales" className="space-y-4">
+        <Tabs defaultValue="invoices" className="space-y-4">
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="sales" className="gap-2">
-              <Receipt className="h-4 w-4" />
-              <span className="hidden sm:inline">Ventes</span>
-            </TabsTrigger>
             <TabsTrigger value="invoices" className="gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Factures</span>
+            </TabsTrigger>
+            <TabsTrigger value="sales" className="gap-2">
+              <Receipt className="h-4 w-4" />
+              <span className="hidden sm:inline">Ventes</span>
             </TabsTrigger>
             <TabsTrigger value="products" className="gap-2">
               <Package className="h-4 w-4" />
