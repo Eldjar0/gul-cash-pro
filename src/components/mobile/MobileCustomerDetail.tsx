@@ -14,6 +14,7 @@ import {
   Edit, Plus, Clock, CheckCircle, XCircle 
 } from 'lucide-react';
 import { CustomerCreditManagementDialog } from '@/components/customers/CustomerCreditManagementDialog';
+import { MobileCustomerSpecialPrices } from './MobileCustomerSpecialPrices';
 import { toast } from 'sonner';
 
 export function MobileCustomerDetail() {
@@ -115,6 +116,9 @@ export function MobileCustomerDetail() {
               )}
             </div>
           </Card>
+
+          {/* Prix spéciaux */}
+          <MobileCustomerSpecialPrices customerId={customer.id} />
 
           {/* Crédit */}
           <Card className="p-4">
