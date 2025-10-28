@@ -6,20 +6,36 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCustomers } from '@/hooks/useCustomers';
-import { Search, Users, Phone, Mail, Plus } from 'lucide-react';
+import { Search, Users, Phone, Mail, Plus, User, Briefcase } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 
+type CustomerType = 'all' | 'particular' | 'professional';
+
 export default function MobileCustomers() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [customerType, setCustomerType] = useState<CustomerType>('all');
   const navigate = useNavigate();
   const { data: customers, isLoading } = useCustomers();
 
-  const filteredCustomers = customers?.filter(customer =>
-    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone?.includes(searchTerm)
-  ) || [];
+  const filteredCustomers = customers?.filter(customer => {
+    // Filtre par recherche
+    const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.phone?.includes(searchTerm);
+    
+    if (!matchesSearch) return false;
+    
+    // Filtre par type
+    if (customerType === 'particular') {
+      return !customer.vat_number || customer.vat_number.trim() === '';
+    }
+    if (customerType === 'professional') {
+      return customer.vat_number && customer.vat_number.trim() !== '';
+    }
+    
+    return true;
+  }) || [];
 
   if (isLoading) {
     return (
@@ -44,7 +60,7 @@ export default function MobileCustomers() {
       }
     >
       <div className="p-3 sm:p-4">
-        <div className="relative mb-3 sm:mb-4">
+        <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
@@ -53,6 +69,36 @@ export default function MobileCustomers() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9 text-sm sm:text-base"
           />
+        </div>
+        
+        <div className="flex gap-2 mb-3 sm:mb-4">
+          <Button
+            variant={customerType === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setCustomerType('all')}
+            className="flex-1 h-9"
+          >
+            <Users className="h-4 w-4 mr-1.5" />
+            Tous
+          </Button>
+          <Button
+            variant={customerType === 'particular' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setCustomerType('particular')}
+            className="flex-1 h-9"
+          >
+            <User className="h-4 w-4 mr-1.5" />
+            Particuliers
+          </Button>
+          <Button
+            variant={customerType === 'professional' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setCustomerType('professional')}
+            className="flex-1 h-9"
+          >
+            <Briefcase className="h-4 w-4 mr-1.5" />
+            Pros
+          </Button>
         </div>
       </div>
 
