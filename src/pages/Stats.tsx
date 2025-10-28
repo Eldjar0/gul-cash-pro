@@ -1,4 +1,12 @@
 import { useState } from 'react';
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -55,6 +63,8 @@ export default function Stats() {
   const [compareMode, setCompareMode] = useState(false);
   const [compareStartDate, setCompareStartDate] = useState<Date | undefined>();
   const [compareEndDate, setCompareEndDate] = useState<Date | undefined>();
+  const [reportsPage, setReportsPage] = useState(1);
+  const reportsPerPage = 7;
 
   const { data: sales = [] } = useSales(startDate, endDate);
   const { data: refunds = [] } = useRefunds();
@@ -105,6 +115,13 @@ export default function Stats() {
     const reportDate = parseISO(report.report_date);
     return isWithinInterval(reportDate, { start: startDate, end: endDate });
   });
+
+  // Pagination des rapports Z
+  const totalReportsPages = Math.ceil(filteredReports.length / reportsPerPage);
+  const paginatedReports = filteredReports.slice(
+    (reportsPage - 1) * reportsPerPage,
+    reportsPage * reportsPerPage
+  );
 
   // Filtrer les remboursements selon la période
   const filteredRefunds = refunds.filter((refund) => {
@@ -1411,38 +1428,75 @@ export default function Stats() {
                     Aucun rapport Z disponible pour cette période
                   </p>
                 ) : (
-                  filteredReports.map((report) => (
-                    <div key={report.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <h3 className="font-semibold">
-                            {report.serial_number || 'En cours'}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {format(parseISO(report.report_date), 'EEEE dd MMMM yyyy', { locale: fr })}
-                          </p>
+                  <>
+                    {paginatedReports.map((report) => (
+                      <div key={report.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <h3 className="font-semibold">
+                              {report.serial_number || 'En cours'}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              {format(parseISO(report.report_date), 'EEEE dd MMMM yyyy', { locale: fr })}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-lg text-primary">{report.total_sales.toFixed(2)}€</p>
+                            <p className="text-xs text-muted-foreground">{report.sales_count} ventes</p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-lg text-primary">{report.total_sales.toFixed(2)}€</p>
-                          <p className="text-xs text-muted-foreground">{report.sales_count} ventes</p>
+                        <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t text-sm">
+                          <div>
+                            <p className="text-muted-foreground">Espèces</p>
+                            <p className="font-semibold">{report.total_cash.toFixed(2)}€</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Carte</p>
+                            <p className="font-semibold">{report.total_card.toFixed(2)}€</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Mobile</p>
+                            <p className="font-semibold">{report.total_mobile.toFixed(2)}€</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Espèces</p>
-                          <p className="font-semibold">{report.total_cash.toFixed(2)}€</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Carte</p>
-                          <p className="font-semibold">{report.total_card.toFixed(2)}€</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Mobile</p>
-                          <p className="font-semibold">{report.total_mobile.toFixed(2)}€</p>
-                        </div>
+                    ))}
+                    
+                    {/* Pagination */}
+                    {totalReportsPages > 1 && (
+                      <div className="flex justify-center pt-4 border-t">
+                        <Pagination>
+                          <PaginationContent>
+                            <PaginationItem>
+                              <PaginationPrevious 
+                                onClick={() => setReportsPage(p => Math.max(1, p - 1))}
+                                className={reportsPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                              />
+                            </PaginationItem>
+                            
+                            {Array.from({ length: totalReportsPages }, (_, i) => i + 1).map((page) => (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  onClick={() => setReportsPage(page)}
+                                  isActive={page === reportsPage}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            ))}
+                            
+                            <PaginationItem>
+                              <PaginationNext 
+                                onClick={() => setReportsPage(p => Math.min(totalReportsPages, p + 1))}
+                                className={reportsPage === totalReportsPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                              />
+                            </PaginationItem>
+                          </PaginationContent>
+                        </Pagination>
                       </div>
-                    </div>
-                  ))
+                    )}
+                  </>
                 )}
               </div>
             </CardContent>
