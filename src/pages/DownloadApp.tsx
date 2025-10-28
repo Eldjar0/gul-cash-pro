@@ -9,7 +9,7 @@ export default function DownloadApp() {
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   
   // URL de l'APK - Pointe vers la release GitHub
-  const apkUrl = 'https://github.com/Eldjar0/gul-cash-pro/releases/download/v1.0.459/app-debug.apk';
+  const apkUrl = 'https://github.com/Eldjar0/gul-cash-pro/releases/download/v1.0.462/app-debug.apk';
   
   useEffect(() => {
     if (qrCanvasRef.current) {
