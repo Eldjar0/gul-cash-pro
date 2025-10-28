@@ -738,7 +738,7 @@ export default function Documents() {
 
         {/* Tabs */}
         <Tabs defaultValue="sales" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="sales" className="gap-2">
               <Receipt className="h-4 w-4" />
               <span className="hidden sm:inline">Ventes</span>
@@ -746,6 +746,10 @@ export default function Documents() {
             <TabsTrigger value="invoices" className="gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Factures</span>
+            </TabsTrigger>
+            <TabsTrigger value="products" className="gap-2">
+              <Package className="h-4 w-4" />
+              <span className="hidden sm:inline">Produits</span>
             </TabsTrigger>
             <TabsTrigger value="orders" className="gap-2">
               <ShoppingCart className="h-4 w-4" />
@@ -757,7 +761,7 @@ export default function Documents() {
             </TabsTrigger>
             <TabsTrigger value="refunds" className="gap-2">
               <Undo2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Remboursements</span>
+              <span className="hidden sm:inline">Remb.</span>
             </TabsTrigger>
           </TabsList>
 
@@ -844,13 +848,6 @@ export default function Documents() {
                 </DropdownMenu>
               </div>
             </Card>
-
-            {/* Rapport produits */}
-            <ProductSalesReport 
-              documents={filteredSales}
-              dateRange={getDateRange(dateFilter) || undefined}
-              title="Produits vendus (Tickets de caisse)"
-            />
 
             <Card className="p-4 bg-white">
               <div className="relative">
@@ -1343,6 +1340,66 @@ export default function Documents() {
                 </div>
               </div>
             )}
+          </TabsContent>
+
+          {/* Onglet Produits vendus */}
+          <TabsContent value="products" className="space-y-4">
+            {/* Filtres */}
+            <Card className="p-4 bg-white">
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex-1 flex gap-2">
+                  <Select value={dateFilter} onValueChange={(value) => { setDateFilter(value); }}>
+                    <SelectTrigger className="w-[200px]">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Période" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les dates</SelectItem>
+                      <SelectItem value="today">Aujourd'hui</SelectItem>
+                      <SelectItem value="yesterday">Hier</SelectItem>
+                      <SelectItem value="week">Cette semaine</SelectItem>
+                      <SelectItem value="month">Ce mois</SelectItem>
+                      <SelectItem value="quarter">Ce trimestre</SelectItem>
+                      <SelectItem value="custom">Personnalisé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {dateFilter === 'custom' && (
+                    <>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="justify-start text-left font-normal">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {customStartDate ? format(customStartDate, 'dd/MM/yyyy') : 'Date début'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarComponent mode="single" selected={customStartDate} onSelect={setCustomStartDate} />
+                        </PopoverContent>
+                      </Popover>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="justify-start text-left font-normal">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {customEndDate ? format(customEndDate, 'dd/MM/yyyy') : 'Date fin'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarComponent mode="single" selected={customEndDate} onSelect={setCustomEndDate} />
+                        </PopoverContent>
+                      </Popover>
+                    </>
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            {/* Rapport produits vendus (tous documents) */}
+            <ProductSalesReport 
+              documents={[...filteredSales, ...filteredInvoices]}
+              dateRange={getDateRange(dateFilter) || undefined}
+              title="Produits vendus (Tous documents)"
+            />
           </TabsContent>
 
           {/* Onglet Commandes */}
