@@ -26,6 +26,8 @@ const CartSchema = z.array(PersistedCartItemSchema);
 
 const CART_STORAGE_KEY = 'pos_active_cart_v2';
 const CART_TIMESTAMP_KEY = 'pos_cart_timestamp';
+const CUSTOMER_STORAGE_KEY = 'pos_selected_customer';
+const INVOICE_MODE_KEY = 'pos_invoice_mode';
 const MAX_CART_AGE_MS = 24 * 60 * 60 * 1000; // 24 heures
 
 export const useCartPersistence = () => {
@@ -77,5 +79,53 @@ export const useCartPersistence = () => {
     localStorage.removeItem(CART_TIMESTAMP_KEY);
   };
 
-  return { loadCart, saveCart, clearCart };
+  const loadCustomer = (): any | null => {
+    try {
+      const raw = localStorage.getItem(CUSTOMER_STORAGE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (error) {
+      localStorage.removeItem(CUSTOMER_STORAGE_KEY);
+      return null;
+    }
+  };
+
+  const saveCustomer = (customer: any | null) => {
+    try {
+      if (customer) {
+        localStorage.setItem(CUSTOMER_STORAGE_KEY, JSON.stringify(customer));
+      } else {
+        localStorage.removeItem(CUSTOMER_STORAGE_KEY);
+      }
+    } catch (error) {
+      console.error('Erreur sauvegarde client:', error);
+    }
+  };
+
+  const loadInvoiceMode = (): boolean => {
+    try {
+      const raw = localStorage.getItem(INVOICE_MODE_KEY);
+      return raw === 'true';
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const saveInvoiceMode = (isInvoice: boolean) => {
+    try {
+      localStorage.setItem(INVOICE_MODE_KEY, isInvoice.toString());
+    } catch (error) {
+      console.error('Erreur sauvegarde mode facture:', error);
+    }
+  };
+
+  return { 
+    loadCart, 
+    saveCart, 
+    clearCart,
+    loadCustomer,
+    saveCustomer,
+    loadInvoiceMode,
+    saveInvoiceMode
+  };
 };

@@ -139,7 +139,7 @@ const Index = () => {
     setIsDayOpenLocal(null);
   }, [todayReport?.id, todayReport?.closing_amount]);
   
-  const { loadCart, saveCart } = useCartPersistence();
+  const { loadCart, saveCart, loadCustomer, saveCustomer, loadInvoiceMode, saveInvoiceMode } = useCartPersistence();
   const [cart, setCart] = useState<CartItem[]>(() => loadCart());
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
@@ -168,14 +168,24 @@ const Index = () => {
     type: 'percentage' | 'amount';
     value: number;
   } | null>(null);
-  const [isInvoiceMode, setIsInvoiceMode] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [isInvoiceMode, setIsInvoiceMode] = useState(() => loadInvoiceMode());
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(() => loadCustomer());
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
 
   // Persistance du panier
   useEffect(() => {
     saveCart(cart);
   }, [cart, saveCart]);
+
+  // Persistance du client sélectionné
+  useEffect(() => {
+    saveCustomer(selectedCustomer);
+  }, [selectedCustomer, saveCustomer]);
+
+  // Persistance du mode facture
+  useEffect(() => {
+    saveInvoiceMode(isInvoiceMode);
+  }, [isInvoiceMode, saveInvoiceMode]);
 
   // Mise à jour automatique des prix quand le client change
   useEffect(() => {
