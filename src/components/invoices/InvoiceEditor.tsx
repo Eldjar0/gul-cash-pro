@@ -421,13 +421,19 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       <DialogContent className="max-w-[95vw] sm:max-w-[90vw] md:max-w-[1000px] max-h-[95vh] p-0 overflow-hidden">
         <div className="flex flex-col h-full max-h-[95vh]">
           {/* Header */}
-          <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b bg-gradient-to-r from-primary to-primary-glow">
-            <h2 className="text-base sm:text-lg md:text-xl font-bold text-white truncate flex-1">
-              {invoiceId ? 'Modifier la facture' : 'Nouvelle facture'}
-            </h2>
-            <div className="flex gap-2 shrink-0">
-              <Button variant="secondary" size="sm" onClick={handleSave} disabled={loading} className="h-9">
-                <Save className="h-4 w-4 mr-2" />
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary to-primary-glow shadow-lg">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
+                {invoiceId ? 'Modifier la facture' : 'Nouvelle facture'}
+              </h2>
+              <Button 
+                variant="secondary" 
+                size="lg" 
+                onClick={handleSave} 
+                disabled={loading} 
+                className="h-10 px-6 font-semibold shadow-md hover:shadow-lg"
+              >
+                <Save className="h-5 w-5 mr-2" />
                 Enregistrer
               </Button>
             </div>
