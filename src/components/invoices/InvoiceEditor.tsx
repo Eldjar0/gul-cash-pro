@@ -392,17 +392,17 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       <DialogContent className="max-w-[1000px] h-[90vh] p-0">
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-primary to-primary-glow">
-            <h2 className="text-xl font-bold text-white">
+          <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b bg-gradient-to-r from-primary to-primary-glow">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-white truncate">
               {invoiceId ? 'Modifier la facture' : 'Nouvelle facture'}
             </h2>
-            <div className="flex gap-2">
-              <Button variant="secondary" size="sm" onClick={handleSave} disabled={loading}>
-                <Save className="h-4 w-4 mr-2" />
-                Enregistrer
+            <div className="flex gap-1 sm:gap-2 shrink-0">
+              <Button variant="secondary" size="sm" onClick={handleSave} disabled={loading} className="h-8 sm:h-9">
+                <Save className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Enregistrer</span>
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="text-white hover:bg-white/20">
-                <X className="h-4 w-4" />
+              <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="text-white hover:bg-white/20 h-8 w-8 sm:h-9 sm:w-9">
+                <X className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>
