@@ -8,6 +8,7 @@ export interface SaleItem {
   product_barcode?: string;
   quantity: number;
   unit_price: number;
+  original_price?: number;
   vat_rate: number;
   discount_type?: string;
   discount_value?: number;
@@ -227,6 +228,7 @@ export const useSales = (startDate?: Date, endDate?: Date) => {
             product_barcode,
             quantity,
             unit_price,
+            original_price,
             vat_rate,
             discount_type,
             discount_value,
@@ -278,7 +280,23 @@ export const useSale = (id: string) => {
         .from('sales')
         .select(`
           *, 
-          sale_items(*),
+          sale_items(
+            id,
+            sale_id,
+            product_id,
+            product_name,
+            product_barcode,
+            quantity,
+            unit_price,
+            original_price,
+            vat_rate,
+            discount_type,
+            discount_value,
+            subtotal,
+            vat_amount,
+            total,
+            created_at
+          ),
           fiscal_receipts(
             fiscal_number
           )
