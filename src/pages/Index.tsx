@@ -176,6 +176,41 @@ const Index = () => {
   useEffect(() => {
     saveCart(cart);
   }, [cart, saveCart]);
+
+  // Mise à jour automatique des prix quand le client change
+  useEffect(() => {
+    const updateCartPrices = async () => {
+      if (cart.length === 0) return;
+
+      const updatedCart = await Promise.all(
+        cart.map(async (item) => {
+          let customPrice: number | undefined;
+          
+          if (selectedCustomer) {
+            // Vérifier s'il existe un prix spécial pour ce client
+            const specialPrice = await getSpecialPriceForCustomer(selectedCustomer.id, item.product.id);
+            if (specialPrice !== null) {
+              customPrice = specialPrice;
+            }
+          }
+          
+          // Recalculer les totaux avec le nouveau prix
+          const totals = calculateItemTotal(item.product, item.quantity, item.discount, customPrice);
+          
+          return {
+            ...item,
+            custom_price: customPrice,
+            ...totals
+          };
+        })
+      );
+
+      setCart(updatedCart);
+    };
+
+    updateCartPrices();
+  }, [selectedCustomer]);
+
   const [customerDisplayWindow, setCustomerDisplayWindow] = useState<Window | null>(null);
   const displayChannelRef = useRef(createSafeBroadcastChannel('customer_display'));
 
