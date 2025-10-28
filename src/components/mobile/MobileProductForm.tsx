@@ -114,7 +114,9 @@ export const MobileProductForm = () => {
             setImageFile(file);
             const reader = new FileReader();
             reader.onload = (e) => {
-              setImageUrl(e.target?.result as string);
+              const result = e.target?.result as string;
+              console.log('Image loaded from file picker');
+              setImageUrl(result);
             };
             reader.readAsDataURL(file);
           }
@@ -124,23 +126,38 @@ export const MobileProductForm = () => {
       }
 
       // Sur native, utiliser Capacitor Camera
+      console.log('Opening native camera...');
       const photo = await CapacitorCamera.getPhoto({
         quality: 80,
-        allowEditing: true,
+        allowEditing: false,
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Camera,
       });
 
+      console.log('Photo captured, dataUrl exists:', !!photo.dataUrl);
+      
       if (photo.dataUrl) {
+        // Mettre à jour l'URL immédiatement pour affichage
         setImageUrl(photo.dataUrl);
+        console.log('Image URL set');
+        
+        // Convertir en File pour l'upload
         const response = await fetch(photo.dataUrl);
         const blob = await response.blob();
         const file = new File([blob], 'product-photo.jpg', { type: 'image/jpeg' });
         setImageFile(file);
+        console.log('Image file created');
+        
+        toast.success('Photo capturée');
+      } else {
+        console.log('No dataUrl in photo result');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la prise de photo:', error);
-      toast.error('Impossible de prendre la photo');
+      // Ne pas afficher d'erreur si l'utilisateur a annulé
+      if (error?.message !== 'User cancelled photos app') {
+        toast.error('Impossible de prendre la photo');
+      }
     }
   };
 
@@ -157,7 +174,9 @@ export const MobileProductForm = () => {
             setImageFile(file);
             const reader = new FileReader();
             reader.onload = (e) => {
-              setImageUrl(e.target?.result as string);
+              const result = e.target?.result as string;
+              console.log('Image loaded from gallery picker');
+              setImageUrl(result);
             };
             reader.readAsDataURL(file);
           }
@@ -167,23 +186,38 @@ export const MobileProductForm = () => {
       }
 
       // Sur native, choisir depuis la galerie
+      console.log('Opening photo gallery...');
       const photo = await CapacitorCamera.getPhoto({
         quality: 80,
-        allowEditing: true,
+        allowEditing: false,
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Photos,
       });
 
+      console.log('Photo selected, dataUrl exists:', !!photo.dataUrl);
+
       if (photo.dataUrl) {
+        // Mettre à jour l'URL immédiatement pour affichage
         setImageUrl(photo.dataUrl);
+        console.log('Gallery image URL set');
+        
+        // Convertir en File pour l'upload
         const response = await fetch(photo.dataUrl);
         const blob = await response.blob();
         const file = new File([blob], 'product-photo.jpg', { type: 'image/jpeg' });
         setImageFile(file);
+        console.log('Gallery image file created');
+        
+        toast.success('Photo sélectionnée');
+      } else {
+        console.log('No dataUrl in photo result');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors du choix de photo:', error);
-      toast.error('Impossible de choisir la photo');
+      // Ne pas afficher d'erreur si l'utilisateur a annulé
+      if (error?.message !== 'User cancelled photos app') {
+        toast.error('Impossible de choisir la photo');
+      }
     }
   };
 
