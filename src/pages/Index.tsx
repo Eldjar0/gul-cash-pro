@@ -2159,23 +2159,25 @@ const Index = () => {
                         setCurrentSale(saleForReceipt);
                         setReceiptDialogOpen(true);
                       }} 
-                      className="w-full p-1.5 bg-muted/30 hover:bg-primary/5 border border-border/30 rounded text-left transition-all hover:border-primary/30 group"
+                      className="w-full p-3 bg-gradient-to-br from-card to-card/50 hover:from-primary/10 hover:to-primary/5 border-2 border-border hover:border-primary/50 rounded-lg text-left transition-all duration-300 shadow-sm hover:shadow-md group"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                          <PaymentIcon className={`h-3 w-3 ${iconColor} flex-shrink-0`} />
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                          <div className={`p-1.5 rounded-md bg-background/80 border border-border/50 ${iconColor}`}>
+                            <PaymentIcon className="h-3.5 w-3.5" />
+                          </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-[9px] font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                            <div className="text-[10px] font-bold text-foreground truncate group-hover:text-primary transition-colors">
                               {sale.sale_number}
                             </div>
-                            <div className="text-[7px] text-muted-foreground flex items-center gap-1">
-                              <span>{new Date(sale.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-                              <span>•</span>
-                              <span>{itemCount} art.</span>
+                            <div className="text-[8px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                              <span className="font-medium">{new Date(sale.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span className="opacity-50">•</span>
+                              <span className="bg-muted/50 px-1.5 py-0.5 rounded">{itemCount} art.</span>
                             </div>
                           </div>
                         </div>
-                        <div className="text-[10px] font-bold text-primary flex-shrink-0">
+                        <div className="text-[11px] font-bold text-primary bg-primary/5 px-2 py-1 rounded-md border border-primary/20 flex-shrink-0">
                           {sale.total.toFixed(2)}€
                         </div>
                       </div>
