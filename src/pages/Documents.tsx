@@ -45,8 +45,10 @@ import {
 import { useSales, useCancelSale, useRestoreSale } from '@/hooks/useSales';
 import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
 import { useMobileOrders } from '@/hooks/useMobileOrders';
+import { useSavedCarts } from '@/hooks/useSavedCarts';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { CustomerOrdersTab } from '@/components/orders/CustomerOrdersTab';
+import { SavedCartsContent } from '@/components/orders/SavedCartsContent';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -754,6 +756,10 @@ export default function Documents() {
               <ShoppingCart className="h-4 w-4" />
               <span className="hidden sm:inline">Commandes</span>
             </TabsTrigger>
+            <TabsTrigger value="saved-carts" className="gap-2">
+              <ShoppingCart className="h-4 w-4" />
+              <span className="hidden sm:inline">Paniers</span>
+            </TabsTrigger>
             <TabsTrigger value="refunds" className="gap-2">
               <Undo2 className="h-4 w-4" />
               <span className="hidden sm:inline">Remb.</span>
@@ -1400,6 +1406,16 @@ export default function Documents() {
           {/* Onglet Commandes */}
           <TabsContent value="orders">
             <CustomerOrdersTab />
+          </TabsContent>
+
+          {/* Onglet Paniers Sauvegardés */}
+          <TabsContent value="saved-carts" className="space-y-4">
+            <Card>
+              <div className="p-6">
+                <h2 className="text-2xl font-bold mb-4">Paniers Sauvegardés</h2>
+                <SavedCartsContent />
+              </div>
+            </Card>
           </TabsContent>
 
           {/* Onglet Remboursements */}
