@@ -920,28 +920,6 @@ export default function Documents() {
           </Card>
         </div>
 
-        {/* Avertissement facturation numérique 2026 */}
-        <Alert variant="destructive" className="mb-6 border-orange-500 bg-orange-50 dark:bg-orange-950/20">
-          <AlertTriangle className="h-5 w-5 text-orange-600" />
-          <AlertTitle className="text-orange-900 dark:text-orange-100 font-bold">
-            ⚠️ Passage obligatoire à la facturation numérique - 1er janvier 2026
-          </AlertTitle>
-          <AlertDescription className="text-orange-800 dark:text-orange-200 space-y-2">
-            <p className="font-semibold">
-              À partir du 1er janvier 2026, la Belgique impose la facturation électronique pour toutes les entreprises.
-            </p>
-            <p>
-              Les factures créées ici ne seront plus conformes et serviront uniquement d'<strong>archives et de consultation</strong>.
-            </p>
-            <p>
-              Vous devrez utiliser un logiciel de facturation certifié recommandé par votre comptable pour être en conformité légale.
-            </p>
-            <p className="text-sm">
-              <strong>Contact recommandé :</strong> Rapprochez-vous de votre comptable dès maintenant pour anticiper cette transition obligatoire.
-            </p>
-          </AlertDescription>
-        </Alert>
-
         {/* Tabs */}
         <Tabs defaultValue="sales" className="space-y-4">
           <TabsList className="grid w-full grid-cols-5">
@@ -1606,6 +1584,28 @@ export default function Documents() {
                 </div>
               </div>
             )}
+
+            {/* Avertissement facturation numérique 2026 */}
+            <Alert variant="destructive" className="mt-6 border-orange-500 bg-orange-50 dark:bg-orange-950/20">
+              <AlertTriangle className="h-5 w-5 text-orange-600" />
+              <AlertTitle className="text-orange-900 dark:text-orange-100 font-bold">
+                ⚠️ Passage obligatoire à la facturation numérique - 1er janvier 2026
+              </AlertTitle>
+              <AlertDescription className="text-orange-800 dark:text-orange-200 space-y-2">
+                <p className="font-semibold">
+                  À partir du 1er janvier 2026, la Belgique impose la facturation électronique pour toutes les entreprises.
+                </p>
+                <p>
+                  Les factures créées ici ne seront plus conformes et serviront uniquement d'<strong>archives et de consultation</strong>.
+                </p>
+                <p>
+                  Vous devrez utiliser un logiciel de facturation certifié recommandé par votre comptable pour être en conformité légale.
+                </p>
+                <p className="text-sm">
+                  <strong>Contact recommandé :</strong> Rapprochez-vous de votre comptable dès maintenant pour anticiper cette transition obligatoire.
+                </p>
+              </AlertDescription>
+            </Alert>
           </TabsContent>
 
           {/* Onglet Produits vendus */}
