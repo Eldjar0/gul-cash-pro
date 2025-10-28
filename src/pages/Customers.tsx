@@ -457,59 +457,56 @@ export default function Customers() {
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            {/* Type Selection */}
-            {!selectedCustomer && (
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">Type de client</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <Card
-                    className={`p-4 cursor-pointer transition-all ${
-                      customerType === 'particulier'
-                        ? 'border-primary bg-primary/5 shadow-md'
-                        : 'hover:border-primary/50'
-                    }`}
-                    onClick={() => setCustomerType('particulier')}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-3 rounded-full ${
-                        customerType === 'particulier' ? 'bg-primary/20' : 'bg-muted'
-                      }`}>
-                        <User className={`h-6 w-6 ${
-                          customerType === 'particulier' ? 'text-primary' : 'text-muted-foreground'
-                        }`} />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Particulier</p>
-                        <p className="text-xs text-muted-foreground">Client privé</p>
-                      </div>
+            {/* Type Selection - Always visible */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Type de client</Label>
+              <Card className="p-4 bg-muted/30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {customerType === 'particulier' ? (
+                      <User className="h-5 w-5 text-primary" />
+                    ) : (
+                      <Briefcase className="h-5 w-5 text-primary" />
+                    )}
+                    <div>
+                      <p className="font-semibold">
+                        {customerType === 'particulier' ? 'Particulier' : 'Professionnel'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {customerType === 'particulier' ? 'Client privé' : 'Entreprise/Société'}
+                      </p>
                     </div>
-                  </Card>
-
-                  <Card
-                    className={`p-4 cursor-pointer transition-all ${
-                      customerType === 'professionnel'
-                        ? 'border-primary bg-primary/5 shadow-md'
-                        : 'hover:border-primary/50'
-                    }`}
-                    onClick={() => setCustomerType('professionnel')}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-3 rounded-full ${
-                        customerType === 'professionnel' ? 'bg-primary/20' : 'bg-muted'
-                      }`}>
-                        <Briefcase className={`h-6 w-6 ${
-                          customerType === 'professionnel' ? 'text-primary' : 'text-muted-foreground'
-                        }`} />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Professionnel</p>
-                        <p className="text-xs text-muted-foreground">Entreprise/Société</p>
-                      </div>
-                    </div>
-                  </Card>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">
+                      {customerType === 'particulier' ? 'Particulier' : 'Pro'}
+                    </span>
+                    <Switch
+                      checked={customerType === 'professionnel'}
+                      onCheckedChange={(checked) => {
+                        const newType = checked ? 'professionnel' : 'particulier';
+                        
+                        // If editing and changing type, confirm
+                        if (selectedCustomer && customerType !== newType) {
+                          if (newType === 'particulier' && formData.vat_number) {
+                            if (window.confirm('⚠️ Convertir ce client en particulier ?\n\nLe numéro de TVA sera supprimé et les champs ne seront plus obligatoires.')) {
+                              setCustomerType(newType);
+                              setFormData({ ...formData, vat_number: '' });
+                            }
+                          } else if (newType === 'professionnel') {
+                            if (window.confirm('✓ Convertir ce client en professionnel ?\n\nTous les champs deviendront obligatoires (TVA, email, téléphone, adresse complète).')) {
+                              setCustomerType(newType);
+                            }
+                          }
+                        } else {
+                          setCustomerType(newType);
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
+              </Card>
+            </div>
 
             {/* Form Fields */}
             <div className="space-y-4">
