@@ -30,6 +30,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCreateSale, useSales } from '@/hooks/useSales';
 import { useCategories } from '@/hooks/useCategories';
 import { Customer, useCustomers } from '@/hooks/useCustomers';
+import { getSpecialPriceForCustomer } from '@/hooks/useCustomerSpecialPrices';
 import { useCustomerCredit, useChargeCredit } from '@/hooks/useCustomerCredit';
 import { useTodayReport, useOpenDay, useCloseDay, getTodayReportData, ReportData } from '@/hooks/useDailyReports';
 import { useWeather } from '@/hooks/useWeather';
@@ -544,24 +545,37 @@ const Index = () => {
     const maxQuantity = 10000;
     const validQty = Math.min(qty, maxQuantity);
     
+    // Vérifier si un prix spécial existe pour ce client
+    let specialPrice: number | undefined;
+    if (selectedCustomer) {
+      const priceFromDB = await getSpecialPriceForCustomer(selectedCustomer.id, product.id);
+      if (priceFromDB !== null) {
+        specialPrice = priceFromDB;
+      }
+    }
+    
     setCart(prevCart => {
       const existingItemIndex = prevCart.findIndex(item => item.product.id === product.id);
       if (existingItemIndex !== -1) {
         const newCart = [...prevCart];
         const existingItem = newCart[existingItemIndex];
         const newQuantity = existingItem.quantity + validQty;
-        const totals = calculateItemTotal(product, newQuantity, existingItem.discount, existingItem.custom_price);
+        const customPrice = specialPrice ?? existingItem.custom_price;
+        const totals = calculateItemTotal(product, newQuantity, existingItem.discount, customPrice);
         newCart[existingItemIndex] = {
           ...existingItem,
           quantity: newQuantity,
+          custom_price: customPrice,
           ...totals
         };
         return newCart;
       } else {
-        const totals = calculateItemTotal(product, validQty);
+        const customPrice = specialPrice;
+        const totals = calculateItemTotal(product, validQty, undefined, customPrice);
         const newItem: CartItem = {
           product,
           quantity: validQty,
+          custom_price: customPrice,
           ...totals
         };
         return [...prevCart, newItem];
@@ -570,8 +584,13 @@ const Index = () => {
     setQuantityInput('1');
     setScanInput('');
     setSearchResults([]);
-    toast.success(`${product.name} ajouté au panier`);
-  }, [quantityInput, isDayOpenEffective, openDay]);
+    
+    if (specialPrice) {
+      toast.success(`${product.name} ajouté avec prix spécial: ${specialPrice.toFixed(2)}€`);
+    } else {
+      toast.success(`${product.name} ajouté au panier`);
+    }
+  }, [quantityInput, isDayOpenEffective, openDay, selectedCustomer]);
 
   // Handler pour confirmer le poids
   const handleWeightConfirm = (weight: number) => {
@@ -1238,6 +1257,124 @@ const Index = () => {
       });
     }
   };
+
+  // Gestionnaire pour convertir une vente en facture
+  const handleConvertToInvoice = async (method: 'cash' | 'card' | 'mobile' | 'customer_credit', amountPaid?: number) => {
+    if (cart.length === 0) {
+      toast.error('Panier vide');
+      setPaymentDialogOpen(false);
+      return;
+    }
+
+    if (!selectedCustomer) {
+      toast.error('Veuillez sélectionner un client pour générer une facture');
+      return;
+    }
+
+    if (!isDayOpenEffective) {
+      toast.error('Veuillez ouvrir la journée avant d\'effectuer une vente');
+      setPaymentDialogOpen(false);
+      return;
+    }
+
+    let dbPaymentMethod: 'cash' | 'card' | 'mobile' | 'check' | 'voucher' = 'cash';
+    if (method === 'customer_credit') {
+      dbPaymentMethod = 'voucher';
+    } else {
+      dbPaymentMethod = method as 'cash' | 'card' | 'mobile' | 'check';
+    }
+
+    const saleData = {
+      subtotal: totals.subtotal,
+      total_vat: totals.totalVat,
+      total_discount: totals.totalDiscount,
+      total: totals.total,
+      payment_method: dbPaymentMethod,
+      amount_paid: amountPaid || totals.total,
+      change_amount: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
+      is_invoice: true, // Toujours une facture
+      invoice_status: 'brouillon',
+      is_cancelled: false,
+      cashier_id: user?.id,
+      customer_id: selectedCustomer.id,
+      items: cart.map(item => ({
+        product_id: item.product.id,
+        product_name: item.product.name,
+        product_barcode: item.product.barcode,
+        quantity: item.quantity,
+        unit_price: item.custom_price ?? item.product.price,
+        vat_rate: item.product.vat_rate,
+        discount_type: item.discount?.type,
+        discount_value: item.discount?.value || 0,
+        subtotal: item.subtotal,
+        vat_amount: item.vatAmount,
+        total: item.total
+      }))
+    };
+
+    try {
+      const sale = await createSale.mutateAsync({ sale: saleData });
+
+      const saleForReceipt = {
+        ...sale,
+        saleNumber: sale.sale_number,
+        date: sale.date,
+        items: cart,
+        subtotal: totals.subtotal,
+        totalVat: totals.totalVat,
+        totalDiscount: totals.totalDiscount,
+        total: totals.total,
+        paymentMethod: method,
+        amountPaid: amountPaid || totals.total,
+        change: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
+        is_invoice: true,
+        customer: selectedCustomer
+      };
+      setCurrentSale(saleForReceipt);
+
+      const completedState = {
+        items: [],
+        status: 'completed',
+        timestamp: Date.now()
+      };
+      displayChannelRef.current.postMessage(completedState);
+      localStorage.setItem('customer_display_state', JSON.stringify(completedState));
+
+      const timeoutId = setTimeout(() => {
+        const idleState = {
+          items: [],
+          status: 'idle',
+          timestamp: Date.now()
+        };
+        try {
+          displayChannelRef.current.postMessage(idleState);
+          localStorage.setItem('customer_display_state', JSON.stringify(idleState));
+        } catch (e) {
+          // Erreur silencieuse
+        }
+      }, 5000);
+
+      setCart([]);
+      setGlobalDiscount(null);
+      setAppliedPromoCode(null);
+      setAppliedAutoPromotion(null);
+      setIsInvoiceMode(false);
+      setSelectedCustomer(null);
+      setPaymentDialogOpen(false);
+      setReceiptDialogOpen(true);
+      setTimeout(() => {
+        printThermalReceipt();
+      }, 300);
+
+      toast.success('Facture générée');
+    } catch (error: any) {
+      console.error('Erreur création facture:', error);
+      toast.error('Erreur', {
+        description: error?.message || 'Erreur lors de la création de la facture'
+      });
+    }
+  };
+
   const handleSelectCustomer = (customer: Customer) => {
     if (!customer || !customer.id) {
       toast.error('Client invalide');
@@ -2220,7 +2357,8 @@ const Index = () => {
           setMixedPaymentDialogOpen(true);
         }}
         onOpenCustomerCreditDialog={() => setCustomerCreditDialogOpen(true)}
-        customerId={selectedCustomer?.id} 
+        customerId={selectedCustomer?.id}
+        onConvertToInvoice={handleConvertToInvoice}
       />
 
       <MixedPaymentDialog open={mixedPaymentDialogOpen} onOpenChange={setMixedPaymentDialogOpen} total={totals.total} onConfirmPayment={handleMixedPayment} customerId={selectedCustomer?.id} />

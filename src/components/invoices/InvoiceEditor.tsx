@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useCustomers } from '@/hooks/useCustomers';
 import { useProducts } from '@/hooks/useProducts';
+import { getSpecialPriceForCustomer } from '@/hooks/useCustomerSpecialPrices';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -187,12 +188,22 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     setCustomerSearchOpen(false);
   };
 
-  const selectProduct = (product: any, index: number) => {
+  const selectProduct = async (product: any, index: number) => {
     const newItems = [...items];
+    
+    // Vérifier si un prix spécial existe pour ce client
+    let finalPrice = product.price;
+    if (selectedCustomerId) {
+      const specialPrice = await getSpecialPriceForCustomer(selectedCustomerId, product.id);
+      if (specialPrice !== null) {
+        finalPrice = specialPrice;
+      }
+    }
+    
     newItems[index] = {
       ...newItems[index],
       description: product.name,
-      unitPrice: product.price,
+      unitPrice: finalPrice,
       vatRate: product.vat_rate,
     };
     setItems(newItems);
