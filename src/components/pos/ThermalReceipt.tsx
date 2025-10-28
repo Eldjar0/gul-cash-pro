@@ -190,15 +190,26 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       {/* Customer info - Show on all tickets if customer selected */}
       {sale.customer && (
         <>
-          <div style={{ fontSize: '12.3px', marginBottom: '6px', fontWeight: '900', paddingRight: '24px' }}>
-            <div style={{ fontWeight: '900', marginBottom: '2px' }}>CLIENT:</div>
-            <div style={{ fontWeight: '900', wordWrap: 'break-word' }}>{sale.customer.name}</div>
-            {sale.customer.vat_number && <div style={{ wordWrap: 'break-word' }}>TVA: {sale.customer.vat_number}</div>}
-            {sale.customer.address && <div style={{ wordWrap: 'break-word' }}>{sale.customer.address}</div>}
+          <div style={{ 
+            fontSize: '14px', 
+            marginBottom: '6px', 
+            fontWeight: '900', 
+            paddingRight: '24px',
+            backgroundColor: '#f3f4f6',
+            padding: '6px',
+            border: '2px solid #000',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '16px', fontWeight: '900', marginBottom: '3px', letterSpacing: '0.5px' }}>
+              CLIENT: {sale.customer.name}
+            </div>
+            {sale.customer.vat_number && <div style={{ fontSize: '11px', wordWrap: 'break-word' }}>TVA: {sale.customer.vat_number}</div>}
+            {sale.customer.address && <div style={{ fontSize: '11px', wordWrap: 'break-word' }}>{sale.customer.address}</div>}
             {(sale.customer.postal_code || sale.customer.city) && (
-              <div>{sale.customer.postal_code} {sale.customer.city}</div>
+              <div style={{ fontSize: '11px' }}>{sale.customer.postal_code} {sale.customer.city}</div>
             )}
-            {sale.customer.phone && <div>{sale.customer.phone}</div>}
+            {sale.customer.email && <div style={{ fontSize: '11px' }}>{sale.customer.email}</div>}
+            {sale.customer.phone && <div style={{ fontSize: '11px' }}>{sale.customer.phone}</div>}
           </div>
           <div style={{ borderTop: '1.4px dashed #000', margin: '6px 0' }}></div>
         </>
