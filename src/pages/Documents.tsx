@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LegalFooter } from '@/components/pos/LegalFooter';
@@ -195,10 +196,16 @@ export default function Documents() {
         queryClient.invalidateQueries({ queryKey: ['sales'] });
         toast.success('Facture brouillon supprimée');
       } else {
+        // Vérifier que la raison est renseignée
+        if (!cancelReason.trim()) {
+          toast.error('Veuillez indiquer la raison de l\'annulation');
+          return;
+        }
+        
         // Annuler les autres ventes (tickets et factures validées)
         cancelSale.mutate({ 
           saleId: saleToDelete, 
-          reason: 'Annulation confirmée' 
+          reason: cancelReason.trim()
         });
       }
 
@@ -1881,19 +1888,21 @@ export default function Documents() {
 
       {/* Dialogs */}
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Ticket de vente</DialogTitle>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-hidden p-0">
+          <DialogHeader className="px-6 pt-6 pb-0">
+            <DialogTitle className="text-center text-primary font-bold">TICKET DE CAISSE</DialogTitle>
           </DialogHeader>
           {selectedSale && (
             <>
-              <ThermalReceipt sale={selectedSale} />
-              <div className="flex gap-2 justify-end pt-4 border-t">
-                <Button variant="outline" onClick={() => setReceiptDialogOpen(false)}>
+              <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+                <ThermalReceipt sale={selectedSale} />
+              </div>
+              <div className="flex gap-2 justify-between p-4 border-t bg-muted/30">
+                <Button variant="outline" onClick={() => setReceiptDialogOpen(false)} className="flex-1">
                   Fermer
                 </Button>
-                <Button onClick={() => printThermalReceipt()}>
-                  Imprimer
+                <Button onClick={() => printThermalReceipt()} className="flex-1 bg-green-600 hover:bg-green-700">
+                  IMPRIMER
                 </Button>
               </div>
             </>
@@ -1907,17 +1916,40 @@ export default function Documents() {
             <AlertDialogTitle>
               {sales?.find(s => s.id === saleToDelete)?.is_invoice && 
                sales?.find(s => s.id === saleToDelete)?.invoice_status === 'brouillon' 
-                ? 'Supprimer ?' 
-                : 'Annuler ?'}
+                ? 'Supprimer cette facture brouillon ?' 
+                : 'Annuler ce ticket ?'}
             </AlertDialogTitle>
+            <AlertDialogDescription>
+              {!(sales?.find(s => s.id === saleToDelete)?.is_invoice && 
+                 sales?.find(s => s.id === saleToDelete)?.invoice_status === 'brouillon') && (
+                <div className="space-y-3 mt-4">
+                  <Label htmlFor="cancel-reason">Raison de l'annulation *</Label>
+                  <Input
+                    id="cancel-reason"
+                    placeholder="Ex: Erreur de saisie, client a changé d'avis..."
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    La raison sera enregistrée et visible dans l'historique
+                  </p>
+                </div>
+              )}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Non</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setCancelReason('')}>Annuler</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleCancelConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={
+                !(sales?.find(s => s.id === saleToDelete)?.is_invoice && 
+                  sales?.find(s => s.id === saleToDelete)?.invoice_status === 'brouillon') && 
+                !cancelReason.trim()
+              }
             >
-              Oui
+              Confirmer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
