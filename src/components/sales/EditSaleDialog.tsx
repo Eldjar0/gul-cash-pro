@@ -177,7 +177,6 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
               <div className="text-xs text-red-800 space-y-2">
                 <ul className="list-disc list-inside space-y-1">
                   <li><strong>Conservation obligatoire :</strong> 10 ans (Art. 315bis CIR92)</li>
-                  <li><strong>Suppression de documents :</strong> INTERDITE après clôture journalière</li>
                   <li><strong>Modification de documents :</strong> AUTORISÉE uniquement le jour J avant clôture</li>
                 </ul>
                 <div className="mt-3 p-3 bg-red-100 border-2 border-red-500 rounded space-y-2">
