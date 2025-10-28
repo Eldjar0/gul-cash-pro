@@ -25,6 +25,9 @@ export function BackupSettings() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Reset input pour permettre de réimporter le même fichier
+    event.target.value = '';
+
     setIsImporting(true);
     try {
       const text = await file.text();
@@ -32,7 +35,10 @@ export function BackupSettings() {
 
       // Confirmation avant import
       const confirmed = window.confirm(
-        '⚠️ ATTENTION: Cette action va remplacer TOUTES les données existantes par celles de la sauvegarde. Cette opération est IRRÉVERSIBLE. Voulez-vous continuer?'
+        '⚠️ ATTENTION: Cette action va ÉCRASER toutes les données existantes par celles de la sauvegarde.\n\n' +
+        'Cette opération est IRRÉVERSIBLE.\n\n' +
+        'Assurez-vous d\'avoir une sauvegarde récente avant de continuer.\n\n' +
+        'Voulez-vous vraiment continuer?'
       );
 
       if (!confirmed) {
@@ -40,37 +46,76 @@ export function BackupSettings() {
         return;
       }
 
-      // Import des données (ordre important pour respecter les clés étrangères)
-      if (data.categories) {
-        await supabase.from('categories').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        await supabase.from('categories').insert(data.categories);
+      toast.info('Import en cours... Veuillez patienter');
+
+      // Import des données dans l'ordre correct (respecter les dépendances)
+      let imported = 0;
+
+      // 1. Catégories (pas de dépendances)
+      if (data.categories?.length > 0) {
+        const { error } = await supabase.from('categories').upsert(data.categories, { onConflict: 'id' });
+        if (error) throw new Error(`Erreur catégories: ${error.message}`);
+        imported += data.categories.length;
       }
 
-      if (data.products) {
-        await supabase.from('products').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        await supabase.from('products').insert(data.products);
+      // 2. Clients (pas de dépendances)
+      if (data.customers?.length > 0) {
+        const { error } = await supabase.from('customers').upsert(data.customers, { onConflict: 'id' });
+        if (error) throw new Error(`Erreur clients: ${error.message}`);
+        imported += data.customers.length;
       }
 
-      if (data.customers) {
-        await supabase.from('customers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        await supabase.from('customers').insert(data.customers);
+      // 3. Produits (dépend des catégories)
+      if (data.products?.length > 0) {
+        const { error } = await supabase.from('products').upsert(data.products, { onConflict: 'id' });
+        if (error) throw new Error(`Erreur produits: ${error.message}`);
+        imported += data.products.length;
       }
 
-      if (data.sales) {
-        await supabase.from('sales').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        await supabase.from('sales').insert(data.sales);
+      // 4. Ventes (dépend des clients)
+      if (data.sales?.length > 0) {
+        const { error } = await supabase.from('sales').upsert(data.sales, { onConflict: 'id' });
+        if (error) throw new Error(`Erreur ventes: ${error.message}`);
+        imported += data.sales.length;
       }
 
-      if (data.sale_items) {
-        await supabase.from('sale_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        await supabase.from('sale_items').insert(data.sale_items);
+      // 5. Articles de vente (dépend des ventes et produits)
+      if (data.sale_items?.length > 0) {
+        const { error } = await supabase.from('sale_items').upsert(data.sale_items, { onConflict: 'id' });
+        if (error) throw new Error(`Erreur articles: ${error.message}`);
+        imported += data.sale_items.length;
       }
 
-      toast.success('Sauvegarde importée avec succès');
-      setTimeout(() => window.location.reload(), 1000);
-    } catch (error) {
+      // 6. Autres tables
+      if (data.refunds?.length > 0) {
+        const { error } = await supabase.from('refunds').upsert(data.refunds, { onConflict: 'id' });
+        if (error) console.warn('Avertissement remboursements:', error.message);
+      }
+
+      if (data.customer_orders?.length > 0) {
+        const { error } = await supabase.from('customer_orders').upsert(data.customer_orders, { onConflict: 'id' });
+        if (error) console.warn('Avertissement commandes:', error.message);
+      }
+
+      if (data.quotes?.length > 0) {
+        const { error } = await supabase.from('quotes').upsert(data.quotes, { onConflict: 'id' });
+        if (error) console.warn('Avertissement devis:', error.message);
+      }
+
+      if (data.stock_movements?.length > 0) {
+        const { error } = await supabase.from('stock_movements').upsert(data.stock_movements, { onConflict: 'id' });
+        if (error) console.warn('Avertissement mouvements:', error.message);
+      }
+
+      toast.success(`✅ ${imported} enregistrements importés avec succès`);
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+
+    } catch (error: any) {
       console.error('Erreur import:', error);
-      toast.error('Erreur lors de l\'importation de la sauvegarde');
+      toast.error(`❌ Erreur: ${error.message || 'Impossible d\'importer la sauvegarde'}`);
     } finally {
       setIsImporting(false);
     }
