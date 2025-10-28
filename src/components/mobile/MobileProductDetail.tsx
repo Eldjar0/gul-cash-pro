@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Edit, Scan, Plus, Trash2, Star, Package, TrendingUp, AlertTriangle, History, BarChart3, Tag, Keyboard } from 'lucide-react';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts, useDeleteProduct } from '@/hooks/useProducts';
 import { useProductBarcodes, useAddProductBarcode, useDeleteProductBarcode, useSetPrimaryBarcode } from '@/hooks/useProductBarcodes';
 import { useCategories } from '@/hooks/useCategories';
 import { MobileBarcodeScanner } from './MobileBarcodeScanner';
@@ -26,6 +26,7 @@ export const MobileProductDetail = () => {
   const addBarcode = useAddProductBarcode();
   const deleteBarcode = useDeleteProductBarcode();
   const setPrimary = useSetPrimaryBarcode();
+  const deleteProduct = useDeleteProduct();
   const [scannerOpen, setScannerOpen] = useState(false);
   const [manualInputOpen, setManualInputOpen] = useState(false);
   const [manualBarcode, setManualBarcode] = useState('');
@@ -370,9 +371,10 @@ export const MobileProductDetail = () => {
               variant="outline"
               size="lg"
               className="w-full gap-3 h-14 border-destructive/20 hover:bg-destructive/10"
-              onClick={() => {
+              onClick={async () => {
                 if (confirm(`Êtes-vous sûr de vouloir supprimer "${product.name}" ?`)) {
-                  toast.info('Fonctionnalité à venir');
+                  await deleteProduct.mutateAsync(product.id);
+                  navigate('/mobile/products');
                 }
               }}
             >
