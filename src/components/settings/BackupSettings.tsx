@@ -23,99 +23,114 @@ export function BackupSettings() {
 
   const handleImportBackup = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log('Aucun fichier sélectionné');
+      return;
+    }
 
-    // Reset input pour permettre de réimporter le même fichier
+    console.log('Fichier sélectionné:', file.name, file.size, 'bytes');
+    
+    // Reset input
     event.target.value = '';
 
+    // Confirmation avant import
+    const confirmed = window.confirm(
+      '⚠️ ATTENTION: Cette action va ÉCRASER toutes les données existantes.\n\n' +
+      'Voulez-vous vraiment continuer?'
+    );
+
+    if (!confirmed) {
+      console.log('Import annulé par l\'utilisateur');
+      return;
+    }
+
     setIsImporting(true);
+    
     try {
+      console.log('Lecture du fichier...');
       const text = await file.text();
-      const data = JSON.parse(text);
-
-      // Confirmation avant import
-      const confirmed = window.confirm(
-        '⚠️ ATTENTION: Cette action va ÉCRASER toutes les données existantes par celles de la sauvegarde.\n\n' +
-        'Cette opération est IRRÉVERSIBLE.\n\n' +
-        'Assurez-vous d\'avoir une sauvegarde récente avant de continuer.\n\n' +
-        'Voulez-vous vraiment continuer?'
-      );
-
-      if (!confirmed) {
-        setIsImporting(false);
-        return;
-      }
-
-      toast.info('Import en cours... Veuillez patienter');
-
-      // Import des données dans l'ordre correct (respecter les dépendances)
-      let imported = 0;
-
-      // 1. Catégories (pas de dépendances)
-      if (data.categories?.length > 0) {
-        const { error } = await supabase.from('categories').upsert(data.categories, { onConflict: 'id' });
-        if (error) throw new Error(`Erreur catégories: ${error.message}`);
-        imported += data.categories.length;
-      }
-
-      // 2. Clients (pas de dépendances)
-      if (data.customers?.length > 0) {
-        const { error } = await supabase.from('customers').upsert(data.customers, { onConflict: 'id' });
-        if (error) throw new Error(`Erreur clients: ${error.message}`);
-        imported += data.customers.length;
-      }
-
-      // 3. Produits (dépend des catégories)
-      if (data.products?.length > 0) {
-        const { error } = await supabase.from('products').upsert(data.products, { onConflict: 'id' });
-        if (error) throw new Error(`Erreur produits: ${error.message}`);
-        imported += data.products.length;
-      }
-
-      // 4. Ventes (dépend des clients)
-      if (data.sales?.length > 0) {
-        const { error } = await supabase.from('sales').upsert(data.sales, { onConflict: 'id' });
-        if (error) throw new Error(`Erreur ventes: ${error.message}`);
-        imported += data.sales.length;
-      }
-
-      // 5. Articles de vente (dépend des ventes et produits)
-      if (data.sale_items?.length > 0) {
-        const { error } = await supabase.from('sale_items').upsert(data.sale_items, { onConflict: 'id' });
-        if (error) throw new Error(`Erreur articles: ${error.message}`);
-        imported += data.sale_items.length;
-      }
-
-      // 6. Autres tables
-      if (data.refunds?.length > 0) {
-        const { error } = await supabase.from('refunds').upsert(data.refunds, { onConflict: 'id' });
-        if (error) console.warn('Avertissement remboursements:', error.message);
-      }
-
-      if (data.customer_orders?.length > 0) {
-        const { error } = await supabase.from('customer_orders').upsert(data.customer_orders, { onConflict: 'id' });
-        if (error) console.warn('Avertissement commandes:', error.message);
-      }
-
-      if (data.quotes?.length > 0) {
-        const { error } = await supabase.from('quotes').upsert(data.quotes, { onConflict: 'id' });
-        if (error) console.warn('Avertissement devis:', error.message);
-      }
-
-      if (data.stock_movements?.length > 0) {
-        const { error } = await supabase.from('stock_movements').upsert(data.stock_movements, { onConflict: 'id' });
-        if (error) console.warn('Avertissement mouvements:', error.message);
-      }
-
-      toast.success(`✅ ${imported} enregistrements importés avec succès`);
+      console.log('Fichier lu, taille:', text.length, 'caractères');
       
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      console.log('Parsing JSON...');
+      const data = JSON.parse(text);
+      console.log('JSON parsé, clés trouvées:', Object.keys(data));
+
+      toast.info('🔄 Import en cours... Veuillez patienter', { duration: 10000 });
+
+      let totalImported = 0;
+
+      // Import catégories
+      if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) {
+        console.log(`Import de ${data.categories.length} catégories...`);
+        const { error } = await supabase.from('categories').upsert(data.categories, { onConflict: 'id' });
+        if (error) {
+          console.error('Erreur catégories:', error);
+          throw new Error(`Catégories: ${error.message}`);
+        }
+        totalImported += data.categories.length;
+        console.log(`✓ ${data.categories.length} catégories importées`);
+      }
+
+      // Import clients
+      if (data.customers && Array.isArray(data.customers) && data.customers.length > 0) {
+        console.log(`Import de ${data.customers.length} clients...`);
+        const { error } = await supabase.from('customers').upsert(data.customers, { onConflict: 'id' });
+        if (error) {
+          console.error('Erreur clients:', error);
+          throw new Error(`Clients: ${error.message}`);
+        }
+        totalImported += data.customers.length;
+        console.log(`✓ ${data.customers.length} clients importés`);
+      }
+
+      // Import produits
+      if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+        console.log(`Import de ${data.products.length} produits...`);
+        const { error } = await supabase.from('products').upsert(data.products, { onConflict: 'id' });
+        if (error) {
+          console.error('Erreur produits:', error);
+          throw new Error(`Produits: ${error.message}`);
+        }
+        totalImported += data.products.length;
+        console.log(`✓ ${data.products.length} produits importés`);
+      }
+
+      // Import ventes
+      if (data.sales && Array.isArray(data.sales) && data.sales.length > 0) {
+        console.log(`Import de ${data.sales.length} ventes...`);
+        const { error } = await supabase.from('sales').upsert(data.sales, { onConflict: 'id' });
+        if (error) {
+          console.error('Erreur ventes:', error);
+          throw new Error(`Ventes: ${error.message}`);
+        }
+        totalImported += data.sales.length;
+        console.log(`✓ ${data.sales.length} ventes importées`);
+      }
+
+      // Import articles de vente
+      if (data.sale_items && Array.isArray(data.sale_items) && data.sale_items.length > 0) {
+        console.log(`Import de ${data.sale_items.length} articles...`);
+        const { error } = await supabase.from('sale_items').upsert(data.sale_items, { onConflict: 'id' });
+        if (error) {
+          console.error('Erreur articles:', error);
+          throw new Error(`Articles: ${error.message}`);
+        }
+        totalImported += data.sale_items.length;
+        console.log(`✓ ${data.sale_items.length} articles importés`);
+      }
+
+      console.log(`Import terminé: ${totalImported} enregistrements au total`);
+      
+      if (totalImported === 0) {
+        toast.warning('⚠️ Aucune donnée trouvée dans le fichier');
+      } else {
+        toast.success(`✅ ${totalImported} enregistrements importés avec succès`);
+        setTimeout(() => window.location.reload(), 2000);
+      }
 
     } catch (error: any) {
-      console.error('Erreur import:', error);
-      toast.error(`❌ Erreur: ${error.message || 'Impossible d\'importer la sauvegarde'}`);
+      console.error('Erreur complète:', error);
+      toast.error(`❌ Erreur: ${error.message || 'Fichier invalide'}`, { duration: 5000 });
     } finally {
       setIsImporting(false);
     }
