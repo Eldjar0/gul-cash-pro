@@ -92,6 +92,8 @@ import {
 } from '@/components/ui/select';
 import { InvoiceEditor } from '@/components/invoices/InvoiceEditor';
 import { exportDocumentsToPDF } from '@/utils/exportDocumentsPDF';
+import { exportToXML, exportToUBL, exportToCSV } from '@/utils/exportDocumentsXML';
+import { ProductSalesReport } from '@/components/dashboard/ProductSalesReport';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, subDays } from 'date-fns';
 import {
   Popover,
@@ -100,6 +102,14 @@ import {
 } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function Documents() {
   const navigate = useNavigate();
@@ -398,6 +408,72 @@ export default function Documents() {
       },
     });
     toast.success('Export PDF généré');
+  };
+
+  // Exports XML, UBL, CSV
+  const handleExportSalesXML = () => {
+    const range = getDateRange(dateFilter);
+    exportToXML({
+      documents: filteredSales,
+      type: 'sales',
+      dateRange: range || undefined,
+      companyInfo: {
+        name: companySettings.name,
+        address: companySettings.address,
+        city: companySettings.city,
+        postalCode: companySettings.postal_code,
+        vatNumber: companySettings.vat_number,
+      },
+    });
+    toast.success('Export XML généré');
+  };
+
+  const handleExportSalesCSV = () => {
+    exportToCSV({
+      documents: filteredSales,
+      type: 'sales',
+    });
+    toast.success('Export CSV généré');
+  };
+
+  const handleExportInvoicesXML = () => {
+    const range = getDateRange(dateFilter);
+    exportToXML({
+      documents: filteredInvoices,
+      type: 'invoices',
+      dateRange: range || undefined,
+      companyInfo: {
+        name: companySettings.name,
+        address: companySettings.address,
+        city: companySettings.city,
+        postalCode: companySettings.postal_code,
+        vatNumber: companySettings.vat_number,
+      },
+    });
+    toast.success('Export XML généré');
+  };
+
+  const handleExportInvoicesUBL = () => {
+    exportToUBL({
+      documents: filteredInvoices,
+      type: 'invoices',
+      companyInfo: {
+        name: companySettings.name,
+        address: companySettings.address,
+        city: companySettings.city,
+        postalCode: companySettings.postal_code,
+        vatNumber: companySettings.vat_number,
+      },
+    });
+    toast.success('Export UBL généré');
+  };
+
+  const handleExportInvoicesCSV = () => {
+    exportToCSV({
+      documents: filteredInvoices,
+      type: 'invoices',
+    });
+    toast.success('Export CSV généré');
   };
 
   const handleViewReceipt = (sale: any) => {
@@ -742,12 +818,39 @@ export default function Documents() {
                   )}
                 </div>
                 
-                <Button onClick={handleExportSalesPDF} variant="outline" className="gap-2">
-                  <FileDown className="h-4 w-4" />
-                  Exporter PDF (Art. 315bis CIR92)
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-2">
+                      <FileDown className="h-4 w-4" />
+                      Exporter
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 bg-background z-50">
+                    <DropdownMenuLabel>Formats disponibles</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleExportSalesPDF}>
+                      <FileDown className="h-4 w-4 mr-2" />
+                      PDF (Art. 315bis CIR92)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportSalesXML}>
+                      <FileDown className="h-4 w-4 mr-2" />
+                      XML Standard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportSalesCSV}>
+                      <FileDown className="h-4 w-4 mr-2" />
+                      CSV (Excel)
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </Card>
+
+            {/* Rapport produits */}
+            <ProductSalesReport 
+              documents={filteredSales}
+              dateRange={getDateRange(dateFilter) || undefined}
+              title="Produits vendus (Tickets de caisse)"
+            />
 
             <Card className="p-4 bg-white">
               <div className="relative">
@@ -984,12 +1087,43 @@ export default function Documents() {
                   )}
                 </div>
                 
-                <Button onClick={handleExportInvoicesPDF} variant="outline" className="gap-2">
-                  <FileDown className="h-4 w-4" />
-                  Exporter PDF (Art. 315bis CIR92)
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-2">
+                      <FileDown className="h-4 w-4" />
+                      Exporter
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 bg-background z-50">
+                    <DropdownMenuLabel>Formats disponibles</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleExportInvoicesPDF}>
+                      <FileDown className="h-4 w-4 mr-2" />
+                      PDF (Art. 315bis CIR92)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportInvoicesXML}>
+                      <FileDown className="h-4 w-4 mr-2" />
+                      XML Standard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportInvoicesUBL}>
+                      <FileDown className="h-4 w-4 mr-2" />
+                      UBL (Format belge)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportInvoicesCSV}>
+                      <FileDown className="h-4 w-4 mr-2" />
+                      CSV (Excel)
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </Card>
+
+            {/* Rapport produits */}
+            <ProductSalesReport 
+              documents={filteredInvoices}
+              dateRange={getDateRange(dateFilter) || undefined}
+              title="Produits vendus (Factures)"
+            />
 
             <Card className="p-4 bg-white">
               <div className="relative">
