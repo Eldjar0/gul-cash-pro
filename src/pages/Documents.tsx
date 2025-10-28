@@ -46,7 +46,6 @@ import { useSales, useCancelSale, useRestoreSale } from '@/hooks/useSales';
 import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
 import { useSavedCarts } from '@/hooks/useSavedCarts';
 import { RefundDialog } from '@/components/pos/RefundDialog';
-import { CustomerOrdersTab } from '@/components/orders/CustomerOrdersTab';
 import { SavedCartsContent } from '@/components/orders/SavedCartsContent';
 import {
   AlertDialog,
@@ -703,7 +702,7 @@ export default function Documents() {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
                   Documents
                 </h1>
-                <p className="text-sm text-muted-foreground">Ventes, Factures, Commandes & Remboursements</p>
+                <p className="text-sm text-muted-foreground">Ventes, Factures & Remboursements</p>
               </div>
             </div>
           </div>
@@ -765,7 +764,7 @@ export default function Documents() {
 
         {/* Tabs */}
         <Tabs defaultValue="sales" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="sales" className="gap-2">
               <Receipt className="h-4 w-4" />
               <span className="hidden sm:inline">Ventes</span>
@@ -777,10 +776,6 @@ export default function Documents() {
             <TabsTrigger value="products" className="gap-2">
               <Package className="h-4 w-4" />
               <span className="hidden sm:inline">Produits</span>
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="gap-2">
-              <ShoppingCart className="h-4 w-4" />
-              <span className="hidden sm:inline">Commandes</span>
             </TabsTrigger>
             <TabsTrigger value="saved-carts" className="gap-2">
               <ShoppingCart className="h-4 w-4" />
@@ -1435,10 +1430,6 @@ export default function Documents() {
             />
           </TabsContent>
 
-          {/* Onglet Commandes */}
-          <TabsContent value="orders">
-            <CustomerOrdersTab />
-          </TabsContent>
 
           {/* Onglet Paniers Sauvegardés */}
           <TabsContent value="saved-carts" className="space-y-4">
