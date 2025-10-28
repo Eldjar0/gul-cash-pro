@@ -52,8 +52,12 @@ export function BackupSettings() {
       console.log('Fichier lu, taille:', text.length, 'caractères');
       
       console.log('Parsing JSON...');
-      const data = JSON.parse(text);
-      console.log('JSON parsé, clés trouvées:', Object.keys(data));
+      const json = JSON.parse(text);
+      console.log('JSON parsé, clés trouvées:', Object.keys(json));
+      
+      // Les données sont dans json.data
+      const data = json.data || json;
+      console.log('Données extraites, clés:', Object.keys(data));
 
       toast.info('🔄 Import en cours... Veuillez patienter', { duration: 10000 });
 
