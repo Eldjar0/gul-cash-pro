@@ -2119,14 +2119,39 @@ const Index = () => {
                         const saleForReceipt = {
                           ...sale,
                           saleNumber: sale.sale_number,
-                          items: sale.sale_items,
+                          items: sale.sale_items?.map((item: any) => ({
+                            product: {
+                              name: item.product_name,
+                              price: item.unit_price,
+                              vat_rate: item.vat_rate,
+                              type: 'unit' as const,
+                            },
+                            quantity: item.quantity,
+                            discount: item.discount_type ? {
+                              type: item.discount_type as 'percentage' | 'amount',
+                              value: item.discount_value || 0,
+                            } : undefined,
+                            subtotal: item.subtotal,
+                            vatAmount: item.vat_amount,
+                            total: item.total,
+                            is_gift: item.total === 0,
+                          })) || [],
                           subtotal: sale.subtotal,
                           totalVat: sale.total_vat,
                           totalDiscount: sale.total_discount,
                           total: sale.total,
                           paymentMethod: sale.payment_method,
                           amountPaid: sale.amount_paid,
-                          change: sale.change_amount
+                          change: sale.change_amount,
+                          customer: sale.customers ? {
+                            name: sale.customers.name,
+                            vat_number: sale.customers.vat_number,
+                            email: sale.customers.email,
+                            phone: sale.customers.phone,
+                            address: sale.customers.address,
+                            city: sale.customers.city,
+                            postal_code: sale.customers.postal_code,
+                          } : undefined,
                         };
                         setCurrentSale(saleForReceipt);
                         setReceiptDialogOpen(true);
@@ -2552,27 +2577,34 @@ const Index = () => {
 
       {/* Dialog d'impression thermique */}
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
-        <DialogContent className="max-w-sm bg-white border-2 border-primary p-0">
-          <DialogHeader className="p-4 pb-0">
-            <DialogTitle className="text-primary font-bold text-center">TICKET DE CAISSE</DialogTitle>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-hidden p-0">
+          <DialogHeader className="px-6 pt-6 pb-0">
+            <DialogTitle className="text-center text-primary font-bold">TICKET DE CAISSE</DialogTitle>
           </DialogHeader>
-          <div className="max-h-[70vh] overflow-y-auto">
+          <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
             {currentSale && <ThermalReceipt sale={currentSale} />}
           </div>
-          <div className="p-4 border-t bg-muted/30 flex gap-2">
-            <Button variant="outline" onClick={() => {
-            setReceiptDialogOpen(false);
-            setCurrentSale(null);
-          }} className="flex-1 h-12 font-semibold">
+          <div className="flex gap-2 justify-between p-4 border-t bg-muted/30">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setReceiptDialogOpen(false);
+                setCurrentSale(null);
+              }} 
+              className="flex-1"
+            >
               Fermer
             </Button>
-            <Button onClick={() => {
-            printThermalReceipt();
-            setTimeout(() => {
-              setReceiptDialogOpen(false);
-              setCurrentSale(null);
-            }, 500);
-          }} className="flex-1 h-12 bg-accent hover:bg-accent/90 text-white font-bold">
+            <Button 
+              onClick={() => {
+                printThermalReceipt();
+                setTimeout(() => {
+                  setReceiptDialogOpen(false);
+                  setCurrentSale(null);
+                }, 500);
+              }} 
+              className="flex-1 bg-green-600 hover:bg-green-700"
+            >
               IMPRIMER
             </Button>
           </div>

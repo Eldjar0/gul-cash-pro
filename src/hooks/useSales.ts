@@ -240,7 +240,10 @@ export const useSales = (startDate?: Date, endDate?: Date) => {
             name,
             email,
             phone,
-            vat_number
+            vat_number,
+            address,
+            city,
+            postal_code
           ),
           fiscal_receipts(
             fiscal_number
