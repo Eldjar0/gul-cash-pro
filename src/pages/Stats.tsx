@@ -7,6 +7,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ExportDataButton } from '@/components/dashboard/ExportDataButton';
 import { useSales } from '@/hooks/useSales';
+import { useRefunds } from '@/hooks/useRefunds';
 import { useDailyRevenue, usePaymentMethodStats } from '@/hooks/useRevenueAnalytics';
 import { useDailyReports } from '@/hooks/useDailyReports';
 import { format, subDays, startOfWeek, startOfMonth, startOfQuarter, startOfYear, endOfDay, parseISO, isWithinInterval } from 'date-fns';
@@ -56,6 +57,7 @@ export default function Stats() {
   const [compareEndDate, setCompareEndDate] = useState<Date | undefined>();
 
   const { data: sales = [] } = useSales(startDate, endDate);
+  const { data: refunds = [] } = useRefunds();
   const { data: compareSales = [] } = useSales(compareStartDate, compareEndDate);
   const { data: dailyRevenue = [] } = useDailyRevenue(30);
   const { data: paymentStats = [] } = usePaymentMethodStats(30);
@@ -104,10 +106,22 @@ export default function Stats() {
     return isWithinInterval(reportDate, { start: startDate, end: endDate });
   });
 
+  // Filtrer les remboursements selon la période
+  const filteredRefunds = refunds.filter((refund) => {
+    const refundDate = new Date(refund.created_at);
+    return isWithinInterval(refundDate, { start: startDate, end: endDate });
+  });
+
+  const totalRefunds = filteredRefunds.reduce((sum, r) => sum + Number(r.total), 0);
+  const refundsCount = filteredRefunds.length;
+
   // Calculs des statistiques
   const activeSales = sales.filter(s => !s.is_cancelled);
   const totalRevenue = activeSales.reduce((sum, s) => sum + Number(s.total), 0);
+  const netRevenue = totalRevenue - totalRefunds; // Chiffre d'affaires net
   const totalVAT = activeSales.reduce((sum, s) => sum + Number(s.total_vat), 0);
+  const refundsVAT = filteredRefunds.reduce((sum, r) => sum + Number(r.total_vat), 0);
+  const netVAT = totalVAT - refundsVAT;
   const avgBasket = activeSales.length > 0 ? totalRevenue / activeSales.length : 0;
   const salesCount = activeSales.length;
 
@@ -952,22 +966,43 @@ export default function Stats() {
       </Card>
 
         {/* KPIs principaux */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Card className="bg-gradient-to-br from-violet-500 to-violet-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-violet-100">Chiffre d'affaires</CardTitle>
+              <CardTitle className="text-sm font-medium text-violet-100">CA Net</CardTitle>
               <div className="p-2 bg-white/20 rounded-lg">
                 <Euro className="h-4 w-4" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{totalRevenue.toFixed(2)}€</div>
+              <div className="text-3xl font-bold">{netRevenue.toFixed(2)}€</div>
+              <p className="text-sm text-white/80 mt-1">
+                Brut: {totalRevenue.toFixed(2)}€
+              </p>
+              <p className="text-sm text-red-200 mt-1">
+                Remb: -{totalRefunds.toFixed(2)}€
+              </p>
               {compareMode && compareRevenue > 0 && (
                 <p className="text-sm flex items-center gap-1 mt-2 text-white/80">
                   {growthRate >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                   {Math.abs(growthRate).toFixed(1)}% vs période comparée
                 </p>
               )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-red-100">Remboursements</CardTitle>
+              <div className="p-2 bg-white/20 rounded-lg">
+                <TrendingDown className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">-{totalRefunds.toFixed(2)}€</div>
+              <p className="text-sm text-white/80 mt-2">
+                {refundsCount} remboursement{refundsCount > 1 ? 's' : ''}
+              </p>
             </CardContent>
           </Card>
 
@@ -1003,17 +1038,20 @@ export default function Stats() {
 
           <Card className="bg-gradient-to-br from-pink-500 to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-pink-100">TVA collectée</CardTitle>
+              <CardTitle className="text-sm font-medium text-pink-100">TVA nette</CardTitle>
               <div className="p-2 bg-white/20 rounded-lg">
                 <Receipt className="h-4 w-4" />
               </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalVAT.toFixed(2)}€</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              à reverser
-            </p>
-          </CardContent>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{netVAT.toFixed(2)}€</div>
+              <p className="text-xs text-white/80 mt-1">
+                Collectée: {totalVAT.toFixed(2)}€
+              </p>
+              <p className="text-xs text-red-200 mt-1">
+                Remb: -{refundsVAT.toFixed(2)}€
+              </p>
+            </CardContent>
         </Card>
       </div>
 
@@ -1283,31 +1321,33 @@ export default function Stats() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Total TTC</CardTitle>
+                <CardTitle className="text-sm font-medium">CA Net TTC</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-primary">{totalRevenue.toFixed(2)}€</div>
-                <p className="text-xs text-muted-foreground mt-1">Toutes taxes comprises</p>
+                <div className="text-2xl font-bold text-primary">{netRevenue.toFixed(2)}€</div>
+                <p className="text-xs text-muted-foreground mt-1">Brut: {totalRevenue.toFixed(2)}€</p>
+                <p className="text-xs text-red-600 mt-1">Remb: -{totalRefunds.toFixed(2)}€</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Total HT</CardTitle>
+                <CardTitle className="text-sm font-medium">CA Net HT</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{(totalRevenue - totalVAT).toFixed(2)}€</div>
-                <p className="text-xs text-muted-foreground mt-1">Hors taxes</p>
+                <div className="text-2xl font-bold text-blue-600">{(netRevenue - netVAT).toFixed(2)}€</div>
+                <p className="text-xs text-muted-foreground mt-1">Hors taxes nettes</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">TVA Totale</CardTitle>
+                <CardTitle className="text-sm font-medium">TVA Nette</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{totalVAT.toFixed(2)}€</div>
-                <p className="text-xs text-muted-foreground mt-1">À reverser</p>
+                <div className="text-2xl font-bold text-green-600">{netVAT.toFixed(2)}€</div>
+                <p className="text-xs text-muted-foreground mt-1">Collectée: {totalVAT.toFixed(2)}€</p>
+                <p className="text-xs text-red-600 mt-1">Remb: -{refundsVAT.toFixed(2)}€</p>
               </CardContent>
             </Card>
 
