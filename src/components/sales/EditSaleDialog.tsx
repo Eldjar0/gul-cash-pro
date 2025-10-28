@@ -46,13 +46,6 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
   };
 
   const handleRemoveItem = (index: number) => {
-    // Empêcher la suppression si c'est le dernier article (conformité légale)
-    if (items.length <= 1) {
-      toast.error('Impossible de supprimer le dernier article', {
-        description: 'Au moins 1 article doit rester dans le ticket (Art. 315bis CIR92)',
-      });
-      return;
-    }
     const newItems = items.filter((_, i) => i !== index);
     setItems(newItems);
   };
@@ -173,21 +166,23 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600" />
-            <DialogTitle className="text-amber-900">Correction de ticket</DialogTitle>
+            <AlertTriangle className="h-5 w-5 text-red-600" />
+            <DialogTitle className="text-red-900">⚖️ MODIFICATION DE DOCUMENT COMPTABLE</DialogTitle>
           </div>
           <DialogDescription className="space-y-2">
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p className="font-medium">
-                Cette fonction permet de corriger les erreurs de saisie conformément à l'Art. 315bis CIR92.
-              </p>
-              <div className="text-xs p-3 bg-amber-50 border border-amber-200 rounded space-y-1">
-                <p><strong>Règles de modification :</strong></p>
-                <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li>Un minimum d'1 article doit rester dans le ticket</li>
-                  <li>Les modifications sont autorisées pour corriger des erreurs de saisie</li>
-                  <li>Conservation légale obligatoire : 10 ans</li>
+            <div className="bg-red-50 border-2 border-red-300 p-4 rounded-lg space-y-3">
+              <div className="text-sm font-bold text-red-900">
+                ⚖️ OBLIGATIONS LÉGALES BELGES
+              </div>
+              <div className="text-xs text-red-800 space-y-2">
+                <ul className="list-disc list-inside space-y-1">
+                  <li><strong>Conservation obligatoire :</strong> 10 ans (Art. 315bis CIR92)</li>
+                  <li><strong>Suppression de documents :</strong> INTERDITE après clôture journalière</li>
+                  <li><strong>Modification de documents :</strong> AUTORISÉE uniquement le jour J avant clôture</li>
                 </ul>
+                <div className="mt-3 p-2 bg-red-100 border border-red-400 rounded font-bold">
+                  ⚠️ Sanctions : Amendes jusqu'à 25 000 € + poursuites pénales possibles
+                </div>
               </div>
             </div>
           </DialogDescription>
@@ -261,9 +256,8 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
                       variant="ghost"
                       size="sm"
                       onClick={() => handleRemoveItem(index)}
-                      disabled={items.length === 1}
-                      className="text-destructive hover:text-destructive disabled:opacity-30"
-                      title={items.length === 1 ? 'Minimum 1 article requis' : 'Supprimer cet article'}
+                      className="text-destructive hover:text-destructive"
+                      title="Supprimer cet article"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

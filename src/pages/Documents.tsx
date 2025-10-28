@@ -162,6 +162,21 @@ export default function Documents() {
   };
 
   const handleEditClick = (sale: any) => {
+    // Vérifier si la vente peut être modifiée (uniquement jour J avant clôture)
+    const saleDate = new Date(sale.date);
+    const today = new Date();
+    
+    // Réinitialiser les heures pour comparer seulement les dates
+    saleDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
+    if (saleDate.getTime() !== today.getTime()) {
+      toast.error('Modification interdite', {
+        description: '⚖️ Conformité Art. 315bis CIR92 : Les documents ne peuvent être modifiés qu\'avant la clôture du jour J',
+      });
+      return;
+    }
+    
     setSaleToEdit(sale);
     setEditDialogOpen(true);
   };
