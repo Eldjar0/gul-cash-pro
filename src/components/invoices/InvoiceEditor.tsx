@@ -418,7 +418,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-[90vw] md:max-w-[1000px] max-h-[95vh] p-0 overflow-hidden">
+      <DialogContent className="max-w-[95vw] sm:max-w-[90vw] md:max-w-[1000px] max-h-[95vh] p-0 overflow-hidden [&>button]:hidden">
         <div className="flex flex-col h-full max-h-[95vh]">
           {/* Header */}
           <div className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary to-primary-glow shadow-lg">
@@ -426,16 +426,26 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
                 {invoiceId ? 'Modifier la facture' : 'Nouvelle facture'}
               </h2>
-              <Button 
-                variant="secondary" 
-                size="lg" 
-                onClick={handleSave} 
-                disabled={loading} 
-                className="h-10 px-6 font-semibold shadow-md hover:shadow-lg"
-              >
-                <Save className="h-5 w-5 mr-2" />
-                Enregistrer
-              </Button>
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="secondary" 
+                  size="lg" 
+                  onClick={handleSave} 
+                  disabled={loading} 
+                  className="h-10 px-6 font-semibold shadow-md hover:shadow-lg"
+                >
+                  <Save className="h-5 w-5 mr-2" />
+                  Enregistrer
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => onOpenChange(false)} 
+                  className="h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 text-white border-2 border-white/30 hover:border-white/50 transition-all shadow-md hover:shadow-lg"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
           </div>
 
