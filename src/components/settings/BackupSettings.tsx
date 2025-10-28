@@ -66,61 +66,146 @@ export function BackupSettings() {
       // Import catégories
       if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) {
         console.log(`Import de ${data.categories.length} catégories...`);
-        const { error } = await supabase.from('categories').upsert(data.categories, { onConflict: 'id' });
+        const categories = data.categories.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          color: c.color ?? '#3B82F6',
+          icon: c.icon ?? null,
+          display_order: c.display_order ?? 0,
+          created_at: c.created_at,
+          updated_at: c.updated_at,
+        }));
+        const { error } = await supabase.from('categories').upsert(categories, { onConflict: 'id' });
         if (error) {
           console.error('Erreur catégories:', error);
           throw new Error(`Catégories: ${error.message}`);
         }
-        totalImported += data.categories.length;
-        console.log(`✓ ${data.categories.length} catégories importées`);
+        totalImported += categories.length;
+        console.log(`✓ ${categories.length} catégories importées`);
       }
 
       // Import clients
       if (data.customers && Array.isArray(data.customers) && data.customers.length > 0) {
         console.log(`Import de ${data.customers.length} clients...`);
-        const { error } = await supabase.from('customers').upsert(data.customers, { onConflict: 'id' });
+        const customers = data.customers.map((c: any) => ({
+          id: c.id,
+          loyalty_points: c.loyalty_points ?? 0,
+          is_active: c.is_active ?? true,
+          created_at: c.created_at,
+          updated_at: c.updated_at,
+          credit_blocked: c.credit_blocked ?? false,
+          name: c.name,
+          email: c.email ?? null,
+          phone: c.phone ?? null,
+          address: c.address ?? null,
+          city: c.city ?? null,
+          postal_code: c.postal_code ?? null,
+          vat_number: c.vat_number ?? null,
+          notes: c.notes ?? null,
+        }));
+        const { error } = await supabase.from('customers').upsert(customers, { onConflict: 'id' });
         if (error) {
           console.error('Erreur clients:', error);
           throw new Error(`Clients: ${error.message}`);
         }
-        totalImported += data.customers.length;
-        console.log(`✓ ${data.customers.length} clients importés`);
+        totalImported += customers.length;
+        console.log(`✓ ${customers.length} clients importés`);
       }
 
       // Import produits
       if (data.products && Array.isArray(data.products) && data.products.length > 0) {
         console.log(`Import de ${data.products.length} produits...`);
-        const { error } = await supabase.from('products').upsert(data.products, { onConflict: 'id' });
+        const products = data.products.map((p: any) => ({
+          id: p.id,
+          price: p.price,
+          cost_price: p.cost_price ?? null,
+          type: p.type ?? 'unit',
+          category_id: p.category_id ?? p.category?.id ?? null,
+          vat_rate: p.vat_rate ?? p.vatRate ?? 21,
+          stock: p.stock ?? 0,
+          min_stock: p.min_stock ?? 0,
+          is_active: p.is_active ?? true,
+          created_at: p.created_at,
+          updated_at: p.updated_at,
+          barcode: p.barcode ?? p.primary_barcode ?? null,
+          name: p.name,
+          description: p.description ?? null,
+          supplier: p.supplier ?? null,
+          image: p.image ?? null,
+          unit: p.unit ?? 'unité',
+        }));
+        const { error } = await supabase.from('products').upsert(products, { onConflict: 'id' });
         if (error) {
           console.error('Erreur produits:', error);
           throw new Error(`Produits: ${error.message}`);
         }
-        totalImported += data.products.length;
-        console.log(`✓ ${data.products.length} produits importés`);
+        totalImported += products.length;
+        console.log(`✓ ${products.length} produits importés`);
       }
 
       // Import ventes
       if (data.sales && Array.isArray(data.sales) && data.sales.length > 0) {
         console.log(`Import de ${data.sales.length} ventes...`);
-        const { error } = await supabase.from('sales').upsert(data.sales, { onConflict: 'id' });
+        const sales = data.sales.map((s: any) => ({
+          id: s.id,
+          date: s.date ?? s.created_at,
+          customer_id: s.customer_id ?? s.customer?.id ?? null,
+          cashier_id: s.cashier_id ?? null,
+          subtotal: s.subtotal,
+          total_vat: s.total_vat ?? s.totalVat,
+          total_discount: s.total_discount ?? 0,
+          total: s.total,
+          payment_method: s.payment_method ?? 'cash',
+          amount_paid: s.amount_paid ?? null,
+          change_amount: s.change_amount ?? 0,
+          is_invoice: !!s.is_invoice,
+          is_cancelled: !!s.is_cancelled,
+          created_at: s.created_at,
+          updated_at: s.updated_at,
+          payment_methods: s.payment_methods ?? null,
+          payment_split: s.payment_split ?? null,
+          due_date: s.due_date ?? null,
+          source: s.source ?? 'pos',
+          sale_number: s.sale_number ?? s.number ?? null,
+          notes: s.notes ?? null,
+          invoice_status: s.invoice_status ?? (s.is_invoice ? 'brouillon' : 'brouillon'),
+        }));
+        const { error } = await supabase.from('sales').upsert(sales, { onConflict: 'id' });
         if (error) {
           console.error('Erreur ventes:', error);
           throw new Error(`Ventes: ${error.message}`);
         }
-        totalImported += data.sales.length;
-        console.log(`✓ ${data.sales.length} ventes importées`);
+        totalImported += sales.length;
+        console.log(`✓ ${sales.length} ventes importées`);
       }
 
       // Import articles de vente
       if (data.sale_items && Array.isArray(data.sale_items) && data.sale_items.length > 0) {
         console.log(`Import de ${data.sale_items.length} articles...`);
-        const { error } = await supabase.from('sale_items').upsert(data.sale_items, { onConflict: 'id' });
+        const items = data.sale_items.map((i: any) => ({
+          id: i.id,
+          sale_id: i.sale_id ?? i.saleId,
+          product_id: i.product_id ?? i.product?.id ?? null,
+          product_name: i.product_name ?? i.product?.name,
+          product_barcode: i.product_barcode ?? i.product?.barcode ?? null,
+          quantity: i.quantity,
+          unit_price: i.unit_price ?? i.unitPrice,
+          original_price: i.original_price ?? i.originalPrice ?? i.unit_price ?? null,
+          vat_rate: i.vat_rate ?? i.vatRate,
+          discount_type: i.discount_type ?? i.discountType ?? null,
+          discount_value: i.discount_value ?? i.discountValue ?? 0,
+          subtotal: i.subtotal,
+          vat_amount: i.vat_amount ?? i.vatAmount,
+          total: i.total,
+          created_at: i.created_at,
+        }));
+        const { error } = await supabase.from('sale_items').upsert(items, { onConflict: 'id' });
         if (error) {
           console.error('Erreur articles:', error);
           throw new Error(`Articles: ${error.message}`);
         }
-        totalImported += data.sale_items.length;
-        console.log(`✓ ${data.sale_items.length} articles importés`);
+        totalImported += items.length;
+        console.log(`✓ ${items.length} articles importés`);
       }
 
       console.log(`Import terminé: ${totalImported} enregistrements au total`);
