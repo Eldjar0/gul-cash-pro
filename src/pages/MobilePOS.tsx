@@ -1157,7 +1157,8 @@ export default function MobilePOS() {
         open={mixedPaymentDialogOpen}
         onOpenChange={setMixedPaymentDialogOpen}
         total={totals.total}
-        onConfirmPayment={(splits, totalPaid) => {
+        onConfirmPayment={(splits) => {
+          const totalPaid = splits.reduce((sum, s) => sum + s.amount, 0);
           handlePaymentComplete({
             method: 'cash',
             methods: splits.map(s => s.method),
@@ -1166,12 +1167,13 @@ export default function MobilePOS() {
             change: 0
           });
         }}
+        customerId={selectedCustomer?.id}
       />
 
       <DiscountDialog
         open={discountDialogOpen}
         onOpenChange={setDiscountDialogOpen}
-        onConfirm={handleDiscountApply}
+        onApply={handleDiscountApply}
       />
 
       <CustomerCreditDialog
@@ -1179,8 +1181,8 @@ export default function MobilePOS() {
         onOpenChange={setCreditDialogOpen}
         customerId={selectedCustomer?.id || ''}
         customerName={selectedCustomer?.name || ''}
-        amount={totals.total}
-        onConfirm={() => {
+        totalAmount={totals.total}
+        onApply={() => {
           handlePaymentComplete({
             method: 'customer_credit',
             methods: ['customer_credit'],
@@ -1217,15 +1219,29 @@ export default function MobilePOS() {
         open={closeDayDialogOpen}
         onOpenChange={setCloseDayDialogOpen}
         onConfirm={() => setCloseDayDialogOpen(false)}
-        reportData={null}
-        todayReport={todayReport || undefined}
+        reportData={{
+          totalSales: 0,
+          totalCash: 0,
+          totalCard: 0,
+          totalMobile: 0,
+          salesCount: 0,
+          vatByRate: {},
+        }}
+        todayReport={todayReport || null}
       />
 
       <ReportXDialog
         open={reportXDialogOpen}
         onOpenChange={setReportXDialogOpen}
-        reportData={null}
-        todayReport={todayReport || undefined}
+        reportData={{
+          totalSales: 0,
+          totalCash: 0,
+          totalCard: 0,
+          totalMobile: 0,
+          salesCount: 0,
+          vatByRate: {},
+        }}
+        todayReport={todayReport || null}
       />
 
       <RefundDialog
