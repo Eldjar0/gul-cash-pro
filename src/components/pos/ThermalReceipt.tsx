@@ -8,6 +8,7 @@ type DiscountType = 'percentage' | 'amount';
 interface CartItem {
   product: Product;
   quantity: number;
+  custom_price?: number;
   discount?: {
     type: DiscountType;
     value: number;
@@ -61,6 +62,30 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
   const isInvoice = sale.is_invoice || false;
   const saleDate = new Date(sale.date || new Date());
   const { settings } = useCompanySettings();
+  
+  // Calculer le total des réductions
+  const totalReductions = sale.items.reduce((acc, item) => {
+    if (!item.product || item.is_gift) return acc;
+    
+    let reduction = 0;
+    const basePrice = item.custom_price || item.product.price;
+    
+    // Réduction par prix spécial
+    if (item.custom_price && item.custom_price < item.product.price) {
+      reduction += (item.product.price - item.custom_price) * item.quantity;
+    }
+    
+    // Réduction par discount
+    if (item.discount) {
+      if (item.discount.type === 'percentage') {
+        reduction += (basePrice * item.quantity * item.discount.value) / 100;
+      } else {
+        reduction += item.discount.value;
+      }
+    }
+    
+    return acc + reduction;
+  }, 0);
   
   // Calculer TVA par taux (comme Lidl)
   const vatByRate = sale.items.reduce((acc, item) => {
@@ -202,7 +227,11 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           
           const unitDisplay = item.product.type === 'weight' ? 'kg' : 'pc';
           const qtyDisplay = item.quantity.toFixed(item.product.type === 'weight' ? 3 : 0);
-          const pricePerUnit = item.product.price.toFixed(2);
+          
+          // Prix de base (peut être custom_price si défini)
+          const basePrice = item.product.price;
+          const effectivePrice = item.custom_price || basePrice;
+          const hasSpecialPrice = item.custom_price && item.custom_price !== basePrice;
           
           return (
             <div key={index} style={{ marginBottom: '3px' }}>
@@ -244,7 +273,14 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                 fontSize: '11px',
                 fontWeight: '800'
               }}>
-                {qtyDisplay} {unitDisplay} x {pricePerUnit}€
+                {qtyDisplay} {unitDisplay} x {hasSpecialPrice && (
+                  <span style={{ textDecoration: 'line-through', marginRight: '4px' }}>
+                    {basePrice.toFixed(2)}€
+                  </span>
+                )}
+                <span style={hasSpecialPrice ? { fontWeight: '900', color: '#d97706' } : {}}>
+                  {effectivePrice.toFixed(2)}€
+                </span>
                 {item.discount && !item.is_gift && (
                   <span style={{ fontStyle: 'italic', marginLeft: '5px' }}>
                     REM -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
@@ -257,6 +293,24 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       </div>
 
       <div style={{ borderTop: '1px solid #000', margin: '4px 0' }}></div>
+
+      {/* Total des réductions si présentes */}
+      {totalReductions > 0 && (
+        <div style={{ padding: '4px 0', marginBottom: '4px' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            fontSize: '14px', 
+            fontWeight: '900', 
+            gap: '8px', 
+            paddingRight: '24px',
+            color: '#16a34a'
+          }}>
+            <span>TOTAL RÉDUCTIONS</span>
+            <span style={{ whiteSpace: 'nowrap' }}>-{totalReductions.toFixed(2)}€</span>
+          </div>
+        </div>
+      )}
 
       {/* Total principal - simplifié */}
       <div style={{ padding: '4px 0', margin: '4px 0' }}>
