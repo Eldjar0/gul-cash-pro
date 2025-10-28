@@ -150,6 +150,17 @@ export default function Documents() {
   const deleteRefund = useDeleteRefund();
   const { settings: companySettings } = useCompanySettings();
 
+  // Helper pour trouver les remboursements liés à une vente
+  const getRefundsForSale = (saleId: string) => {
+    return refunds?.filter(refund => refund.original_sale_id === saleId) || [];
+  };
+
+  // Helper pour trouver la vente originale d'un remboursement
+  const getSaleForRefund = (refundOriginalSaleId: string | null) => {
+    if (!refundOriginalSaleId) return null;
+    return sales?.find(sale => sale.id === refundOriginalSaleId) || null;
+  };
+
   const handleCancelClick = (saleId: string) => {
     setSaleToDelete(saleId);
 
@@ -335,6 +346,22 @@ export default function Documents() {
   const todayRefundsTotal = useMemo(() => {
     return todayRefunds.reduce((sum, r) => sum + r.total, 0);
   }, [todayRefunds]);
+
+  // Calcul des totaux en déduisant les remboursements
+  const todayTotalWithRefunds = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todaySalesFiltered = sales.filter(sale => {
+      if (sale.is_invoice || sale.is_cancelled) return false;
+      const saleDate = new Date(sale.date);
+      saleDate.setHours(0, 0, 0, 0);
+      return saleDate.getTime() === today.getTime();
+    });
+    
+    const salesTotal = todaySalesFiltered.reduce((sum, s) => sum + s.total, 0);
+    return salesTotal - todayRefundsTotal;
+  }, [sales, todayRefundsTotal]);
 
   // Pagination
   const paginatedSales = useMemo(() => {
@@ -691,8 +718,9 @@ export default function Documents() {
           <Card className="p-6 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-emerald-100 text-sm font-medium">Total Aujourd'hui</p>
-                <p className="text-3xl font-bold mt-1">{totalToday.toFixed(2)}€</p>
+                <p className="text-emerald-100 text-sm font-medium">Total Aujourd'hui (Net)</p>
+                <p className="text-3xl font-bold mt-1">{todayTotalWithRefunds.toFixed(2)}€</p>
+                <p className="text-emerald-100 text-xs mt-1">Remb: -{todayRefundsTotal.toFixed(2)}€</p>
               </div>
               <div className="p-3 bg-white/20 rounded-lg">
                 <Euro className="h-6 w-6" />
@@ -880,7 +908,7 @@ export default function Documents() {
                     <TableBody>
                       {paginatedSales.map((sale) => (
                         <TableRow key={sale.id} className={sale.is_cancelled ? 'bg-red-50 opacity-60' : ''}>
-                          <TableCell className="font-mono font-semibold">
+                           <TableCell className="font-mono font-semibold">
                             <div className="flex flex-col gap-1">
                               <div className="flex items-center gap-2">
                                 <span>{sale.sale_number}</span>
@@ -888,6 +916,12 @@ export default function Documents() {
                                   <Badge variant="outline" className="gap-1 text-xs">
                                     <Smartphone className="h-3 w-3" />
                                     Mobile
+                                  </Badge>
+                                )}
+                                {getRefundsForSale(sale.id).length > 0 && (
+                                  <Badge variant="destructive" className="gap-1 text-xs">
+                                    <Undo2 className="h-3 w-3" />
+                                    Remboursée
                                   </Badge>
                                 )}
                               </div>
@@ -1499,11 +1533,17 @@ export default function Documents() {
                   <Card key={refund.id} className="p-4 bg-white hover:shadow-lg transition-shadow">
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <Badge variant="outline" className="font-mono">
                             {refund.refund_number}
                           </Badge>
                           <Badge variant="destructive">Remboursement</Badge>
+                          {refund.original_sale_id && getSaleForRefund(refund.original_sale_id) && (
+                            <Badge variant="outline" className="gap-1">
+                              <Receipt className="h-3 w-3" />
+                              Vente: {getSaleForRefund(refund.original_sale_id)?.sale_number}
+                            </Badge>
+                          )}
                         </div>
                         
                         <div className="flex items-center gap-2 text-muted-foreground">
