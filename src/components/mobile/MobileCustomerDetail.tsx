@@ -6,12 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCustomers } from '@/hooks/useCustomers';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useCustomers, useUpdateCustomer } from '@/hooks/useCustomers';
 import { useCustomerOrdersByCustomerId } from '@/hooks/useCustomerOrders';
 import { useCustomerCreditAccount } from '@/hooks/useCustomerCredit';
 import { 
   User, Phone, Mail, MapPin, CreditCard, ShoppingCart, 
-  Edit, Plus, Clock, CheckCircle, XCircle 
+  Edit, Plus, Clock, CheckCircle, XCircle, FileText 
 } from 'lucide-react';
 import { CustomerCreditManagementDialog } from '@/components/customers/CustomerCreditManagementDialog';
 import { MobileCustomerSpecialPrices } from './MobileCustomerSpecialPrices';
@@ -24,8 +27,52 @@ export function MobileCustomerDetail() {
   const { data: orders = [] } = useCustomerOrdersByCustomerId(id);
   const { data: creditData } = useCustomerCreditAccount(id);
   const [creditDialogOpen, setCreditDialogOpen] = useState(false);
+  const [editSheetOpen, setEditSheetOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    postal_code: '',
+    vat_number: '',
+    notes: ''
+  });
+  
+  const updateCustomer = useUpdateCustomer();
 
   const customer = customers.find(c => c.id === id);
+  
+  const handleOpenEdit = () => {
+    if (customer) {
+      setEditForm({
+        name: customer.name || '',
+        email: customer.email || '',
+        phone: customer.phone || '',
+        address: customer.address || '',
+        city: customer.city || '',
+        postal_code: customer.postal_code || '',
+        vat_number: customer.vat_number || '',
+        notes: customer.notes || ''
+      });
+      setEditSheetOpen(true);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!customer) return;
+    
+    try {
+      await updateCustomer.mutateAsync({
+        id: customer.id,
+        ...editForm
+      });
+      setEditSheetOpen(false);
+      toast.success('Client modifié avec succès');
+    } catch (error) {
+      toast.error('Erreur lors de la modification');
+    }
+  };
   
   if (!customer) {
     return (
@@ -63,7 +110,7 @@ export function MobileCustomerDetail() {
     <MobileLayout 
       title={customer.name}
       actions={
-        <Button size="sm" variant="outline" onClick={() => toast.info('Modifier - à implémenter')}>
+        <Button size="sm" variant="outline" onClick={handleOpenEdit}>
           <Edit className="h-4 w-4" />
         </Button>
       }
@@ -111,6 +158,14 @@ export function MobileCustomerDetail() {
                   <span className="text-foreground">
                     {customer.address}
                     {customer.city && `, ${customer.postal_code} ${customer.city}`}
+                  </span>
+                </div>
+              )}
+              {customer.vat_number && (
+                <div className="flex items-center gap-2 text-sm">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-foreground font-medium">
+                    TVA: {customer.vat_number}
                   </span>
                 </div>
               )}
@@ -242,6 +297,112 @@ export function MobileCustomerDetail() {
         customerId={customer.id}
         customerName={customer.name}
       />
+
+      <Sheet open={editSheetOpen} onOpenChange={setEditSheetOpen}>
+        <SheetContent side="bottom" className="h-[90vh]">
+          <SheetHeader>
+            <SheetTitle>Modifier le client</SheetTitle>
+          </SheetHeader>
+          <ScrollArea className="h-[calc(90vh-8rem)] mt-4">
+            <div className="space-y-4 pb-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nom *</Label>
+                <Input
+                  id="name"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="phone">Téléphone</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="vat_number">Numéro TVA</Label>
+                <Input
+                  id="vat_number"
+                  value={editForm.vat_number}
+                  onChange={(e) => setEditForm({ ...editForm, vat_number: e.target.value })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="address">Adresse</Label>
+                <Input
+                  id="address"
+                  value={editForm.address}
+                  onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="postal_code">Code postal</Label>
+                  <Input
+                    id="postal_code"
+                    value={editForm.postal_code}
+                    onChange={(e) => setEditForm({ ...editForm, postal_code: e.target.value })}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="city">Ville</Label>
+                  <Input
+                    id="city"
+                    value={editForm.city}
+                    onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Input
+                  id="notes"
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                />
+              </div>
+            </div>
+          </ScrollArea>
+          
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setEditSheetOpen(false)}
+              >
+                Annuler
+              </Button>
+              <Button 
+                className="flex-1"
+                onClick={handleSaveEdit}
+                disabled={!editForm.name || updateCustomer.isPending}
+              >
+                {updateCustomer.isPending ? 'Enregistrement...' : 'Enregistrer'}
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </MobileLayout>
   );
 }
