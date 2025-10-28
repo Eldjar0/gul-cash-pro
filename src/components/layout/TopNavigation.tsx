@@ -33,6 +33,9 @@ import {
 } from '@/components/ui/navigation-menu';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 interface TopNavigationProps {
   onLockScreen: () => void;
@@ -42,10 +45,30 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [remoteScanOpen, setRemoteScanOpen] = useState(false);
+  const [pinDialogOpen, setPinDialogOpen] = useState(false);
+  const [pinCode, setPinCode] = useState('');
+  const [targetRoute, setTargetRoute] = useState<string>('');
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
+  };
+
+  const handleProtectedNavigation = (route: string) => {
+    setTargetRoute(route);
+    setPinCode('');
+    setPinDialogOpen(true);
+  };
+
+  const handlePinSubmit = () => {
+    if (pinCode === '3679') {
+      setPinDialogOpen(false);
+      setPinCode('');
+      navigate(targetRoute);
+    } else {
+      toast.error('Code incorrect');
+      setPinCode('');
+    }
   };
 
 
@@ -73,7 +96,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           
           {/* Bouton Documents */}
           <Button
-            onClick={() => navigate("/documents")}
+            onClick={() => handleProtectedNavigation("/documents")}
             className="h-10 px-2 flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs whitespace-nowrap"
           >
             <FileText className="h-4 w-4" />
@@ -86,7 +109,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               {/* Statistiques - Bouton direct */}
               <NavigationMenuItem>
                 <Button
-                  onClick={() => navigate("/stats")}
+                  onClick={() => handleProtectedNavigation("/stats")}
                   className="h-10 px-2 flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white font-semibold text-xs whitespace-nowrap"
                 >
                   <BarChart3 className="h-4 w-4" />
@@ -128,7 +151,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               <NavigationMenuItem>
                 <Button
                   variant="ghost"
-                  onClick={() => navigate("/settings")}
+                  onClick={() => handleProtectedNavigation("/settings")}
                   className="h-10 px-2 flex items-center gap-1.5 bg-slate-500 hover:bg-slate-600 text-white font-semibold text-xs whitespace-nowrap"
                 >
                   <Settings className="h-4 w-4" />
@@ -172,6 +195,57 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
       </div>
 
       <RemoteScanDialog open={remoteScanOpen} onOpenChange={setRemoteScanOpen} />
+      
+      {/* Dialog de vérification du code PIN */}
+      <Dialog open={pinDialogOpen} onOpenChange={setPinDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-primary" />
+              Code d'accès requis
+            </DialogTitle>
+            <DialogDescription>
+              Entrez le code PIN pour accéder à cette section
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              type="password"
+              inputMode="numeric"
+              placeholder="Entrez le code (4 chiffres)"
+              value={pinCode}
+              onChange={(e) => setPinCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && pinCode.length === 4) {
+                  handlePinSubmit();
+                }
+              }}
+              className="text-center text-2xl tracking-widest"
+              maxLength={4}
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setPinDialogOpen(false);
+                setPinCode('');
+              }}
+              className="flex-1"
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handlePinSubmit}
+              disabled={pinCode.length !== 4}
+              className="flex-1 bg-primary"
+            >
+              Valider
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </nav>
   );
 }
