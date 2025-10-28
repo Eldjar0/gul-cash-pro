@@ -430,14 +430,6 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                 <Save className="h-4 w-4 mr-2" />
                 Enregistrer
               </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => onOpenChange(false)} 
-                className="text-white hover:bg-white/20 h-9 w-9"
-              >
-                <X className="h-5 w-5" />
-              </Button>
             </div>
           </div>
 
