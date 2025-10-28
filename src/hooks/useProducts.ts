@@ -352,3 +352,24 @@ export const useAdvancedSearchProducts = (params: AdvancedSearchParams) => {
     staleTime: 30000,
   });
 };
+
+export const useSuppliers = () => {
+  return useQuery({
+    queryKey: ['suppliers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('supplier')
+        .eq('is_active', true)
+        .not('supplier', 'is', null)
+        .order('supplier');
+
+      if (error) throw error;
+      
+      // Extract unique suppliers
+      const uniqueSuppliers = [...new Set(data.map(p => p.supplier).filter(Boolean))] as string[];
+      return uniqueSuppliers;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+};
