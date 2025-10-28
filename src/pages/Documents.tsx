@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -41,6 +42,7 @@ import {
   Package,
   Filter,
   FileDown,
+  X,
 } from 'lucide-react';
 import { useSales, useCancelSale, useRestoreSale } from '@/hooks/useSales';
 import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
@@ -130,6 +132,10 @@ export default function Documents() {
   const [newStatus, setNewStatus] = useState<string>('');
   const [invoiceEditorOpen, setInvoiceEditorOpen] = useState(false);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | undefined>(undefined);
+  
+  // Mode sélection pour créer une facture
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
   
   // Pagination et filtres
   const [salesPage, setSalesPage] = useState(1);
@@ -643,6 +649,131 @@ export default function Documents() {
     await downloadInvoicePDF(invoiceData);
   };
 
+  // Gestion de la sélection de tickets pour créer une facture
+  const handleToggleSelection = (saleId: string) => {
+    setSelectedTickets(prev => 
+      prev.includes(saleId) 
+        ? prev.filter(id => id !== saleId)
+        : [...prev, saleId]
+    );
+  };
+
+  const handleCancelSelection = () => {
+    setSelectionMode(false);
+    setSelectedTickets([]);
+  };
+
+  const handleCreateInvoiceFromTickets = async () => {
+    if (selectedTickets.length === 0) {
+      toast.error('Veuillez sélectionner au moins un ticket');
+      return;
+    }
+
+    // Récupérer toutes les ventes sélectionnées avec leurs items
+    const { data: selectedSales, error } = await supabase
+      .from('sales')
+      .select('*, sale_items(*), customers(*)')
+      .in('id', selectedTickets)
+      .eq('is_invoice', false)
+      .eq('is_cancelled', false);
+
+    if (error || !selectedSales || selectedSales.length === 0) {
+      toast.error('Erreur lors de la récupération des tickets');
+      return;
+    }
+
+    // Vérifier que tous les tickets ont le même client ou pas de client
+    const customerIds = selectedSales.map(s => s.customer_id).filter(Boolean);
+    const uniqueCustomerIds = [...new Set(customerIds)];
+    
+    if (uniqueCustomerIds.length > 1) {
+      toast.error('Les tickets sélectionnés doivent avoir le même client');
+      return;
+    }
+
+    const customerId = uniqueCustomerIds[0] || null;
+
+    try {
+      // Générer un numéro de facture
+      const { data: invoiceNumber, error: numberError } = await supabase.rpc('generate_sale_number', { 
+        is_invoice_param: true 
+      });
+
+      if (numberError) throw numberError;
+
+      // Calculer les totaux
+      let subtotal = 0;
+      let totalVat = 0;
+      let total = 0;
+      const allItems: any[] = [];
+
+      selectedSales.forEach(sale => {
+        subtotal += sale.subtotal;
+        totalVat += sale.total_vat;
+        total += sale.total;
+        
+        if (sale.sale_items) {
+          allItems.push(...sale.sale_items);
+        }
+      });
+
+      // Créer la facture
+      const { data: invoice, error: invoiceError } = await supabase
+        .from('sales')
+        .insert({
+          sale_number: invoiceNumber as string,
+          customer_id: customerId as string | undefined,
+          cashier_id: selectedSales[0].cashier_id as string | undefined,
+          subtotal,
+          total_vat: totalVat,
+          total_discount: 0,
+          total,
+          payment_method: 'card' as const,
+          is_invoice: true,
+          invoice_status: 'brouillon',
+          is_cancelled: false,
+        } as any)
+        .select()
+        .single();
+
+      if (invoiceError) throw invoiceError;
+
+      // Ajouter les items à la facture
+      const invoiceItems = allItems.map(item => ({
+        sale_id: invoice.id,
+        product_id: item.product_id,
+        product_name: item.product_name,
+        product_barcode: item.product_barcode,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        vat_rate: item.vat_rate,
+        discount_type: item.discount_type,
+        discount_value: item.discount_value,
+        subtotal: item.subtotal,
+        vat_amount: item.vat_amount,
+        total: item.total,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('sale_items')
+        .insert(invoiceItems);
+
+      if (itemsError) throw itemsError;
+
+      toast.success(`Facture ${invoiceNumber} créée à partir de ${selectedTickets.length} ticket(s)`);
+      
+      // Réinitialiser la sélection
+      setSelectionMode(false);
+      setSelectedTickets([]);
+      
+      // Rafraîchir les données
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Erreur création facture:', error);
+      toast.error('Erreur lors de la création de la facture');
+    }
+  };
+
   const getTotalsByDate = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -800,21 +931,34 @@ export default function Documents() {
             <Card className="p-4 bg-white">
               <div className="flex flex-col md:flex-row gap-3">
                 <div className="flex-1 flex gap-2">
-                  <Select value={dateFilter} onValueChange={(value) => { setDateFilter(value); setSalesPage(1); }}>
-                    <SelectTrigger className="w-[200px]">
-                      <Filter className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Période" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Toutes les dates</SelectItem>
-                      <SelectItem value="today">Aujourd'hui</SelectItem>
-                      <SelectItem value="yesterday">Hier</SelectItem>
-                      <SelectItem value="week">Cette semaine</SelectItem>
-                      <SelectItem value="month">Ce mois</SelectItem>
-                      <SelectItem value="quarter">Ce trimestre</SelectItem>
-                      <SelectItem value="custom">Personnalisé</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {!selectionMode && (
+                    <>
+                      <Select value={dateFilter} onValueChange={(value) => { setDateFilter(value); setSalesPage(1); }}>
+                        <SelectTrigger className="w-[200px]">
+                          <Filter className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Période" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Toutes les dates</SelectItem>
+                          <SelectItem value="today">Aujourd'hui</SelectItem>
+                          <SelectItem value="yesterday">Hier</SelectItem>
+                          <SelectItem value="week">Cette semaine</SelectItem>
+                          <SelectItem value="month">Ce mois</SelectItem>
+                          <SelectItem value="quarter">Ce trimestre</SelectItem>
+                          <SelectItem value="custom">Personnalisé</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </>
+                  )}
+                  
+                  {selectionMode && (
+                    <div className="flex items-center gap-3 flex-1 bg-blue-50 p-3 rounded-lg border-2 border-blue-200">
+                      <CheckCircle className="h-5 w-5 text-blue-600" />
+                      <span className="font-semibold text-blue-900">
+                        {selectedTickets.length} ticket(s) sélectionné(s)
+                      </span>
+                    </div>
+                  )}
                   
                   {dateFilter === 'custom' && (
                     <>
@@ -844,30 +988,63 @@ export default function Documents() {
                   )}
                 </div>
                 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-2">
-                      <FileDown className="h-4 w-4" />
-                      Exporter
+                {!selectionMode ? (
+                  <>
+                    <Button 
+                      variant="default" 
+                      onClick={() => setSelectionMode(true)}
+                      className="gap-2 bg-blue-600 hover:bg-blue-700"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Créer facture
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 bg-background z-50">
-                    <DropdownMenuLabel>Formats disponibles</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleExportSalesPDF}>
-                      <FileDown className="h-4 w-4 mr-2" />
-                      PDF (Art. 315bis CIR92)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportSalesXML}>
-                      <FileDown className="h-4 w-4 mr-2" />
-                      XML Standard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportSalesCSV}>
-                      <FileDown className="h-4 w-4 mr-2" />
-                      CSV (Excel)
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="gap-2">
+                          <FileDown className="h-4 w-4" />
+                          Exporter
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 bg-background z-50">
+                        <DropdownMenuLabel>Formats disponibles</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleExportSalesPDF}>
+                          <FileDown className="h-4 w-4 mr-2" />
+                          PDF (Art. 315bis CIR92)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportSalesXML}>
+                          <FileDown className="h-4 w-4 mr-2" />
+                          XML Standard
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportSalesCSV}>
+                          <FileDown className="h-4 w-4 mr-2" />
+                          CSV (Excel)
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </>
+                ) : (
+                  <>
+                    <Button 
+                      variant="default" 
+                      onClick={handleCreateInvoiceFromTickets}
+                      disabled={selectedTickets.length === 0}
+                      className="gap-2 bg-green-600 hover:bg-green-700"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Générer facture ({selectedTickets.length})
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={handleCancelSelection}
+                      className="gap-2"
+                    >
+                      <X className="h-4 w-4" />
+                      Annuler
+                    </Button>
+                  </>
+                )}
               </div>
             </Card>
 
@@ -889,19 +1066,29 @@ export default function Documents() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        {selectionMode && <TableHead className="w-[50px]">Select</TableHead>}
                         <TableHead className="min-w-[120px]">Numéro</TableHead>
                         <TableHead className="min-w-[140px]">Date</TableHead>
                         <TableHead className="min-w-[100px]">Type</TableHead>
                         <TableHead className="min-w-[80px]">Articles</TableHead>
                         <TableHead className="min-w-[100px]">Paiement</TableHead>
                         <TableHead className="text-right min-w-[80px]">Total</TableHead>
-                        <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+                        {!selectionMode && <TableHead className="text-right min-w-[80px]">Actions</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedSales.map((sale) => (
                         <TableRow key={sale.id} className={sale.is_cancelled ? 'bg-red-50 opacity-60' : ''}>
-                           <TableCell className="font-mono font-semibold">
+                          {selectionMode && (
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedTickets.includes(sale.id)}
+                                onCheckedChange={() => handleToggleSelection(sale.id)}
+                                disabled={sale.is_cancelled}
+                              />
+                            </TableCell>
+                          )}
+                          <TableCell className="font-mono font-semibold">
                             <div className="flex flex-col gap-1">
                               <div className="flex items-center gap-2">
                                 <span>{sale.sale_number}</span>
@@ -955,50 +1142,52 @@ export default function Documents() {
                               <span>{sale.total.toFixed(2)}€</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex gap-1 justify-end">
-                              <Button variant="ghost" size="sm" onClick={() => handleViewReceipt(sale)} className="h-8" title="Voir le ticket">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              {sale.is_cancelled ? (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  onClick={() => handleRestoreClick(sale.id)} 
-                                  className="h-8 text-green-600 hover:text-green-700"
-                                  title="Restaurer ce ticket"
-                                >
-                                  <RotateCcw className="h-4 w-4" />
+                          {!selectionMode && (
+                            <TableCell className="text-right">
+                              <div className="flex gap-1 justify-end">
+                                <Button variant="ghost" size="sm" onClick={() => handleViewReceipt(sale)} className="h-8" title="Voir le ticket">
+                                  <Eye className="h-4 w-4" />
                                 </Button>
-                              ) : (
-                                <>
+                                {sale.is_cancelled ? (
                                   <Button 
                                     variant="ghost" 
                                     size="sm" 
-                                    onClick={() => handleEditClick(sale)} 
-                                    className="h-8 text-blue-600 hover:text-blue-700"
-                                    title="Modifier ce ticket"
+                                    onClick={() => handleRestoreClick(sale.id)} 
+                                    className="h-8 text-green-600 hover:text-green-700"
+                                    title="Restaurer ce ticket"
                                   >
-                                    <Edit className="h-4 w-4" />
+                                    <RotateCcw className="h-4 w-4" />
                                   </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => handleCancelClick(sale.id)} 
-                                    className="h-8 text-orange-600 hover:text-orange-700"
-                                    title="Annuler ce ticket"
-                                  >
-                                    <XCircle className="h-4 w-4" />
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </TableCell>
+                                ) : (
+                                  <>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      onClick={() => handleEditClick(sale)} 
+                                      className="h-8 text-blue-600 hover:text-blue-700"
+                                      title="Modifier ce ticket"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      onClick={() => handleCancelClick(sale.id)} 
+                                      className="h-8 text-orange-600 hover:text-orange-700"
+                                      title="Annuler ce ticket"
+                                    >
+                                      <XCircle className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </TableCell>
+                          )}
                         </TableRow>
                       ))}
                       {paginatedSales.length === 0 && (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Aucune vente trouvée</TableCell>
+                          <TableCell colSpan={selectionMode ? 8 : 7} className="text-center py-8 text-muted-foreground">Aucune vente trouvée</TableCell>
                         </TableRow>
                       )}
                     </TableBody>

@@ -1258,123 +1258,6 @@ const Index = () => {
     }
   };
 
-  // Gestionnaire pour convertir une vente en facture
-  const handleConvertToInvoice = async (method: 'cash' | 'card' | 'mobile' | 'customer_credit', amountPaid?: number) => {
-    if (cart.length === 0) {
-      toast.error('Panier vide');
-      setPaymentDialogOpen(false);
-      return;
-    }
-
-    if (!selectedCustomer) {
-      toast.error('Veuillez sélectionner un client pour générer une facture');
-      return;
-    }
-
-    if (!isDayOpenEffective) {
-      toast.error('Veuillez ouvrir la journée avant d\'effectuer une vente');
-      setPaymentDialogOpen(false);
-      return;
-    }
-
-    let dbPaymentMethod: 'cash' | 'card' | 'mobile' | 'check' | 'voucher' = 'cash';
-    if (method === 'customer_credit') {
-      dbPaymentMethod = 'voucher';
-    } else {
-      dbPaymentMethod = method as 'cash' | 'card' | 'mobile' | 'check';
-    }
-
-    const saleData = {
-      subtotal: totals.subtotal,
-      total_vat: totals.totalVat,
-      total_discount: totals.totalDiscount,
-      total: totals.total,
-      payment_method: dbPaymentMethod,
-      amount_paid: amountPaid || totals.total,
-      change_amount: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
-      is_invoice: true, // Toujours une facture
-      invoice_status: 'brouillon',
-      is_cancelled: false,
-      cashier_id: user?.id,
-      customer_id: selectedCustomer.id,
-      items: cart.map(item => ({
-        product_id: item.product.id,
-        product_name: item.product.name,
-        product_barcode: item.product.barcode,
-        quantity: item.quantity,
-        unit_price: item.custom_price ?? item.product.price,
-        vat_rate: item.product.vat_rate,
-        discount_type: item.discount?.type,
-        discount_value: item.discount?.value || 0,
-        subtotal: item.subtotal,
-        vat_amount: item.vatAmount,
-        total: item.total
-      }))
-    };
-
-    try {
-      const sale = await createSale.mutateAsync({ sale: saleData });
-
-      const saleForReceipt = {
-        ...sale,
-        saleNumber: sale.sale_number,
-        date: sale.date,
-        items: cart,
-        subtotal: totals.subtotal,
-        totalVat: totals.totalVat,
-        totalDiscount: totals.totalDiscount,
-        total: totals.total,
-        paymentMethod: method,
-        amountPaid: amountPaid || totals.total,
-        change: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
-        is_invoice: true,
-        customer: selectedCustomer
-      };
-      setCurrentSale(saleForReceipt);
-
-      const completedState = {
-        items: [],
-        status: 'completed',
-        timestamp: Date.now()
-      };
-      displayChannelRef.current.postMessage(completedState);
-      localStorage.setItem('customer_display_state', JSON.stringify(completedState));
-
-      const timeoutId = setTimeout(() => {
-        const idleState = {
-          items: [],
-          status: 'idle',
-          timestamp: Date.now()
-        };
-        try {
-          displayChannelRef.current.postMessage(idleState);
-          localStorage.setItem('customer_display_state', JSON.stringify(idleState));
-        } catch (e) {
-          // Erreur silencieuse
-        }
-      }, 5000);
-
-      setCart([]);
-      setGlobalDiscount(null);
-      setAppliedPromoCode(null);
-      setAppliedAutoPromotion(null);
-      setIsInvoiceMode(false);
-      setSelectedCustomer(null);
-      setPaymentDialogOpen(false);
-      setReceiptDialogOpen(true);
-      setTimeout(() => {
-        printThermalReceipt();
-      }, 300);
-
-      toast.success('Facture générée');
-    } catch (error: any) {
-      console.error('Erreur création facture:', error);
-      toast.error('Erreur', {
-        description: error?.message || 'Erreur lors de la création de la facture'
-      });
-    }
-  };
-
   const handleSelectCustomer = (customer: Customer) => {
     if (!customer || !customer.id) {
       toast.error('Client invalide');
@@ -2358,7 +2241,6 @@ const Index = () => {
         }}
         onOpenCustomerCreditDialog={() => setCustomerCreditDialogOpen(true)}
         customerId={selectedCustomer?.id}
-        onConvertToInvoice={handleConvertToInvoice}
       />
 
       <MixedPaymentDialog open={mixedPaymentDialogOpen} onOpenChange={setMixedPaymentDialogOpen} total={totals.total} onConfirmPayment={handleMixedPayment} customerId={selectedCustomer?.id} />

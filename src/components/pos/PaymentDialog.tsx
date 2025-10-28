@@ -9,9 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split, X, FileText } from 'lucide-react';
+import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split, X } from 'lucide-react';
 
 type PaymentMethod = 'cash' | 'card' | 'mobile' | 'customer_credit';
 
@@ -28,7 +26,6 @@ interface PaymentDialogProps {
   onMixedPayment?: () => void;
   onOpenCustomerCreditDialog?: () => void;
   customerId?: string;
-  onConvertToInvoice?: (method: PaymentMethod, amountPaid?: number) => void;
 }
 
 export function PaymentDialog({ 
@@ -38,13 +35,11 @@ export function PaymentDialog({
   onConfirmPayment, 
   onMixedPayment,
   onOpenCustomerCreditDialog,
-  customerId,
-  onConvertToInvoice
+  customerId
 }: PaymentDialogProps) {
   const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [amountPaid, setAmountPaid] = useState('');
   const [isMixedMode, setIsMixedMode] = useState(false);
-  const [convertToInvoice, setConvertToInvoice] = useState(false);
   const [splits, setSplits] = useState<PaymentSplit[]>([]);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('cash');
   const [splitAmount, setSplitAmount] = useState('');
@@ -65,18 +60,9 @@ export function PaymentDialog({
   const handleConfirm = () => {
     if (method) {
       const paid = parseFloat(amountPaid) || total;
-      
-      if (convertToInvoice && onConvertToInvoice && customerId) {
-        // Convertir en facture
-        onConvertToInvoice(method, method === 'cash' ? paid : undefined);
-      } else {
-        // Paiement normal
-        onConfirmPayment(method, method === 'cash' ? paid : undefined);
-      }
-      
+      onConfirmPayment(method, method === 'cash' ? paid : undefined);
       setMethod(null);
       setAmountPaid('');
-      setConvertToInvoice(false);
     }
   };
 
@@ -151,30 +137,6 @@ export function PaymentDialog({
 
         {!method && !isMixedMode ? (
           <div className="space-y-4">
-            {/* Option de conversion en facture */}
-            {customerId && onConvertToInvoice && (
-              <Card className="p-4 bg-blue-50 border-blue-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <Label htmlFor="convert-invoice" className="font-semibold text-blue-900">
-                        Générer une facture
-                      </Label>
-                      <p className="text-xs text-blue-700">
-                        Cette vente sera transformée en facture pour le client
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    id="convert-invoice"
-                    checked={convertToInvoice}
-                    onCheckedChange={setConvertToInvoice}
-                  />
-                </div>
-              </Card>
-            )}
-
             {/* Primary payment methods */}
             <div className="grid grid-cols-3 gap-3">
               <Card
