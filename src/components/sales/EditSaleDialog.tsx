@@ -163,8 +163,8 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl h-[95vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-600" />
             <DialogTitle className="text-red-900">⚖️ MODIFICATION DE DOCUMENT COMPTABLE</DialogTitle>
@@ -196,124 +196,127 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
           </DialogDescription>
         </DialogHeader>
 
-        {sale && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 p-3 bg-muted rounded-lg">
-              <div>
-                <span className="text-sm text-muted-foreground">N° Vente:</span>
-                <span className="ml-2 font-bold">{sale.sale_number}</span>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">Date:</span>
-                <span className="ml-2 font-semibold">
-                  {new Date(sale.date).toLocaleDateString('fr-FR')}
-                </span>
-              </div>
-            </div>
-
-            {showProductSearch ? (
-              <div className="p-4 border rounded-lg bg-muted/30">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">Ajouter un produit</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowProductSearch(false)}
-                  >
-                    Annuler
-                  </Button>
+        <ScrollArea className="flex-1 px-1">
+          {sale && (
+            <div className="space-y-4 pr-4">
+              <div className="flex items-center gap-4 p-3 bg-muted rounded-lg">
+                <div>
+                  <span className="text-sm text-muted-foreground">N° Vente:</span>
+                  <span className="ml-2 font-bold">{sale.sale_number}</span>
                 </div>
-                <ProductSearch onProductSelect={handleAddProduct} />
+                <div>
+                  <span className="text-sm text-muted-foreground">Date:</span>
+                  <span className="ml-2 font-semibold">
+                    {new Date(sale.date).toLocaleDateString('fr-FR')}
+                  </span>
+                </div>
               </div>
-            ) : (
-              <Button
-                onClick={() => setShowProductSearch(true)}
-                variant="outline"
-                className="w-full"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter un produit
-              </Button>
-            )}
 
-            <ScrollArea className="h-[350px] border rounded-lg p-4">
-              <div className="space-y-3">
-                {items.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                    <div className="flex-1">
-                      <div className="font-semibold">{item.product_name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Prix unitaire: {item.unit_price.toFixed(2)}€ | TVA: {item.vat_rate}%
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label className="text-xs">Qté:</Label>
-                      <Input
-                        type="number"
-                        step="0.001"
-                        min="0.001"
-                        value={item.quantity}
-                        onChange={(e) => handleQuantityChange(index, parseFloat(e.target.value) || 0)}
-                        className="w-20"
-                      />
-                    </div>
-                    <div className="w-24 text-right font-bold">
-                      {item.total.toFixed(2)}€
-                    </div>
+              {showProductSearch ? (
+                <div className="p-4 border rounded-lg bg-muted/30">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold">Ajouter un produit</h3>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleRemoveItem(index)}
-                      className="text-destructive hover:text-destructive"
-                      title="Supprimer cet article"
+                      onClick={() => setShowProductSearch(false)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      Annuler
                     </Button>
                   </div>
-                ))}
+                  <ProductSearch onProductSelect={handleAddProduct} />
+                </div>
+              ) : (
+                <Button
+                  onClick={() => setShowProductSearch(true)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter un produit
+                </Button>
+              )}
+
+              <div className="border rounded-lg p-4 bg-background">
+                <div className="space-y-3 max-h-[250px] overflow-y-auto">
+                  {items.map((item, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold truncate">{item.product_name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Prix unitaire: {item.unit_price.toFixed(2)}€ | TVA: {item.vat_rate}%
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <Label className="text-xs">Qté:</Label>
+                        <Input
+                          type="number"
+                          step="0.001"
+                          min="0.001"
+                          value={item.quantity}
+                          onChange={(e) => handleQuantityChange(index, parseFloat(e.target.value) || 0)}
+                          className="w-20"
+                        />
+                      </div>
+                      <div className="w-24 text-right font-bold">
+                        {item.total.toFixed(2)}€
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveItem(index)}
+                        className="text-destructive hover:text-destructive"
+                        title="Supprimer cet article"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  
+                  {items.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Tous les articles ont été supprimés
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="border-t pt-4 space-y-2 bg-background p-4 rounded-lg">
+                <div className="flex justify-between text-sm">
+                  <span>Sous-total HT:</span>
+                  <span className="font-semibold">{newTotals.subtotal.toFixed(2)}€</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>TVA:</span>
+                  <span className="font-semibold">{newTotals.totalVat.toFixed(2)}€</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold border-t pt-2">
+                  <span>Total TTC:</span>
+                  <span>{newTotals.total.toFixed(2)}€</span>
+                </div>
                 
-                {items.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Tous les articles ont été supprimés
-                  </div>
+                {newTotals.total !== sale.total && (
+                  <Badge variant="destructive" className="w-full justify-center">
+                    Différence: {(newTotals.total - sale.total).toFixed(2)}€
+                  </Badge>
                 )}
               </div>
-            </ScrollArea>
-
-            <div className="border-t pt-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Sous-total HT:</span>
-                <span className="font-semibold">{newTotals.subtotal.toFixed(2)}€</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>TVA:</span>
-                <span className="font-semibold">{newTotals.totalVat.toFixed(2)}€</span>
-              </div>
-              <div className="flex justify-between text-lg font-bold border-t pt-2">
-                <span>Total TTC:</span>
-                <span>{newTotals.total.toFixed(2)}€</span>
-              </div>
-              
-              {newTotals.total !== sale.total && (
-                <Badge variant="destructive" className="w-full justify-center">
-                  Différence: {(newTotals.total - sale.total).toFixed(2)}€
-                </Badge>
-              )}
             </div>
-          </div>
-        )}
+          )}
+        </ScrollArea>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="flex-shrink-0 pt-4 border-t mt-4 gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-initial">
             Annuler
           </Button>
           <Button
             onClick={handleSave}
             disabled={saving || items.length === 0}
             variant="destructive"
+            className="flex-1 sm:flex-initial"
           >
             <Save className="h-4 w-4 mr-2" />
-            Enregistrer les modifications
+            Enregistrer
           </Button>
         </DialogFooter>
       </DialogContent>
