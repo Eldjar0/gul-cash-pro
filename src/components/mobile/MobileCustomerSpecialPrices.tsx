@@ -110,9 +110,17 @@ export function MobileCustomerSpecialPrices({ customerId }: MobileCustomerSpecia
               return (
                 <Card key={sp.id} className="p-3">
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded bg-muted flex items-center justify-center shrink-0">
-                      <Package className="h-6 w-6 text-muted-foreground/40" />
-                    </div>
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-12 h-12 rounded object-cover shrink-0 border border-border"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded bg-muted flex items-center justify-center shrink-0">
+                        <Package className="h-6 w-6 text-muted-foreground/40" />
+                      </div>
+                    )}
 
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{product.name}</p>

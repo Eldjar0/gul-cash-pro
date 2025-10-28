@@ -13,6 +13,7 @@ export interface CustomerSpecialPrice {
     name: string;
     barcode: string;
     price: number;
+    image?: string;
   };
 }
 
@@ -22,7 +23,7 @@ export const useCustomerSpecialPrices = (customerId?: string) => {
     queryFn: async () => {
       const query = supabase
         .from('customer_special_prices')
-        .select('*, products(id, name, barcode, price)')
+        .select('*, products(id, name, barcode, price, image)')
         .order('created_at', { ascending: false });
       
       if (customerId) {

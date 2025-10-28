@@ -106,6 +106,20 @@ export default function MobileCustomerSpecialPrices() {
 
               <ScrollArea className="h-[calc(90vh-120px)] mt-4">
                 <div className="space-y-4 p-4">
+                  {/* Info client avec TVA si pro */}
+                  {customer.vat_number && (
+                    <Card className="p-3 bg-primary/5 border-primary/20">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="border-primary text-primary">
+                          Client PRO
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">
+                          TVA: {customer.vat_number}
+                        </span>
+                      </div>
+                    </Card>
+                  )}
+
                   <div className="space-y-2">
                     <Label>Produit</Label>
                     <Select value={selectedProductId} onValueChange={setSelectedProductId}>
@@ -115,11 +129,20 @@ export default function MobileCustomerSpecialPrices() {
                       <SelectContent className="max-h-[300px]">
                         {availableProducts.map((product) => (
                           <SelectItem key={product.id} value={product.id}>
-                            <div className="flex flex-col items-start">
-                              <span className="font-medium">{product.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                Prix: {product.price.toFixed(2)}€ | {product.barcode}
-                              </span>
+                            <div className="flex items-center gap-2">
+                              {product.image && (
+                                <img 
+                                  src={product.image} 
+                                  alt={product.name}
+                                  className="w-8 h-8 rounded object-cover"
+                                />
+                              )}
+                              <div className="flex flex-col items-start">
+                                <span className="font-medium">{product.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  Prix: {product.price.toFixed(2)}€ | {product.barcode}
+                                </span>
+                              </div>
                             </div>
                           </SelectItem>
                         ))}
@@ -174,6 +197,23 @@ export default function MobileCustomerSpecialPrices() {
     >
       <ScrollArea className="h-[calc(100vh-4rem)]">
         <div className="p-3 sm:p-4 space-y-3 pb-20">
+          {/* Info client avec TVA si pro */}
+          {customer.vat_number && (
+            <Card className="p-4 bg-primary/5 border-primary/20">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="border-primary text-primary font-semibold">
+                    CLIENT PROFESSIONNEL
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Numéro TVA:</span>
+                  <span className="text-sm font-mono font-bold">{customer.vat_number}</span>
+                </div>
+              </div>
+            </Card>
+          )}
+
           {specialPrices.length === 0 ? (
             <Card className="p-8 text-center">
               <Package className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
@@ -196,11 +236,19 @@ export default function MobileCustomerSpecialPrices() {
               return (
                 <Card key={sp.id} className="p-4">
                   <div className="space-y-3">
-                    {/* En-tête produit */}
+                    {/* En-tête produit avec image */}
                     <div className="flex items-start gap-3">
-                      <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <Package className="h-8 w-8 text-muted-foreground/40" />
-                      </div>
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-16 h-16 rounded-lg object-cover shrink-0 border border-border"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                          <Package className="h-8 w-8 text-muted-foreground/40" />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-base">{product.name}</p>
                         <p className="text-sm text-muted-foreground">{product.barcode}</p>
