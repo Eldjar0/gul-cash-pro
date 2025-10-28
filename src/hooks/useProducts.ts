@@ -281,3 +281,74 @@ export const useSearchProducts = (search: string) => {
     enabled: search.length > 0,
   });
 };
+
+export interface AdvancedSearchParams {
+  searchTerm?: string;
+  priceMin?: number;
+  priceMax?: number;
+  supplier?: string;
+  categoryId?: string;
+  stockMin?: number;
+  stockMax?: number;
+  type?: 'unit' | 'weight';
+}
+
+export const useAdvancedSearchProducts = (params: AdvancedSearchParams) => {
+  const { searchTerm, priceMin, priceMax, supplier, categoryId, stockMin, stockMax, type } = params;
+  
+  return useQuery({
+    queryKey: ['products', 'advanced-search', params],
+    queryFn: async () => {
+      let query = supabase
+        .from('products')
+        .select('*')
+        .eq('is_active', true);
+
+      // Search by name or barcode
+      if (searchTerm && searchTerm.trim()) {
+        const trimmed = searchTerm.trim();
+        query = query.or(`name.ilike.%${trimmed}%,barcode.ilike.%${trimmed}%`);
+      }
+
+      // Filter by price range
+      if (priceMin !== undefined && priceMin > 0) {
+        query = query.gte('price', priceMin);
+      }
+      if (priceMax !== undefined && priceMax > 0) {
+        query = query.lte('price', priceMax);
+      }
+
+      // Filter by supplier
+      if (supplier && supplier.trim()) {
+        query = query.ilike('supplier', `%${supplier.trim()}%`);
+      }
+
+      // Filter by category
+      if (categoryId && categoryId !== 'all') {
+        query = query.eq('category_id', categoryId);
+      }
+
+      // Filter by stock range
+      if (stockMin !== undefined) {
+        query = query.gte('stock', stockMin);
+      }
+      if (stockMax !== undefined) {
+        query = query.lte('stock', stockMax);
+      }
+
+      // Filter by type
+      if (type) {
+        query = query.eq('type', type);
+      }
+
+      const { data, error } = await query
+        .order('name')
+        .limit(100);
+
+      if (error) throw error;
+      return data as Product[];
+    },
+    enabled: true,
+    staleTime: 30000,
+  });
+};
