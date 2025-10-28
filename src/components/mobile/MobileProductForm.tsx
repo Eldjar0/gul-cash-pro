@@ -126,14 +126,13 @@ export const MobileProductForm = () => {
       // Sur native, utiliser Capacitor Camera
       const photo = await CapacitorCamera.getPhoto({
         quality: 80,
-        allowEditing: false,
+        allowEditing: true,
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Camera,
       });
 
       if (photo.dataUrl) {
         setImageUrl(photo.dataUrl);
-        // Convertir dataUrl en File
         const response = await fetch(photo.dataUrl);
         const blob = await response.blob();
         const file = new File([blob], 'product-photo.jpg', { type: 'image/jpeg' });
@@ -142,6 +141,49 @@ export const MobileProductForm = () => {
     } catch (error) {
       console.error('Erreur lors de la prise de photo:', error);
       toast.error('Impossible de prendre la photo');
+    }
+  };
+
+  const pickFromGallery = async () => {
+    try {
+      if (!Capacitor.isNativePlatform()) {
+        // Sur web, utiliser input file
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = async (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              setImageUrl(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+        input.click();
+        return;
+      }
+
+      // Sur native, choisir depuis la galerie
+      const photo = await CapacitorCamera.getPhoto({
+        quality: 80,
+        allowEditing: true,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Photos,
+      });
+
+      if (photo.dataUrl) {
+        setImageUrl(photo.dataUrl);
+        const response = await fetch(photo.dataUrl);
+        const blob = await response.blob();
+        const file = new File([blob], 'product-photo.jpg', { type: 'image/jpeg' });
+        setImageFile(file);
+      }
+    } catch (error) {
+      console.error('Erreur lors du choix de photo:', error);
+      toast.error('Impossible de choisir la photo');
     }
   };
 
@@ -242,7 +284,7 @@ export const MobileProductForm = () => {
           {/* Photo du produit */}
           <Card className="p-4">
             <div className="space-y-3">
-              <Label>Photo du produit</Label>
+              <Label className="text-base font-semibold">Photo du produit</Label>
               
               {imageUrl ? (
                 <div className="relative">
@@ -255,22 +297,33 @@ export const MobileProductForm = () => {
                     type="button"
                     size="icon"
                     variant="destructive"
-                    className="absolute top-2 right-2"
+                    className="absolute top-2 right-2 rounded-full shadow-lg"
                     onClick={removeImage}
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full h-32 flex flex-col gap-2 border-dashed border-2"
-                  onClick={takePhoto}
-                >
-                  <Camera className="h-8 w-8" />
-                  <span>Prendre une photo</span>
-                </Button>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-32 flex flex-col gap-2 border-dashed border-2 hover:bg-primary/10 hover:border-primary"
+                    onClick={takePhoto}
+                  >
+                    <Camera className="h-8 w-8 text-primary" />
+                    <span className="text-sm font-medium">Prendre photo</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-32 flex flex-col gap-2 border-dashed border-2 hover:bg-primary/10 hover:border-primary"
+                    onClick={pickFromGallery}
+                  >
+                    <ImageIcon className="h-8 w-8 text-primary" />
+                    <span className="text-sm font-medium">Galerie</span>
+                  </Button>
+                </div>
               )}
             </div>
           </Card>
