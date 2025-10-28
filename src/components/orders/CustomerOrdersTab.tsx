@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useCustomerOrders } from '@/hooks/useCustomerOrders';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,9 +14,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { CreateCustomerOrderDialog } from './CreateCustomerOrderDialog';
 
 export const CustomerOrdersTab = () => {
-  const { data: orders, isLoading } = useCustomerOrders();
+  const { data: orders, isLoading, refetch } = useCustomerOrders();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
@@ -37,7 +40,7 @@ export const CustomerOrdersTab = () => {
             Commandes avec acompte et notifications
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Nouvelle Commande
         </Button>
@@ -104,6 +107,12 @@ export const CustomerOrdersTab = () => {
           )}
         </CardContent>
       </Card>
+
+      <CreateCustomerOrderDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSuccess={refetch}
+      />
     </div>
   );
 };
