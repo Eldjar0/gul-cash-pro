@@ -79,24 +79,6 @@ export const useMobileAlerts = () => {
         });
       }
 
-      // Vérifier les commandes en attente
-      const { data: pendingOrders, count: pendingCount } = await supabase
-        .from('mobile_orders')
-        .select('id', { count: 'exact' })
-        .eq('status', 'pending');
-
-      if (pendingCount && pendingCount > 0) {
-        alerts.push({
-          id: 'pending-orders',
-          type: 'pending_orders',
-          severity: 'info',
-          title: 'Commandes en attente',
-          description: `${pendingCount} commande(s) en attente de traitement`,
-          count: pendingCount,
-          actionUrl: '/mobile/orders',
-        });
-      }
-
       return alerts;
     },
     refetchInterval: 30000,

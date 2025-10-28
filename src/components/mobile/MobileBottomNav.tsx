@@ -19,7 +19,6 @@ export function MobileBottomNav({ currentPath }: MobileBottomNavProps) {
     { path: '/mobile/management', icon: Home, label: 'Menu' },
     { path: '/mobile/products', icon: Package, label: 'Produits' },
     { path: '/mobile/scan-rapid', icon: Scan, label: 'Scan', isSpecial: true },
-    { path: '/mobile/orders', icon: ShoppingCart, label: 'Commandes' },
     { path: '/mobile/categories', icon: FolderKanban, label: 'Catégories' },
   ];
 

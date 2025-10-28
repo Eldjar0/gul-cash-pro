@@ -44,7 +44,6 @@ import {
 } from 'lucide-react';
 import { useSales, useCancelSale, useRestoreSale } from '@/hooks/useSales';
 import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
-import { useMobileOrders } from '@/hooks/useMobileOrders';
 import { useSavedCarts } from '@/hooks/useSavedCarts';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { CustomerOrdersTab } from '@/components/orders/CustomerOrdersTab';
@@ -144,7 +143,6 @@ export default function Documents() {
 
   const { data: sales = [], isLoading } = useSales();
   const { data: refunds = [], isLoading: refundsLoading } = useRefunds();
-  const { data: mobileOrders = [], isLoading: mobileOrdersLoading } = useMobileOrders();
   const cancelSale = useCancelSale();
   const restoreSale = useRestoreSale();
   const deleteRefund = useDeleteRefund();

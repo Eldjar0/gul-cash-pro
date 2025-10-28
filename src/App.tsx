@@ -28,15 +28,12 @@ const DownloadApp = lazy(() => import("./pages/DownloadApp"));
 const UserManagement = lazy(() => import("./pages/UserManagement"));
 const MobileManagement = lazy(() => import("./pages/MobileManagement"));
 const MobileCategories = lazy(() => import("./pages/MobileCategories"));
-const MobileOrders = lazy(() => import("./pages/MobileOrders"));
 const MobileCalculator = lazy(() => import("./pages/MobileCalculator"));
 const MobileProducts = lazy(() => import("./pages/MobileProducts"));
 const MobileProductManager = lazy(() => import("./components/mobile/MobileProductManager"));
 const MobileCategoryManager = lazy(() => import("./components/mobile/MobileCategoryManager"));
-const MobileOrderManager = lazy(() => import("./components/mobile/MobileOrderManager"));
 const MobileProductDetail = lazy(() => import("./components/mobile/MobileProductDetail"));
 const MobileProductForm = lazy(() => import("./components/mobile/MobileProductForm"));
-const MobileOrderDetail = lazy(() => import("./components/mobile/MobileOrderDetail"));
 const DirectCameraScanner = lazy(() => import("./pages/DirectCameraScanner"));
 const MobileStats = lazy(() => import("./pages/MobileStats"));
 const MobileAlerts = lazy(() => import("./pages/MobileAlerts"));
@@ -81,8 +78,6 @@ const App = () => (
             <Route path="/mobile/product/:id/adjust-stock" element={<ProtectedRoute><MobileStockAdjust /></ProtectedRoute>} />
             <Route path="/mobile/product/new" element={<ProtectedRoute><MobileProductForm /></ProtectedRoute>} />
             <Route path="/mobile/categories" element={<ProtectedRoute><MobileCategoryManager /></ProtectedRoute>} />
-            <Route path="/mobile/orders" element={<ProtectedRoute><MobileOrderManager /></ProtectedRoute>} />
-            <Route path="/mobile/order/:id" element={<ProtectedRoute><MobileOrderDetail /></ProtectedRoute>} />
             <Route path="/mobile/promotions" element={<ProtectedRoute><Promotions /></ProtectedRoute>} />
             <Route path="/mobile/calculator" element={<ProtectedRoute><MobileCalculator /></ProtectedRoute>} />
             <Route path="/mobile/stats" element={<ProtectedRoute><MobileStats /></ProtectedRoute>} />

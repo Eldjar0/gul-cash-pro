@@ -18,20 +18,12 @@ export const useMobileNavigation = () => {
     navigate(`/mobile/category/${categoryId}`);
   }, [navigate]);
 
-  const goToOrder = useCallback((orderId: string) => {
-    navigate(`/mobile/order/${orderId}`);
-  }, [navigate]);
-
   const goToProducts = useCallback(() => {
     navigate('/mobile/products');
   }, [navigate]);
 
   const goToCategories = useCallback(() => {
     navigate('/mobile/categories');
-  }, [navigate]);
-
-  const goToOrders = useCallback(() => {
-    navigate('/mobile/orders');
   }, [navigate]);
 
   const goToHome = useCallback(() => {
@@ -43,8 +35,7 @@ export const useMobileNavigation = () => {
     
     // Pages principales → Menu principal
     if (path === '/mobile/products' || 
-        path === '/mobile/categories' || 
-        path === '/mobile/orders' ||
+        path === '/mobile/categories' ||
         path === '/mobile/scan-rapid' ||
         path === '/mobile/customers') {
       navigate('/mobile/management');
@@ -59,11 +50,6 @@ export const useMobileNavigation = () => {
     
     if (path.startsWith('/mobile/category/')) {
       navigate('/mobile/categories');
-      return;
-    }
-    
-    if (path.startsWith('/mobile/order/')) {
-      navigate('/mobile/orders');
       return;
     }
 
@@ -84,8 +70,6 @@ export const useMobileNavigation = () => {
     if (path.startsWith('/mobile/product/')) return 'Détail Produit';
     if (path.startsWith('/mobile/categories')) return 'Catégories';
     if (path.startsWith('/mobile/category/')) return 'Détail Catégorie';
-    if (path.startsWith('/mobile/orders')) return 'Commandes';
-    if (path.startsWith('/mobile/order/')) return 'Détail Commande';
     
     return 'Mobile';
   }, [location]);
@@ -94,10 +78,8 @@ export const useMobileNavigation = () => {
     goToProduct,
     goToProductCreate,
     goToCategory,
-    goToOrder,
     goToProducts,
     goToCategories,
-    goToOrders,
     goToHome,
     goBack,
     getBreadcrumb,
