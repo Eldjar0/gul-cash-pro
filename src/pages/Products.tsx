@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -37,6 +37,8 @@ import {
   Upload,
   Tag,
   Settings,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
@@ -47,6 +49,9 @@ import { SimpleLabelPrinter } from '@/components/products/SimpleLabelPrinter';
 import { QuickStockAdjustDialog } from '@/components/products/QuickStockAdjustDialog';
 import { PRODUCT_UNITS } from '@/data/units';
 import { DialogDescription } from '@/components/ui/dialog';
+import { useDebounce } from '@/hooks/useDebounce';
+
+const ITEMS_PER_PAGE = 50;
 
 export default function Products() {
   const navigate = useNavigate();
@@ -58,6 +63,8 @@ export default function Products() {
   const deleteProduct = useDeleteProduct();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const [currentPage, setCurrentPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -91,33 +98,45 @@ export default function Products() {
     }
   }, [dialogOpen]);
 
-  const filteredProducts = products.filter((product) => {
-    const trimmedSearch = searchTerm.trim();
-    const searchLower = trimmedSearch.toLowerCase();
+  // Reset page when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, stockFilter]);
+
+  const filteredProducts = useMemo(() => {
+    const trimmedSearch = debouncedSearch.trim().toLowerCase();
     
-    // Stock filter
-    if (stockFilter === 'low') {
-      const hasLowStock = product.stock !== undefined && 
-                         product.min_stock !== undefined && 
-                         product.stock > 0 &&
-                         product.stock <= product.min_stock;
-      if (!hasLowStock) return false;
-    } else if (stockFilter === 'out') {
-      if (product.stock === undefined || product.stock > 0) return false;
-    }
-    
-    // Search filter
-    if (!trimmedSearch) return true;
-    
-    const isNumber = !isNaN(Number(trimmedSearch)) && trimmedSearch !== '';
-    
-    if (product.name.toLowerCase().includes(searchLower)) return true;
-    if (product.barcode?.toLowerCase().includes(searchLower)) return true;
-    if (product.description?.toLowerCase().includes(searchLower)) return true;
-    if (isNumber && Math.abs(product.price - Number(trimmedSearch)) < 0.01) return true;
-    
-    return false;
-  });
+    return products.filter((product) => {
+      // Stock filter
+      if (stockFilter === 'low') {
+        const hasLowStock = product.stock !== undefined && 
+                           product.min_stock !== undefined && 
+                           product.stock > 0 &&
+                           product.stock <= product.min_stock;
+        if (!hasLowStock) return false;
+      } else if (stockFilter === 'out') {
+        if (product.stock === undefined || product.stock > 0) return false;
+      }
+      
+      // Search filter
+      if (!trimmedSearch) return true;
+      
+      const isNumber = !isNaN(Number(trimmedSearch)) && trimmedSearch !== '';
+      
+      if (product.name.toLowerCase().includes(trimmedSearch)) return true;
+      if (product.barcode?.toLowerCase().includes(trimmedSearch)) return true;
+      if (product.description?.toLowerCase().includes(trimmedSearch)) return true;
+      if (isNumber && Math.abs(product.price - Number(trimmedSearch)) < 0.01) return true;
+      
+      return false;
+    });
+  }, [products, debouncedSearch, stockFilter]);
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
 
   const handleOpenDialog = (product?: any) => {
     if (product) {
@@ -434,10 +453,44 @@ export default function Products() {
           </div>
         </Card>
 
+        {/* Pagination Info & Controls */}
+        {filteredProducts.length > 0 && (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Affichage de {((currentPage - 1) * ITEMS_PER_PAGE) + 1} à {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} sur {filteredProducts.length} produits
+            </p>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Précédent
+                </Button>
+                <span className="text-sm text-muted-foreground px-2">
+                  Page {currentPage} sur {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Suivant
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Products Grid */}
-        <ScrollArea className="h-[calc(100vh-620px)]">
+        <ScrollArea className="h-[calc(100vh-680px)]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-4">
-            {filteredProducts.map((product) => {
+            {paginatedProducts.map((product) => {
               const category = categories.find(c => c.id === product.category_id);
               const isLowStock = product.stock !== undefined && 
                                 product.min_stock !== undefined && 
