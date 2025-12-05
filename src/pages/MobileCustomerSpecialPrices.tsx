@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { Card } from '@/components/ui/card';
@@ -7,9 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Trash2, Plus, Package, Edit, DollarSign } from 'lucide-react';
+import { Trash2, Plus, Package, Edit, DollarSign, Search } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { useCustomers } from '@/hooks/useCustomers';
 import {
@@ -18,6 +17,9 @@ import {
   useUpdateCustomerSpecialPrice,
   useDeleteCustomerSpecialPrice,
 } from '@/hooks/useCustomerSpecialPrices';
+import { useDebounce } from '@/hooks/useDebounce';
+
+const MAX_DISPLAYED_PRODUCTS = 50;
 
 export default function MobileCustomerSpecialPrices() {
   const { customerId } = useParams<{ customerId: string }>();
@@ -26,6 +28,8 @@ export default function MobileCustomerSpecialPrices() {
   const [editingPrice, setEditingPrice] = useState('');
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [newSpecialPrice, setNewSpecialPrice] = useState('');
+  const [productSearchTerm, setProductSearchTerm] = useState('');
+  const debouncedProductSearch = useDebounce(productSearchTerm, 300);
 
   const { data: customers = [] } = useCustomers();
   const { data: products = [] } = useProducts();
@@ -36,9 +40,27 @@ export default function MobileCustomerSpecialPrices() {
 
   const customer = customers.find(c => c.id === customerId);
 
-  const availableProducts = products.filter(
-    (p) => !specialPrices.some((sp) => sp.product_id === p.id)
-  );
+  const availableProducts = useMemo(() => {
+    return products.filter(
+      (p) => !specialPrices.some((sp) => sp.product_id === p.id)
+    );
+  }, [products, specialPrices]);
+
+  // Filter and limit displayed products
+  const displayedProducts = useMemo(() => {
+    const searchLower = debouncedProductSearch.toLowerCase().trim();
+    
+    if (!searchLower) {
+      return availableProducts.slice(0, MAX_DISPLAYED_PRODUCTS);
+    }
+    
+    return availableProducts
+      .filter(p => 
+        p.name.toLowerCase().includes(searchLower) ||
+        p.barcode?.toLowerCase().includes(searchLower)
+      )
+      .slice(0, MAX_DISPLAYED_PRODUCTS);
+  }, [availableProducts, debouncedProductSearch]);
 
   const handleAddSpecialPrice = () => {
     if (!customerId || !selectedProductId || !newSpecialPrice) return;
@@ -54,6 +76,7 @@ export default function MobileCustomerSpecialPrices() {
           setSelectedProductId('');
           setNewSpecialPrice('');
           setAddSheetOpen(false);
+          setProductSearchTerm('');
         },
       }
     );
@@ -92,7 +115,14 @@ export default function MobileCustomerSpecialPrices() {
       title={`Prix spéciaux - ${customer.name}`}
       actions={
         availableProducts.length > 0 && (
-          <Sheet open={addSheetOpen} onOpenChange={setAddSheetOpen}>
+          <Sheet open={addSheetOpen} onOpenChange={(open) => {
+            setAddSheetOpen(open);
+            if (!open) {
+              setProductSearchTerm('');
+              setSelectedProductId('');
+              setNewSpecialPrice('');
+            }
+          }}>
             <SheetTrigger asChild>
               <Button size="sm">
                 <Plus className="h-4 w-4 mr-1" />
@@ -121,33 +151,59 @@ export default function MobileCustomerSpecialPrices() {
                   )}
 
                   <div className="space-y-2">
-                    <Label>Produit</Label>
-                    <Select value={selectedProductId} onValueChange={setSelectedProductId}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un produit" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[300px]">
-                        {availableProducts.map((product) => (
-                          <SelectItem key={product.id} value={product.id}>
-                            <div className="flex items-center gap-2">
-                              {product.image && (
-                                <img 
-                                  src={product.image} 
-                                  alt={product.name}
-                                  className="w-8 h-8 rounded object-cover"
-                                />
-                              )}
-                              <div className="flex flex-col items-start">
-                                <span className="font-medium">{product.name}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  Prix: {product.price.toFixed(2)}€ | {product.barcode}
-                                </span>
-                              </div>
+                    <Label>Rechercher un produit</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Rechercher par nom ou code-barres..."
+                        value={productSearchTerm}
+                        onChange={(e) => setProductSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Sélectionner un produit ({displayedProducts.length} affiché{displayedProducts.length > 1 ? 's' : ''})</Label>
+                    <div className="space-y-2 max-h-[200px] overflow-y-auto border rounded-lg p-2">
+                      {displayedProducts.map((product) => (
+                        <Card
+                          key={product.id}
+                          className={`p-3 cursor-pointer transition-all ${
+                            selectedProductId === product.id 
+                              ? 'border-primary bg-primary/5' 
+                              : 'hover:border-primary/50'
+                          }`}
+                          onClick={() => setSelectedProductId(product.id)}
+                        >
+                          <div className="flex items-center gap-2">
+                            {product.image && (
+                              <img 
+                                src={product.image} 
+                                alt={product.name}
+                                className="w-10 h-10 rounded object-cover"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{product.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {product.price.toFixed(2)}€ | {product.barcode}
+                              </p>
                             </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          </div>
+                        </Card>
+                      ))}
+                      {displayedProducts.length === 0 && (
+                        <p className="text-center text-muted-foreground py-4">
+                          Aucun produit trouvé
+                        </p>
+                      )}
+                      {availableProducts.length > MAX_DISPLAYED_PRODUCTS && !debouncedProductSearch && (
+                        <p className="text-xs text-center text-muted-foreground py-2">
+                          {availableProducts.length - MAX_DISPLAYED_PRODUCTS} produits supplémentaires - utilisez la recherche
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {selectedProductId && (

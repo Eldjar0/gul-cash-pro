@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,9 @@ import {
   useDeleteCustomerSpecialPrice,
 } from '@/hooks/useCustomerSpecialPrices';
 import { cn } from '@/lib/utils';
+import { useDebounce } from '@/hooks/useDebounce';
+
+const MAX_DISPLAYED_PRODUCTS = 50;
 
 interface CustomerSpecialPricesDialogProps {
   open: boolean;
@@ -33,6 +36,8 @@ export function CustomerSpecialPricesDialog({
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [specialPrice, setSpecialPrice] = useState('');
+  const [productSearchTerm, setProductSearchTerm] = useState('');
+  const debouncedProductSearch = useDebounce(productSearchTerm, 300);
 
   const { data: products } = useProducts();
   const { data: specialPrices } = useCustomerSpecialPrices(customerId);
@@ -40,9 +45,27 @@ export function CustomerSpecialPricesDialog({
   const updateSpecialPrice = useUpdateCustomerSpecialPrice();
   const deleteSpecialPrice = useDeleteCustomerSpecialPrice();
 
-  const availableProducts = products?.filter(
-    (p) => !specialPrices?.some((sp) => sp.product_id === p.id)
-  );
+  const availableProducts = useMemo(() => {
+    return products?.filter(
+      (p) => !specialPrices?.some((sp) => sp.product_id === p.id)
+    ) || [];
+  }, [products, specialPrices]);
+
+  // Filter and limit displayed products
+  const displayedProducts = useMemo(() => {
+    const searchLower = debouncedProductSearch.toLowerCase().trim();
+    
+    if (!searchLower) {
+      return availableProducts.slice(0, MAX_DISPLAYED_PRODUCTS);
+    }
+    
+    return availableProducts
+      .filter(p => 
+        p.name.toLowerCase().includes(searchLower) ||
+        p.barcode?.toLowerCase().includes(searchLower)
+      )
+      .slice(0, MAX_DISPLAYED_PRODUCTS);
+  }, [availableProducts, debouncedProductSearch]);
 
   const handleAddSpecialPrice = () => {
     if (!selectedProductId || !specialPrice) return;
@@ -56,6 +79,7 @@ export function CustomerSpecialPricesDialog({
     setSelectedProductId(null);
     setSpecialPrice('');
     setProductSearchOpen(false);
+    setProductSearchTerm('');
   };
 
   const handleUpdateSpecialPrice = (id: string, newPrice: number) => {
@@ -78,7 +102,10 @@ export function CustomerSpecialPricesDialog({
           <div className="flex gap-2 items-end">
             <div className="flex-1">
               <Label>Produit</Label>
-              <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
+              <Popover open={productSearchOpen} onOpenChange={(open) => {
+                setProductSearchOpen(open);
+                if (!open) setProductSearchTerm('');
+              }}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -92,19 +119,24 @@ export function CustomerSpecialPricesDialog({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[400px] p-0">
-                  <Command>
-                    <CommandInput placeholder="Rechercher un produit..." />
+                  <Command shouldFilter={false}>
+                    <CommandInput 
+                      placeholder="Rechercher un produit..." 
+                      value={productSearchTerm}
+                      onValueChange={setProductSearchTerm}
+                    />
                     <CommandList>
                       <CommandEmpty>Aucun produit trouvé.</CommandEmpty>
                       <CommandGroup>
                         <ScrollArea className="h-[300px]">
-                          {availableProducts?.map((product) => (
+                          {displayedProducts.map((product) => (
                             <CommandItem
                               key={product.id}
-                              value={product.name}
+                              value={product.id}
                               onSelect={() => {
                                 setSelectedProductId(product.id);
                                 setProductSearchOpen(false);
+                                setProductSearchTerm('');
                               }}
                             >
                               <Check
@@ -121,6 +153,11 @@ export function CustomerSpecialPricesDialog({
                               </div>
                             </CommandItem>
                           ))}
+                          {availableProducts.length > MAX_DISPLAYED_PRODUCTS && !debouncedProductSearch && (
+                            <div className="p-2 text-xs text-center text-muted-foreground">
+                              {availableProducts.length - MAX_DISPLAYED_PRODUCTS} produits supplémentaires - utilisez la recherche
+                            </div>
+                          )}
                         </ScrollArea>
                       </CommandGroup>
                     </CommandList>
