@@ -67,10 +67,11 @@ export const ProductFormDialog = ({
     };
   }, [formData.price, formData.cost_price]);
 
+  // Reset form when dialog opens/closes or product changes
   useEffect(() => {
+    if (!open) return;
+    
     if (product) {
-      const matchingSupplier = suppliers.find(s => s.name === product.supplier);
-      
       setFormData({
         barcode: product.barcode || '',
         name: product.name,
@@ -83,7 +84,7 @@ export const ProductFormDialog = ({
         vat_rate: product.vat_rate.toString(),
         stock: product.stock?.toString() || '',
         min_stock: product.min_stock?.toString() || '',
-        supplier_id: matchingSupplier?.id || '',
+        supplier_id: '',
       });
       
       if (product.image) {
@@ -107,7 +108,17 @@ export const ProductFormDialog = ({
       setImageUrl(null);
       setImageFile(null);
     }
-  }, [product, suppliers, open]);
+  }, [product, open]);
+
+  // Update supplier_id when suppliers load (separate effect to avoid infinite loop)
+  useEffect(() => {
+    if (product?.supplier && suppliers.length > 0) {
+      const matchingSupplier = suppliers.find(s => s.name === product.supplier);
+      if (matchingSupplier) {
+        setFormData(prev => ({ ...prev, supplier_id: matchingSupplier.id }));
+      }
+    }
+  }, [product?.supplier, suppliers.length]);
 
   const selectPhoto = async () => {
     const input = document.createElement('input');
