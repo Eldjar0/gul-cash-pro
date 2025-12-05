@@ -30,7 +30,8 @@ export const useProducts = () => {
         .from('products')
         .select('*')
         .eq('is_active', true)
-        .order('name');
+        .order('name')
+        .limit(10000);
 
       if (error) throw error;
       return data as Product[];
@@ -53,7 +54,7 @@ export const useProductsByCategory = (categoryId?: string) => {
         query = query.eq('category_id', categoryId);
       }
 
-      const { data, error } = await query.order('name');
+      const { data, error } = await query.order('name').limit(10000);
       if (error) throw error;
       return data as Product[];
     },
@@ -341,7 +342,8 @@ export const useAdvancedSearchProducts = (params: AdvancedSearchParams) => {
       }
 
       const { data, error } = await query
-        .order('name');
+        .order('name')
+        .limit(10000);
 
       if (error) throw error;
       return data as Product[];
