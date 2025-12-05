@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Search, Package, Upload, Tag, Trash2, Plus, FileText, Printer, Pencil } from 'lucide-react';
+import { Search, Package, Upload, Tag, Trash2, Plus, FileText, Printer, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { CategoryDialog } from '@/components/products/CategoryDialog';
@@ -29,6 +29,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Label } from '@/components/ui/label';
 import { generateStockPDF } from '@/utils/generateStockPDF';
 import JsBarcode from 'jsbarcode';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const normalizeBarcodeInput = (raw: string) => {
   const map: Record<string, string> = {
@@ -46,6 +47,8 @@ const normalizeBarcodeInput = (raw: string) => {
     .replace(/\D+/g, ''); // Supprimer tous les caractères non-numériques à la fin
 };
 
+const ITEMS_PER_PAGE = 50;
+
 export const ProductsManagement = () => {
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
@@ -55,6 +58,8 @@ export const ProductsManagement = () => {
   const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const [currentPage, setCurrentPage] = useState(1);
   const [stockFilter, setStockFilter] = useState<'all' | 'low' | 'out'>('all');
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -115,14 +120,29 @@ export const ProductsManagement = () => {
     captureInInputs: false, // Ne pas intercepter - laisser la saisie normale fonctionner
   });
 
-  const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.barcode?.toLowerCase().includes(searchTerm.toLowerCase());
+  // Reset page when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, stockFilter]);
+
+  const filteredProducts = useMemo(() => {
+    const trimmedSearch = debouncedSearch.trim().toLowerCase();
     
-    if (stockFilter === 'out') return matchesSearch && p.stock === 0;
-    if (stockFilter === 'low') return matchesSearch && p.stock > 0 && p.stock <= (p.min_stock || 0);
-    return matchesSearch;
-  });
+    return products.filter(p => {
+      const matchesSearch = p.name.toLowerCase().includes(trimmedSearch) ||
+        p.barcode?.toLowerCase().includes(trimmedSearch);
+      
+      if (stockFilter === 'out') return matchesSearch && p.stock === 0;
+      if (stockFilter === 'low') return matchesSearch && p.stock > 0 && p.stock <= (p.min_stock || 0);
+      return matchesSearch;
+    });
+  }, [products, debouncedSearch, stockFilter]);
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
 
   const openNewProduct = () => {
     setEditingProduct(null);
@@ -437,6 +457,40 @@ export const ProductsManagement = () => {
         </Button>
       </div>
 
+      {/* Pagination Info */}
+      {filteredProducts.length > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Affichage de {((currentPage - 1) * ITEMS_PER_PAGE) + 1} à {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} sur {filteredProducts.length} produits
+          </p>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Précédent
+              </Button>
+              <span className="text-sm text-muted-foreground px-2">
+                Page {currentPage} sur {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Suivant
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {filteredProducts.length === 0 ? (
         <Card className="p-12 text-center">
           <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -444,7 +498,7 @@ export const ProductsManagement = () => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredProducts.map((product) => (
+          {paginatedProducts.map((product) => (
             <Card key={product.id} className="hover:shadow-md transition-all">
               <CardContent className="p-4">
                 <div className="flex gap-3 mb-3">
