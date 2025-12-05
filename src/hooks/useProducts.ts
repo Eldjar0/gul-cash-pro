@@ -35,9 +35,8 @@ export const useProducts = () => {
       if (error) throw error;
       return data as Product[];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    staleTime: 30000, // 30 secondes - synchronisé avec mobile
+    refetchOnWindowFocus: true, // Rafraîchir quand on revient sur l'onglet
   });
 };
 
