@@ -26,18 +26,21 @@ export const useProducts = () => {
   return useQuery({
     queryKey: ['products'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      console.log('[useProducts] Fetching all products...');
+      const { data, error, count } = await supabase
         .from('products')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('is_active', true)
         .order('name')
         .limit(10000);
 
       if (error) throw error;
+      console.log(`[useProducts] Loaded ${data?.length} products (total in DB: ${count})`);
       return data as Product[];
     },
-    staleTime: 30000, // 30 secondes - synchronisé avec mobile
-    refetchOnWindowFocus: true, // Rafraîchir quand on revient sur l'onglet
+    staleTime: 0, // Toujours refetch pour corriger le problème de cache
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 };
 
