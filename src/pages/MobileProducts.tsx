@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ import { MobileLayout } from '@/components/layout/MobileLayout';
 import { useBarcodeScanner } from '@/hooks/useBarcodeScanner';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function MobileProducts() {
   const navigate = useNavigate();
@@ -64,14 +65,48 @@ export default function MobileProducts() {
     type: selectedType || undefined,
   });
 
-  // Scanner physique unifié
+  // Recherche produit par code-barres dans la BDD (pas dans la liste locale)
+  const findProductByBarcode = useCallback(async (barcode: string) => {
+    // D'abord chercher dans product_barcodes
+    const { data: barcodeMatch } = await supabase
+      .from('product_barcodes')
+      .select('product_id')
+      .eq('barcode', barcode)
+      .limit(1);
+
+    if (barcodeMatch && barcodeMatch.length > 0) {
+      return barcodeMatch[0].product_id;
+    }
+
+    // Sinon chercher dans products.barcode
+    const { data: productMatch } = await supabase
+      .from('products')
+      .select('id')
+      .eq('barcode', barcode)
+      .eq('is_active', true)
+      .limit(1);
+
+    if (productMatch && productMatch.length > 0) {
+      return productMatch[0].id;
+    }
+
+    return null;
+  }, []);
+
+  // Scanner physique unifié - recherche dans la BDD
   useBarcodeScanner({
-    onScan: (barcode) => {
-      const product = products.find(p => p.barcode === barcode);
-      if (product) {
-        navigate(`/mobile/product/${product.id}`);
+    onScan: async (barcode) => {
+      const productId = await findProductByBarcode(barcode);
+      if (productId) {
+        navigate(`/mobile/product/${productId}`);
       } else {
-        toast.error('Produit non trouvé');
+        toast.error('Produit non trouvé', {
+          description: `Code-barres: ${barcode}`,
+          action: {
+            label: 'Créer',
+            onClick: () => navigate(`/mobile/product/new?barcode=${barcode}`),
+          },
+        });
       }
     },
     enabled: true,
