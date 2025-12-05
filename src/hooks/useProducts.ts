@@ -342,14 +342,14 @@ export const useAdvancedSearchProducts = (params: AdvancedSearchParams) => {
       }
 
       const { data, error } = await query
-        .order('name')
-        .limit(100);
+        .order('name');
 
       if (error) throw error;
       return data as Product[];
     },
     enabled: true,
     staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 };
 
