@@ -26,19 +26,36 @@ export const useProducts = () => {
   return useQuery({
     queryKey: ['products'],
     queryFn: async () => {
-      console.log('[useProducts] Fetching all products...');
-      const { data, error, count } = await supabase
-        .from('products')
-        .select('*', { count: 'exact' })
-        .eq('is_active', true)
-        .order('name')
-        .limit(10000);
+      console.log('[useProducts] Fetching all products with pagination...');
+      const allProducts: Product[] = [];
+      const pageSize = 1000;
+      let page = 0;
+      let hasMore = true;
 
-      if (error) throw error;
-      console.log(`[useProducts] Loaded ${data?.length} products (total in DB: ${count})`);
-      return data as Product[];
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true)
+          .order('name')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          allProducts.push(...(data as Product[]));
+          hasMore = data.length === pageSize;
+          page++;
+          console.log(`[useProducts] Page ${page}: loaded ${data.length} products`);
+        } else {
+          hasMore = false;
+        }
+      }
+
+      console.log(`[useProducts] Total loaded: ${allProducts.length} products`);
+      return allProducts;
     },
-    staleTime: 0, // Toujours refetch pour corriger le problème de cache
+    staleTime: 0,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
@@ -48,18 +65,37 @@ export const useProductsByCategory = (categoryId?: string) => {
   return useQuery({
     queryKey: ['products', 'category', categoryId],
     queryFn: async () => {
-      let query = supabase
-        .from('products')
-        .select('*')
-        .eq('is_active', true);
+      const allProducts: Product[] = [];
+      const pageSize = 1000;
+      let page = 0;
+      let hasMore = true;
 
-      if (categoryId) {
-        query = query.eq('category_id', categoryId);
+      while (hasMore) {
+        let query = supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true);
+
+        if (categoryId) {
+          query = query.eq('category_id', categoryId);
+        }
+
+        const { data, error } = await query
+          .order('name')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          allProducts.push(...(data as Product[]));
+          hasMore = data.length === pageSize;
+          page++;
+        } else {
+          hasMore = false;
+        }
       }
 
-      const { data, error } = await query.order('name').limit(10000);
-      if (error) throw error;
-      return data as Product[];
+      return allProducts;
     },
     enabled: categoryId !== undefined,
     staleTime: 30000,
@@ -302,58 +338,76 @@ export const useAdvancedSearchProducts = (params: AdvancedSearchParams) => {
   return useQuery({
     queryKey: ['products', 'advanced-search', params],
     queryFn: async () => {
-      let query = supabase
-        .from('products')
-        .select('*')
-        .eq('is_active', true);
+      console.log('[useAdvancedSearchProducts] Fetching with pagination...');
+      const allProducts: Product[] = [];
+      const pageSize = 1000;
+      let page = 0;
+      let hasMore = true;
 
-      // Search by name or barcode
-      if (searchTerm && searchTerm.trim()) {
-        const trimmed = searchTerm.trim();
-        query = query.or(`name.ilike.%${trimmed}%,barcode.ilike.%${trimmed}%`);
+      while (hasMore) {
+        let query = supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true);
+
+        // Search by name or barcode
+        if (searchTerm && searchTerm.trim()) {
+          const trimmed = searchTerm.trim();
+          query = query.or(`name.ilike.%${trimmed}%,barcode.ilike.%${trimmed}%`);
+        }
+
+        // Filter by price range
+        if (priceMin !== undefined && priceMin > 0) {
+          query = query.gte('price', priceMin);
+        }
+        if (priceMax !== undefined && priceMax > 0) {
+          query = query.lte('price', priceMax);
+        }
+
+        // Filter by supplier
+        if (supplier && supplier.trim()) {
+          query = query.ilike('supplier', `%${supplier.trim()}%`);
+        }
+
+        // Filter by category
+        if (categoryId && categoryId !== 'all') {
+          query = query.eq('category_id', categoryId);
+        }
+
+        // Filter by stock range
+        if (stockMin !== undefined) {
+          query = query.gte('stock', stockMin);
+        }
+        if (stockMax !== undefined) {
+          query = query.lte('stock', stockMax);
+        }
+
+        // Filter by type
+        if (type) {
+          query = query.eq('type', type);
+        }
+
+        const { data, error } = await query
+          .order('name')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          allProducts.push(...(data as Product[]));
+          hasMore = data.length === pageSize;
+          page++;
+        } else {
+          hasMore = false;
+        }
       }
 
-      // Filter by price range
-      if (priceMin !== undefined && priceMin > 0) {
-        query = query.gte('price', priceMin);
-      }
-      if (priceMax !== undefined && priceMax > 0) {
-        query = query.lte('price', priceMax);
-      }
-
-      // Filter by supplier
-      if (supplier && supplier.trim()) {
-        query = query.ilike('supplier', `%${supplier.trim()}%`);
-      }
-
-      // Filter by category
-      if (categoryId && categoryId !== 'all') {
-        query = query.eq('category_id', categoryId);
-      }
-
-      // Filter by stock range
-      if (stockMin !== undefined) {
-        query = query.gte('stock', stockMin);
-      }
-      if (stockMax !== undefined) {
-        query = query.lte('stock', stockMax);
-      }
-
-      // Filter by type
-      if (type) {
-        query = query.eq('type', type);
-      }
-
-      const { data, error } = await query
-        .order('name')
-        .limit(10000);
-
-      if (error) throw error;
-      return data as Product[];
+      console.log(`[useAdvancedSearchProducts] Total loaded: ${allProducts.length} products`);
+      return allProducts;
     },
     enabled: true,
-    staleTime: 30000,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 };
 
