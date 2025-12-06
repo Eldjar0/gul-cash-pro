@@ -148,7 +148,9 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
   let ubl = '<?xml version="1.0" encoding="UTF-8"?>\n';
   ubl += '<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"\n';
   ubl += '         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"\n';
-  ubl += '         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">\n';
+  ubl += '         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"\n';
+  ubl += '         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n';
+  ubl += '         xsi:schemaLocation="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2 http://docs.oasis-open.org/ubl/os-UBL-2.1/xsd/maindoc/UBL-Invoice-2.1.xsd">\n';
   
   // EN-TETES Peppol BIS Billing 3.0 (standard européen recommandé)
   ubl += '  <cbc:UBLVersionID>2.1</cbc:UBLVersionID>\n';
