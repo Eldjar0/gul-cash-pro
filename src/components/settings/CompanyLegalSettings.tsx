@@ -1,15 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Scale, Building2, CreditCard, Clock, Percent } from "lucide-react";
+import { Scale, Clock } from "lucide-react";
 
 interface CompanyLegalSettingsProps {
   settings: {
     legal_form?: string;
     bce_number?: string;
     head_office_address?: string;
-    bank_iban?: string;
-    bank_bic?: string;
     payment_terms_days?: number;
     late_interest_rate?: number;
   };
@@ -63,41 +61,6 @@ export function CompanyLegalSettings({ settings, onChange }: CompanyLegalSetting
               className="h-12"
             />
             <p className="text-xs text-muted-foreground">Si différent de l'adresse du commerce</p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Coordonnées bancaires */}
-      <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
-        <div className="flex items-start gap-4 mb-6">
-          <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl text-white">
-            <CreditCard className="h-6 w-6" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-bold">Coordonnées bancaires</h3>
-            <p className="text-sm text-muted-foreground">Pour le paiement des factures</p>
-          </div>
-        </div>
-        <div className="space-y-4">
-          <div className="space-y-3">
-            <Label htmlFor="bank_iban" className="text-base font-medium">IBAN *</Label>
-            <Input
-              id="bank_iban"
-              value={settings.bank_iban || ''}
-              onChange={(e) => onChange('bank_iban', e.target.value)}
-              placeholder="BE68 5390 0754 7034"
-              className="h-12"
-            />
-          </div>
-          <div className="space-y-3">
-            <Label htmlFor="bank_bic" className="text-base font-medium">BIC / SWIFT</Label>
-            <Input
-              id="bank_bic"
-              value={settings.bank_bic || ''}
-              onChange={(e) => onChange('bank_bic', e.target.value)}
-              placeholder="GKCCBEBB"
-              className="h-12"
-            />
           </div>
         </div>
       </Card>
