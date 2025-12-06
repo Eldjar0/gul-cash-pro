@@ -1100,7 +1100,7 @@ export default function Documents() {
 
             <Card className="bg-white overflow-hidden">
               <div className="overflow-x-auto">
-                <ScrollArea className="min-h-[300px] max-h-[calc(100vh-400px)]">
+                <ScrollArea className="min-h-[300px] max-h-[calc(100vh-400px)]" orientation="both">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -1415,7 +1415,7 @@ export default function Documents() {
               </div>
 
               <div className="overflow-x-auto">
-                <ScrollArea className="min-h-[300px] max-h-[calc(100vh-400px)]">
+                <ScrollArea className="min-h-[300px] max-h-[calc(100vh-400px)]" orientation="both">
                   <Table>
                     <TableHeader>
                       <TableRow>
