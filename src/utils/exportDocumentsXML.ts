@@ -27,8 +27,8 @@ function getVATCategoryCode(vatRate: number): string {
 }
 
 // Helper pour obtenir le nom de categorie TVA UBL.BE
+// Toujours retourner "TVA" car c'est la seule valeur acceptée par la liste BTCC belge (ubl-BE-10)
 function getVATCategoryName(vatRate: number): string {
-  if (vatRate === 0) return 'Exempt';
   return 'TVA';
 }
 
@@ -176,13 +176,12 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
   ubl += '  </cac:InvoicePeriod>\n';
   
   // REFERENCES ADDITIONNELLES (ubl-BE-01, ubl-BE-02, ubl-BE-03, ubl-BE-04)
-  // Reference 1: DocumentTypeCode 130 avec schemeID pour invoiced object (UBL-SR-43)
+  // Reference 1: DocumentTypeCode 130 - Invoiced Object (UBL-SR-43: pas de schemeID, ubl-CR-114: pas de DocumentType)
   ubl += '  <cac:AdditionalDocumentReference>\n';
-  ubl += '    <cbc:ID schemeID="AVV">' + escapeXML(doc.sale_number) + '</cbc:ID>\n';
+  ubl += '    <cbc:ID>' + escapeXML(doc.sale_number) + '</cbc:ID>\n';
   ubl += '    <cbc:DocumentTypeCode>130</cbc:DocumentTypeCode>\n';
-  ubl += '    <cbc:DocumentType>CommercialInvoice</cbc:DocumentType>\n';
   ubl += '  </cac:AdditionalDocumentReference>\n';
-  // Reference 2: UBL.BE obligatoire (ubl-BE-03)
+  // Reference 2: UBL.BE obligatoire (ubl-BE-02, ubl-BE-03, ubl-BE-04: DocumentType requis)
   ubl += '  <cac:AdditionalDocumentReference>\n';
   ubl += '    <cbc:ID>UBL.BE</cbc:ID>\n';
   ubl += '    <cbc:DocumentTypeCode>380</cbc:DocumentTypeCode>\n';
