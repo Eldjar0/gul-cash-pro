@@ -97,6 +97,8 @@ import {
 import { InvoiceEditor } from '@/components/invoices/InvoiceEditor';
 import { exportDocumentsToPDF } from '@/utils/exportDocumentsPDF';
 import { exportToXML, exportToUBL, exportToCSV } from '@/utils/exportDocumentsXML';
+import { validateUBLDocuments, UBLValidationResult } from '@/utils/validateUBL';
+import { UBLValidationDialog } from '@/components/documents/UBLValidationDialog';
 import { ProductSalesReport } from '@/components/dashboard/ProductSalesReport';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, subDays } from 'date-fns';
 import {
@@ -147,6 +149,13 @@ export default function Documents() {
   const [invoiceSelectionMode, setInvoiceSelectionMode] = useState(false);
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
   const [isExporting, setIsExporting] = useState(false);
+  
+  // Validation UBL
+  const [ublValidationOpen, setUblValidationOpen] = useState(false);
+  const [ublValidationResults, setUblValidationResults] = useState<Map<string, UBLValidationResult>>(new Map());
+  const [ublTotalErrors, setUblTotalErrors] = useState(0);
+  const [ublTotalWarnings, setUblTotalWarnings] = useState(0);
+  const [pendingUBLExport, setPendingUBLExport] = useState<{ documents: any[], type: 'single' | 'batch' } | null>(null);
   
   // Pagination et filtres
   const [salesPage, setSalesPage] = useState(1);
@@ -526,19 +535,58 @@ export default function Documents() {
     toast.success('Export XML généré');
   };
 
+  const getCompanyInfoForUBL = () => ({
+    name: companySettings.name,
+    address: companySettings.address,
+    city: companySettings.city,
+    postalCode: companySettings.postal_code,
+    vatNumber: companySettings.vat_number,
+    phone: companySettings.phone,
+    email: companySettings.email,
+    iban: companySettings.bank_iban,
+    bic: companySettings.bank_bic,
+    legalForm: companySettings.legal_form,
+    bceNumber: companySettings.bce_number,
+  });
+
+  const handleValidateAndExportUBL = (documents: any[], type: 'single' | 'batch') => {
+    const companyInfo = getCompanyInfoForUBL();
+    const { results, totalErrors, totalWarnings } = validateUBLDocuments(documents, companyInfo);
+    
+    setUblValidationResults(results);
+    setUblTotalErrors(totalErrors);
+    setUblTotalWarnings(totalWarnings);
+    setPendingUBLExport({ documents, type });
+    setUblValidationOpen(true);
+  };
+
+  const handleConfirmUBLExport = async () => {
+    if (!pendingUBLExport) return;
+    
+    setIsExporting(true);
+    try {
+      await exportToUBL({
+        documents: pendingUBLExport.documents,
+        type: 'invoices',
+        companyInfo: getCompanyInfoForUBL(),
+      });
+      toast.success(`${pendingUBLExport.documents.length} facture(s) UBL exportée(s)`);
+      setUblValidationOpen(false);
+      setPendingUBLExport(null);
+      
+      if (pendingUBLExport.type === 'batch') {
+        handleCancelInvoiceSelection();
+      }
+    } catch (error) {
+      console.error('Export UBL error:', error);
+      toast.error('Erreur lors de l\'export UBL');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleExportInvoicesUBL = () => {
-    exportToUBL({
-      documents: filteredInvoices,
-      type: 'invoices',
-      companyInfo: {
-        name: companySettings.name,
-        address: companySettings.address,
-        city: companySettings.city,
-        postalCode: companySettings.postal_code,
-        vatNumber: companySettings.vat_number,
-      },
-    });
-    toast.success('Export UBL généré');
+    handleValidateAndExportUBL(filteredInvoices, 'batch');
   };
 
   const handleExportInvoicesCSV = () => {
@@ -663,23 +711,9 @@ export default function Documents() {
           },
         });
       } else if (exportFormat === 'ubl') {
-        await exportToUBL({
-          documents: selectedSales,
-          type: 'invoices',
-          companyInfo: {
-            name: companySettings.name,
-            address: companySettings.address,
-            city: companySettings.city,
-            postalCode: companySettings.postal_code,
-            vatNumber: companySettings.vat_number,
-            phone: companySettings.phone,
-            email: companySettings.email,
-            iban: companySettings.bank_iban,
-            bic: companySettings.bank_bic,
-            legalForm: companySettings.legal_form,
-            bceNumber: companySettings.bce_number,
-          },
-        });
+        // Utiliser la validation UBL avant export
+        handleValidateAndExportUBL(selectedSales, 'batch');
+        return; // On sort car l'export sera fait après validation
       } else if (exportFormat === 'csv') {
         exportToCSV({
           documents: selectedSales,
@@ -715,23 +749,9 @@ export default function Documents() {
           },
         });
       } else if (exportFormat === 'ubl') {
-        await exportToUBL({
-          documents: [sale],
-          type: 'invoices',
-          companyInfo: {
-            name: companySettings.name,
-            address: companySettings.address,
-            city: companySettings.city,
-            postalCode: companySettings.postal_code,
-            vatNumber: companySettings.vat_number,
-            phone: companySettings.phone,
-            email: companySettings.email,
-            iban: companySettings.bank_iban,
-            bic: companySettings.bank_bic,
-            legalForm: companySettings.legal_form,
-            bceNumber: companySettings.bce_number,
-          },
-        });
+        // Utiliser la validation UBL avant export
+        handleValidateAndExportUBL([sale], 'single');
+        return; // On sort car l'export sera fait après validation
       } else if (exportFormat === 'csv') {
         exportToCSV({
           documents: [sale],
@@ -2304,6 +2324,17 @@ export default function Documents() {
         open={invoiceEditorOpen} 
         onOpenChange={setInvoiceEditorOpen}
         invoiceId={editingInvoiceId}
+      />
+
+      {/* Dialogue validation UBL.BE */}
+      <UBLValidationDialog
+        open={ublValidationOpen}
+        onOpenChange={setUblValidationOpen}
+        validationResults={ublValidationResults}
+        totalErrors={ublTotalErrors}
+        totalWarnings={ublTotalWarnings}
+        onConfirmExport={handleConfirmUBLExport}
+        isExporting={isExporting}
       />
       
       {/* Footer légal */}
