@@ -1,4 +1,4 @@
-// Validateur UBL.BE - Vérifie la conformité avant export
+// Validateur Peppol BIS Billing 3.0 - Vérifie la conformité avant export
 
 export interface UBLValidationError {
   code: string;
@@ -93,12 +93,12 @@ export function validateUBLDocument(
     });
   }
 
-  // BR-06: Numéro TVA vendeur recommandé pour BE
+  // BR-06: Numéro TVA vendeur recommandé pour Peppol
   if (!companyInfo?.vatNumber?.trim()) {
-    errors.push({
+    warnings.push({
       code: 'BR-06',
-      message: 'Le numéro de TVA du vendeur est obligatoire pour UBL.BE',
-      severity: 'error',
+      message: 'Le numéro de TVA du vendeur est recommandé pour Peppol BIS Billing 3.0',
+      severity: 'warning',
       field: 'company.vatNumber'
     });
   } else {
@@ -206,22 +206,22 @@ export function validateUBLDocument(
     });
   }
 
-  // === VALIDATIONS UBL.BE SPÉCIFIQUES ===
+  // === VALIDATIONS Peppol BIS Billing 3.0 SPÉCIFIQUES ===
 
-  // ubl-BE-11: Contact vendeur recommandé
+  // Contact vendeur recommandé
   if (!companyInfo?.phone && !companyInfo?.email) {
     warnings.push({
-      code: 'ubl-BE-11',
+      code: 'PEPPOL-CONTACT',
       message: 'Un téléphone ou email du vendeur est recommandé',
       severity: 'warning',
       field: 'company.contact'
     });
   }
 
-  // ubl-BE-12: IBAN recommandé pour paiement
+  // IBAN recommandé pour paiement
   if (!companyInfo?.iban?.trim()) {
     warnings.push({
-      code: 'ubl-BE-12',
+      code: 'PEPPOL-IBAN',
       message: 'L\'IBAN est recommandé pour les instructions de paiement',
       severity: 'warning',
       field: 'company.iban'
