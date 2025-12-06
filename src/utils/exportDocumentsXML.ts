@@ -101,84 +101,108 @@ export function exportToXML(options: ExportOptions): void {
   downloadFile(xml, `${type}_${format(new Date(), 'yyyy-MM-dd_HHmm')}.xml`, 'application/xml');
 }
 
-// Export UBL (Universal Business Language) - Format belge/européen
-export function exportToUBL(options: ExportOptions): void {
-  const { documents, companyInfo } = options;
-  
+// Génère le contenu UBL pour une seule facture
+function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']): string {
   let ubl = '<?xml version="1.0" encoding="UTF-8"?>\n';
   ubl += '<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">\n';
   
-  documents.forEach((doc, index) => {
-    if (index > 0) {
-      ubl += '\n<!-- Facture suivante -->\n\n';
+  ubl += `  <cbc:ID>${escapeXML(doc.sale_number)}</cbc:ID>\n`;
+  ubl += `  <cbc:IssueDate>${format(new Date(doc.date), 'yyyy-MM-dd')}</cbc:IssueDate>\n`;
+  ubl += `  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>\n`;
+  ubl += `  <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>\n`;
+  
+  if (companyInfo) {
+    ubl += '  <cac:AccountingSupplierParty>\n';
+    ubl += '    <cac:Party>\n';
+    ubl += `      <cbc:EndpointID schemeID="BE:VAT">${escapeXML(companyInfo.vatNumber || '')}</cbc:EndpointID>\n`;
+    ubl += '      <cac:PartyName>\n';
+    ubl += `        <cbc:Name>${escapeXML(companyInfo.name)}</cbc:Name>\n`;
+    ubl += '      </cac:PartyName>\n';
+    if (companyInfo.address) {
+      ubl += '      <cac:PostalAddress>\n';
+      ubl += `        <cbc:StreetName>${escapeXML(companyInfo.address)}</cbc:StreetName>\n`;
+      ubl += `        <cbc:CityName>${escapeXML(companyInfo.city || '')}</cbc:CityName>\n`;
+      ubl += `        <cbc:PostalZone>${escapeXML(companyInfo.postalCode || '')}</cbc:PostalZone>\n`;
+      ubl += '        <cac:Country>\n';
+      ubl += '          <cbc:IdentificationCode>BE</cbc:IdentificationCode>\n';
+      ubl += '        </cac:Country>\n';
+      ubl += '      </cac:PostalAddress>\n';
     }
-    
-    ubl += `  <cbc:ID>${escapeXML(doc.sale_number)}</cbc:ID>\n`;
-    ubl += `  <cbc:IssueDate>${format(new Date(doc.date), 'yyyy-MM-dd')}</cbc:IssueDate>\n`;
-    ubl += `  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>\n`;
-    ubl += `  <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>\n`;
-    
-    if (companyInfo) {
-      ubl += '  <cac:AccountingSupplierParty>\n';
-      ubl += '    <cac:Party>\n';
-      ubl += `      <cbc:EndpointID schemeID="BE:VAT">${escapeXML(companyInfo.vatNumber || '')}</cbc:EndpointID>\n`;
-      ubl += '      <cac:PartyName>\n';
-      ubl += `        <cbc:Name>${escapeXML(companyInfo.name)}</cbc:Name>\n`;
-      ubl += '      </cac:PartyName>\n';
-      if (companyInfo.address) {
-        ubl += '      <cac:PostalAddress>\n';
-        ubl += `        <cbc:StreetName>${escapeXML(companyInfo.address)}</cbc:StreetName>\n`;
-        ubl += `        <cbc:CityName>${escapeXML(companyInfo.city || '')}</cbc:CityName>\n`;
-        ubl += `        <cbc:PostalZone>${escapeXML(companyInfo.postalCode || '')}</cbc:PostalZone>\n`;
-        ubl += '        <cac:Country>\n';
-        ubl += '          <cbc:IdentificationCode>BE</cbc:IdentificationCode>\n';
-        ubl += '        </cac:Country>\n';
-        ubl += '      </cac:PostalAddress>\n';
-      }
-      ubl += '    </cac:Party>\n';
-      ubl += '  </cac:AccountingSupplierParty>\n';
+    ubl += '    </cac:Party>\n';
+    ubl += '  </cac:AccountingSupplierParty>\n';
+  }
+  
+  if (doc.customers) {
+    ubl += '  <cac:AccountingCustomerParty>\n';
+    ubl += '    <cac:Party>\n';
+    if (doc.customers.vat_number) {
+      ubl += `      <cbc:EndpointID schemeID="BE:VAT">${escapeXML(doc.customers.vat_number)}</cbc:EndpointID>\n`;
     }
-    
-    if (doc.customers) {
-      ubl += '  <cac:AccountingCustomerParty>\n';
-      ubl += '    <cac:Party>\n';
-      if (doc.customers.vat_number) {
-        ubl += `      <cbc:EndpointID schemeID="BE:VAT">${escapeXML(doc.customers.vat_number)}</cbc:EndpointID>\n`;
-      }
-      ubl += '      <cac:PartyName>\n';
-      ubl += `        <cbc:Name>${escapeXML(doc.customers.name)}</cbc:Name>\n`;
-      ubl += '      </cac:PartyName>\n';
-      ubl += '    </cac:Party>\n';
-      ubl += '  </cac:AccountingCustomerParty>\n';
-    }
-    
-    ubl += '  <cac:LegalMonetaryTotal>\n';
-    ubl += `    <cbc:LineExtensionAmount currencyID="EUR">${doc.subtotal.toFixed(2)}</cbc:LineExtensionAmount>\n`;
-    ubl += `    <cbc:TaxExclusiveAmount currencyID="EUR">${doc.subtotal.toFixed(2)}</cbc:TaxExclusiveAmount>\n`;
-    ubl += `    <cbc:TaxInclusiveAmount currencyID="EUR">${doc.total.toFixed(2)}</cbc:TaxInclusiveAmount>\n`;
-    ubl += `    <cbc:PayableAmount currencyID="EUR">${doc.total.toFixed(2)}</cbc:PayableAmount>\n`;
-    ubl += '  </cac:LegalMonetaryTotal>\n';
-    
-    if (doc.sale_items?.length > 0) {
-      doc.sale_items.forEach((item: any, idx: number) => {
-        ubl += '  <cac:InvoiceLine>\n';
-        ubl += `    <cbc:ID>${idx + 1}</cbc:ID>\n`;
-        ubl += `    <cbc:InvoicedQuantity unitCode="C62">${item.quantity}</cbc:InvoicedQuantity>\n`;
-        ubl += `    <cbc:LineExtensionAmount currencyID="EUR">${item.subtotal.toFixed(2)}</cbc:LineExtensionAmount>\n`;
-        ubl += '    <cac:Item>\n';
-        ubl += `      <cbc:Name>${escapeXML(item.product_name)}</cbc:Name>\n`;
-        ubl += '    </cac:Item>\n';
-        ubl += '    <cac:Price>\n';
-        ubl += `      <cbc:PriceAmount currencyID="EUR">${item.unit_price.toFixed(2)}</cbc:PriceAmount>\n`;
-        ubl += '    </cac:Price>\n';
-        ubl += '  </cac:InvoiceLine>\n';
-      });
-    }
-  });
+    ubl += '      <cac:PartyName>\n';
+    ubl += `        <cbc:Name>${escapeXML(doc.customers.name)}</cbc:Name>\n`;
+    ubl += '      </cac:PartyName>\n';
+    ubl += '    </cac:Party>\n';
+    ubl += '  </cac:AccountingCustomerParty>\n';
+  }
+  
+  ubl += '  <cac:LegalMonetaryTotal>\n';
+  ubl += `    <cbc:LineExtensionAmount currencyID="EUR">${doc.subtotal.toFixed(2)}</cbc:LineExtensionAmount>\n`;
+  ubl += `    <cbc:TaxExclusiveAmount currencyID="EUR">${doc.subtotal.toFixed(2)}</cbc:TaxExclusiveAmount>\n`;
+  ubl += `    <cbc:TaxInclusiveAmount currencyID="EUR">${doc.total.toFixed(2)}</cbc:TaxInclusiveAmount>\n`;
+  ubl += `    <cbc:PayableAmount currencyID="EUR">${doc.total.toFixed(2)}</cbc:PayableAmount>\n`;
+  ubl += '  </cac:LegalMonetaryTotal>\n';
+  
+  if (doc.sale_items?.length > 0) {
+    doc.sale_items.forEach((item: any, idx: number) => {
+      ubl += '  <cac:InvoiceLine>\n';
+      ubl += `    <cbc:ID>${idx + 1}</cbc:ID>\n`;
+      ubl += `    <cbc:InvoicedQuantity unitCode="C62">${item.quantity}</cbc:InvoicedQuantity>\n`;
+      ubl += `    <cbc:LineExtensionAmount currencyID="EUR">${item.subtotal.toFixed(2)}</cbc:LineExtensionAmount>\n`;
+      ubl += '    <cac:Item>\n';
+      ubl += `      <cbc:Name>${escapeXML(item.product_name)}</cbc:Name>\n`;
+      ubl += '    </cac:Item>\n';
+      ubl += '    <cac:Price>\n';
+      ubl += `      <cbc:PriceAmount currencyID="EUR">${item.unit_price.toFixed(2)}</cbc:PriceAmount>\n`;
+      ubl += '    </cac:Price>\n';
+      ubl += '  </cac:InvoiceLine>\n';
+    });
+  }
   
   ubl += '</Invoice>';
+  return ubl;
+}
+
+// Export UBL (Universal Business Language) - Format belge/européen
+// Pour une seule facture: télécharge directement le XML
+// Pour plusieurs factures: crée un ZIP avec un fichier XML par facture
+export async function exportToUBL(options: ExportOptions): Promise<void> {
+  const { documents, companyInfo } = options;
   
-  downloadFile(ubl, `factures_ubl_${format(new Date(), 'yyyy-MM-dd_HHmm')}.xml`, 'application/xml');
+  if (documents.length === 1) {
+    // Une seule facture: téléchargement direct
+    const ubl = generateUBLContent(documents[0], companyInfo);
+    downloadFile(ubl, `facture_ubl_${documents[0].sale_number}_${format(new Date(), 'yyyy-MM-dd')}.xml`, 'application/xml');
+  } else {
+    // Plusieurs factures: créer un ZIP
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+    
+    documents.forEach(doc => {
+      const ubl = generateUBLContent(doc, companyInfo);
+      const filename = `facture_ubl_${doc.sale_number.replace(/[^a-zA-Z0-9-_]/g, '_')}.xml`;
+      zip.file(filename, ubl);
+    });
+    
+    const content = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(content);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `factures_ubl_${format(new Date(), 'yyyy-MM-dd')}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
 }
 
 // Export CSV
