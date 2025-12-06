@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,8 @@ import { format, addDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import logoInvoice from '@/assets/logo-invoice.png';
+import { validateUBLDocument, UBLValidationResult } from '@/utils/validateUBL';
+import { UBLWarningAlert } from './UBLWarningAlert';
 
 interface InvoiceEditorProps {
   open: boolean;
@@ -265,6 +267,40 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     return calculateSubtotal() + calculateTotalVat();
   };
 
+  // Validation UBL en temps réel
+  const ublValidation = useMemo((): UBLValidationResult => {
+    return validateUBLDocument({
+      sale_number: invoiceNumber,
+      date: invoiceDate,
+      customers: {
+        name: clientName,
+        vat_number: clientVatNumber,
+        address: clientAddress,
+        city: clientCity,
+        postal_code: clientPostalCode,
+      },
+      sale_items: items.map(item => ({
+        product_name: item.description,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+        vat_rate: item.vatRate,
+      })),
+      subtotal: calculateSubtotal(),
+      total_vat: calculateTotalVat(),
+      total: calculateTotal(),
+    }, {
+      name: settings.name,
+      vatNumber: settings.vat_number,
+      address: settings.address,
+      city: settings.city,
+      postalCode: settings.postal_code,
+      phone: settings.phone,
+      email: settings.email,
+      iban: settings.bank_iban,
+      bic: settings.bank_bic,
+    });
+  }, [invoiceNumber, invoiceDate, clientName, clientVatNumber, clientAddress, clientCity, clientPostalCode, items, settings]);
+
   const getPaymentConditions = () => {
     if (!dueDate) return '';
     const dueDateObj = new Date(dueDate);
@@ -289,6 +325,13 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     if (!isValid) {
       toast.error('Ce numéro de facture existe déjà. Veuillez en choisir un autre.');
       return;
+    }
+
+    // Avertissement UBL (informatif, ne bloque pas)
+    if (ublValidation.errors.length > 0 || ublValidation.warnings.length > 0) {
+      toast.warning('Conformité UBL.BE', {
+        description: `${ublValidation.errors.length} erreur(s), ${ublValidation.warnings.length} avertissement(s) pour l'export UBL`,
+      });
     }
 
     setLoading(true);
@@ -447,6 +490,15 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                 </Button>
               </div>
             </div>
+            
+            {/* UBL Warning Alert */}
+            {(ublValidation.errors.length > 0 || ublValidation.warnings.length > 0) && (
+              <div className="px-4 sm:px-6 pb-0 pt-3 bg-gray-100">
+                <div className="mx-auto max-w-[21cm]">
+                  <UBLWarningAlert validation={ublValidation} />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* A4 Invoice Content */}
