@@ -672,6 +672,12 @@ export default function Documents() {
             city: companySettings.city,
             postalCode: companySettings.postal_code,
             vatNumber: companySettings.vat_number,
+            phone: companySettings.phone,
+            email: companySettings.email,
+            iban: companySettings.bank_iban,
+            bic: companySettings.bank_bic,
+            legalForm: companySettings.legal_form,
+            bceNumber: companySettings.bce_number,
           },
         });
       } else if (exportFormat === 'csv') {
@@ -718,6 +724,12 @@ export default function Documents() {
             city: companySettings.city,
             postalCode: companySettings.postal_code,
             vatNumber: companySettings.vat_number,
+            phone: companySettings.phone,
+            email: companySettings.email,
+            iban: companySettings.bank_iban,
+            bic: companySettings.bank_bic,
+            legalForm: companySettings.legal_form,
+            bceNumber: companySettings.bce_number,
           },
         });
       } else if (exportFormat === 'csv') {
