@@ -663,7 +663,7 @@ export default function Documents() {
           },
         });
       } else if (exportFormat === 'ubl') {
-        exportToUBL({
+        await exportToUBL({
           documents: selectedSales,
           type: 'invoices',
           companyInfo: {
@@ -709,7 +709,7 @@ export default function Documents() {
           },
         });
       } else if (exportFormat === 'ubl') {
-        exportToUBL({
+        await exportToUBL({
           documents: [sale],
           type: 'invoices',
           companyInfo: {
