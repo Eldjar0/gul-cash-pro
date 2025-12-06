@@ -1100,7 +1100,7 @@ export default function Documents() {
 
             <Card className="bg-white overflow-hidden">
               <div className="overflow-x-auto">
-                <ScrollArea className="h-[calc(100vh-600px)]">
+                <ScrollArea className="min-h-[300px] max-h-[calc(100vh-400px)]">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -1415,7 +1415,7 @@ export default function Documents() {
               </div>
 
               <div className="overflow-x-auto">
-                <ScrollArea className="h-[calc(100vh-600px)]">
+                <ScrollArea className="min-h-[300px] max-h-[calc(100vh-400px)]">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -1773,7 +1773,7 @@ export default function Documents() {
               </Button>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-500px)]">
+            <ScrollArea className="min-h-[300px] max-h-[calc(100vh-400px)]">
               <div className="space-y-3">
                 {paginatedRefunds.map((refund) => (
                   <Card key={refund.id} className="p-4 bg-white hover:shadow-lg transition-shadow">
