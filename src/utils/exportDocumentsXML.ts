@@ -26,11 +26,8 @@ function getVATCategoryCode(vatRate: number): string {
   return 'S';
 }
 
-// Helper pour obtenir le nom de categorie TVA UBL.BE
-// Toujours retourner "TVA" car c'est la seule valeur acceptée par la liste BTCC belge (ubl-BE-10)
-function getVATCategoryName(vatRate: number): string {
-  return 'TVA';
-}
+// Note: Peppol BIS Billing 3.0 ne requiert pas le champ Name dans TaxCategory
+// La fonction getVATCategoryName a été supprimée car non nécessaire
 
 // Helper pour calculer la ventilation TVA par taux
 function calculateVATBreakdown(items: any[]): { vatRate: number; taxableAmount: number; taxAmount: number }[] {
@@ -139,7 +136,7 @@ export function exportToXML(options: ExportOptions): void {
   downloadFile(xml, type + '_' + format(new Date(), 'yyyy-MM-dd_HHmm') + '.xml', 'application/xml');
 }
 
-// Genere le contenu UBL conforme UBL.BE (Belgique) BIS Billing 3.0
+// Génère le contenu UBL conforme Peppol BIS Billing 3.0 (EN16931)
 function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']): string {
   const invoiceDate = format(new Date(doc.date), 'yyyy-MM-dd');
   const dueDate = doc.due_date 
@@ -153,9 +150,9 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
   ubl += '         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"\n';
   ubl += '         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">\n';
   
-  // EN-TETES UBL.BE OBLIGATOIRES
+  // EN-TETES Peppol BIS Billing 3.0 (standard européen recommandé)
   ubl += '  <cbc:UBLVersionID>2.1</cbc:UBLVersionID>\n';
-  ubl += '  <cbc:CustomizationID>urn:cen.eu:en16931:2017#conformant#urn:UBL.BE:1.0.0.20180214</cbc:CustomizationID>\n';
+  ubl += '  <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>\n';
   ubl += '  <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>\n';
   
   // IDENTIFICATION DU DOCUMENT
@@ -352,7 +349,7 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
   ubl += '    <cbc:Note>Paiement a reception de facture</cbc:Note>\n';
   ubl += '  </cac:PaymentTerms>\n';
   
-  // VENTILATION TVA (BG-23) avec Name (ubl-BE-10)
+  // VENTILATION TVA (BG-23) - Peppol BIS Billing 3.0 (sans Name)
   ubl += '  <cac:TaxTotal>\n';
   ubl += '    <cbc:TaxAmount currencyID="EUR">' + (doc.total_vat || 0).toFixed(2) + '</cbc:TaxAmount>\n';
   
@@ -363,7 +360,6 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
       ubl += '      <cbc:TaxAmount currencyID="EUR">' + vat.taxAmount.toFixed(2) + '</cbc:TaxAmount>\n';
       ubl += '      <cac:TaxCategory>\n';
       ubl += '        <cbc:ID>' + getVATCategoryCode(vat.vatRate) + '</cbc:ID>\n';
-      ubl += '        <cbc:Name>' + getVATCategoryName(vat.vatRate) + '</cbc:Name>\n';
       ubl += '        <cbc:Percent>' + vat.vatRate.toFixed(2) + '</cbc:Percent>\n';
       ubl += '        <cac:TaxScheme>\n';
       ubl += '          <cbc:ID>VAT</cbc:ID>\n';
@@ -377,7 +373,6 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
     ubl += '      <cbc:TaxAmount currencyID="EUR">' + (doc.total_vat || 0).toFixed(2) + '</cbc:TaxAmount>\n';
     ubl += '      <cac:TaxCategory>\n';
     ubl += '        <cbc:ID>S</cbc:ID>\n';
-    ubl += '        <cbc:Name>TVA</cbc:Name>\n';
     ubl += '        <cbc:Percent>21.00</cbc:Percent>\n';
     ubl += '        <cac:TaxScheme>\n';
     ubl += '          <cbc:ID>VAT</cbc:ID>\n';
@@ -426,10 +421,9 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
         ubl += '      </cac:SellersItemIdentification>\n';
       }
       
-      // ClassifiedTaxCategory avec Name (ubl-BE-15)
+      // ClassifiedTaxCategory - Peppol BIS Billing 3.0 (sans Name)
       ubl += '      <cac:ClassifiedTaxCategory>\n';
       ubl += '        <cbc:ID>' + getVATCategoryCode(itemVatRate) + '</cbc:ID>\n';
-      ubl += '        <cbc:Name>' + getVATCategoryName(itemVatRate) + '</cbc:Name>\n';
       ubl += '        <cbc:Percent>' + itemVatRate.toFixed(2) + '</cbc:Percent>\n';
       ubl += '        <cac:TaxScheme>\n';
       ubl += '          <cbc:ID>VAT</cbc:ID>\n';
