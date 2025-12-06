@@ -379,6 +379,15 @@ export const downloadInvoicePDF = async (invoice: InvoiceData) => {
   doc.save(filename);
 };
 
+export const getInvoicePDFBlob = async (invoice: InvoiceData): Promise<Blob> => {
+  const doc = await generateInvoicePDF(invoice);
+  return doc.output('blob');
+};
+
+export const getInvoicePDFFilename = (invoice: InvoiceData): string => {
+  return `${invoice.saleNumber.replace(/\//g, '-')}.pdf`;
+};
+
 export const previewInvoicePDF = async (invoice: InvoiceData) => {
   const doc = await generateInvoicePDF(invoice);
   const pdfBlob = doc.output('blob');

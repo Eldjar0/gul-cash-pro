@@ -82,7 +82,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { downloadInvoicePDF, previewInvoicePDF } from '@/utils/generateInvoicePDF';
+import { downloadInvoicePDF, previewInvoicePDF, getInvoicePDFBlob, getInvoicePDFFilename } from '@/utils/generateInvoicePDF';
+import JSZip from 'jszip';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -141,6 +142,11 @@ export default function Documents() {
   // Mode sélection pour créer une facture
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
+  
+  // Mode sélection pour exporter des factures
+  const [invoiceSelectionMode, setInvoiceSelectionMode] = useState(false);
+  const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
   
   // Pagination et filtres
   const [salesPage, setSalesPage] = useState(1);
@@ -541,6 +547,190 @@ export default function Documents() {
       type: 'invoices',
     });
     toast.success('Export CSV généré');
+  };
+
+  // Fonctions pour le mode sélection de factures
+  const handleToggleInvoiceSelection = (invoiceId: string) => {
+    setSelectedInvoices(prev => 
+      prev.includes(invoiceId) 
+        ? prev.filter(id => id !== invoiceId)
+        : [...prev, invoiceId]
+    );
+  };
+
+  const handleSelectAllInvoices = () => {
+    if (selectedInvoices.length === paginatedInvoices.length) {
+      setSelectedInvoices([]);
+    } else {
+      setSelectedInvoices(paginatedInvoices.map(inv => inv.id));
+    }
+  };
+
+  const handleCancelInvoiceSelection = () => {
+    setInvoiceSelectionMode(false);
+    setSelectedInvoices([]);
+  };
+
+  const prepareInvoiceData = async (sale: any) => {
+    const { data: settingsData } = await supabase
+      .from('settings')
+      .select('*')
+      .eq('key', 'invoice_settings')
+      .maybeSingle();
+    
+    const invoiceSettings = settingsData?.value as any;
+    const bankAccounts = invoiceSettings?.bank_accounts || [];
+    const isPaid = sale.invoice_status === 'payée';
+    
+    return {
+      saleNumber: sale.sale_number,
+      date: new Date(sale.date),
+      dueDate: sale.due_date ? new Date(sale.due_date) : undefined,
+      structuredCommunication: sale.structured_communication,
+      isPaid,
+      bankAccounts,
+      company: {
+        name: companySettings.name,
+        address: companySettings.address,
+        city: companySettings.city,
+        postalCode: companySettings.postal_code,
+        vatNumber: companySettings.vat_number,
+        phone: companySettings.phone,
+        email: companySettings.email,
+      },
+      customer: sale.customers ? {
+        name: sale.customers.name,
+        vatNumber: sale.customers.vat_number,
+        address: sale.customers.address,
+        city: sale.customers.city,
+        postalCode: sale.customers.postal_code,
+      } : undefined,
+      items: sale.sale_items?.map((item: any) => ({
+        description: item.product_name,
+        quantity: item.quantity,
+        unitPrice: item.unit_price,
+        vatRate: item.vat_rate,
+        subtotal: item.subtotal,
+        vatAmount: item.vat_amount,
+        total: item.total,
+      })) || [],
+      subtotal: sale.subtotal,
+      totalVat: sale.total_vat,
+      total: sale.total,
+      notes: sale.notes,
+    };
+  };
+
+  const handleExportSelectedInvoices = async (exportFormat: 'pdf' | 'xml' | 'ubl' | 'csv') => {
+    if (selectedInvoices.length === 0) {
+      toast.error('Veuillez sélectionner au moins une facture');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const selectedSales = invoices.filter(inv => selectedInvoices.includes(inv.id));
+      
+      if (exportFormat === 'pdf') {
+        const zip = new JSZip();
+        
+        for (const sale of selectedSales) {
+          const invoiceData = await prepareInvoiceData(sale);
+          const blob = await getInvoicePDFBlob(invoiceData);
+          const filename = getInvoicePDFFilename(invoiceData);
+          zip.file(filename, blob);
+        }
+        
+        const content = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(content);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `factures_${format(new Date(), 'yyyy-MM-dd')}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else if (exportFormat === 'xml') {
+        exportToXML({
+          documents: selectedSales,
+          type: 'invoices',
+          companyInfo: {
+            name: companySettings.name,
+            address: companySettings.address,
+            city: companySettings.city,
+            postalCode: companySettings.postal_code,
+            vatNumber: companySettings.vat_number,
+          },
+        });
+      } else if (exportFormat === 'ubl') {
+        exportToUBL({
+          documents: selectedSales,
+          type: 'invoices',
+          companyInfo: {
+            name: companySettings.name,
+            address: companySettings.address,
+            city: companySettings.city,
+            postalCode: companySettings.postal_code,
+            vatNumber: companySettings.vat_number,
+          },
+        });
+      } else if (exportFormat === 'csv') {
+        exportToCSV({
+          documents: selectedSales,
+          type: 'invoices',
+        });
+      }
+      
+      toast.success(`${selectedInvoices.length} facture(s) exportée(s)`);
+      handleCancelInvoiceSelection();
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Erreur lors de l\'export');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Export individuel d'une facture dans un format spécifique
+  const handleExportSingleInvoice = async (sale: any, exportFormat: 'pdf' | 'xml' | 'ubl' | 'csv') => {
+    try {
+      if (exportFormat === 'pdf') {
+        await handleDownloadInvoice(sale);
+      } else if (exportFormat === 'xml') {
+        exportToXML({
+          documents: [sale],
+          type: 'invoices',
+          companyInfo: {
+            name: companySettings.name,
+            address: companySettings.address,
+            city: companySettings.city,
+            postalCode: companySettings.postal_code,
+            vatNumber: companySettings.vat_number,
+          },
+        });
+      } else if (exportFormat === 'ubl') {
+        exportToUBL({
+          documents: [sale],
+          type: 'invoices',
+          companyInfo: {
+            name: companySettings.name,
+            address: companySettings.address,
+            city: companySettings.city,
+            postalCode: companySettings.postal_code,
+            vatNumber: companySettings.vat_number,
+          },
+        });
+      } else if (exportFormat === 'csv') {
+        exportToCSV({
+          documents: [sale],
+          type: 'invoices',
+        });
+      }
+      toast.success(`Facture ${sale.sale_number} exportée`);
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Erreur lors de l\'export');
+    }
   };
 
   const handleViewReceipt = (sale: any) => {
@@ -1354,34 +1544,61 @@ export default function Documents() {
                   )}
                 </div>
                 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-2">
-                      <FileDown className="h-4 w-4" />
-                      Exporter
+                {!invoiceSelectionMode ? (
+                  <Button 
+                    variant="outline" 
+                    className="gap-2"
+                    onClick={() => setInvoiceSelectionMode(true)}
+                  >
+                    <FileDown className="h-4 w-4" />
+                    Exporter (sélection)
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      {selectedInvoices.length} sélectionnée(s)
+                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="default" 
+                          className="gap-2"
+                          disabled={selectedInvoices.length === 0 || isExporting}
+                        >
+                          <FileDown className="h-4 w-4" />
+                          {isExporting ? 'Export...' : 'Exporter'}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 bg-background z-50">
+                        <DropdownMenuLabel>Format d'export</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleExportSelectedInvoices('pdf')}>
+                          <FileDown className="h-4 w-4 mr-2" />
+                          PDF (ZIP)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExportSelectedInvoices('xml')}>
+                          <FileDown className="h-4 w-4 mr-2" />
+                          XML Standard
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExportSelectedInvoices('ubl')}>
+                          <FileDown className="h-4 w-4 mr-2" />
+                          UBL (Format belge)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExportSelectedInvoices('csv')}>
+                          <FileDown className="h-4 w-4 mr-2" />
+                          CSV (Excel)
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={handleCancelInvoiceSelection}
+                    >
+                      <X className="h-4 w-4" />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 bg-background z-50">
-                    <DropdownMenuLabel>Formats disponibles</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleExportInvoicesPDF}>
-                      <FileDown className="h-4 w-4 mr-2" />
-                      PDF (Art. 315bis CIR92)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportInvoicesXML}>
-                      <FileDown className="h-4 w-4 mr-2" />
-                      XML Standard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportInvoicesUBL}>
-                      <FileDown className="h-4 w-4 mr-2" />
-                      UBL (Format belge)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportInvoicesCSV}>
-                      <FileDown className="h-4 w-4 mr-2" />
-                      CSV (Excel)
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  </div>
+                )}
               </div>
             </Card>
 
@@ -1419,6 +1636,14 @@ export default function Documents() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        {invoiceSelectionMode && (
+                          <TableHead className="w-[50px]">
+                            <Checkbox
+                              checked={selectedInvoices.length === paginatedInvoices.length && paginatedInvoices.length > 0}
+                              onCheckedChange={handleSelectAllInvoices}
+                            />
+                          </TableHead>
+                        )}
                         <TableHead className="min-w-[120px]">Numéro</TableHead>
                         <TableHead className="min-w-[100px]">Statut</TableHead>
                         <TableHead className="min-w-[140px]">Date</TableHead>
@@ -1426,12 +1651,20 @@ export default function Documents() {
                         <TableHead className="min-w-[80px]">Articles</TableHead>
                         <TableHead className="text-right min-w-[100px]">Total HT</TableHead>
                         <TableHead className="text-right min-w-[100px]">Total TTC</TableHead>
-                        <TableHead className="text-right min-w-[150px]">Actions</TableHead>
+                        <TableHead className="text-right min-w-[180px]">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedInvoices.map((invoice) => (
                         <TableRow key={invoice.id}>
+                          {invoiceSelectionMode && (
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedInvoices.includes(invoice.id)}
+                                onCheckedChange={() => handleToggleInvoiceSelection(invoice.id)}
+                              />
+                            </TableCell>
+                          )}
                           <TableCell className="font-mono font-semibold">
                             {invoice.sale_number}
                           </TableCell>
@@ -1495,15 +1728,34 @@ export default function Documents() {
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleDownloadInvoice(invoice)} 
-                                className="h-8"
-                                title="Télécharger la facture"
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-8"
+                                    title="Exporter la facture"
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48 bg-background z-50">
+                                  <DropdownMenuLabel>Exporter</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => handleExportSingleInvoice(invoice, 'pdf')}>
+                                    PDF
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleExportSingleInvoice(invoice, 'xml')}>
+                                    XML
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleExportSingleInvoice(invoice, 'ubl')}>
+                                    UBL
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleExportSingleInvoice(invoice, 'csv')}>
+                                    CSV
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                               {invoice.is_cancelled ? (
                                 <Button 
                                   variant="ghost" 
