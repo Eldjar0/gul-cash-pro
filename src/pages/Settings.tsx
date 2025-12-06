@@ -32,6 +32,7 @@ interface BankAccount {
   id: string;
   bank_name: string;
   account_number: string;
+  bic?: string;
 }
 
 interface InvoiceSettings {
@@ -54,8 +55,6 @@ interface InvoiceSettings {
   legal_form?: string;
   bce_number?: string;
   head_office_address?: string;
-  bank_iban?: string;
-  bank_bic?: string;
   payment_terms_days?: number;
   late_interest_rate?: number;
 }
@@ -86,8 +85,6 @@ export default function Settings() {
     legal_form: '',
     bce_number: '',
     head_office_address: '',
-    bank_iban: '',
-    bank_bic: '',
     payment_terms_days: 30,
     late_interest_rate: 12,
   });
@@ -192,7 +189,7 @@ export default function Settings() {
       ...settings,
       bank_accounts: [
         ...settings.bank_accounts,
-        { id: crypto.randomUUID(), bank_name: '', account_number: '' }
+        { id: crypto.randomUUID(), bank_name: '', account_number: '', bic: '' }
       ]
     });
   };
@@ -204,7 +201,7 @@ export default function Settings() {
     });
   };
 
-  const updateBankAccount = (id: string, field: 'bank_name' | 'account_number', value: string) => {
+  const updateBankAccount = (id: string, field: 'bank_name' | 'account_number' | 'bic', value: string) => {
     setSettings({
       ...settings,
       bank_accounts: settings.bank_accounts.map(acc =>
@@ -591,17 +588,31 @@ export default function Settings() {
                               className="h-11 bg-white dark:bg-gray-800"
                             />
                           </div>
-                          <div>
-                            <Label htmlFor={`account_number_${account.id}`} className="text-base font-medium">
-                              Numéro de compte (IBAN)
-                            </Label>
-                            <Input
-                              id={`account_number_${account.id}`}
-                              value={account.account_number}
-                              onChange={(e) => updateBankAccount(account.id, 'account_number', e.target.value)}
-                              placeholder="BE00 0000 0000 0000"
-                              className="h-11 bg-white dark:bg-gray-800 font-mono"
-                            />
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <Label htmlFor={`account_number_${account.id}`} className="text-base font-medium">
+                                IBAN *
+                              </Label>
+                              <Input
+                                id={`account_number_${account.id}`}
+                                value={account.account_number}
+                                onChange={(e) => updateBankAccount(account.id, 'account_number', e.target.value)}
+                                placeholder="BE68 5390 0754 7034"
+                                className="h-11 bg-white dark:bg-gray-800 font-mono"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`bic_${account.id}`} className="text-base font-medium">
+                                BIC / SWIFT
+                              </Label>
+                              <Input
+                                id={`bic_${account.id}`}
+                                value={account.bic || ''}
+                                onChange={(e) => updateBankAccount(account.id, 'bic', e.target.value)}
+                                placeholder="GKCCBEBB"
+                                className="h-11 bg-white dark:bg-gray-800 font-mono"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>

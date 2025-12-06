@@ -6,6 +6,7 @@ interface BankAccount {
   id: string;
   bank_name: string;
   account_number: string;
+  bic?: string;
 }
 
 export interface CompanySettings {
@@ -31,6 +32,7 @@ export interface CompanySettings {
   legal_form?: string;
   bce_number?: string;
   head_office_address?: string;
+  // Champs dérivés du premier compte bancaire (pour UBL)
   bank_iban?: string;
   bank_bic?: string;
   payment_terms_days?: number;
@@ -103,6 +105,14 @@ export function useCompanySettings() {
           city: invoiceSettings.store_city || mergedSettings.city,
           postal_code: invoiceSettings.store_postal_code || mergedSettings.postal_code,
         };
+
+        // Extraire IBAN et BIC du premier compte bancaire (source unique de vérité)
+        const bankAccounts = invoiceSettings.bank_accounts as BankAccount[] | undefined;
+        if (bankAccounts && bankAccounts.length > 0) {
+          const primaryAccount = bankAccounts[0];
+          mergedSettings.bank_iban = primaryAccount.account_number || '';
+          mergedSettings.bank_bic = primaryAccount.bic || '';
+        }
       }
 
       setSettings(mergedSettings);
