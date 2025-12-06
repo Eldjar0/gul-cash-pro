@@ -175,14 +175,18 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
   ubl += '    <cbc:EndDate>' + invoiceDate + '</cbc:EndDate>\n';
   ubl += '  </cac:InvoicePeriod>\n';
   
-  // REFERENCES ADDITIONNELLES (ubl-BE-01) - 2 obligatoires
+  // REFERENCES ADDITIONNELLES (ubl-BE-01, ubl-BE-02, ubl-BE-03, ubl-BE-04)
+  // Reference 1: DocumentTypeCode 130 avec schemeID pour invoiced object (UBL-SR-43)
   ubl += '  <cac:AdditionalDocumentReference>\n';
-  ubl += '    <cbc:ID>' + escapeXML(doc.sale_number) + '</cbc:ID>\n';
+  ubl += '    <cbc:ID schemeID="AVV">' + escapeXML(doc.sale_number) + '</cbc:ID>\n';
   ubl += '    <cbc:DocumentTypeCode>130</cbc:DocumentTypeCode>\n';
+  ubl += '    <cbc:DocumentType>CommercialInvoice</cbc:DocumentType>\n';
   ubl += '  </cac:AdditionalDocumentReference>\n';
+  // Reference 2: UBL.BE obligatoire (ubl-BE-03)
   ubl += '  <cac:AdditionalDocumentReference>\n';
-  ubl += '    <cbc:ID>' + escapeXML(doc.sale_number) + '</cbc:ID>\n';
+  ubl += '    <cbc:ID>UBL.BE</cbc:ID>\n';
   ubl += '    <cbc:DocumentTypeCode>380</cbc:DocumentTypeCode>\n';
+  ubl += '    <cbc:DocumentType>CommercialInvoice</cbc:DocumentType>\n';
   ubl += '  </cac:AdditionalDocumentReference>\n';
   
   // VENDEUR (BG-4)
