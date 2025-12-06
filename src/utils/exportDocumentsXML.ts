@@ -175,18 +175,9 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
   ubl += '    <cbc:EndDate>' + invoiceDate + '</cbc:EndDate>\n';
   ubl += '  </cac:InvoicePeriod>\n';
   
-  // REFERENCES ADDITIONNELLES (ubl-BE-01, ubl-BE-02, ubl-BE-03, ubl-BE-04)
-  // Reference 1: DocumentTypeCode 130 - Invoiced Object (UBL-SR-43: pas de schemeID, ubl-CR-114: pas de DocumentType)
-  ubl += '  <cac:AdditionalDocumentReference>\n';
-  ubl += '    <cbc:ID>' + escapeXML(doc.sale_number) + '</cbc:ID>\n';
-  ubl += '    <cbc:DocumentTypeCode>130</cbc:DocumentTypeCode>\n';
-  ubl += '  </cac:AdditionalDocumentReference>\n';
-  // Reference 2: UBL.BE obligatoire (ubl-BE-02, ubl-BE-03, ubl-BE-04: DocumentType requis)
-  ubl += '  <cac:AdditionalDocumentReference>\n';
-  ubl += '    <cbc:ID>UBL.BE</cbc:ID>\n';
-  ubl += '    <cbc:DocumentTypeCode>380</cbc:DocumentTypeCode>\n';
-  ubl += '    <cbc:DocumentType>CommercialInvoice</cbc:DocumentType>\n';
-  ubl += '  </cac:AdditionalDocumentReference>\n';
+  // NOTE: AdditionalDocumentReference supprimées car elles causent des conflits de validation
+  // entre les règles UBL génériques (ubl-CR-114) et UBL.BE (ubl-BE-02/04)
+  // Ces références sont optionnelles selon Peppol BIS Billing 3.0
   
   // VENDEUR (BG-4)
   if (companyInfo) {
