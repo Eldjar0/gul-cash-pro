@@ -148,9 +148,7 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
   let ubl = '<?xml version="1.0" encoding="UTF-8"?>\n';
   ubl += '<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"\n';
   ubl += '         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"\n';
-  ubl += '         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"\n';
-  ubl += '         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n';
-  ubl += '         xsi:schemaLocation="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2 http://docs.oasis-open.org/ubl/os-UBL-2.1/xsd/maindoc/UBL-Invoice-2.1.xsd">\n';
+  ubl += '         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">\n';
   
   // EN-TETES Peppol BIS Billing 3.0 (standard européen recommandé)
   ubl += '  <cbc:UBLVersionID>2.1</cbc:UBLVersionID>\n';
@@ -408,10 +406,7 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
       ubl += '    <cbc:InvoicedQuantity unitCode="C62">' + parseFloat(item.quantity).toFixed(3) + '</cbc:InvoicedQuantity>\n';
       ubl += '    <cbc:LineExtensionAmount currencyID="EUR">' + (parseFloat(item.subtotal) || 0).toFixed(2) + '</cbc:LineExtensionAmount>\n';
       
-      // TaxTotal par ligne (ubl-BE-14) - Obligatoire UBL.BE
-      ubl += '    <cac:TaxTotal>\n';
-      ubl += '      <cbc:TaxAmount currencyID="EUR">' + itemVatAmount.toFixed(2) + '</cbc:TaxAmount>\n';
-      ubl += '    </cac:TaxTotal>\n';
+      // Note: TaxTotal par ligne supprimé - non requis par Peppol BIS Billing 3.0
       
       // Article (BG-31)
       ubl += '    <cac:Item>\n';
