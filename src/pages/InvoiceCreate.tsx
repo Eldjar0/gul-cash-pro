@@ -32,6 +32,8 @@ import { downloadInvoicePDF } from '@/utils/generateInvoicePDF';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { validateUBLDocument, UBLValidationResult } from '@/utils/validateUBL';
+import { UBLWarningAlert } from '@/components/invoices/UBLWarningAlert';
 
 interface InvoiceLine {
   id: string;
@@ -133,6 +135,40 @@ export default function InvoiceCreate() {
     return { subtotal, vatByRate, totalVat, total };
   }, [lines]);
 
+  // Validation UBL en temps réel
+  const ublValidation = useMemo((): UBLValidationResult => {
+    return validateUBLDocument({
+      sale_number: `FAC-PREVIEW`,
+      date: format(new Date(), 'yyyy-MM-dd'),
+      customers: selectedCustomer ? {
+        name: selectedCustomer.name,
+        vat_number: selectedCustomer.vat_number,
+        address: selectedCustomer.address,
+        city: selectedCustomer.city,
+        postal_code: selectedCustomer.postal_code,
+      } : undefined,
+      sale_items: lines.map(line => ({
+        product_name: line.description,
+        quantity: line.quantity,
+        unit_price: line.price,
+        vat_rate: line.vatRate,
+      })),
+      subtotal: totals.subtotal,
+      total_vat: totals.totalVat,
+      total: totals.total,
+    }, {
+      name: companySettings.name,
+      vatNumber: companySettings.vat_number,
+      address: companySettings.address,
+      city: companySettings.city,
+      postalCode: companySettings.postal_code,
+      phone: companySettings.phone,
+      email: companySettings.email,
+      iban: companySettings.bank_iban,
+      bic: companySettings.bank_bic,
+    });
+  }, [selectedCustomer, lines, totals, companySettings]);
+
   const handleDownloadPDF = async () => {
     // Charger les comptes bancaires depuis les settings
     const { data: settingsData } = await supabase
@@ -206,6 +242,14 @@ export default function InvoiceCreate() {
         variant: 'destructive',
       });
       return;
+    }
+
+    // Avertissement UBL (informatif, ne bloque pas)
+    if (ublValidation.errors.length > 0 || ublValidation.warnings.length > 0) {
+      toast({
+        title: 'Conformité UBL.BE',
+        description: `${ublValidation.errors.length} erreur(s), ${ublValidation.warnings.length} avertissement(s) pour l'export UBL`,
+      });
     }
 
     setIsSaving(true);
@@ -311,6 +355,13 @@ export default function InvoiceCreate() {
 
       {/* Main Content */}
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
+        {/* UBL Warning Alert */}
+        {(ublValidation.errors.length > 0 || ublValidation.warnings.length > 0) && (
+          <div className="mb-6">
+            <UBLWarningAlert validation={ublValidation} />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left: Form */}
           <div className="space-y-6">
