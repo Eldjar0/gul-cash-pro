@@ -251,8 +251,8 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                 <span style={{ 
                   fontWeight: '900', 
                   textTransform: 'uppercase',
-                  fontSize: '16px',
-                  letterSpacing: '0.3px',
+                  fontSize: '12px',
+                  letterSpacing: '0.2px',
                   flex: '1',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
