@@ -38,7 +38,7 @@ jobs:
         run: |
           node -e "
             const pkg = require('./package.json');
-            pkg.main = 'electron/main.js';
+            pkg.main = 'electron/main.cjs';
             pkg.author = pkg.author || 'Gul Reyhan';
             pkg.description = pkg.description || 'Application de caisse Gul Cash Pro';
             // Move electron packages to devDependencies
@@ -88,7 +88,7 @@ jobs:
         run: |
           node -e "
             const pkg = require('./package.json');
-            pkg.main = 'electron/main.js';
+            pkg.main = 'electron/main.cjs';
             pkg.author = pkg.author || 'Gul Reyhan';
             pkg.description = pkg.description || 'Application de caisse Gul Cash Pro';
             if (!pkg.devDependencies) pkg.devDependencies = {};
