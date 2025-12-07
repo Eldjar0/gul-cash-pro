@@ -25,6 +25,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const InvoiceCreate = lazy(() => import("./pages/InvoiceCreate"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const DownloadApp = lazy(() => import("./pages/DownloadApp"));
+const DownloadDesktopApp = lazy(() => import("./pages/DownloadDesktopApp"));
 const Losses = lazy(() => import("./pages/Losses"));
 const UserManagement = lazy(() => import("./pages/UserManagement"));
 const MobileManagement = lazy(() => import("./pages/MobileManagement"));
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/customer-display" element={<CustomerDisplay />} />
             <Route path="/download-app" element={<DownloadApp />} />
+            <Route path="/download-desktop" element={<DownloadDesktopApp />} />
             <Route path="/legal-info" element={<LegalInfo />} />
             <Route path="/getting-started" element={<GettingStarted />} />
             <Route path="/mobile" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
