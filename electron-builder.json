@@ -4,7 +4,6 @@
   "productName": "Gul Cash Pro",
   "copyright": "Copyright © 2024 Gul Cash Pro",
   "extends": null,
-  "main": "electron/main.cjs",
   "npmRebuild": false,
   "directories": {
     "output": "dist-electron"
