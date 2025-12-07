@@ -136,14 +136,11 @@ jobs:
       - name: Get version
         id: version
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-          fi
+          VERSION="1.0.${{ github.run_number }}"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.VERSION }}
           name: Gul Cash Pro v${{ steps.version.outputs.VERSION }}
@@ -158,10 +155,6 @@ jobs:
             1. Téléchargez le fichier correspondant à votre système
             2. Exécutez l'installateur
             3. Lancez Gul Cash Pro
-            
-            ### Nouveautés
-            - Impression silencieuse sans popup
-            - Configuration de l'imprimante dans les paramètres
           draft: false
           prerelease: false
           files: |
