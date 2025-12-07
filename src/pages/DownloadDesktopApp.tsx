@@ -24,8 +24,8 @@ const GITHUB_ACTIONS_URL = `https://github.com/${GITHUB_REPO}/actions/workflows/
 const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases`;
 
 // URLs de téléchargement direct depuis la dernière release
-const WINDOWS_DOWNLOAD_URL = `https://github.com/${GITHUB_REPO}/releases/latest/download/GulCashPro-1.0.0-Windows.exe`;
-const MAC_DOWNLOAD_URL = `https://github.com/${GITHUB_REPO}/releases/latest/download/GulCashPro-1.0.0-Mac.dmg`;
+const WINDOWS_DOWNLOAD_URL = `https://github.com/${GITHUB_REPO}/releases/latest`;
+const MAC_DOWNLOAD_URL = `https://github.com/${GITHUB_REPO}/releases/latest`;
 
 export default function DownloadDesktopApp() {
   const navigate = useNavigate();
@@ -35,13 +35,12 @@ export default function DownloadDesktopApp() {
   const handleDownload = (platform: string) => {
     setDownloading(platform);
     
-    // Téléchargement direct via redirection
-    const downloadUrl = platform === 'windows' ? WINDOWS_DOWNLOAD_URL : MAC_DOWNLOAD_URL;
-    window.location.href = downloadUrl;
+    // Ouvrir la page des releases pour télécharger
+    window.open(GITHUB_RELEASES_URL, '_blank');
     
     setTimeout(() => {
       setDownloading(null);
-    }, 2000);
+    }, 1000);
   };
 
   const handleRunBuild = () => {
