@@ -52,16 +52,4 @@ jobs:
         path: android/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 90
     
-    - name: Get APK file
-      id: get_apk
-      run: echo "apk_path=android/app/build/outputs/apk/debug/app-debug.apk" >> $GITHUB_OUTPUT
-    
-    - name: Create Release and Upload APK
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: v1.0.${{ github.run_number }}
-        name: Release v1.0.${{ github.run_number }}
-        files: android/app/build/outputs/apk/debug/app-debug.apk
-        draft: false
-        prerelease: false
-        token: ${{ secrets.GITHUB_TOKEN }}
+    # APK disponible comme artifact, la release est créée par build-electron.yml
