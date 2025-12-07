@@ -36,7 +36,23 @@ jobs:
       - name: Prepare Electron package.json
         shell: bash
         run: |
-          node -e "const pkg = require('./package.json'); pkg.main = 'electron/main.js'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          node -e "
+            const pkg = require('./package.json');
+            pkg.main = 'electron/main.js';
+            pkg.author = pkg.author || 'Gul Reyhan';
+            pkg.description = pkg.description || 'Application de caisse Gul Cash Pro';
+            // Move electron packages to devDependencies
+            if (!pkg.devDependencies) pkg.devDependencies = {};
+            if (pkg.dependencies && pkg.dependencies.electron) {
+              pkg.devDependencies.electron = pkg.dependencies.electron;
+              delete pkg.dependencies.electron;
+            }
+            if (pkg.dependencies && pkg.dependencies['electron-builder']) {
+              pkg.devDependencies['electron-builder'] = pkg.dependencies['electron-builder'];
+              delete pkg.dependencies['electron-builder'];
+            }
+            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
 
       - name: Build Electron app
         run: npx electron-builder --win --config electron-builder.json
@@ -70,7 +86,22 @@ jobs:
 
       - name: Prepare Electron package.json
         run: |
-          node -e "const pkg = require('./package.json'); pkg.main = 'electron/main.js'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          node -e "
+            const pkg = require('./package.json');
+            pkg.main = 'electron/main.js';
+            pkg.author = pkg.author || 'Gul Reyhan';
+            pkg.description = pkg.description || 'Application de caisse Gul Cash Pro';
+            if (!pkg.devDependencies) pkg.devDependencies = {};
+            if (pkg.dependencies && pkg.dependencies.electron) {
+              pkg.devDependencies.electron = pkg.dependencies.electron;
+              delete pkg.dependencies.electron;
+            }
+            if (pkg.dependencies && pkg.dependencies['electron-builder']) {
+              pkg.devDependencies['electron-builder'] = pkg.dependencies['electron-builder'];
+              delete pkg.dependencies['electron-builder'];
+            }
+            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
 
       - name: Build Electron app
         run: npx electron-builder --mac --config electron-builder.json
