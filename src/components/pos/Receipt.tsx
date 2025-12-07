@@ -58,6 +58,21 @@ export function Receipt({ sale }: ReceiptProps) {
   const isInvoice = sale.is_invoice || false;
   const { settings } = useCompanySettings();
   
+  // Calculer TVA par taux
+  const vatByRate = sale.items.reduce((acc, item) => {
+    if (!item.product) return acc;
+    
+    const rate = item.product.vat_rate;
+    if (!acc[rate]) {
+      acc[rate] = { totalHT: 0, totalVAT: 0 };
+    }
+    const priceHT = item.product.price / (1 + rate / 100);
+    const itemHT = priceHT * item.quantity;
+    const itemVAT = itemHT * (rate / 100);
+    acc[rate].totalHT += itemHT;
+    acc[rate].totalVAT += itemVAT;
+    return acc;
+  }, {} as Record<number, { totalHT: number; totalVAT: number }>);
   return (
     <div className="font-mono text-[11px] leading-tight max-w-[320px] mx-auto bg-white text-black p-4 print:p-0">
       {/* En-tête magasin */}
@@ -138,6 +153,10 @@ export function Receipt({ sale }: ReceiptProps) {
                 </span>
                 <span className="font-black">{item.is_gift ? 'OFFERT' : item.subtotal.toFixed(2)}</span>
               </div>
+              <div className="flex justify-between text-[9px] text-muted-foreground">
+                <span>TVA {item.product.vat_rate}%</span>
+                <span>{item.vatAmount.toFixed(2)}€</span>
+              </div>
               {item.discount && !item.is_gift && (
                 <div className="text-[9px] font-bold italic">
                   REMISE -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
@@ -157,8 +176,22 @@ export function Receipt({ sale }: ReceiptProps) {
           <span className="font-semibold">SOUS-TOTAL HT</span>
           <span className="font-semibold">{sale.subtotal.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="font-semibold">TVA</span>
+        
+        {/* Détail TVA par taux */}
+        <div className="border-t border-dashed border-black pt-1 mt-1">
+          <div className="font-bold text-[9px] mb-1">DÉTAIL TVA:</div>
+          {Object.entries(vatByRate)
+            .sort(([a], [b]) => Number(a) - Number(b))
+            .map(([rate, values]) => (
+              <div key={rate} className="flex justify-between text-[9px]">
+                <span>TVA {rate}%</span>
+                <span>HT: {values.totalHT.toFixed(2)} | TVA: {values.totalVAT.toFixed(2)}</span>
+              </div>
+            ))}
+        </div>
+        
+        <div className="flex justify-between border-t border-dashed border-black pt-1">
+          <span className="font-semibold">TOTAL TVA</span>
           <span className="font-semibold">{(sale.totalVat || sale.total_vat || 0).toFixed(2)}</span>
         </div>
         {(sale.totalDiscount || sale.total_discount || 0) > 0 && (

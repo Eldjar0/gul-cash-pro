@@ -272,24 +272,31 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                 </span>
               </div>
               
-              {/* Ligne avec quantité, prix unitaire - REMISE */}
+              {/* Ligne avec quantité, prix unitaire, TVA - REMISE */}
               <div style={{ 
                 fontSize: '11px',
-                fontWeight: '800'
+                fontWeight: '800',
+                display: 'flex',
+                justifyContent: 'space-between'
               }}>
-                {qtyDisplay} {unitDisplay} x {hasSpecialPrice && (
-                  <span style={{ textDecoration: 'line-through', marginRight: '4px' }}>
-                    {basePrice.toFixed(2)}€
+                <span>
+                  {qtyDisplay} {unitDisplay} x {hasSpecialPrice && (
+                    <span style={{ textDecoration: 'line-through', marginRight: '4px' }}>
+                      {basePrice.toFixed(2)}€
+                    </span>
+                  )}
+                  <span style={hasSpecialPrice ? { fontWeight: '900', color: '#d97706' } : {}}>
+                    {effectivePrice.toFixed(2)}€
                   </span>
-                )}
-                <span style={hasSpecialPrice ? { fontWeight: '900', color: '#d97706' } : {}}>
-                  {effectivePrice.toFixed(2)}€
+                  {item.discount && !item.is_gift && (
+                    <span style={{ fontStyle: 'italic', marginLeft: '5px' }}>
+                      REM -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
+                    </span>
+                  )}
                 </span>
-                {item.discount && !item.is_gift && (
-                  <span style={{ fontStyle: 'italic', marginLeft: '5px' }}>
-                    REM -{item.discount.value}{item.discount.type === 'percentage' ? '%' : '€'}
-                  </span>
-                )}
+                <span style={{ fontSize: '10px', color: '#666' }}>
+                  TVA {item.product.vat_rate}%
+                </span>
               </div>
             </div>
           );
@@ -315,6 +322,29 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           </div>
         </div>
       )}
+
+      {/* Détail TVA par taux */}
+      <div style={{ padding: '4px 0', marginBottom: '4px', paddingRight: '24px' }}>
+        <div style={{ fontSize: '11px', fontWeight: '800', marginBottom: '4px' }}>
+          DÉTAIL TVA:
+        </div>
+        {Object.entries(vatByRate)
+          .sort(([a], [b]) => Number(a) - Number(b))
+          .map(([rate, values]) => (
+            <div key={rate} style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              fontSize: '10px',
+              fontWeight: '700',
+              marginBottom: '2px'
+            }}>
+              <span>TVA {rate}%</span>
+              <span>HT: {values.totalHT.toFixed(2)}€ | TVA: {values.totalVAT.toFixed(2)}€</span>
+            </div>
+          ))}
+      </div>
+
+      <div style={{ borderTop: '1px dashed #000', margin: '4px 0' }}></div>
 
       {/* Total principal - simplifié */}
       <div style={{ padding: '4px 0', margin: '4px 0' }}>
