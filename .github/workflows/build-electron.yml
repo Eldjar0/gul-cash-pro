@@ -1,0 +1,129 @@
+name: Build Electron App
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Build Electron app
+        run: npx electron-builder --win --config electron-builder.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GulCashPro-Windows
+          path: dist-electron/*.exe
+
+  build-mac:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Build Electron app
+        run: npx electron-builder --mac --config electron-builder.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Mac artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GulCashPro-Mac
+          path: dist-electron/*.dmg
+
+  create-release:
+    needs: [build-windows, build-mac]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: GulCashPro-Windows
+          path: ./artifacts/windows
+
+      - name: Download Mac artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: GulCashPro-Mac
+          path: ./artifacts/mac
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}
+          name: Gul Cash Pro v${{ steps.version.outputs.VERSION }}
+          body: |
+            ## Gul Cash Pro v${{ steps.version.outputs.VERSION }}
+            
+            ### Téléchargements
+            - **Windows**: Téléchargez le fichier `.exe` ci-dessous
+            - **Mac**: Téléchargez le fichier `.dmg` ci-dessous
+            
+            ### Installation
+            1. Téléchargez le fichier correspondant à votre système
+            2. Exécutez l'installateur
+            3. Lancez Gul Cash Pro
+            
+            ### Nouveautés
+            - Impression silencieuse sans popup
+            - Configuration de l'imprimante dans les paramètres
+          draft: false
+          prerelease: false
+          files: |
+            ./artifacts/windows/*.exe
+            ./artifacts/mac/*.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

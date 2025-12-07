@@ -1,0 +1,78 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "app.lovable.gulcashpro",
+  "productName": "Gul Cash Pro",
+  "copyright": "Copyright © 2024 Gul Cash Pro",
+  "directories": {
+    "output": "dist-electron",
+    "buildResources": "build"
+  },
+  "files": [
+    "dist/**/*",
+    "electron/**/*",
+    "!node_modules/**/*",
+    "node_modules/**/*.js",
+    "node_modules/**/*.json"
+  ],
+  "extraResources": [
+    {
+      "from": "public",
+      "to": "public",
+      "filter": ["**/*"]
+    }
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "public/app-icon.png",
+    "artifactName": "GulCashPro-${version}-Windows.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "installerIcon": "public/app-icon.png",
+    "uninstallerIcon": "public/app-icon.png",
+    "installerHeaderIcon": "public/app-icon.png",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Gul Cash Pro",
+    "runAfterFinish": true,
+    "installerLanguages": ["fr", "en"],
+    "language": "1036"
+  },
+  "mac": {
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "icon": "public/app-icon.png",
+    "artifactName": "GulCashPro-${version}-Mac.${ext}",
+    "category": "public.app-category.business"
+  },
+  "dmg": {
+    "contents": [
+      {
+        "x": 130,
+        "y": 220
+      },
+      {
+        "x": 410,
+        "y": 220,
+        "type": "link",
+        "path": "/Applications"
+      }
+    ]
+  },
+  "linux": {
+    "target": ["AppImage"],
+    "icon": "public/app-icon.png",
+    "artifactName": "GulCashPro-${version}-Linux.${ext}",
+    "category": "Office"
+  }
+}
