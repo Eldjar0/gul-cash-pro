@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database, AlertTriangle, Printer } from 'lucide-react';
+import { PrinterSettings } from '@/components/settings/PrinterSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -245,7 +246,7 @@ export default function Settings() {
 
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Tabs defaultValue="billing" className="w-full space-y-6">
-          <TabsList className="grid w-full grid-cols-7 mb-8 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm shadow-lg border-2 border-primary/20 rounded-xl p-1.5">
+          <TabsList className="grid w-full grid-cols-8 mb-8 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm shadow-lg border-2 border-primary/20 rounded-xl p-1.5">
             <TabsTrigger value="billing" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
               <Building className="h-4 w-4" />
               Facturation
@@ -257,6 +258,10 @@ export default function Settings() {
             <TabsTrigger value="fiscal" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
               <Calculator className="h-4 w-4" />
               Fiscalité
+            </TabsTrigger>
+            <TabsTrigger value="printer" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
+              <Printer className="h-4 w-4" />
+              Impression
             </TabsTrigger>
             <TabsTrigger value="backup" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
               <Database className="h-4 w-4" />
@@ -658,6 +663,10 @@ export default function Settings() {
 
           <TabsContent value="fiscal">
             <FiscalSettings />
+          </TabsContent>
+
+          <TabsContent value="printer">
+            <PrinterSettings />
           </TabsContent>
 
           <TabsContent value="backup">

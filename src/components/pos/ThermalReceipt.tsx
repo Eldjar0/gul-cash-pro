@@ -384,20 +384,25 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
   );
 }
 
-export function printThermalReceipt() {
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) {
-    alert('Veuillez autoriser les popups pour imprimer');
-    return;
-  }
+// Vérifie si l'impression silencieuse est activée
+function isSilentPrintEnabled(): boolean {
+  return localStorage.getItem('silent_print_enabled') === 'true';
+}
 
+// Récupère l'imprimante préférée
+function getPreferredPrinter(): string {
+  return localStorage.getItem('preferred_printer') || '';
+}
+
+// Génère le HTML du ticket pour impression
+function getReceiptHtml(): string {
   const receiptContent = document.getElementById('thermal-receipt');
-  if (!receiptContent) return;
+  if (!receiptContent) return '';
 
   // Commande ESC/POS pour ouvrir le tiroir-caisse: ESC p 0 25 250
   const cashDrawerCommand = String.fromCharCode(27, 112, 0, 25, 250);
 
-  printWindow.document.write(`
+  return `
     <!DOCTYPE html>
     <html>
       <head>
@@ -502,8 +507,36 @@ export function printThermalReceipt() {
         ${receiptContent.innerHTML}
       </body>
     </html>
-  `);
-  
+  `;
+}
+
+// Impression silencieuse via Electron
+async function printSilentElectron(): Promise<boolean> {
+  const html = getReceiptHtml();
+  if (!html) return false;
+
+  try {
+    const printerName = getPreferredPrinter();
+    const result = await window.electronAPI!.printHtmlSilent(html, printerName);
+    return result.success;
+  } catch (error) {
+    console.error('Erreur impression silencieuse:', error);
+    return false;
+  }
+}
+
+// Impression classique via popup navigateur
+function printClassic(): void {
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    alert('Veuillez autoriser les popups pour imprimer');
+    return;
+  }
+
+  const html = getReceiptHtml();
+  if (!html) return;
+
+  printWindow.document.write(html);
   printWindow.document.close();
   
   // Attendre que le contenu soit chargé avant d'imprimer
@@ -512,4 +545,22 @@ export function printThermalReceipt() {
     printWindow.print();
     printWindow.close();
   }, 250);
+}
+
+export async function printThermalReceipt(): Promise<void> {
+  const isElectron = !!window.electronAPI?.isElectron;
+  const silentEnabled = isSilentPrintEnabled();
+
+  // Si Electron et impression silencieuse activée
+  if (isElectron && silentEnabled) {
+    const success = await printSilentElectron();
+    if (!success) {
+      // Fallback vers impression classique si échec
+      console.warn('Impression silencieuse échouée, fallback vers impression classique');
+      printClassic();
+    }
+  } else {
+    // Impression classique via popup navigateur
+    printClassic();
+  }
 }
