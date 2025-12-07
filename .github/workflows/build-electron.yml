@@ -54,8 +54,8 @@ jobs:
             require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
 
-      - name: Build Electron app
-        run: npx electron-builder --win --config electron-builder.json
+      - name: Build and Publish Electron app
+        run: npx electron-builder --win --publish always --config electron-builder.json
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -63,7 +63,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: GulCashPro-Windows
-          path: dist-electron/*.exe
+          path: |
+            dist-electron/*.exe
+            dist-electron/*.yml
 
   build-mac:
     runs-on: macos-latest
@@ -103,8 +105,8 @@ jobs:
             require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
 
-      - name: Build Electron app
-        run: npx electron-builder --mac --config electron-builder.json
+      - name: Build and Publish Electron app
+        run: npx electron-builder --mac --publish always --config electron-builder.json
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -112,7 +114,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: GulCashPro-Mac
-          path: dist-electron/*.dmg
+          path: |
+            dist-electron/*.dmg
+            dist-electron/*.yml
 
   create-release:
     needs: [build-windows, build-mac]
@@ -159,6 +163,8 @@ jobs:
           prerelease: false
           files: |
             ./artifacts/windows/*.exe
+            ./artifacts/windows/*.yml
             ./artifacts/mac/*.dmg
+            ./artifacts/mac/*.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
