@@ -1,6 +1,7 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, protocol } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
+const fs = require('fs');
 
 let mainWindow;
 
@@ -26,8 +27,17 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
-    // En production, charger les fichiers buildés
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    // En production, charger les fichiers buildés avec support SPA
+    const indexPath = path.join(__dirname, '../dist/index.html');
+    mainWindow.loadFile(indexPath);
+    
+    // Gérer la navigation SPA - rediriger les 404 vers index.html
+    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+      // Si c'est une erreur de fichier non trouvé, charger index.html
+      if (errorCode === -6) { // ERR_FILE_NOT_FOUND
+        mainWindow.loadFile(indexPath);
+      }
+    });
     
     // Vérifier les mises à jour en production
     autoUpdater.checkForUpdatesAndNotify();
