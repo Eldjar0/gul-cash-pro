@@ -23,22 +23,32 @@ const GITHUB_REPO = "Eldjar0/gul-cash-pro";
 const GITHUB_ACTIONS_URL = `https://github.com/${GITHUB_REPO}/actions/workflows/build-electron.yml`;
 const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases`;
 
+// URLs de téléchargement direct depuis la dernière release
+const WINDOWS_DOWNLOAD_URL = `https://github.com/${GITHUB_REPO}/releases/latest/download/GulCashPro-1.0.0-Windows.exe`;
+const MAC_DOWNLOAD_URL = `https://github.com/${GITHUB_REPO}/releases/latest/download/GulCashPro-1.0.0-Mac.dmg`;
+
 export default function DownloadDesktopApp() {
   const navigate = useNavigate();
   const [downloading, setDownloading] = useState<string | null>(null);
   const [buildNotReady, setBuildNotReady] = useState(false);
 
-  const handleDownload = async (platform: string) => {
+  const handleDownload = (platform: string) => {
     setDownloading(platform);
     
-    // Rediriger vers la page des releases GitHub
-    // L'utilisateur pourra y trouver les derniers fichiers disponibles
-    window.open(GITHUB_RELEASES_URL, '_blank');
+    // Téléchargement direct
+    const downloadUrl = platform === 'windows' ? WINDOWS_DOWNLOAD_URL : MAC_DOWNLOAD_URL;
+    
+    // Créer un lien de téléchargement direct
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     
     setTimeout(() => {
       setDownloading(null);
-      setBuildNotReady(true);
-    }, 1000);
+    }, 2000);
   };
 
   const handleRunBuild = () => {
