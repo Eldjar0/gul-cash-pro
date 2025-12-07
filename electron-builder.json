@@ -21,6 +21,12 @@
       "filter": ["**/*"]
     }
   ],
+  "publish": {
+    "provider": "github",
+    "owner": "YOUR_GITHUB_USERNAME",
+    "repo": "gul-cash-pro",
+    "releaseType": "release"
+  },
   "win": {
     "target": "nsis",
     "artifactName": "GulCashPro-${version}-Windows.${ext}"

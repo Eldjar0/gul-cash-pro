@@ -17,4 +17,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Tester une imprimante
   testPrinter: (printerName) => ipcRenderer.invoke('test-printer', printerName),
+
+  // Mises à jour automatiques
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  
+  // Écouter les événements de mise à jour
+  onUpdateAvailable: (callback) => {
+    ipcRenderer.on('update-available', (event, info) => callback(info));
+  },
+  onUpdateProgress: (callback) => {
+    ipcRenderer.on('update-progress', (event, percent) => callback(percent));
+  },
 });
