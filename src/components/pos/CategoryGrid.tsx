@@ -99,11 +99,11 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
                         <Package className="h-6 w-6 text-muted-foreground/40" />
                       </div>
                     )}
-                    <span className="text-xs font-medium text-center line-clamp-2 leading-snug break-words">
+                    <span className="text-[10px] font-medium text-center line-clamp-2 leading-tight break-words w-full px-0.5">
                       {product.name}
                     </span>
                     <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-xs font-bold text-primary">
+                      <span className="text-[10px] font-bold text-primary">
                         {product.price.toFixed(2)}€
                       </span>
                       {product.stock <= 0 && (
