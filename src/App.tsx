@@ -25,6 +25,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const InvoiceCreate = lazy(() => import("./pages/InvoiceCreate"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const DownloadApp = lazy(() => import("./pages/DownloadApp"));
+const Losses = lazy(() => import("./pages/Losses"));
 const UserManagement = lazy(() => import("./pages/UserManagement"));
 const MobileManagement = lazy(() => import("./pages/MobileManagement"));
 const MobileCategories = lazy(() => import("./pages/MobileCategories"));
@@ -101,6 +102,7 @@ const App = () => (
             <Route path="/invoices/create" element={<ProtectedRoute><ProtectedLayout><InvoiceCreate /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/inventory-management" element={<ProtectedRoute><ProtectedLayout><InventoryManagement /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/promotions" element={<ProtectedRoute><ProtectedLayout><Promotions /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/losses" element={<ProtectedRoute><ProtectedLayout><Losses /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><ProtectedLayout><Settings /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/customers" element={<ProtectedRoute><ProtectedLayout><Customers /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><ProtectedLayout><Analytics /></ProtectedLayout></ProtectedRoute>} />

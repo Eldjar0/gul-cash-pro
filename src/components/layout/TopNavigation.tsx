@@ -20,6 +20,7 @@ import {
   UserCog,
   Truck,
   Smartphone,
+  Trash2,
 } from 'lucide-react';
 import logoHeader from '@/assets/logo-gul-reyhan-header.png';
 import { useAuth } from '@/contexts/AuthContext';
@@ -145,6 +146,16 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                 >
                   <Tags className="h-4 w-4" />
                   <span>Promotions</span>
+                </Button>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Button
+                  onClick={() => navigate("/losses")}
+                  className="h-10 px-2 flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs whitespace-nowrap"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Pertes</span>
                 </Button>
               </NavigationMenuItem>
 
