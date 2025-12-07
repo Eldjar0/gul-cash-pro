@@ -7,7 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { AlertTriangle, Plus, Trash2, Package, Calendar, ArrowLeft } from 'lucide-react';
+import { AlertTriangle, Plus, Trash2, Package, Calendar, ArrowLeft, Pencil, MoreHorizontal } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useProducts } from '@/hooks/useProducts';
 import { useStockMovements } from '@/hooks/useStockMovements';
 import { toast } from 'sonner';
@@ -44,6 +46,9 @@ export default function Losses() {
   const queryClient = useQueryClient();
   
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingMovement, setEditingMovement] = useState<typeof movements[0] | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [movementToDelete, setMovementToDelete] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [quantity, setQuantity] = useState<string>('1');
   const [reason, setReason] = useState<string>('');
@@ -58,6 +63,26 @@ export default function Losses() {
     const product = products?.find(p => p.id === m.product_id);
     return sum + (Math.abs(m.quantity) * (product?.cost_price || product?.price || 0));
   }, 0);
+
+  const resetForm = () => {
+    setSelectedProduct('');
+    setQuantity('1');
+    setReason('');
+    setNotes('');
+    setSearchTerm('');
+    setEditingMovement(null);
+  };
+
+  const openEditDialog = (movement: typeof movements[0]) => {
+    setEditingMovement(movement);
+    setSelectedProduct(movement.product_id || '');
+    setQuantity(String(Math.abs(movement.quantity)));
+    const foundReason = LOSS_REASONS.find(r => r.label === movement.reason);
+    setReason(foundReason?.value || 'other');
+    setNotes(movement.notes || '');
+    setSearchTerm(movement.product_name);
+    setDialogOpen(true);
+  };
 
   const handleAddLoss = async () => {
     if (!selectedProduct || !quantity || !reason) {
@@ -77,45 +102,70 @@ export default function Losses() {
       return;
     }
 
-    if (product.stock !== null && qty > product.stock) {
-      toast.error('Quantité supérieure au stock disponible');
-      return;
-    }
-
     try {
-      // Create stock movement for loss (using 'damage' type which is in the allowed enum)
-      const { error: movementError } = await supabase
-        .from('stock_movements')
-        .insert({
-          product_id: product.id,
-          product_name: product.name,
-          product_barcode: product.barcode,
-          quantity: -qty,
-          previous_stock: product.stock || 0,
-          new_stock: (product.stock || 0) - qty,
-          movement_type: 'damage',
-          reason: LOSS_REASONS.find(r => r.value === reason)?.label || reason,
-          notes: notes || null,
-        });
+      if (editingMovement) {
+        // Calculate stock difference
+        const oldQty = Math.abs(editingMovement.quantity);
+        const stockDiff = oldQty - qty;
+        
+        // Update the movement
+        const { error: movementError } = await supabase
+          .from('stock_movements')
+          .update({
+            quantity: -qty,
+            reason: LOSS_REASONS.find(r => r.value === reason)?.label || reason,
+            notes: notes || null,
+          })
+          .eq('id', editingMovement.id);
 
-      if (movementError) throw movementError;
+        if (movementError) throw movementError;
 
-      // Update product stock
-      const { error: productError } = await supabase
-        .from('products')
-        .update({ stock: (product.stock || 0) - qty })
-        .eq('id', product.id);
+        // Update product stock (add back old qty, remove new qty)
+        const { error: productError } = await supabase
+          .from('products')
+          .update({ stock: (product.stock || 0) + stockDiff })
+          .eq('id', product.id);
 
-      if (productError) throw productError;
+        if (productError) throw productError;
 
-      toast.success('Perte enregistrée avec succès');
+        toast.success('Perte modifiée avec succès');
+      } else {
+        if (product.stock !== null && qty > product.stock) {
+          toast.error('Quantité supérieure au stock disponible');
+          return;
+        }
+
+        // Create stock movement for loss
+        const { error: movementError } = await supabase
+          .from('stock_movements')
+          .insert({
+            product_id: product.id,
+            product_name: product.name,
+            product_barcode: product.barcode,
+            quantity: -qty,
+            previous_stock: product.stock || 0,
+            new_stock: (product.stock || 0) - qty,
+            movement_type: 'damage',
+            reason: LOSS_REASONS.find(r => r.value === reason)?.label || reason,
+            notes: notes || null,
+          });
+
+        if (movementError) throw movementError;
+
+        // Update product stock
+        const { error: productError } = await supabase
+          .from('products')
+          .update({ stock: (product.stock || 0) - qty })
+          .eq('id', product.id);
+
+        if (productError) throw productError;
+
+        toast.success('Perte enregistrée avec succès');
+      }
       
       // Reset form
       setDialogOpen(false);
-      setSelectedProduct('');
-      setQuantity('1');
-      setReason('');
-      setNotes('');
+      resetForm();
       
       // Refresh data
       refetchMovements();
@@ -123,6 +173,43 @@ export default function Losses() {
     } catch (error) {
       console.error('Error recording loss:', error);
       toast.error('Erreur lors de l\'enregistrement de la perte');
+    }
+  };
+
+  const handleDeleteLoss = async () => {
+    if (!movementToDelete) return;
+
+    const movement = lossMovements.find(m => m.id === movementToDelete);
+    if (!movement) return;
+
+    try {
+      // Restore stock
+      const product = products?.find(p => p.id === movement.product_id);
+      if (product) {
+        const { error: productError } = await supabase
+          .from('products')
+          .update({ stock: (product.stock || 0) + Math.abs(movement.quantity) })
+          .eq('id', product.id);
+
+        if (productError) throw productError;
+      }
+
+      // Delete movement
+      const { error: movementError } = await supabase
+        .from('stock_movements')
+        .delete()
+        .eq('id', movementToDelete);
+
+      if (movementError) throw movementError;
+
+      toast.success('Perte supprimée et stock restauré');
+      setDeleteDialogOpen(false);
+      setMovementToDelete(null);
+      refetchMovements();
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    } catch (error) {
+      console.error('Error deleting loss:', error);
+      toast.error('Erreur lors de la suppression');
     }
   };
 
@@ -229,6 +316,7 @@ export default function Losses() {
                     <TableHead>Raison</TableHead>
                     <TableHead>Notes</TableHead>
                     <TableHead className="text-right">Valeur</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -256,6 +344,31 @@ export default function Losses() {
                         <TableCell className="text-right text-destructive font-medium">
                           {value.toFixed(2)} €
                         </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openEditDialog(movement)}>
+                                <Pencil className="h-4 w-4 mr-2" />
+                                Modifier
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setMovementToDelete(movement.id);
+                                  setDeleteDialogOpen(true);
+                                }}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Supprimer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -266,13 +379,16 @@ export default function Losses() {
         </Card>
       </div>
 
-      {/* Add Loss Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* Add/Edit Loss Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={(open) => {
+        setDialogOpen(open);
+        if (!open) resetForm();
+      }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
-              Déclarer une perte
+              {editingMovement ? 'Modifier la perte' : 'Déclarer une perte'}
             </DialogTitle>
           </DialogHeader>
 
@@ -347,18 +463,42 @@ export default function Losses() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button variant="outline" onClick={() => {
+              setDialogOpen(false);
+              resetForm();
+            }}>
               Annuler
             </Button>
             <Button 
               onClick={handleAddLoss}
               className="bg-destructive hover:bg-destructive/90"
             >
-              Enregistrer la perte
+              {editingMovement ? 'Modifier' : 'Enregistrer la perte'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette perte ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action supprimera l'enregistrement de la perte et restaurera le stock du produit.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setMovementToDelete(null)}>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteLoss}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
