@@ -13,34 +13,36 @@ import {
   CheckCircle, 
   ExternalLink,
   Github,
-  Info
+  Info,
+  AlertTriangle,
+  Play
 } from "lucide-react";
 
-// Remplacez par votre username/repo GitHub
+// Configuration GitHub
 const GITHUB_REPO = "Eldjar0/gul-cash-pro";
-const LATEST_VERSION = "1.0.0";
+const GITHUB_ACTIONS_URL = `https://github.com/${GITHUB_REPO}/actions/workflows/build-electron.yml`;
+const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases`;
 
 export default function DownloadDesktopApp() {
   const navigate = useNavigate();
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [buildNotReady, setBuildNotReady] = useState(false);
 
-  const handleDownload = (platform: string) => {
+  const handleDownload = async (platform: string) => {
     setDownloading(platform);
     
-    // Construire l'URL de téléchargement GitHub Releases
-    let fileName = "";
-    if (platform === "windows") {
-      fileName = `GulCashPro-${LATEST_VERSION}-Windows.exe`;
-    } else if (platform === "mac") {
-      fileName = `GulCashPro-${LATEST_VERSION}-Mac.dmg`;
-    }
+    // Rediriger vers la page des releases GitHub
+    // L'utilisateur pourra y trouver les derniers fichiers disponibles
+    window.open(GITHUB_RELEASES_URL, '_blank');
     
-    const downloadUrl = `https://github.com/${GITHUB_REPO}/releases/latest/download/${fileName}`;
-    
-    // Ouvrir le téléchargement dans un nouvel onglet
-    window.open(downloadUrl, '_blank');
-    
-    setTimeout(() => setDownloading(null), 2000);
+    setTimeout(() => {
+      setDownloading(null);
+      setBuildNotReady(true);
+    }, 1000);
+  };
+
+  const handleRunBuild = () => {
+    window.open(GITHUB_ACTIONS_URL, '_blank');
   };
 
   const features = [
@@ -83,10 +85,30 @@ export default function DownloadDesktopApp() {
       </div>
 
       <div className="container mx-auto px-6 py-12">
+        {/* Build Not Ready Alert */}
+        {buildNotReady && (
+          <Alert className="max-w-2xl mx-auto mb-8 border-amber-500 bg-amber-50 dark:bg-amber-900/20">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800 dark:text-amber-200">
+              <strong>Les fichiers ne sont pas encore disponibles.</strong>
+              <p className="mt-1">Le build Electron doit être lancé manuellement depuis GitHub Actions.</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 border-amber-600 text-amber-700 hover:bg-amber-100"
+                onClick={handleRunBuild}
+              >
+                <Play className="mr-2 h-4 w-4" />
+                Lancer le build sur GitHub
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Hero Section */}
         <div className="text-center mb-12">
           <Badge variant="secondary" className="mb-4">
-            Version {LATEST_VERSION}
+            Application Desktop
           </Badge>
           <h2 className="text-4xl font-bold mb-4">
             Gul Cash Pro Desktop
