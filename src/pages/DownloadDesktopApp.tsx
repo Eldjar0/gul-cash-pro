@@ -35,16 +35,9 @@ export default function DownloadDesktopApp() {
   const handleDownload = (platform: string) => {
     setDownloading(platform);
     
-    // Téléchargement direct
+    // Téléchargement direct via redirection
     const downloadUrl = platform === 'windows' ? WINDOWS_DOWNLOAD_URL : MAC_DOWNLOAD_URL;
-    
-    // Créer un lien de téléchargement direct
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = '';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    window.location.href = downloadUrl;
     
     setTimeout(() => {
       setDownloading(null);
