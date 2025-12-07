@@ -348,6 +348,10 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
 
       {/* Total principal - simplifié */}
       <div style={{ padding: '4px 0', margin: '4px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#666', paddingRight: '24px' }}>
+          <span>Total HT</span>
+          <span style={{ whiteSpace: 'nowrap' }}>{sale.subtotal.toFixed(2)}€</span>
+        </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '20px', fontWeight: '900', gap: '8px', paddingRight: '24px' }}>
           <span>TOTAL</span>
           <span style={{ whiteSpace: 'nowrap' }}>{sale.total.toFixed(2)}€</span>

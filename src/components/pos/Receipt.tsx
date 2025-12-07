@@ -204,6 +204,10 @@ export function Receipt({ sale }: ReceiptProps) {
 
       {/* Total principal */}
       <div className="border-t-4 border-double border-black mt-2 pt-2">
+        <div className="flex justify-between text-[9px] text-gray-600">
+          <span>Total HT</span>
+          <span>{sale.subtotal.toFixed(2)}</span>
+        </div>
         <div className="flex justify-between text-lg font-black tracking-wide">
           <span>TOTAL EUR</span>
           <span>{sale.total.toFixed(2)}</span>
