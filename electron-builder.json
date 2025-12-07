@@ -10,7 +10,8 @@
   },
   "files": [
     "dist/**/*",
-    "electron/**/*"
+    "electron/**/*",
+    "!node_modules/canvas/**/*"
   ],
   "extraResources": [
     {
