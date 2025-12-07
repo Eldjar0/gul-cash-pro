@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 // Remplacez par votre username/repo GitHub
-const GITHUB_REPO = "votre-username/gul-cash-pro";
+const GITHUB_REPO = "Eldjar0/gul-cash-pro";
 const LATEST_VERSION = "1.0.0";
 
 export default function DownloadDesktopApp() {
