@@ -23,7 +23,7 @@
   ],
   "publish": {
     "provider": "github",
-    "owner": "YOUR_GITHUB_USERNAME",
+    "owner": "Eldjar0",
     "repo": "gul-cash-pro",
     "releaseType": "release"
   },
