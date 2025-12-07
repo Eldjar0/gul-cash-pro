@@ -1,0 +1,1 @@
+UPDATE products SET vat_rate = 21 WHERE category_id = '9e65c268-9561-4981-bfa9-9736135eba8a';
