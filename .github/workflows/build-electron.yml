@@ -54,10 +54,8 @@ jobs:
             require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
 
-      - name: Build and Publish Electron app
-        run: npx electron-builder --win --publish always --config electron-builder.json
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Electron app
+        run: npx electron-builder --win --publish never --config electron-builder.json
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -105,10 +103,8 @@ jobs:
             require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
 
-      - name: Build and Publish Electron app
-        run: npx electron-builder --mac --publish always --config electron-builder.json
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Electron app
+        run: npx electron-builder --mac --publish never --config electron-builder.json
 
       - name: Upload Mac artifact
         uses: actions/upload-artifact@v4
