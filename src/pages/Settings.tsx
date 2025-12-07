@@ -246,38 +246,38 @@ export default function Settings() {
 
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Tabs defaultValue="billing" className="w-full space-y-6">
-          <TabsList className="grid w-full grid-cols-8 mb-8 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm shadow-lg border-2 border-primary/20 rounded-xl p-1.5">
-            <TabsTrigger value="billing" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
+          <TabsList className="flex flex-wrap gap-2 mb-8 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm shadow-lg border-2 border-primary/20 rounded-xl p-2 h-auto">
+            <TabsTrigger value="billing" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Building className="h-4 w-4" />
-              Facturation
+              <span className="hidden sm:inline">Facturation</span>
             </TabsTrigger>
-            <TabsTrigger value="legal" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
+            <TabsTrigger value="legal" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <FileText className="h-4 w-4" />
-              Légal
+              <span className="hidden sm:inline">Légal</span>
             </TabsTrigger>
-            <TabsTrigger value="fiscal" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
+            <TabsTrigger value="fiscal" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Calculator className="h-4 w-4" />
-              Fiscalité
+              <span className="hidden sm:inline">Fiscalité</span>
             </TabsTrigger>
-            <TabsTrigger value="printer" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
+            <TabsTrigger value="printer" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Printer className="h-4 w-4" />
-              Impression
+              <span className="hidden sm:inline">Impression</span>
             </TabsTrigger>
-            <TabsTrigger value="backup" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
+            <TabsTrigger value="backup" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Database className="h-4 w-4" />
-              Sauvegarde
+              <span className="hidden sm:inline">Sauvegarde</span>
             </TabsTrigger>
-            <TabsTrigger value="cleanup" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
+            <TabsTrigger value="cleanup" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Trash2 className="h-4 w-4" />
-              Nettoyage
+              <span className="hidden sm:inline">Nettoyage</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
+            <TabsTrigger value="users" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Users className="h-4 w-4" />
-              Utilisateurs
+              <span className="hidden sm:inline">Utilisateurs</span>
             </TabsTrigger>
-            <TabsTrigger value="contact" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium">
+            <TabsTrigger value="contact" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Info className="h-4 w-4" />
-              Contact
+              <span className="hidden sm:inline">Contact</span>
             </TabsTrigger>
           </TabsList>
 
