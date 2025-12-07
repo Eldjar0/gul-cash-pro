@@ -58,6 +58,7 @@
     "date-fns": "^3.6.0",
     "electron": "^39.2.6",
     "electron-builder": "^26.0.12",
+    "electron-updater": "^6.6.2",
     "embla-carousel-react": "^8.6.0",
     "fabric": "^6.7.1",
     "input-otp": "^1.4.2",

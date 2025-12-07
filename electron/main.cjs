@@ -1,7 +1,12 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
 let mainWindow;
+
+// Configuration de l'auto-updater
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -23,12 +28,72 @@ function createWindow() {
   } else {
     // En production, charger les fichiers buildés
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    
+    // Vérifier les mises à jour en production
+    autoUpdater.checkForUpdatesAndNotify();
   }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
+
+// Événements de mise à jour automatique
+autoUpdater.on('checking-for-update', () => {
+  console.log('Vérification des mises à jour...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  console.log('Mise à jour disponible:', info.version);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-available', info);
+  }
+});
+
+autoUpdater.on('update-not-available', () => {
+  console.log('Aucune mise à jour disponible');
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  console.log(`Téléchargement: ${Math.round(progressObj.percent)}%`);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-progress', progressObj.percent);
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Mise à jour téléchargée:', info.version);
+  
+  dialog.showMessageBox(mainWindow, {
+    type: 'info',
+    title: 'Mise à jour disponible',
+    message: `Une nouvelle version (${info.version}) a été téléchargée. L'application va redémarrer pour appliquer la mise à jour.`,
+    buttons: ['Redémarrer maintenant', 'Plus tard']
+  }).then((result) => {
+    if (result.response === 0) {
+      autoUpdater.quitAndInstall();
+    }
+  });
+});
+
+autoUpdater.on('error', (error) => {
+  console.error('Erreur de mise à jour:', error);
+});
+
+// IPC pour vérifier manuellement les mises à jour
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    const result = await autoUpdater.checkForUpdates();
+    return { success: true, version: result?.updateInfo?.version };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// IPC pour obtenir la version actuelle
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
+});
 
 // Obtenir la liste des imprimantes disponibles
 ipcMain.handle('get-printers', async () => {
