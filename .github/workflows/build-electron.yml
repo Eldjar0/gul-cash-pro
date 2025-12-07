@@ -33,6 +33,11 @@ jobs:
       - name: Build Vite app
         run: npm run build
 
+      - name: Prepare Electron package.json
+        shell: bash
+        run: |
+          node -e "const pkg = require('./package.json'); pkg.main = 'electron/main.js'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+
       - name: Build Electron app
         run: npx electron-builder --win --config electron-builder.json
         env:
@@ -62,6 +67,10 @@ jobs:
 
       - name: Build Vite app
         run: npm run build
+
+      - name: Prepare Electron package.json
+        run: |
+          node -e "const pkg = require('./package.json'); pkg.main = 'electron/main.js'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
 
       - name: Build Electron app
         run: npx electron-builder --mac --config electron-builder.json
