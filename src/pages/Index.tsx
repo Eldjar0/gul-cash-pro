@@ -21,6 +21,7 @@ import { RefundDialog } from '@/components/pos/RefundDialog';
 import { PhysicalScanActionDialog } from '@/components/pos/PhysicalScanActionDialog';
 import { UnknownBarcodeDialog } from '@/components/pos/UnknownBarcodeDialog';
 import { WeightInputDialog } from '@/components/pos/WeightInputDialog';
+import { ZeroPriceDialog } from '@/components/pos/ZeroPriceDialog';
 import { ThermalReceipt, printThermalReceipt } from '@/components/pos/ThermalReceipt';
 import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
 import { ReportXDialog } from '@/components/pos/ReportXDialog';
@@ -275,6 +276,11 @@ const Index = () => {
   // Unknown barcode dialog for creating products on the fly
   const [unknownBarcodeDialogOpen, setUnknownBarcodeDialogOpen] = useState(false);
   const [unknownBarcode, setUnknownBarcode] = useState<string>('');
+
+  // Zero price dialog for products without a defined price
+  const [zeroPriceDialogOpen, setZeroPriceDialogOpen] = useState(false);
+  const [zeroPriceProduct, setZeroPriceProduct] = useState<Product | null>(null);
+  const [zeroPriceQuantity, setZeroPriceQuantity] = useState<number>(1);
 
   // Protection contre la perte du panier en cours
   useEffect(() => {
@@ -573,6 +579,16 @@ const Index = () => {
       return;
     }
     
+    const qty = quantity || parseFloat(quantityInput) || 1;
+    
+    // Si le prix est 0, ouvrir le dialog de saisie du prix
+    if (product.price === 0 || product.price === null) {
+      setZeroPriceProduct(product);
+      setZeroPriceQuantity(qty);
+      setZeroPriceDialogOpen(true);
+      return;
+    }
+    
     // Si le produit est au poids, ouvrir le dialog de saisie du poids
     if (product.type === 'weight') {
       setWeightProduct(product);
@@ -581,7 +597,6 @@ const Index = () => {
       return;
     }
     
-    const qty = quantity || parseFloat(quantityInput) || 1;
     if (isNaN(qty) || qty <= 0) {
       toast.error('Quantité invalide');
       return;
@@ -674,7 +689,57 @@ const Index = () => {
     toast.success(`${weightProduct.name} ajouté au panier (${weight} kg)`);
   };
 
-  // Traitement d'un scan physique - ajoute direct au panier si trouvé
+  // Handler pour confirmer un prix saisi (produit sans prix)
+  const handleZeroPriceConfirm = (price: number) => {
+    if (!zeroPriceProduct) return;
+    
+    // Mettre à jour le produit avec le nouveau prix dans la liste locale
+    const updatedProduct = { ...zeroPriceProduct, price };
+    
+    // Vérifier si c'est un produit au poids
+    if (updatedProduct.type === 'weight') {
+      setWeightProduct(updatedProduct);
+      setWeightQuantity(zeroPriceQuantity);
+      setWeightInputDialogOpen(true);
+      return;
+    }
+    
+    const qty = zeroPriceQuantity || 1;
+    const maxQuantity = 10000;
+    const validQty = Math.min(qty, maxQuantity);
+    
+    setCart(prevCart => {
+      const existingItemIndex = prevCart.findIndex(item => item.product.id === updatedProduct.id);
+      if (existingItemIndex !== -1) {
+        const newCart = [...prevCart];
+        const existingItem = newCart[existingItemIndex];
+        const newQuantity = existingItem.quantity + validQty;
+        const totals = calculateItemTotal(updatedProduct, newQuantity, existingItem.discount, price);
+        newCart[existingItemIndex] = {
+          ...existingItem,
+          product: updatedProduct,
+          quantity: newQuantity,
+          custom_price: price,
+          ...totals
+        };
+        return newCart;
+      } else {
+        const totals = calculateItemTotal(updatedProduct, validQty, undefined, price);
+        const newItem: CartItem = {
+          product: updatedProduct,
+          quantity: validQty,
+          custom_price: price,
+          ...totals
+        };
+        return [...prevCart, newItem];
+      }
+    });
+    setQuantityInput('1');
+    setScanInput('');
+    setSearchResults([]);
+    toast.success(`${updatedProduct.name} ajouté au panier (${price.toFixed(2)}€)`);
+  };
+
   const handlePhysicalScan = (raw: string) => {
     const normalized = normalizeBarcode(raw.trim());
     const normalizedDigits = normalized.replace(/\D+/g, '');
@@ -2503,9 +2568,17 @@ const Index = () => {
         onConfirm={handleWeightConfirm}
       />
 
+      <ZeroPriceDialog
+        open={zeroPriceDialogOpen}
+        onClose={() => setZeroPriceDialogOpen(false)}
+        product={zeroPriceProduct}
+        quantity={zeroPriceQuantity}
+        onConfirm={handleZeroPriceConfirm}
+      />
+
       <PhysicalScanActionDialog open={physicalScanDialogOpen} onOpenChange={setPhysicalScanDialogOpen} barcode={scannedBarcode} product={scannedProduct} onAddToCart={handlePhysicalScanAddToCart} onViewProduct={handlePhysicalScanViewProduct} onCreateProduct={handlePhysicalScanCreateProduct} />
 
-      <UnknownBarcodeDialog 
+      <UnknownBarcodeDialog
         open={unknownBarcodeDialogOpen} 
         onClose={() => setUnknownBarcodeDialogOpen(false)} 
         barcode={unknownBarcode}
