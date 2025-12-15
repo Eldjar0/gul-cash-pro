@@ -30,6 +30,7 @@ import { CustomerDialog } from '@/components/pos/CustomerDialog';
 import { CustomerCreditDialog } from '@/components/pos/CustomerCreditDialog';
 import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
 import { WeightInputDialog } from '@/components/pos/WeightInputDialog';
+import { ZeroPriceDialog } from '@/components/pos/ZeroPriceDialog';
 import { OpenDayDialog } from '@/components/pos/OpenDayDialog';
 import { CloseDayDialog } from '@/components/pos/CloseDayDialog';
 import { ReportXDialog } from '@/components/pos/ReportXDialog';
@@ -106,6 +107,11 @@ export default function MobilePOS() {
   const [tempQuantity, setTempQuantity] = useState('');
   const [tempPrice, setTempPrice] = useState('');
   const [customerSearchTerm, setCustomerSearchTerm] = useState('');
+  
+  // Zero price dialog
+  const [zeroPriceDialogOpen, setZeroPriceDialogOpen] = useState(false);
+  const [zeroPriceProduct, setZeroPriceProduct] = useState<Product | null>(null);
+  const [zeroPriceQuantity, setZeroPriceQuantity] = useState<number>(1);
 
   // Scanner physique automatique
   useUnifiedScanner({
@@ -235,13 +241,21 @@ export default function MobilePOS() {
       return;
     }
     
+    const qty = quantityOverride || 1;
+    
+    // Si le prix est 0, ouvrir le dialog de saisie du prix
+    if (product.price === 0 || product.price === null) {
+      setZeroPriceProduct(product);
+      setZeroPriceQuantity(qty);
+      setZeroPriceDialogOpen(true);
+      return;
+    }
+    
     if (product.type === 'weight') {
       setWeightProduct(product);
       setWeightDialogOpen(true);
       return;
     }
-    
-    const qty = quantityOverride || 1;
     
     let specialPrice: number | undefined;
     if (selectedCustomer) {
@@ -404,6 +418,52 @@ export default function MobilePOS() {
     
     toast.success(`${weightProduct.name} ajouté (${weight} kg)`);
     setWeightDialogOpen(false);
+  };
+
+  // Handler pour confirmer un prix saisi (produit sans prix)
+  const handleZeroPriceConfirm = (price: number) => {
+    if (!zeroPriceProduct) return;
+    
+    // Mettre à jour le produit avec le nouveau prix
+    const updatedProduct = { ...zeroPriceProduct, price };
+    
+    // Vérifier si c'est un produit au poids
+    if (updatedProduct.type === 'weight') {
+      setWeightProduct(updatedProduct);
+      setWeightDialogOpen(true);
+      return;
+    }
+    
+    const qty = zeroPriceQuantity || 1;
+    
+    setCart(prevCart => {
+      const existingIndex = prevCart.findIndex(item => item.product.id === updatedProduct.id);
+      if (existingIndex !== -1) {
+        const newCart = [...prevCart];
+        const existing = newCart[existingIndex];
+        const newQuantity = existing.quantity + qty;
+        const totals = calculateItemTotal(updatedProduct, newQuantity, existing.discount, price);
+        newCart[existingIndex] = {
+          ...existing,
+          product: updatedProduct,
+          quantity: newQuantity,
+          custom_price: price,
+          ...totals
+        };
+        return newCart;
+      } else {
+        const totals = calculateItemTotal(updatedProduct, qty, undefined, price);
+        return [...prevCart, {
+          product: updatedProduct,
+          quantity: qty,
+          custom_price: price,
+          ...totals
+        }];
+      }
+    });
+    
+    toast.success(`${updatedProduct.name} ajouté (${price.toFixed(2)}€)`);
+    setViewMode('cart');
   };
 
   const handleDiscount = (index?: number) => {
@@ -1207,6 +1267,14 @@ export default function MobilePOS() {
         onOpenChange={setWeightDialogOpen}
         product={weightProduct}
         onConfirm={handleWeightConfirm}
+      />
+
+      <ZeroPriceDialog
+        open={zeroPriceDialogOpen}
+        onClose={() => setZeroPriceDialogOpen(false)}
+        product={zeroPriceProduct}
+        quantity={zeroPriceQuantity}
+        onConfirm={handleZeroPriceConfirm}
       />
 
       <OpenDayDialog
