@@ -33,6 +33,8 @@ const Promotions = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPromo, setEditingPromo] = useState<Promotion | null>(null);
+  const [productSearch, setProductSearch] = useState('');
+  const [productSearchGet, setProductSearchGet] = useState('');
   const [formData, setFormData] = useState<Partial<Promotion>>({
     name: '',
     description: '',
@@ -45,6 +47,17 @@ const Promotions = () => {
     conditions: {},
     schedule_config: {},
   });
+
+  // Filtrer les produits par recherche
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+    p.barcode?.toLowerCase().includes(productSearch.toLowerCase())
+  );
+  
+  const filteredProductsGet = products.filter(p => 
+    p.name.toLowerCase().includes(productSearchGet.toLowerCase()) ||
+    p.barcode?.toLowerCase().includes(productSearchGet.toLowerCase())
+  );
 
   const handleOpenDialog = (promo?: Promotion) => {
     if (promo) {
@@ -403,34 +416,49 @@ const Promotions = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="buy_product_id">Produit à acheter</Label>
-                      <Select
-                        value={formData.conditions?.buy_product_id || ''}
-                        onValueChange={(value) =>
-                          setFormData({ ...formData, conditions: { ...formData.conditions, buy_product_id: value } })
-                        }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Sélectionnez un produit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {products.map((product) => (
-                            <SelectItem key={product.id} value={product.id}>
-                              {product.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-2">
+                        <Input
+                          type="text"
+                          placeholder="Rechercher un produit..."
+                          value={productSearch}
+                          onChange={(e) => setProductSearch(e.target.value)}
+                          className="mb-2"
+                        />
+                        {productSearch && filteredProducts.length > 0 && (
+                          <div className="max-h-32 overflow-y-auto border rounded-md">
+                            {filteredProducts.slice(0, 10).map((product) => (
+                              <button
+                                key={product.id}
+                                type="button"
+                                className={`w-full text-left px-3 py-2 hover:bg-muted text-sm ${formData.conditions?.buy_product_id === product.id ? 'bg-primary/10' : ''}`}
+                                onClick={() => {
+                                  setFormData({ ...formData, conditions: { ...formData.conditions, buy_product_id: product.id } });
+                                  setProductSearch('');
+                                }}
+                              >
+                                {product.name} {product.barcode && <span className="text-muted-foreground">({product.barcode})</span>}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {formData.conditions?.buy_product_id && (
+                          <div className="text-sm text-green-600 font-medium">
+                            ✓ {products.find(p => p.id === formData.conditions?.buy_product_id)?.name}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="buy_quantity">Quantité à acheter</Label>
                       <Input
                         type="number"
+                        step="0.01"
                         id="buy_quantity"
                         value={formData.conditions?.buy_quantity?.toString() || ''}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            conditions: { ...formData.conditions, buy_quantity: parseInt(e.target.value) },
+                            conditions: { ...formData.conditions, buy_quantity: parseFloat(e.target.value) || 0 },
                           })
                         }
                       />
@@ -439,34 +467,49 @@ const Promotions = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="get_product_id">Produit offert</Label>
-                      <Select
-                        value={formData.conditions?.get_product_id || ''}
-                        onValueChange={(value) =>
-                          setFormData({ ...formData, conditions: { ...formData.conditions, get_product_id: value } })
-                        }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Sélectionnez un produit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {products.map((product) => (
-                            <SelectItem key={product.id} value={product.id}>
-                              {product.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-2">
+                        <Input
+                          type="text"
+                          placeholder="Rechercher un produit..."
+                          value={productSearchGet}
+                          onChange={(e) => setProductSearchGet(e.target.value)}
+                          className="mb-2"
+                        />
+                        {productSearchGet && filteredProductsGet.length > 0 && (
+                          <div className="max-h-32 overflow-y-auto border rounded-md">
+                            {filteredProductsGet.slice(0, 10).map((product) => (
+                              <button
+                                key={product.id}
+                                type="button"
+                                className={`w-full text-left px-3 py-2 hover:bg-muted text-sm ${formData.conditions?.get_product_id === product.id ? 'bg-primary/10' : ''}`}
+                                onClick={() => {
+                                  setFormData({ ...formData, conditions: { ...formData.conditions, get_product_id: product.id } });
+                                  setProductSearchGet('');
+                                }}
+                              >
+                                {product.name} {product.barcode && <span className="text-muted-foreground">({product.barcode})</span>}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {formData.conditions?.get_product_id && (
+                          <div className="text-sm text-green-600 font-medium">
+                            ✓ {products.find(p => p.id === formData.conditions?.get_product_id)?.name}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="get_quantity">Quantité offerte</Label>
                       <Input
                         type="number"
+                        step="0.01"
                         id="get_quantity"
                         value={formData.conditions?.get_quantity?.toString() || ''}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            conditions: { ...formData.conditions, get_quantity: parseInt(e.target.value) },
+                            conditions: { ...formData.conditions, get_quantity: parseFloat(e.target.value) || 0 },
                           })
                         }
                       />
@@ -481,12 +524,13 @@ const Promotions = () => {
                     <Label htmlFor="min_amount">Montant minimum d'achat</Label>
                     <Input
                       type="number"
+                      step="0.01"
                       id="min_amount"
                       value={formData.conditions?.min_amount?.toString() || ''}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          conditions: { ...formData.conditions, min_amount: parseInt(e.target.value) },
+                          conditions: { ...formData.conditions, min_amount: parseFloat(e.target.value) || 0 },
                         })
                       }
                     />
@@ -495,12 +539,13 @@ const Promotions = () => {
                     <Label htmlFor="discount_value">Valeur de la réduction</Label>
                     <Input
                       type="number"
+                      step="0.01"
                       id="discount_value"
                       value={formData.conditions?.discount_value?.toString() || ''}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          conditions: { ...formData.conditions, discount_value: parseInt(e.target.value) },
+                          conditions: { ...formData.conditions, discount_value: parseFloat(e.target.value) || 0 },
                         })
                       }
                     />
@@ -531,12 +576,13 @@ const Promotions = () => {
                     <Label htmlFor="discount_value">Valeur de la réduction</Label>
                     <Input
                       type="number"
+                      step="0.01"
                       id="discount_value"
                       value={formData.conditions?.discount_value?.toString() || ''}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          conditions: { ...formData.conditions, discount_value: parseInt(e.target.value) },
+                          conditions: { ...formData.conditions, discount_value: parseFloat(e.target.value) || 0 },
                         })
                       }
                     />
@@ -545,12 +591,13 @@ const Promotions = () => {
                     <Label htmlFor="min_amount">Montant minimum d'achat (facultatif)</Label>
                     <Input
                       type="number"
+                      step="0.01"
                       id="min_amount"
                       value={formData.conditions?.min_amount?.toString() || ''}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          conditions: { ...formData.conditions, min_amount: parseInt(e.target.value) },
+                          conditions: { ...formData.conditions, min_amount: parseFloat(e.target.value) || 0 },
                         })
                       }
                     />
@@ -562,34 +609,49 @@ const Promotions = () => {
                 <div className="grid gap-4 py-4">
                   <div>
                     <Label htmlFor="buy_product_id">Produit concerné</Label>
-                    <Select
-                      value={formData.conditions?.buy_product_id || ''}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, conditions: { ...formData.conditions, buy_product_id: value } })
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Sélectionnez un produit" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {products.map((product) => (
-                          <SelectItem key={product.id} value={product.id}>
-                            {product.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-2">
+                      <Input
+                        type="text"
+                        placeholder="Rechercher un produit..."
+                        value={productSearch}
+                        onChange={(e) => setProductSearch(e.target.value)}
+                        className="mb-2"
+                      />
+                      {productSearch && filteredProducts.length > 0 && (
+                        <div className="max-h-32 overflow-y-auto border rounded-md">
+                          {filteredProducts.slice(0, 10).map((product) => (
+                            <button
+                              key={product.id}
+                              type="button"
+                              className={`w-full text-left px-3 py-2 hover:bg-muted text-sm ${formData.conditions?.buy_product_id === product.id ? 'bg-primary/10' : ''}`}
+                              onClick={() => {
+                                setFormData({ ...formData, conditions: { ...formData.conditions, buy_product_id: product.id } });
+                                setProductSearch('');
+                              }}
+                            >
+                              {product.name} {product.barcode && <span className="text-muted-foreground">({product.barcode})</span>}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {formData.conditions?.buy_product_id && (
+                        <div className="text-sm text-green-600 font-medium">
+                          ✓ {products.find(p => p.id === formData.conditions?.buy_product_id)?.name}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <Label htmlFor="discount_value">Valeur de la réduction</Label>
                     <Input
                       type="number"
+                      step="0.01"
                       id="discount_value"
                       value={formData.conditions?.discount_value?.toString() || ''}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          conditions: { ...formData.conditions, discount_value: parseInt(e.target.value) },
+                          conditions: { ...formData.conditions, discount_value: parseFloat(e.target.value) || 0 },
                         })
                       }
                     />
