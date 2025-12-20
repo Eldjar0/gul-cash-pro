@@ -108,18 +108,30 @@ const Promotions = () => {
 
   const handleGenerateExamples = async () => {
     const examplePromotions = [
-      { name: 'Kiwi Vert', searchTerm: 'kiwi vert', bundleQty: 5, bundlePrice: 2.50, unitPrice: 0.79 },
-      { name: 'Kiwi Jaune', searchTerm: 'kiwi jaune', bundleQty: 5, bundlePrice: 3.00, unitPrice: 0.89 },
-      { name: 'Avocat', searchTerm: 'avocat', bundleQty: 2, bundlePrice: 1.00, unitPrice: 0.89 },
-      { name: 'Mangue', searchTerm: 'mangue', bundleQty: 2, bundlePrice: 2.50, unitPrice: 1.49 },
+      { name: 'Kiwi Vert', searchTerms: ['kiwi vert'], bundleQty: 5, bundlePrice: 2.50, unitPrice: 0.79 },
+      { name: 'Kiwi Jaune', searchTerms: ['kiwi jaune'], bundleQty: 5, bundlePrice: 3.00, unitPrice: 0.89 },
+      { name: 'Avocat', searchTerms: ['avocat'], bundleQty: 2, bundlePrice: 1.00, unitPrice: 0.89 },
+      { name: 'Mangue', searchTerms: ['mangue'], bundleQty: 2, bundlePrice: 2.50, unitPrice: 1.49 },
     ];
 
     let created = 0;
+    let notFound: string[] = [];
+    
     for (const example of examplePromotions) {
-      // Find product
-      const product = products.find(p => 
-        p.name.toLowerCase().includes(example.searchTerm.toLowerCase())
+      // Find product - try exact match first, then partial
+      let product = products.find(p => 
+        example.searchTerms.some(term => p.name.toLowerCase() === term.toLowerCase())
       );
+      
+      // If no exact match, try partial match (but exclude "ravier", "slices", "avion", "haas")
+      if (!product) {
+        product = products.find(p => {
+          const nameLower = p.name.toLowerCase();
+          const excludeTerms = ['ravier', 'slices', 'avion', 'haas', 'kg'];
+          if (excludeTerms.some(term => nameLower.includes(term))) return false;
+          return example.searchTerms.some(term => nameLower.includes(term.toLowerCase()));
+        });
+      }
       
       if (product) {
         try {
@@ -144,13 +156,16 @@ const Promotions = () => {
         } catch (error) {
           console.error(`Error creating promotion for ${example.name}:`, error);
         }
+      } else {
+        notFound.push(example.name);
       }
     }
     
     if (created > 0) {
       toast.success(`${created} promotions créées avec succès !`);
-    } else {
-      toast.error('Aucun produit correspondant trouvé');
+    }
+    if (notFound.length > 0) {
+      toast.error(`Produits non trouvés : ${notFound.join(', ')}`);
     }
   };
 
