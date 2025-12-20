@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Edit, Gift, TrendingUp, Calendar, Clock, Users, Eye, EyeOff, Power } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Edit, Gift, TrendingUp, Calendar, Clock, Users, Eye, EyeOff, Power, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -22,6 +22,7 @@ import {
   type PromotionSchedule,
 } from '@/hooks/usePromotions';
 import { useProducts } from '@/hooks/useProducts';
+import { supabase } from '@/integrations/supabase/client';
 
 const Promotions = () => {
   const navigate = useNavigate();
@@ -105,6 +106,54 @@ const Promotions = () => {
     }
   };
 
+  const handleGenerateExamples = async () => {
+    const examplePromotions = [
+      { name: 'Kiwi Vert', searchTerm: 'kiwi vert', bundleQty: 5, bundlePrice: 2.50, unitPrice: 0.79 },
+      { name: 'Kiwi Jaune', searchTerm: 'kiwi jaune', bundleQty: 5, bundlePrice: 3.00, unitPrice: 0.89 },
+      { name: 'Avocat', searchTerm: 'avocat', bundleQty: 2, bundlePrice: 1.00, unitPrice: 0.89 },
+      { name: 'Mangue', searchTerm: 'mangue', bundleQty: 2, bundlePrice: 2.50, unitPrice: 1.49 },
+    ];
+
+    let created = 0;
+    for (const example of examplePromotions) {
+      // Find product
+      const product = products.find(p => 
+        p.name.toLowerCase().includes(example.searchTerm.toLowerCase())
+      );
+      
+      if (product) {
+        try {
+          await createMutation.mutateAsync({
+            name: `${example.name} ${example.bundleQty} pièces`,
+            description: `${example.bundleQty} pour ${example.bundlePrice.toFixed(2)}€ (${example.unitPrice.toFixed(2)}€ la pièce)`,
+            type: 'bundle_price',
+            conditions: {
+              buy_product_id: product.id,
+              bundle_quantity: example.bundleQty,
+              bundle_price: example.bundlePrice,
+              unit_price: example.unitPrice,
+            },
+            is_active: true,
+            show_on_display: true,
+            customer_type: 'all',
+            schedule_type: 'always',
+            priority: 10,
+            schedule_config: {},
+          });
+          created++;
+        } catch (error) {
+          console.error(`Error creating promotion for ${example.name}:`, error);
+        }
+      }
+    }
+    
+    if (created > 0) {
+      toast.success(`${created} promotions créées avec succès !`);
+    } else {
+      toast.error('Aucun produit correspondant trouvé');
+    }
+  };
+
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       buy_x_get_y: 'Achetez X, Obtenez Y',
@@ -151,10 +200,20 @@ const Promotions = () => {
                 <p className="text-sm text-muted-foreground">Créez et gérez vos offres promotionnelles</p>
               </div>
             </div>
-            <Button onClick={() => handleOpenDialog()} className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Nouvelle Promotion
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleGenerateExamples}
+                className="border-pink-200 hover:bg-pink-50 dark:border-pink-800 dark:hover:bg-pink-900/20"
+              >
+                <Sparkles className="w-4 h-4 mr-2 text-pink-500" />
+                Générer exemples
+              </Button>
+              <Button onClick={() => handleOpenDialog()} className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700">
+                <Plus className="w-4 h-4 mr-2" />
+                Nouvelle Promotion
+              </Button>
+            </div>
           </div>
         </div>
       </div>
