@@ -81,6 +81,21 @@ export const useCreateSale = () => {
       // Permettre les ventes avec stock négatif automatiquement
       // Les avertissements de stock sont affichés visuellement dans le panier
 
+      // Vérifier que le customer_id existe si fourni
+      let validCustomerId = sale.customer_id;
+      if (validCustomerId) {
+        const { data: customerExists } = await supabase
+          .from('customers')
+          .select('id')
+          .eq('id', validCustomerId)
+          .maybeSingle();
+        
+        if (!customerExists) {
+          // Le client n'existe plus, on continue sans client
+          validCustomerId = undefined;
+        }
+      }
+
       // Get sale number with correct format (ticket or invoice)
       const { data: saleNumber, error: numberError } = await supabase
         .rpc('generate_sale_number', { is_invoice_param: sale.is_invoice || false });
@@ -103,7 +118,7 @@ export const useCreateSale = () => {
           is_invoice: saleData.is_invoice,
           is_cancelled: saleData.is_cancelled,
           notes: saleData.notes,
-          customer_id: saleData.customer_id,
+          customer_id: validCustomerId || null,
           cashier_id: saleData.cashier_id,
           sale_number: saleNumber as string,
           source: (saleData as any).source || 'pos', // Support source field (mobile or pos)
