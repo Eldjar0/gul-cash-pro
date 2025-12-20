@@ -112,6 +112,7 @@ const Promotions = () => {
       cart_percentage: 'Réduction % sur le panier',
       cart_fixed: 'Réduction fixe sur le panier',
       product_discount: 'Réduction sur produit',
+      bundle_price: 'Lot / Prix groupé',
     };
     return labels[type] || type;
   };
@@ -123,6 +124,7 @@ const Promotions = () => {
       cart_percentage: TrendingUp,
       cart_fixed: TrendingUp,
       product_discount: Gift,
+      bundle_price: Gift,
     };
     const Icon = icons[type] || Gift;
     return <Icon className="w-4 h-4" />;
@@ -366,6 +368,7 @@ const Promotions = () => {
                         <SelectValue placeholder="Sélectionnez un type" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="bundle_price">Lot / Prix groupé</SelectItem>
                         <SelectItem value="buy_x_get_y">Achetez X, Obtenez Y</SelectItem>
                         <SelectItem value="spend_amount_get_discount">Dépensez X, Économisez Y</SelectItem>
                         <SelectItem value="cart_percentage">Réduction % sur le panier</SelectItem>
@@ -673,6 +676,123 @@ const Promotions = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+              )}
+
+              {formData.type === 'bundle_price' && (
+                <div className="grid gap-4 py-4">
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      Exemple : "Mangue 2 pièces pour 2,50€ (1,49€ la pièce)"
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="buy_product_id">Produit concerné</Label>
+                    <div className="space-y-2">
+                      <Input
+                        type="text"
+                        placeholder="Rechercher un produit..."
+                        value={productSearch}
+                        onChange={(e) => setProductSearch(e.target.value)}
+                        className="mb-2"
+                      />
+                      {productSearch && filteredProducts.length > 0 && (
+                        <div className="max-h-32 overflow-y-auto border rounded-md">
+                          {filteredProducts.slice(0, 10).map((product) => (
+                            <button
+                              key={product.id}
+                              type="button"
+                              className={`w-full text-left px-3 py-2 hover:bg-muted text-sm ${formData.conditions?.buy_product_id === product.id ? 'bg-primary/10' : ''}`}
+                              onClick={() => {
+                                setFormData({ 
+                                  ...formData, 
+                                  conditions: { 
+                                    ...formData.conditions, 
+                                    buy_product_id: product.id,
+                                    unit_price: product.price // Auto-fill unit price
+                                  } 
+                                });
+                                setProductSearch('');
+                              }}
+                            >
+                              {product.name} - {product.price?.toFixed(2)}€ {product.barcode && <span className="text-muted-foreground">({product.barcode})</span>}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {formData.conditions?.buy_product_id && (
+                        <div className="text-sm text-green-600 font-medium">
+                          ✓ {products.find(p => p.id === formData.conditions?.buy_product_id)?.name}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="bundle_quantity">Quantité du lot (pièces)</Label>
+                      <Input
+                        type="number"
+                        step="1"
+                        min="2"
+                        id="bundle_quantity"
+                        placeholder="Ex: 2, 3, 5..."
+                        value={formData.conditions?.bundle_quantity?.toString() || ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            conditions: { ...formData.conditions, bundle_quantity: parseInt(e.target.value) || 0 },
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="bundle_price">Prix du lot (€)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        id="bundle_price"
+                        placeholder="Ex: 2.50"
+                        value={formData.conditions?.bundle_price?.toString() || ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            conditions: { ...formData.conditions, bundle_price: parseFloat(e.target.value) || 0 },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="unit_price">Prix unitaire normal (€) - pour affichage</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      id="unit_price"
+                      placeholder="Ex: 1.49"
+                      value={formData.conditions?.unit_price?.toString() || ''}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          conditions: { ...formData.conditions, unit_price: parseFloat(e.target.value) || 0 },
+                        })
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Ce prix sera affiché à titre informatif sur l'écran client
+                    </p>
+                  </div>
+                  {formData.conditions?.bundle_quantity && formData.conditions?.bundle_price && formData.conditions?.unit_price && (
+                    <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                      <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                        Aperçu : {formData.conditions.bundle_quantity} pour {formData.conditions.bundle_price?.toFixed(2)}€ ({formData.conditions.unit_price?.toFixed(2)}€ la pièce)
+                      </p>
+                      <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                        Économie : {((formData.conditions.unit_price * formData.conditions.bundle_quantity) - formData.conditions.bundle_price).toFixed(2)}€ par lot
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </TabsContent>
