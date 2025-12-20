@@ -144,6 +144,7 @@ const Index = () => {
   const [cart, setCart] = useState<CartItem[]>(() => loadCart());
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+  const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
   const [currentSale, setCurrentSale] = useState<any>(null);
   const [scanInput, setScanInput] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -1140,11 +1141,8 @@ const Index = () => {
       setSelectedCustomer(null);
       setPaymentDialogOpen(false);
 
-      // Ouvrir directement le reçu et imprimer
-      setReceiptDialogOpen(true);
-      setTimeout(() => {
-        printThermalReceipt();
-      }, 300);
+      // Afficher le dialogue de confirmation d'impression (sans impression auto)
+      setPrintConfirmDialogOpen(true);
       
       // Message de succès
       toast.success(
@@ -2685,6 +2683,47 @@ const Index = () => {
             >
               IMPRIMER
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de confirmation d'impression après paiement */}
+      <Dialog open={printConfirmDialogOpen} onOpenChange={setPrintConfirmDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold flex items-center justify-center gap-2">
+              <CheckCircle className="h-6 w-6 text-green-500" />
+              Paiement validé
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center">
+            <p className="text-muted-foreground mb-6">
+              Voulez-vous imprimer le ticket de caisse ?
+            </p>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setPrintConfirmDialogOpen(false);
+                  setCurrentSale(null);
+                }} 
+                className="flex-1 h-14 text-base font-semibold"
+              >
+                Non
+              </Button>
+              <Button 
+                onClick={() => {
+                  setPrintConfirmDialogOpen(false);
+                  setReceiptDialogOpen(true);
+                  setTimeout(() => {
+                    printThermalReceipt();
+                  }, 300);
+                }} 
+                className="flex-1 h-14 bg-green-600 hover:bg-green-700 text-white text-base font-bold"
+              >
+                Oui, imprimer
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
