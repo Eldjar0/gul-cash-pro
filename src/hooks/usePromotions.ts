@@ -10,6 +10,10 @@ export interface PromotionConditions {
   min_amount?: number;
   discount_value?: number;
   discount_type?: 'percentage' | 'fixed';
+  // Bundle/Lot pricing
+  bundle_quantity?: number;
+  bundle_price?: number;
+  unit_price?: number;
 }
 
 export interface PromotionSchedule {
@@ -25,7 +29,7 @@ export interface Promotion {
   id: string;
   name: string;
   description?: string;
-  type: 'buy_x_get_y' | 'spend_amount_get_discount' | 'cart_percentage' | 'cart_fixed' | 'product_discount';
+  type: 'buy_x_get_y' | 'spend_amount_get_discount' | 'cart_percentage' | 'cart_fixed' | 'product_discount' | 'bundle_price';
   conditions: PromotionConditions;
   is_active: boolean;
   show_on_display: boolean;
@@ -258,6 +262,25 @@ export const calculateDiscount = (
             discount = conditions.discount_type === 'percentage'
               ? (productItem.total * conditions.discount_value) / 100
               : conditions.discount_value * productItem.quantity;
+          }
+        }
+        break;
+
+      case 'bundle_price':
+        // Bundle/Lot pricing - e.g., "2 for 2.50€"
+        if (conditions.buy_product_id && conditions.bundle_quantity && conditions.bundle_price) {
+          const productItem = cartItems.find(item => item.product_id === conditions.buy_product_id);
+          if (productItem && productItem.quantity >= conditions.bundle_quantity) {
+            // Calculate how many complete bundles
+            const numBundles = Math.floor(productItem.quantity / conditions.bundle_quantity);
+            const remainingQty = productItem.quantity % conditions.bundle_quantity;
+            
+            // Normal price for all items
+            const normalTotal = productItem.unit_price * productItem.quantity;
+            // Bundle price for complete bundles + normal price for remaining items
+            const bundleTotal = (numBundles * conditions.bundle_price) + (remainingQty * productItem.unit_price);
+            
+            discount = normalTotal - bundleTotal;
           }
         }
         break;
