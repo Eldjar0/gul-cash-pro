@@ -49,7 +49,9 @@ interface ReceiptItem {
   actual_unit_cost: number;
   line_total: number;
   has_price_change: boolean;
-  needs_cost_input?: boolean; // New: flag when cost_price is missing
+  needs_cost_input?: boolean;
+  selling_price: number; // Current selling price (editable)
+  original_selling_price: number; // Original price to detect changes
 }
 
 interface ProductToAdapt {
@@ -140,24 +142,29 @@ export default function SupplierEntry() {
     [items]
   );
 
-  // Calculate margins for each item
+  // Calculate margins for each item (using the item's selling_price field now)
   const itemsWithMargins = useMemo(() => {
     return items.map(item => {
-      const product = products?.find(p => p.id === item.product_id);
-      const sellingPrice = product?.price || 0;
-      const margin = sellingPrice - item.actual_unit_cost;
+      const margin = item.selling_price - item.actual_unit_cost;
       const marginPercent = item.actual_unit_cost > 0 
         ? (margin / item.actual_unit_cost) * 100 
         : 0;
-      const isLoss = margin < 0;
-      return { ...item, sellingPrice, margin, marginPercent, isLoss };
+      const isLoss = margin < 0 && item.actual_unit_cost > 0;
+      const sellingPriceChanged = item.selling_price !== item.original_selling_price;
+      return { ...item, margin, marginPercent, isLoss, sellingPriceChanged };
     });
-  }, [items, products]);
+  }, [items]);
 
   // Check for products that would be sold at a loss
   const productsAtLoss = useMemo(() => {
     return itemsWithMargins.filter(item => item.isLoss && item.product_id);
   }, [itemsWithMargins]);
+
+  // Check for items with selling price changes
+  const itemsWithPriceChanges = useMemo(() => 
+    itemsWithMargins.filter(item => item.sellingPriceChanged),
+    [itemsWithMargins]
+  );
 
   // Pagination calculations
   const totalPages = Math.ceil((receipts?.length || 0) / ITEMS_PER_PAGE);
@@ -216,6 +223,7 @@ export default function SupplierEntry() {
     const loadedItems: ReceiptItem[] = receipt.items.map(item => {
       const product = products?.find(p => p.id === item.product_id);
       const needsCostInput = !item.expected_unit_cost && item.actual_unit_cost <= 0;
+      const sellingPrice = product?.price || 0;
       
       return {
         id: item.id,
@@ -228,6 +236,8 @@ export default function SupplierEntry() {
         line_total: item.quantity * item.actual_unit_cost,
         has_price_change: item.has_price_change || false,
         needs_cost_input: needsCostInput,
+        selling_price: sellingPrice,
+        original_selling_price: sellingPrice,
       };
     });
     
@@ -264,6 +274,8 @@ export default function SupplierEntry() {
       line_total: product.cost_price || 0,
       has_price_change: false,
       needs_cost_input: needsCostInput,
+      selling_price: product.price,
+      original_selling_price: product.price,
     };
 
     // Add to database
@@ -364,18 +376,30 @@ export default function SupplierEntry() {
     }
   };
 
+  // Update selling price (local state)
+  const handleUpdateSellingPrice = (index: number, price: number) => {
+    const item = items[index];
+    if (!item || price < 0) return;
+
+    const updatedItems = [...items];
+    updatedItems[index] = {
+      ...item,
+      selling_price: price,
+    };
+    setItems(updatedItems);
+  };
+
   // Check margins before validation
   const checkProductMargins = (): boolean => {
     const toAdapt = itemsWithMargins
       .filter(item => item.isLoss && item.product_id)
       .map(item => {
-        const product = products?.find(p => p.id === item.product_id);
         // Suggest price with 20% margin
         const suggestedPrice = item.actual_unit_cost * 1.20;
         return {
           product_id: item.product_id!,
           product_name: item.product_name,
-          current_price: item.sellingPrice,
+          current_price: item.selling_price,
           cost_price: item.actual_unit_cost,
           suggested_price: Math.ceil(suggestedPrice * 100) / 100, // Round up to cents
         };
@@ -415,11 +439,28 @@ export default function SupplierEntry() {
       return;
     }
 
+    // Save any selling price changes before validating
+    await saveSellingPriceChanges();
+
     try {
       await validateReceipt.mutateAsync(currentReceiptId);
       resetForm();
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  // Save selling price changes to DB
+  const saveSellingPriceChanges = async () => {
+    const changedItems = items.filter(item => item.selling_price !== item.original_selling_price && item.product_id);
+    for (const item of changedItems) {
+      await updateProduct.mutateAsync({
+        id: item.product_id!,
+        price: item.selling_price,
+      });
+    }
+    if (changedItems.length > 0) {
+      toast.success(`${changedItems.length} prix de vente mis à jour en BDD`);
     }
   };
 
@@ -433,6 +474,9 @@ export default function SupplierEntry() {
     if (!checkProductMargins()) {
       return;
     }
+
+    // Save any selling price changes before validating
+    await saveSellingPriceChanges();
 
     try {
       await validateReceipt.mutateAsync(currentReceiptId);
@@ -653,23 +697,24 @@ export default function SupplierEntry() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Produit</TableHead>
-                      <TableHead className="w-20 text-center">Qté</TableHead>
-                      <TableHead className="w-28 text-right">P.A. Attendu</TableHead>
-                      <TableHead className="w-28 text-right">P.A. Réel</TableHead>
-                      <TableHead className="w-24 text-right">Total</TableHead>
-                      <TableHead className="w-28 text-right">Marge</TableHead>
-                      <TableHead className="w-12"></TableHead>
+                      <TableHead className="w-16 text-center">Qté</TableHead>
+                      <TableHead className="w-24 text-right">P.A. Attendu</TableHead>
+                      <TableHead className="w-24 text-right">Nouv. P.A.</TableHead>
+                      <TableHead className="w-24 text-right">Total Achat</TableHead>
+                      <TableHead className="w-24 text-right">Prix Vente</TableHead>
+                      <TableHead className="w-24 text-right">Marge</TableHead>
+                      <TableHead className="w-10"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {itemsWithMargins.map((item, index) => (
                       <TableRow 
                         key={item.id || index} 
-                        className={`${item.has_price_change ? 'bg-yellow-50' : ''} ${item.needs_cost_input ? 'bg-red-50' : ''}`}
+                        className={`${item.has_price_change ? 'bg-yellow-50' : ''} ${item.needs_cost_input ? 'bg-red-50' : ''} ${item.sellingPriceChanged ? 'bg-blue-50' : ''}`}
                       >
                         <TableCell>
                           <div>
-                            <div className="font-medium">{item.product_name}</div>
+                            <div className="font-medium text-sm">{item.product_name}</div>
                             {item.product_barcode && (
                               <div className="text-xs text-muted-foreground">{item.product_barcode}</div>
                             )}
@@ -685,12 +730,12 @@ export default function SupplierEntry() {
                                 {item.actual_unit_cost > (item.expected_unit_cost || 0) ? (
                                   <>
                                     <TrendingUp className="h-3 w-3 mr-1" /> 
-                                    PLUS CHER +{(item.actual_unit_cost - (item.expected_unit_cost || 0)).toFixed(2)}€
+                                    +{(item.actual_unit_cost - (item.expected_unit_cost || 0)).toFixed(2)}€
                                   </>
                                 ) : (
                                   <>
                                     <TrendingDown className="h-3 w-3 mr-1" /> 
-                                    MOINS CHER {(item.actual_unit_cost - (item.expected_unit_cost || 0)).toFixed(2)}€
+                                    {(item.actual_unit_cost - (item.expected_unit_cost || 0)).toFixed(2)}€
                                   </>
                                 )}
                               </Badge>
@@ -699,7 +744,14 @@ export default function SupplierEntry() {
                             {item.needs_cost_input && (
                               <Badge variant="destructive" className="mt-1 text-xs">
                                 <AlertCircle className="h-3 w-3 mr-1" />
-                                Prix d'achat requis
+                                P.A. requis
+                              </Badge>
+                            )}
+                            {/* Selling price changed indicator */}
+                            {item.sellingPriceChanged && (
+                              <Badge className="mt-1 text-xs bg-blue-100 text-blue-700 border-blue-300">
+                                <Pencil className="h-3 w-3 mr-1" />
+                                P.V. modifié
                               </Badge>
                             )}
                           </div>
@@ -711,12 +763,12 @@ export default function SupplierEntry() {
                             step="1"
                             value={item.quantity}
                             onChange={(e) => handleUpdateQuantity(index, parseFloat(e.target.value) || 0)}
-                            className="w-16 text-center"
+                            className="w-14 text-center text-sm"
                           />
                         </TableCell>
-                        <TableCell className="text-right text-muted-foreground">
+                        <TableCell className="text-right text-muted-foreground text-sm">
                           {item.expected_unit_cost?.toFixed(2) ?? (
-                            <span className="text-orange-500 italic">inconnu</span>
+                            <span className="text-orange-500 italic text-xs">?</span>
                           )} €
                         </TableCell>
                         <TableCell>
@@ -726,8 +778,8 @@ export default function SupplierEntry() {
                             step="0.01"
                             value={item.actual_unit_cost || ''}
                             onChange={(e) => handleUpdateCost(index, parseFloat(e.target.value) || 0)}
-                            placeholder="Saisir prix"
-                            className={`w-24 text-right ${
+                            placeholder="P.A."
+                            className={`w-20 text-right text-sm ${
                               item.needs_cost_input 
                                 ? 'border-red-400 bg-red-50' 
                                 : item.has_price_change 
@@ -736,11 +788,29 @@ export default function SupplierEntry() {
                             }`}
                           />
                         </TableCell>
-                        <TableCell className="text-right font-medium">
+                        <TableCell className="text-right font-medium text-sm">
                           {item.line_total.toFixed(2)} €
                         </TableCell>
+                        {/* Selling price column - editable */}
+                        <TableCell>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={item.selling_price || ''}
+                            onChange={(e) => handleUpdateSellingPrice(index, parseFloat(e.target.value) || 0)}
+                            placeholder="P.V."
+                            className={`w-20 text-right text-sm ${
+                              item.sellingPriceChanged 
+                                ? 'border-blue-400 bg-blue-50' 
+                                : item.isLoss 
+                                  ? 'border-red-400 bg-red-50'
+                                  : ''
+                            }`}
+                          />
+                        </TableCell>
                         {/* Margin column */}
-                        <TableCell className={`text-right text-sm ${
+                        <TableCell className={`text-right text-xs ${
                           item.isLoss 
                             ? 'text-red-600 font-bold' 
                             : item.marginPercent < 10 
@@ -750,8 +820,8 @@ export default function SupplierEntry() {
                           {item.actual_unit_cost > 0 ? (
                             <>
                               <div>{item.margin.toFixed(2)} €</div>
-                              <div className="text-xs">
-                                ({item.marginPercent.toFixed(1)}%)
+                              <div>
+                                ({item.marginPercent.toFixed(0)}%)
                                 {item.isLoss && ' ⚠️'}
                               </div>
                             </>
@@ -764,7 +834,7 @@ export default function SupplierEntry() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleRemoveItem(index)}
-                            className="text-destructive hover:text-destructive"
+                            className="text-destructive hover:text-destructive h-8 w-8"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
