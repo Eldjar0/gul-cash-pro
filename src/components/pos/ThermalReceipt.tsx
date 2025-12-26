@@ -208,16 +208,26 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
         </>
       )}
 
-      {/* Sale info - compact */}
-      <div style={{ fontSize: '11px', marginBottom: '4px', fontWeight: '900', paddingRight: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>{sale.saleNumber || sale.sale_number}</span>
-          <span>{saleDate.toLocaleString('fr-BE', { 
+      {/* Numéro de ticket/facture - Conformité légale belge */}
+      <div style={{ 
+        textAlign: 'center', 
+        marginBottom: '6px', 
+        padding: '6px',
+        backgroundColor: '#f0f0f0',
+        border: '1px solid #000'
+      }}>
+        <div style={{ fontSize: '14px', fontWeight: '900', letterSpacing: '0.5px' }}>
+          {isInvoice ? 'FACTURE' : 'TICKET'} N° {sale.saleNumber || sale.sale_number}
+        </div>
+        <div style={{ fontSize: '11px', fontWeight: '800', marginTop: '2px' }}>
+          {saleDate.toLocaleString('fr-BE', { 
             day: '2-digit', 
             month: '2-digit',
+            year: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
-          })}</span>
+            minute: '2-digit',
+            second: '2-digit'
+          })}
         </div>
       </div>
 
@@ -412,6 +422,20 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
       <div className="text-center" style={{ marginTop: '8px', fontWeight: '900' }}>
         <div style={{ fontSize: '14px', marginBottom: '4px' }}>
           MERCI DE VOTRE VISITE
+        </div>
+        
+        {/* Mentions légales belges obligatoires */}
+        <div style={{ 
+          marginTop: '8px', 
+          paddingTop: '6px', 
+          borderTop: '1px dashed #000',
+          fontSize: '9px',
+          fontWeight: '700',
+          color: '#333'
+        }}>
+          <div>Document à conserver 10 ans</div>
+          <div>Art. 315bis CIR92</div>
+          <div style={{ marginTop: '2px' }}>TVA comprise dans les prix affichés</div>
         </div>
       </div>
     </div>
