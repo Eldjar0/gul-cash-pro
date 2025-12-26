@@ -87,29 +87,29 @@ export function Receipt({ sale }: ReceiptProps) {
       {/* Ligne de séparation */}
       <div className="border-t border-dashed border-black my-2"></div>
 
-      {/* Info ticket/facture */}
-      <div className="text-[10px] mb-3">
-        <div className="flex justify-between items-center">
-          <span className="font-semibold">{isInvoice ? 'FACTURE' : 'TICKET'}</span>
-          <span className="text-base font-black">{sale.saleNumber || sale.sale_number}</span>
+      {/* Info ticket/facture - Conformité légale belge */}
+      <div className="text-center mb-3 bg-gray-100 py-2 px-1 border border-black">
+        <div className="text-lg font-black tracking-wide">
+          {isInvoice ? 'FACTURE' : 'TICKET'} N° {sale.saleNumber || sale.sale_number}
         </div>
-        {sale.is_cancelled && (
-          <div className="text-center mt-2 mb-2 py-2 px-1 border-4 border-red-600 bg-red-100">
-            <p className="text-red-900 font-black text-lg tracking-wider">❌ ANNULÉ ❌</p>
-            <p className="text-red-700 font-bold text-[9px] mt-1">Document comptabilisé à 0€</p>
-          </div>
-        )}
-        <div className="flex justify-between items-center mt-1">
-          <span className="font-semibold">DATE</span>
-          <span className="font-semibold">{new Date(sale.date || new Date()).toLocaleString('fr-BE', { 
+        <div className="text-[11px] font-bold mt-1">
+          {new Date(sale.date || new Date()).toLocaleString('fr-BE', { 
             day: '2-digit', 
             month: '2-digit', 
             year: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
-          })}</span>
+            minute: '2-digit',
+            second: '2-digit'
+          })}
         </div>
       </div>
+      
+      {sale.is_cancelled && (
+        <div className="text-center mt-2 mb-2 py-2 px-1 border-4 border-red-600 bg-red-100">
+          <p className="text-red-900 font-black text-lg tracking-wider">❌ ANNULÉ ❌</p>
+          <p className="text-red-700 font-bold text-[9px] mt-1">Document comptabilisé à 0,00€</p>
+        </div>
+      )}
 
       {/* Customer info - Show on all tickets if customer selected */}
       {sale.customer && (
@@ -151,7 +151,7 @@ export function Receipt({ sale }: ReceiptProps) {
                   {item.product.type === 'weight' ? 'kg' : 'x'}
                   {item.product.type === 'weight' ? '' : ` ${item.product.price.toFixed(2)}€`}
                 </span>
-                <span className="font-black">{item.is_gift ? 'OFFERT' : item.subtotal.toFixed(2)}</span>
+                <span className="font-black">{item.is_gift ? 'OFFERT' : `${item.subtotal.toFixed(2)}€`}</span>
               </div>
               <div className="flex justify-between text-[9px] text-muted-foreground">
                 <span>TVA {item.product.vat_rate}%</span>
@@ -174,7 +174,7 @@ export function Receipt({ sale }: ReceiptProps) {
       <div className="text-[10px] space-y-1">
         <div className="flex justify-between">
           <span className="font-semibold">SOUS-TOTAL HT</span>
-          <span className="font-semibold">{sale.subtotal.toFixed(2)}</span>
+          <span className="font-semibold">{sale.subtotal.toFixed(2)}€</span>
         </div>
         
         {/* Détail TVA par taux */}
@@ -185,19 +185,19 @@ export function Receipt({ sale }: ReceiptProps) {
             .map(([rate, values]) => (
               <div key={rate} className="flex justify-between text-[9px]">
                 <span>TVA {rate}%</span>
-                <span>HT: {values.totalHT.toFixed(2)} | TVA: {values.totalVAT.toFixed(2)}</span>
+                <span>HT: {values.totalHT.toFixed(2)}€ | TVA: {values.totalVAT.toFixed(2)}€</span>
               </div>
             ))}
         </div>
         
         <div className="flex justify-between border-t border-dashed border-black pt-1">
           <span className="font-semibold">TOTAL TVA</span>
-          <span className="font-semibold">{(sale.totalVat || sale.total_vat || 0).toFixed(2)}</span>
+          <span className="font-semibold">{(sale.totalVat || sale.total_vat || 0).toFixed(2)}€</span>
         </div>
         {(sale.totalDiscount || sale.total_discount || 0) > 0 && (
           <div className="flex justify-between">
             <span className="font-semibold">REMISE TOTALE</span>
-            <span className="font-semibold">-{(sale.totalDiscount || sale.total_discount || 0).toFixed(2)}</span>
+            <span className="font-semibold">-{(sale.totalDiscount || sale.total_discount || 0).toFixed(2)}€</span>
           </div>
         )}
       </div>
@@ -206,11 +206,11 @@ export function Receipt({ sale }: ReceiptProps) {
       <div className="border-t-4 border-double border-black mt-2 pt-2">
         <div className="flex justify-between text-[9px] text-gray-600">
           <span>Total HT</span>
-          <span>{sale.subtotal.toFixed(2)}</span>
+          <span>{sale.subtotal.toFixed(2)}€</span>
         </div>
         <div className="flex justify-between text-lg font-black tracking-wide">
           <span>TOTAL EUR</span>
-          <span>{sale.total.toFixed(2)}</span>
+          <span>{sale.total.toFixed(2)}€</span>
         </div>
       </div>
 
@@ -222,7 +222,7 @@ export function Receipt({ sale }: ReceiptProps) {
             <>
               <div className="flex justify-between font-black mb-1">
                 <span>PAIEMENT MIXTE</span>
-                <span>{sale.total.toFixed(2)}</span>
+                <span>{sale.total.toFixed(2)}€</span>
               </div>
               {Object.entries(sale.payment_split).map(([method, amount]) => (
                 <div key={method} className="flex justify-between pl-2">
@@ -233,7 +233,7 @@ export function Receipt({ sale }: ReceiptProps) {
                      method === 'mobile' ? 'Paiement mobile' :
                      method === 'check' ? 'Chèque' : method}
                   </span>
-                  <span className="font-bold">{amount.toFixed(2)}</span>
+                  <span className="font-bold">{amount.toFixed(2)}€</span>
                 </div>
               ))}
             </>
@@ -246,18 +246,18 @@ export function Receipt({ sale }: ReceiptProps) {
                  (sale.paymentMethod || sale.payment_method) === 'customer_credit' ? 'CRÉDIT' :
                  'PAIEMENT MOBILE'}
               </span>
-              <span className="font-black">{sale.total.toFixed(2)}</span>
+              <span className="font-black">{sale.total.toFixed(2)}€</span>
             </div>
           )}
           {(sale.paymentMethod || sale.payment_method) === 'cash' && (sale.amountPaid || sale.amount_paid) && (
             <>
               <div className="flex justify-between">
                 <span className="font-bold">RECU</span>
-                <span className="font-bold">{(sale.amountPaid || sale.amount_paid || 0).toFixed(2)}</span>
+                <span className="font-bold">{(sale.amountPaid || sale.amount_paid || 0).toFixed(2)}€</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-bold">RENDU MONNAIE</span>
-                <span className="font-bold">{(sale.change || sale.change_amount || 0).toFixed(2)}</span>
+                <span className="font-bold">{(sale.change || sale.change_amount || 0).toFixed(2)}€</span>
               </div>
             </>
           )}
@@ -278,8 +278,11 @@ export function Receipt({ sale }: ReceiptProps) {
           </div>
         )}
         
-        <div className="mt-3 text-[9px] text-muted-foreground border-t pt-2">
-          <p className="font-semibold">Document à conserver 10 ans (Art. 315bis CIR92)</p>
+        {/* Mentions légales belges obligatoires */}
+        <div className="mt-3 text-[8px] text-muted-foreground border-t pt-2 space-y-0.5">
+          <p className="font-semibold">Document à conserver 10 ans</p>
+          <p>Art. 315bis CIR92</p>
+          <p>TVA comprise dans les prix affichés</p>
         </div>
       </div>
     </div>
