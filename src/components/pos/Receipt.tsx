@@ -278,12 +278,6 @@ export function Receipt({ sale }: ReceiptProps) {
           </div>
         )}
         
-        {/* Mentions légales belges obligatoires */}
-        <div className="mt-3 text-[8px] text-muted-foreground border-t pt-2 space-y-0.5">
-          <p className="font-semibold">Document à conserver 10 ans</p>
-          <p>Art. 315bis CIR92</p>
-          <p>TVA comprise dans les prix affichés</p>
-        </div>
       </div>
     </div>
   );

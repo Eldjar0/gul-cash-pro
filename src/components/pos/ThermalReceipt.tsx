@@ -424,19 +424,6 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           MERCI DE VOTRE VISITE
         </div>
         
-        {/* Mentions légales belges obligatoires */}
-        <div style={{ 
-          marginTop: '8px', 
-          paddingTop: '6px', 
-          borderTop: '1px dashed #000',
-          fontSize: '9px',
-          fontWeight: '700',
-          color: '#333'
-        }}>
-          <div>Document à conserver 10 ans</div>
-          <div>Art. 315bis CIR92</div>
-          <div style={{ marginTop: '2px' }}>TVA comprise dans les prix affichés</div>
-        </div>
       </div>
     </div>
   );
