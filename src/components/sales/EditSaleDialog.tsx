@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertTriangle, Trash2, Save, Plus } from 'lucide-react';
+import { AlertTriangle, Trash2, Save, Plus, User, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
@@ -11,6 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { ProductSearch } from '@/components/pos/ProductSearch';
 import { Product } from '@/hooks/useProducts';
+import { CustomerDialog } from '@/components/pos/CustomerDialog';
+import { Customer } from '@/hooks/useCustomers';
 
 interface EditSaleDialogProps {
   open: boolean;
@@ -22,11 +24,18 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
   const [items, setItems] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [showProductSearch, setShowProductSearch] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [showCustomerDialog, setShowCustomerDialog] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (sale?.sale_items) {
       setItems(sale.sale_items.map((item: any) => ({ ...item })));
+    }
+    if (sale?.customers) {
+      setSelectedCustomer(sale.customers);
+    } else {
+      setSelectedCustomer(null);
     }
   }, [sale]);
 
@@ -127,6 +136,7 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
           subtotal,
           total_vat: totalVat,
           total,
+          customer_id: selectedCustomer?.id || null,
           updated_at: sale.updated_at, // Conserver la date originale
         })
         .eq('id', sale.id);
@@ -198,7 +208,7 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
         <ScrollArea className="flex-1 px-1">
           {sale && (
             <div className="space-y-4 pr-4">
-              <div className="flex items-center gap-4 p-3 bg-muted rounded-lg">
+              <div className="flex flex-wrap items-center gap-4 p-3 bg-muted rounded-lg">
                 <div>
                   <span className="text-sm text-muted-foreground">N° Vente:</span>
                   <span className="ml-2 font-bold">{sale.sale_number}</span>
@@ -208,6 +218,43 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
                   <span className="ml-2 font-semibold">
                     {new Date(sale.date).toLocaleDateString('fr-FR')}
                   </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Client:</span>
+                  {selectedCustomer ? (
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{selectedCustomer.name}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={() => setShowCustomerDialog(true)}
+                        title="Modifier le client"
+                      >
+                        <User className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        onClick={() => setSelectedCustomer(null)}
+                        title="Retirer le client"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowCustomerDialog(true)}
+                      className="h-7"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Ajouter
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -319,6 +366,15 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <CustomerDialog
+        open={showCustomerDialog}
+        onOpenChange={setShowCustomerDialog}
+        onSelectCustomer={(customer) => {
+          setSelectedCustomer(customer);
+          setShowCustomerDialog(false);
+        }}
+      />
     </Dialog>
   );
 }
