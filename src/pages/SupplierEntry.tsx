@@ -21,10 +21,10 @@ import {
 import { 
   ArrowLeft, Plus, Trash2, Search, Package, AlertTriangle, 
   CheckCircle, TrendingUp, TrendingDown, Save, FileCheck, 
-  Calculator, Barcode, Euro, Eye
+  Calculator, Barcode, Euro, Eye, Pencil, AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useProducts, Product } from '@/hooks/useProducts';
+import { useProducts, Product, useUpdateProduct } from '@/hooks/useProducts';
 import { useCustomers } from '@/hooks/useCustomers';
 import { 
   useSupplierReceipts,
@@ -36,6 +36,7 @@ import {
   useValidateReceipt,
   useUpdateSupplierReceipt,
   useUpdateReceiptStatus,
+  SupplierReceiptWithItems,
 } from '@/hooks/useSupplierReceipts';
 
 interface ReceiptItem {
@@ -48,6 +49,15 @@ interface ReceiptItem {
   actual_unit_cost: number;
   line_total: number;
   has_price_change: boolean;
+  needs_cost_input?: boolean; // New: flag when cost_price is missing
+}
+
+interface ProductToAdapt {
+  product_id: string;
+  product_name: string;
+  current_price: number;
+  cost_price: number;
+  suggested_price: number;
 }
 
 export default function SupplierEntry() {
@@ -62,9 +72,11 @@ export default function SupplierEntry() {
   const validateReceipt = useValidateReceipt();
   const updateReceipt = useUpdateSupplierReceipt();
   const updateStatus = useUpdateReceiptStatus();
+  const updateProduct = useUpdateProduct();
 
   // State
   const [currentReceiptId, setCurrentReceiptId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false); // New: editing mode
   const [supplierName, setSupplierName] = useState('');
   const [supplierId, setSupplierId] = useState<string>('');
   const [invoiceNumber, setInvoiceNumber] = useState('');
@@ -74,6 +86,10 @@ export default function SupplierEntry() {
   const [searchTerm, setSearchTerm] = useState('');
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [discrepancyDialogOpen, setDiscrepancyDialogOpen] = useState(false);
+  
+  // Price adaptation dialog state
+  const [priceAdaptDialogOpen, setPriceAdaptDialogOpen] = useState(false);
+  const [productsToAdapt, setProductsToAdapt] = useState<ProductToAdapt[]>([]);
   
   // View receipt dialog
   const [viewReceiptId, setViewReceiptId] = useState<string | null>(null);
@@ -118,6 +134,31 @@ export default function SupplierEntry() {
     [items]
   );
 
+  // Check for items missing cost price
+  const itemsMissingCost = useMemo(() => 
+    items.filter(item => item.actual_unit_cost <= 0),
+    [items]
+  );
+
+  // Calculate margins for each item
+  const itemsWithMargins = useMemo(() => {
+    return items.map(item => {
+      const product = products?.find(p => p.id === item.product_id);
+      const sellingPrice = product?.price || 0;
+      const margin = sellingPrice - item.actual_unit_cost;
+      const marginPercent = item.actual_unit_cost > 0 
+        ? (margin / item.actual_unit_cost) * 100 
+        : 0;
+      const isLoss = margin < 0;
+      return { ...item, sellingPrice, margin, marginPercent, isLoss };
+    });
+  }, [items, products]);
+
+  // Check for products that would be sold at a loss
+  const productsAtLoss = useMemo(() => {
+    return itemsWithMargins.filter(item => item.isLoss && item.product_id);
+  }, [itemsWithMargins]);
+
   // Pagination calculations
   const totalPages = Math.ceil((receipts?.length || 0) / ITEMS_PER_PAGE);
   const paginatedReceipts = useMemo(() => {
@@ -125,6 +166,18 @@ export default function SupplierEntry() {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     return receipts.slice(start, start + ITEMS_PER_PAGE);
   }, [receipts, currentPage]);
+
+  // Reset form
+  const resetForm = () => {
+    setCurrentReceiptId(null);
+    setIsEditing(false);
+    setSupplierName('');
+    setSupplierId('');
+    setInvoiceNumber('');
+    setInvoiceTotal('');
+    setNotes('');
+    setItems([]);
+  };
 
   // Start new receipt
   const handleStartReceipt = async () => {
@@ -149,6 +202,40 @@ export default function SupplierEntry() {
     }
   };
 
+  // Load receipt for editing
+  const handleLoadReceiptForEdit = (receipt: SupplierReceiptWithItems) => {
+    setCurrentReceiptId(receipt.id);
+    setIsEditing(true);
+    setSupplierName(receipt.supplier_name);
+    setSupplierId(receipt.supplier_id || '');
+    setInvoiceNumber(receipt.supplier_invoice_number || '');
+    setInvoiceTotal(receipt.supplier_invoice_total?.toString() || '');
+    setNotes(receipt.notes || '');
+    
+    // Load items
+    const loadedItems: ReceiptItem[] = receipt.items.map(item => {
+      const product = products?.find(p => p.id === item.product_id);
+      const needsCostInput = !item.expected_unit_cost && item.actual_unit_cost <= 0;
+      
+      return {
+        id: item.id,
+        product_id: item.product_id || undefined,
+        product_name: item.product_name,
+        product_barcode: item.product_barcode || undefined,
+        quantity: item.quantity,
+        expected_unit_cost: item.expected_unit_cost,
+        actual_unit_cost: item.actual_unit_cost,
+        line_total: item.quantity * item.actual_unit_cost,
+        has_price_change: item.has_price_change || false,
+        needs_cost_input: needsCostInput,
+      };
+    });
+    
+    setItems(loadedItems);
+    setViewReceiptId(null); // Close view dialog
+    toast.info('Réception chargée pour modification');
+  };
+
   // Add product to items
   const handleAddProduct = async (product: Product) => {
     if (!currentReceiptId) {
@@ -164,6 +251,9 @@ export default function SupplierEntry() {
       return;
     }
 
+    const hasCostPrice = product.cost_price && product.cost_price > 0;
+    const needsCostInput = !hasCostPrice;
+
     const newItem: ReceiptItem = {
       product_id: product.id,
       product_name: product.name,
@@ -173,6 +263,7 @@ export default function SupplierEntry() {
       actual_unit_cost: product.cost_price || 0,
       line_total: product.cost_price || 0,
       has_price_change: false,
+      needs_cost_input: needsCostInput,
     };
 
     // Add to database
@@ -190,6 +281,10 @@ export default function SupplierEntry() {
       setItems(prev => [...prev, { ...newItem, id: savedItem.id }]);
       setSearchTerm('');
       setProductSearchOpen(false);
+      
+      if (needsCostInput) {
+        toast.warning(`⚠️ Prix d'achat inconnu pour "${product.name}" - Saisissez le prix d'achat`);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -226,6 +321,7 @@ export default function SupplierEntry() {
     const hasPriceChange = item.expected_unit_cost !== null && 
       Math.abs(cost - item.expected_unit_cost) > 0.001;
     const newLineTotal = item.quantity * cost;
+    const needsCostInput = cost <= 0;
 
     const updatedItems = [...items];
     updatedItems[index] = {
@@ -233,6 +329,7 @@ export default function SupplierEntry() {
       actual_unit_cost: cost,
       line_total: newLineTotal,
       has_price_change: hasPriceChange,
+      needs_cost_input: needsCostInput,
     };
     setItems(updatedItems);
 
@@ -267,6 +364,31 @@ export default function SupplierEntry() {
     }
   };
 
+  // Check margins before validation
+  const checkProductMargins = (): boolean => {
+    const toAdapt = itemsWithMargins
+      .filter(item => item.isLoss && item.product_id)
+      .map(item => {
+        const product = products?.find(p => p.id === item.product_id);
+        // Suggest price with 20% margin
+        const suggestedPrice = item.actual_unit_cost * 1.20;
+        return {
+          product_id: item.product_id!,
+          product_name: item.product_name,
+          current_price: item.sellingPrice,
+          cost_price: item.actual_unit_cost,
+          suggested_price: Math.ceil(suggestedPrice * 100) / 100, // Round up to cents
+        };
+      });
+
+    if (toAdapt.length > 0) {
+      setProductsToAdapt(toAdapt);
+      setPriceAdaptDialogOpen(true);
+      return false;
+    }
+    return true;
+  };
+
   // Validate receipt
   const handleValidate = async () => {
     if (!currentReceiptId) return;
@@ -276,21 +398,26 @@ export default function SupplierEntry() {
       return;
     }
 
+    // Check for missing cost prices
+    if (itemsMissingCost.length > 0) {
+      toast.error(`${itemsMissingCost.length} article(s) n'ont pas de prix d'achat. Veuillez les saisir.`);
+      return;
+    }
+
+    // Check for discrepancy
     if (hasDiscrepancy) {
       setDiscrepancyDialogOpen(true);
       return;
     }
 
+    // Check for products at loss
+    if (!checkProductMargins()) {
+      return;
+    }
+
     try {
       await validateReceipt.mutateAsync(currentReceiptId);
-      // Reset form
-      setCurrentReceiptId(null);
-      setSupplierName('');
-      setSupplierId('');
-      setInvoiceNumber('');
-      setInvoiceTotal('');
-      setNotes('');
-      setItems([]);
+      resetForm();
     } catch (error) {
       console.error(error);
     }
@@ -300,20 +427,63 @@ export default function SupplierEntry() {
   const handleForceValidate = async () => {
     if (!currentReceiptId) return;
 
+    setDiscrepancyDialogOpen(false);
+
+    // Check for products at loss after discrepancy check
+    if (!checkProductMargins()) {
+      return;
+    }
+
     try {
       await validateReceipt.mutateAsync(currentReceiptId);
-      setDiscrepancyDialogOpen(false);
-      // Reset form
-      setCurrentReceiptId(null);
-      setSupplierName('');
-      setSupplierId('');
-      setInvoiceNumber('');
-      setInvoiceTotal('');
-      setNotes('');
-      setItems([]);
+      resetForm();
     } catch (error) {
       console.error(error);
     }
+  };
+
+  // Validate with price update
+  const handleValidateWithPriceUpdate = async () => {
+    if (!currentReceiptId) return;
+
+    try {
+      // Update selling prices
+      for (const prod of productsToAdapt) {
+        await updateProduct.mutateAsync({
+          id: prod.product_id,
+          price: prod.suggested_price,
+        });
+      }
+
+      toast.success(`${productsToAdapt.length} prix de vente mis à jour`);
+      setPriceAdaptDialogOpen(false);
+      
+      await validateReceipt.mutateAsync(currentReceiptId);
+      resetForm();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // Validate without price update
+  const handleValidateWithoutPriceUpdate = async () => {
+    if (!currentReceiptId) return;
+
+    setPriceAdaptDialogOpen(false);
+    
+    try {
+      await validateReceipt.mutateAsync(currentReceiptId);
+      resetForm();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // Update suggested price in dialog
+  const handleUpdateSuggestedPrice = (index: number, newPrice: number) => {
+    const updated = [...productsToAdapt];
+    updated[index].suggested_price = newPrice;
+    setProductsToAdapt(updated);
   };
 
   return (
@@ -326,8 +496,16 @@ export default function SupplierEntry() {
         </Button>
         <div>
           <h1 className="text-2xl font-bold">Entrée Fournisseur</h1>
-          <p className="text-muted-foreground">Enregistrer une réception de marchandises</p>
+          <p className="text-muted-foreground">
+            {isEditing ? 'Modification d\'une réception' : 'Enregistrer une réception de marchandises'}
+          </p>
         </div>
+        {isEditing && (
+          <Badge variant="outline" className="ml-2">
+            <Pencil className="h-3 w-3 mr-1" />
+            Mode édition
+          </Badge>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -346,7 +524,7 @@ export default function SupplierEntry() {
                 placeholder="Nom du fournisseur"
                 value={supplierName}
                 onChange={(e) => setSupplierName(e.target.value)}
-                disabled={!!currentReceiptId}
+                disabled={!!currentReceiptId && !isEditing}
               />
             </div>
 
@@ -421,6 +599,25 @@ export default function SupplierEntry() {
                     </div>
                   </>
                 )}
+
+                {/* Warnings summary */}
+                {itemsMissingCost.length > 0 && (
+                  <div className="mt-2 p-2 bg-red-50 rounded border border-red-200">
+                    <p className="text-xs text-red-600 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {itemsMissingCost.length} article(s) sans prix d'achat
+                    </p>
+                  </div>
+                )}
+                
+                {productsAtLoss.length > 0 && (
+                  <div className="mt-2 p-2 bg-orange-50 rounded border border-orange-200">
+                    <p className="text-xs text-orange-600 flex items-center gap-1">
+                      <TrendingDown className="h-3 w-3" />
+                      {productsAtLoss.length} produit(s) vendus à perte
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
@@ -456,29 +653,53 @@ export default function SupplierEntry() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Produit</TableHead>
-                      <TableHead className="w-24 text-center">Qté</TableHead>
-                      <TableHead className="w-32 text-right">P.A. Attendu</TableHead>
-                      <TableHead className="w-32 text-right">P.A. Réel</TableHead>
-                      <TableHead className="w-28 text-right">Total</TableHead>
-                      <TableHead className="w-16"></TableHead>
+                      <TableHead className="w-20 text-center">Qté</TableHead>
+                      <TableHead className="w-28 text-right">P.A. Attendu</TableHead>
+                      <TableHead className="w-28 text-right">P.A. Réel</TableHead>
+                      <TableHead className="w-24 text-right">Total</TableHead>
+                      <TableHead className="w-28 text-right">Marge</TableHead>
+                      <TableHead className="w-12"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {items.map((item, index) => (
-                      <TableRow key={item.id || index} className={item.has_price_change ? 'bg-yellow-50' : ''}>
+                    {itemsWithMargins.map((item, index) => (
+                      <TableRow 
+                        key={item.id || index} 
+                        className={`${item.has_price_change ? 'bg-yellow-50' : ''} ${item.needs_cost_input ? 'bg-red-50' : ''}`}
+                      >
                         <TableCell>
                           <div>
                             <div className="font-medium">{item.product_name}</div>
                             {item.product_barcode && (
                               <div className="text-xs text-muted-foreground">{item.product_barcode}</div>
                             )}
+                            {/* Price change indicator */}
                             {item.has_price_change && (
-                              <Badge variant="outline" className="mt-1 text-xs text-yellow-600 border-yellow-300">
+                              <Badge 
+                                className={`mt-1 text-xs ${
+                                  item.actual_unit_cost > (item.expected_unit_cost || 0) 
+                                    ? 'bg-red-100 text-red-700 border-red-300' 
+                                    : 'bg-green-100 text-green-700 border-green-300'
+                                }`}
+                              >
                                 {item.actual_unit_cost > (item.expected_unit_cost || 0) ? (
-                                  <><TrendingUp className="h-3 w-3 mr-1" /> +{((item.actual_unit_cost - (item.expected_unit_cost || 0)) / (item.expected_unit_cost || 1) * 100).toFixed(1)}%</>
+                                  <>
+                                    <TrendingUp className="h-3 w-3 mr-1" /> 
+                                    PLUS CHER +{(item.actual_unit_cost - (item.expected_unit_cost || 0)).toFixed(2)}€
+                                  </>
                                 ) : (
-                                  <><TrendingDown className="h-3 w-3 mr-1" /> {((item.actual_unit_cost - (item.expected_unit_cost || 0)) / (item.expected_unit_cost || 1) * 100).toFixed(1)}%</>
+                                  <>
+                                    <TrendingDown className="h-3 w-3 mr-1" /> 
+                                    MOINS CHER {(item.actual_unit_cost - (item.expected_unit_cost || 0)).toFixed(2)}€
+                                  </>
                                 )}
+                              </Badge>
+                            )}
+                            {/* Missing cost warning */}
+                            {item.needs_cost_input && (
+                              <Badge variant="destructive" className="mt-1 text-xs">
+                                <AlertCircle className="h-3 w-3 mr-1" />
+                                Prix d'achat requis
                               </Badge>
                             )}
                           </div>
@@ -490,24 +711,53 @@ export default function SupplierEntry() {
                             step="1"
                             value={item.quantity}
                             onChange={(e) => handleUpdateQuantity(index, parseFloat(e.target.value) || 0)}
-                            className="w-20 text-center"
+                            className="w-16 text-center"
                           />
                         </TableCell>
                         <TableCell className="text-right text-muted-foreground">
-                          {item.expected_unit_cost?.toFixed(2) ?? '-'} €
+                          {item.expected_unit_cost?.toFixed(2) ?? (
+                            <span className="text-orange-500 italic">inconnu</span>
+                          )} €
                         </TableCell>
                         <TableCell>
                           <Input
                             type="number"
                             min="0"
                             step="0.01"
-                            value={item.actual_unit_cost}
+                            value={item.actual_unit_cost || ''}
                             onChange={(e) => handleUpdateCost(index, parseFloat(e.target.value) || 0)}
-                            className={`w-24 text-right ${item.has_price_change ? 'border-yellow-400' : ''}`}
+                            placeholder="Saisir prix"
+                            className={`w-24 text-right ${
+                              item.needs_cost_input 
+                                ? 'border-red-400 bg-red-50' 
+                                : item.has_price_change 
+                                  ? 'border-yellow-400' 
+                                  : ''
+                            }`}
                           />
                         </TableCell>
                         <TableCell className="text-right font-medium">
                           {item.line_total.toFixed(2)} €
+                        </TableCell>
+                        {/* Margin column */}
+                        <TableCell className={`text-right text-sm ${
+                          item.isLoss 
+                            ? 'text-red-600 font-bold' 
+                            : item.marginPercent < 10 
+                              ? 'text-orange-500' 
+                              : 'text-green-600'
+                        }`}>
+                          {item.actual_unit_cost > 0 ? (
+                            <>
+                              <div>{item.margin.toFixed(2)} €</div>
+                              <div className="text-xs">
+                                ({item.marginPercent.toFixed(1)}%)
+                                {item.isLoss && ' ⚠️'}
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           <Button
@@ -539,26 +789,32 @@ export default function SupplierEntry() {
               </div>
             )}
 
+            {/* Products at loss warning */}
+            {productsAtLoss.length > 0 && (
+              <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                <h4 className="font-medium text-red-800 mb-2 flex items-center gap-2">
+                  <TrendingDown className="h-4 w-4" />
+                  {productsAtLoss.length} produit(s) vendus à perte !
+                </h4>
+                <p className="text-sm text-red-700">
+                  Vous pourrez adapter les prix de vente lors de la validation.
+                </p>
+              </div>
+            )}
+
             {/* Actions */}
             {currentReceiptId && items.length > 0 && (
               <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
-                <Button variant="outline" onClick={() => {
-                  setCurrentReceiptId(null);
-                  setSupplierName('');
-                  setInvoiceNumber('');
-                  setInvoiceTotal('');
-                  setNotes('');
-                  setItems([]);
-                }}>
+                <Button variant="outline" onClick={resetForm}>
                   Annuler
                 </Button>
                 <Button 
                   onClick={handleValidate}
-                  disabled={validateReceipt.isPending}
+                  disabled={validateReceipt.isPending || itemsMissingCost.length > 0}
                   className="bg-green-600 hover:bg-green-700"
                 >
                   <FileCheck className="h-4 w-4 mr-2" />
-                  Valider la réception
+                  {isEditing ? 'Valider les modifications' : 'Valider la réception'}
                 </Button>
               </div>
             )}
@@ -580,7 +836,7 @@ export default function SupplierEntry() {
                 <TableHead>Date</TableHead>
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead>Statut</TableHead>
-                <TableHead className="w-16"></TableHead>
+                <TableHead className="w-24"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -609,9 +865,24 @@ export default function SupplierEntry() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon">
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      {receipt.status === 'draft' && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Need to fetch details first
+                            setViewReceiptId(receipt.id);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -692,8 +963,8 @@ export default function SupplierEntry() {
                   </div>
                   <div className="text-right">
                     <div className="font-medium">{product.price.toFixed(2)} €</div>
-                    <div className="text-sm text-muted-foreground">
-                      P.A.: {product.cost_price?.toFixed(2) || '-'} €
+                    <div className={`text-sm ${product.cost_price ? 'text-muted-foreground' : 'text-orange-500'}`}>
+                      P.A.: {product.cost_price?.toFixed(2) || '⚠️ inconnu'} €
                     </div>
                   </div>
                 </div>
@@ -750,6 +1021,75 @@ export default function SupplierEntry() {
               disabled={validateReceipt.isPending}
             >
               Valider quand même
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Price Adaptation Dialog */}
+      <Dialog open={priceAdaptDialogOpen} onOpenChange={setPriceAdaptDialogOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              Produits vendus à perte détectés
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Les produits suivants seraient vendus à perte ou sans marge avec ce prix d'achat.
+              Vous pouvez adapter leurs prix de vente pour garantir une marge.
+            </p>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Produit</TableHead>
+                  <TableHead className="text-right">P.A.</TableHead>
+                  <TableHead className="text-right">Prix actuel</TableHead>
+                  <TableHead className="text-right">Nouveau prix</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {productsToAdapt.map((prod, idx) => (
+                  <TableRow key={prod.product_id}>
+                    <TableCell className="font-medium">{prod.product_name}</TableCell>
+                    <TableCell className="text-right">{prod.cost_price.toFixed(2)} €</TableCell>
+                    <TableCell className="text-right text-red-600 line-through">
+                      {prod.current_price.toFixed(2)} €
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={prod.cost_price}
+                        value={prod.suggested_price}
+                        onChange={(e) => handleUpdateSuggestedPrice(idx, parseFloat(e.target.value) || 0)}
+                        className="w-24 text-right"
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <div className="text-xs text-muted-foreground">
+              💡 Les nouveaux prix suggérés incluent une marge de 20% sur le prix d'achat.
+            </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleValidateWithoutPriceUpdate}
+              disabled={validateReceipt.isPending}
+            >
+              Valider sans modifier les prix
+            </Button>
+            <Button 
+              onClick={handleValidateWithPriceUpdate}
+              disabled={validateReceipt.isPending || updateProduct.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Adapter les prix et valider
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -832,6 +1172,11 @@ export default function SupplierEntry() {
                           {item.product_barcode && (
                             <div className="text-xs text-muted-foreground">{item.product_barcode}</div>
                           )}
+                          {item.has_price_change && (
+                            <Badge variant="outline" className="mt-1 text-xs text-yellow-600">
+                              Prix modifié
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell className="text-center">{item.quantity}</TableCell>
                         <TableCell className="text-right">{item.actual_unit_cost.toFixed(2)} €</TableCell>
@@ -875,7 +1220,17 @@ export default function SupplierEntry() {
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            {viewReceiptDetails?.status === 'draft' && (
+              <Button 
+                variant="outline" 
+                onClick={() => handleLoadReceiptForEdit(viewReceiptDetails)}
+                className="w-full sm:w-auto"
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Modifier cette réception
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setViewReceiptId(null)}>
               Fermer
             </Button>
