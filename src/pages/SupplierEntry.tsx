@@ -695,9 +695,10 @@ export default function SupplierEntry() {
               <ScrollArea className="h-[500px]">
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="bg-muted/50">
                       <TableHead>Produit</TableHead>
                       <TableHead className="w-16 text-center">Qté</TableHead>
+                      <TableHead className="w-20 text-center text-green-700">Stock +</TableHead>
                       <TableHead className="w-24 text-right">P.A. Attendu</TableHead>
                       <TableHead className="w-24 text-right">Nouv. P.A.</TableHead>
                       <TableHead className="w-24 text-right">Total Achat</TableHead>
@@ -765,6 +766,12 @@ export default function SupplierEntry() {
                             onChange={(e) => handleUpdateQuantity(index, parseFloat(e.target.value) || 0)}
                             className="w-14 text-center text-sm"
                           />
+                        </TableCell>
+                        {/* Stock addition indicator */}
+                        <TableCell className="text-center">
+                          <Badge className="bg-green-100 text-green-700 border-green-300 font-mono">
+                            +{item.quantity}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-right text-muted-foreground text-sm">
                           {item.expected_unit_cost?.toFixed(2) ?? (
@@ -872,6 +879,27 @@ export default function SupplierEntry() {
               </div>
             )}
 
+            {/* Stock update summary */}
+            {currentReceiptId && items.length > 0 && (
+              <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                <h4 className="font-medium text-green-800 mb-2 flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Stock à ajouter lors de la validation
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {items.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded border text-sm">
+                      <Badge className="bg-green-600 text-white">+{item.quantity}</Badge>
+                      <span className="truncate">{item.product_name}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-green-700 mt-2">
+                  Total : {items.reduce((sum, i) => sum + i.quantity, 0)} unités à ajouter au stock
+                </p>
+              </div>
+            )}
+
             {/* Actions */}
             {currentReceiptId && items.length > 0 && (
               <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
@@ -885,6 +913,9 @@ export default function SupplierEntry() {
                 >
                   <FileCheck className="h-4 w-4 mr-2" />
                   {isEditing ? 'Valider les modifications' : 'Valider la réception'}
+                  <span className="ml-2 text-xs opacity-80">
+                    (+{items.reduce((sum, i) => sum + i.quantity, 0)} stock)
+                  </span>
                 </Button>
               </div>
             )}
