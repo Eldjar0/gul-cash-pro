@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database, AlertTriangle, Printer } from 'lucide-react';
+import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database, AlertTriangle, Printer, RotateCcw } from 'lucide-react';
 import { PrinterSettings } from '@/components/settings/PrinterSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -65,7 +65,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { deleteAllData, isDeleting } = useDataCleanup();
+  const { deleteAllData, isDeleting, resetSalesHistory, isResetting } = useDataCleanup();
 
   const [settings, setSettings] = useState<InvoiceSettings>({
     is_company: true,
@@ -674,6 +674,139 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="cleanup" className="space-y-6">
+            {/* Réinitialiser l'historique des ventes */}
+            <Card className="p-8 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-800 dark:to-orange-900/20 border-2 border-orange-200 dark:border-orange-800 shadow-xl">
+              <div className="flex items-start gap-6 mb-8">
+                <div className="p-4 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl text-white">
+                  <RotateCcw className="h-8 w-8" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold mb-2 text-orange-900 dark:text-orange-100">
+                    Réinitialiser l'historique des ventes
+                  </h2>
+                  <p className="text-base text-orange-700 dark:text-orange-300 mb-6">
+                    Supprime tous les tickets, factures, rapports et réinitialise la numérotation.
+                    <strong> Les produits, clients et catégories seront conservés.</strong>
+                  </p>
+                  
+                  <div className="grid md:grid-cols-2 gap-6 mb-6">
+                    <div className="bg-white/80 dark:bg-gray-900/50 rounded-lg p-6 space-y-3">
+                      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2 text-red-600">
+                        <Trash2 className="h-5 w-5" />
+                        Sera supprimé :
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span>Tous les tickets de caisse</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span>Toutes les factures</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span>Tous les remboursements</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span>Rapports journaliers (Z)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span>Mouvements de caisse</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span>Paniers en attente</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/80 dark:bg-gray-900/50 rounded-lg p-6 space-y-3">
+                      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2 text-green-600">
+                        <Database className="h-5 w-5" />
+                        Sera conservé :
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span>Tous les produits</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span>Tous les clients</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span>Toutes les catégories</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span>Promotions</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span>Fournisseurs</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span>Paramètres</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        size="lg"
+                        className="w-full h-14 text-lg border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                        disabled={isResetting}
+                      >
+                        <RotateCcw className="h-5 w-5 mr-2" />
+                        {isResetting ? 'Réinitialisation en cours...' : 'Réinitialiser l\'historique des ventes'}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 text-orange-600">
+                          <RotateCcw className="h-6 w-6" />
+                          Réinitialiser l'historique ?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="space-y-2">
+                          <p className="font-semibold">Cette action supprimera :</p>
+                          <ul className="list-disc list-inside text-sm space-y-1">
+                            <li>Tous les tickets et factures</li>
+                            <li>Tous les rapports journaliers</li>
+                            <li>Tous les remboursements</li>
+                            <li>Tous les mouvements de caisse</li>
+                          </ul>
+                          <p className="mt-4 text-green-600 font-medium">
+                            ✓ Vos produits, clients et catégories seront conservés.
+                          </p>
+                          <p className="text-orange-600 font-medium">
+                            La numérotation des tickets et factures recommencera à zéro.
+                          </p>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={resetSalesHistory}
+                          className="bg-orange-600 hover:bg-orange-700"
+                        >
+                          Oui, réinitialiser
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            </Card>
+
+            {/* Supprimer toutes les données */}
             <Card className="p-8 bg-gradient-to-br from-red-50 to-orange-50 dark:from-gray-800 dark:to-red-900/20 border-2 border-red-200 dark:border-red-800 shadow-xl">
               <div className="flex items-start gap-6 mb-8">
                 <div className="p-4 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl text-white">
@@ -681,10 +814,10 @@ export default function Settings() {
                 </div>
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold mb-2 text-red-900 dark:text-red-100">
-                    Zone dangereuse - Nettoyage des données
+                    Zone dangereuse - Supprimer toutes les données
                   </h2>
                   <p className="text-base text-red-700 dark:text-red-300 mb-6">
-                    Cette action supprimera définitivement toutes les données de test de votre base de données. 
+                    Cette action supprimera définitivement toutes les données de votre base de données. 
                     <strong> Cette action est irréversible !</strong>
                   </p>
                   
@@ -761,7 +894,7 @@ export default function Settings() {
                         disabled={isDeleting}
                       >
                         <Trash2 className="h-5 w-5 mr-2" />
-                        {isDeleting ? 'Suppression en cours...' : 'Supprimer toutes les données de test'}
+                        {isDeleting ? 'Suppression en cours...' : 'Supprimer toutes les données'}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 export const useDataCleanup = () => {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const deleteAllData = async () => {
     setIsDeleting(true);
@@ -89,13 +90,16 @@ export const useDataCleanup = () => {
       // 26. Saved carts
       await supabase.from('saved_carts').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       
-      // 27. Products
+      // 27. Fiscal receipts
+      await supabase.from('fiscal_receipts').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // 28. Products
       await supabase.from('products').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       
-      // 28. Customers
+      // 29. Customers
       await supabase.from('customers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       
-      // 29. Categories
+      // 30. Categories
       await supabase.from('categories').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
       toast.success('Toutes les données ont été supprimées avec succès !');
@@ -107,8 +111,54 @@ export const useDataCleanup = () => {
     }
   };
 
+  const resetSalesHistory = async () => {
+    setIsResetting(true);
+    try {
+      toast.info('Réinitialisation de l\'historique en cours...');
+
+      // 1. Supprimer les éléments de vente
+      await supabase.from('sale_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // 2. Supprimer les reçus fiscaux (avant les ventes car dépendance)
+      await supabase.from('fiscal_receipts').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // 3. Supprimer les ventes/factures
+      await supabase.from('sales').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // 4. Supprimer les éléments de remboursement
+      await supabase.from('refund_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // 5. Supprimer les remboursements
+      await supabase.from('refunds').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // 6. Supprimer les transactions de paiement
+      await supabase.from('payment_transactions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // 7. Supprimer les mouvements de caisse
+      await supabase.from('cash_movements').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // 8. Supprimer les rapports journaliers
+      await supabase.from('daily_reports').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // 9. Supprimer les paniers en attente
+      await supabase.from('saved_carts').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // 10. Supprimer les tickets mobiles en attente
+      await supabase.from('mobile_orders').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+      toast.success('Historique des ventes réinitialisé ! La numérotation recommencera à zéro.');
+    } catch (error) {
+      console.error('Error resetting sales history:', error);
+      toast.error('Erreur lors de la réinitialisation');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   return {
     deleteAllData,
     isDeleting,
+    resetSalesHistory,
+    isResetting,
   };
 };
