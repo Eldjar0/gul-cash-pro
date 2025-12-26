@@ -36,6 +36,7 @@ import {
   useValidateReceipt,
   useUpdateSupplierReceipt,
   useUpdateReceiptStatus,
+  useDeleteSupplierReceipt,
   SupplierReceiptWithItems,
 } from '@/hooks/useSupplierReceipts';
 
@@ -96,6 +97,10 @@ export default function SupplierEntry() {
   // View receipt dialog
   const [viewReceiptId, setViewReceiptId] = useState<string | null>(null);
   const { data: viewReceiptDetails } = useSupplierReceiptDetails(viewReceiptId || undefined);
+  
+  // Delete confirmation dialog
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const deleteReceipt = useDeleteSupplierReceipt();
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -976,13 +981,23 @@ export default function SupplierEntry() {
                           size="icon"
                           onClick={(e) => {
                             e.stopPropagation();
-                            // Need to fetch details first
                             setViewReceiptId(receipt.id);
                           }}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
                       )}
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteConfirmId(receipt.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -1334,6 +1349,53 @@ export default function SupplierEntry() {
             )}
             <Button variant="outline" onClick={() => setViewReceiptId(null)}>
               Fermer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Confirmer la suppression
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p>
+              Êtes-vous sûr de vouloir supprimer cette réception fournisseur ?
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Cette action supprimera définitivement la réception et tous ses articles.
+            </p>
+            <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+              <p className="text-sm text-green-700 dark:text-green-400 font-medium flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Le stock des produits ne sera pas modifié.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
+              Annuler
+            </Button>
+            <Button 
+              variant="destructive"
+              disabled={deleteReceipt.isPending}
+              onClick={async () => {
+                if (deleteConfirmId) {
+                  await deleteReceipt.mutateAsync(deleteConfirmId);
+                  setDeleteConfirmId(null);
+                  // Si on supprime la réception en cours d'édition, reset le form
+                  if (deleteConfirmId === currentReceiptId) {
+                    resetForm();
+                  }
+                }
+              }}
+            >
+              {deleteReceipt.isPending ? 'Suppression...' : 'Supprimer définitivement'}
             </Button>
           </DialogFooter>
         </DialogContent>

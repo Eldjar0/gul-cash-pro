@@ -424,3 +424,36 @@ export const useUpdateSupplierReceipt = () => {
     },
   });
 };
+
+// Delete a supplier receipt and its items (does NOT affect stock)
+export const useDeleteSupplierReceipt = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (receiptId: string) => {
+      // First delete all items
+      const { error: itemsError } = await supabase
+        .from('supplier_receipt_items')
+        .delete()
+        .eq('receipt_id', receiptId);
+
+      if (itemsError) throw itemsError;
+
+      // Then delete the receipt
+      const { error: receiptError } = await supabase
+        .from('supplier_receipts')
+        .delete()
+        .eq('id', receiptId);
+
+      if (receiptError) throw receiptError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['supplier-receipts'] });
+      toast.success('Réception supprimée');
+    },
+    onError: (error: Error) => {
+      console.error('Error deleting receipt:', error);
+      toast.error('Erreur lors de la suppression');
+    },
+  });
+};
