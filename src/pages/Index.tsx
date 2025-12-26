@@ -50,6 +50,7 @@ import { createSafeBroadcastChannel } from '@/lib/safeBroadcast';
 import { useCartPersistence } from '@/hooks/useCartPersistence';
 import { usePhysicalScanner } from '@/hooks/usePhysicalScanner';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useCashDrawer } from '@/hooks/useCashDrawer';
 
 type DiscountType = 'percentage' | 'amount';
 interface CartItem {
@@ -133,6 +134,7 @@ const Index = () => {
   } = useTodayReport();
   const openDay = useOpenDay();
   const closeDay = useCloseDay();
+  const { openDrawer } = useCashDrawer();
   // UI override so buttons update instantly after actions
   const [isDayOpenLocal, setIsDayOpenLocal] = useState<boolean | null>(null);
   const isDayOpenEffective = isDayOpenLocal ?? !!todayReport;
@@ -1147,6 +1149,11 @@ const Index = () => {
       setIsInvoiceMode(false);
       setSelectedCustomer(null);
       setPaymentDialogOpen(false);
+
+      // Ouvrir le tiroir-caisse automatiquement pour paiement en espèces
+      if (method === 'cash') {
+        openDrawer();
+      }
 
       // Afficher le dialogue de confirmation d'impression (sans impression auto)
       setPrintConfirmDialogOpen(true);

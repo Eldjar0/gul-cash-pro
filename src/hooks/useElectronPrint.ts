@@ -14,6 +14,7 @@ interface ElectronAPI {
   printSilent: (options?: { printerName?: string }) => Promise<{ success: boolean }>;
   printHtmlSilent: (html: string, printerName?: string) => Promise<{ success: boolean }>;
   testPrinter: (printerName?: string) => Promise<{ success: boolean }>;
+  openCashDrawer: (printerName?: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 declare global {

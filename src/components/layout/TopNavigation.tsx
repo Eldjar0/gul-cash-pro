@@ -21,6 +21,7 @@ import {
   Truck,
   Smartphone,
   Trash2,
+  PackagePlus,
 } from 'lucide-react';
 import logoHeader from '@/assets/logo-gul-reyhan-header.png';
 import { useAuth } from '@/contexts/AuthContext';
@@ -126,6 +127,16 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
                 >
                   <Package className="h-4 w-4" />
                   <span>Produits</span>
+                </Button>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Button
+                  onClick={() => navigate("/supplier-entry")}
+                  className="h-10 px-2 flex items-center gap-1.5 bg-teal-500 hover:bg-teal-600 text-white font-semibold text-xs whitespace-nowrap"
+                >
+                  <PackagePlus className="h-4 w-4" />
+                  <span>Entrée</span>
                 </Button>
               </NavigationMenuItem>
 

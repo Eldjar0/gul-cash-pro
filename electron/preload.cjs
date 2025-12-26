@@ -18,6 +18,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Tester une imprimante
   testPrinter: (printerName) => ipcRenderer.invoke('test-printer', printerName),
 
+  // Ouvrir le tiroir-caisse
+  openCashDrawer: (printerName) => ipcRenderer.invoke('open-cash-drawer', printerName),
+
   // Mises à jour automatiques
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),

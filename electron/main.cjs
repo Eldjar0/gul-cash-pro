@@ -231,6 +231,56 @@ ipcMain.handle('test-printer', async (event, printerName) => {
   });
 });
 
+// Ouvrir le tiroir-caisse via commande ESC/POS
+ipcMain.handle('open-cash-drawer', async (event, printerName) => {
+  return new Promise((resolve) => {
+    const drawerWindow = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false,
+      },
+    });
+
+    // Commande ESC/POS standard pour ouvrir le tiroir-caisse
+    // ESC p 0 25 250 - ouvre le tiroir connecté au port 0
+    const escPosCommand = '\x1B\x70\x00\x19\xFA';
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            @page { size: 80mm 10mm; margin: 0; }
+            body { margin: 0; padding: 0; font-size: 1px; }
+          </style>
+        </head>
+        <body>${escPosCommand}</body>
+      </html>
+    `;
+
+    drawerWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+
+    drawerWindow.webContents.on('did-finish-load', () => {
+      drawerWindow.webContents.print({
+        silent: true,
+        printBackground: false,
+        deviceName: printerName || '',
+        margins: { marginType: 'none' },
+      }, (success, errorType) => {
+        drawerWindow.close();
+        if (success) {
+          console.log('[CashDrawer] Commande envoyée avec succès');
+          resolve({ success: true });
+        } else {
+          console.error('[CashDrawer] Erreur:', errorType);
+          resolve({ success: false, error: errorType });
+        }
+      });
+    });
+  });
+});
+
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {

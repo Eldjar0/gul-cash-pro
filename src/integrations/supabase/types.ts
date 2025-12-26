@@ -2137,6 +2137,125 @@ export type Database = {
           },
         ]
       }
+      supplier_receipt_items: {
+        Row: {
+          actual_unit_cost: number
+          created_at: string | null
+          expected_unit_cost: number | null
+          has_price_change: boolean | null
+          id: string
+          notes: string | null
+          product_barcode: string | null
+          product_id: string | null
+          product_name: string
+          quantity: number
+          receipt_id: string
+        }
+        Insert: {
+          actual_unit_cost: number
+          created_at?: string | null
+          expected_unit_cost?: number | null
+          has_price_change?: boolean | null
+          id?: string
+          notes?: string | null
+          product_barcode?: string | null
+          product_id?: string | null
+          product_name: string
+          quantity: number
+          receipt_id: string
+        }
+        Update: {
+          actual_unit_cost?: number
+          created_at?: string | null
+          expected_unit_cost?: number | null
+          has_price_change?: boolean | null
+          id?: string
+          notes?: string | null
+          product_barcode?: string | null
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          receipt_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_receipt_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_receipt_items_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_receipts: {
+        Row: {
+          calculated_total: number
+          created_at: string | null
+          has_discrepancy: boolean | null
+          id: string
+          notes: string | null
+          receipt_number: string
+          received_by: string | null
+          received_date: string
+          status: string
+          supplier_id: string | null
+          supplier_invoice_number: string | null
+          supplier_invoice_total: number | null
+          supplier_name: string
+          updated_at: string | null
+          validated_at: string | null
+        }
+        Insert: {
+          calculated_total?: number
+          created_at?: string | null
+          has_discrepancy?: boolean | null
+          id?: string
+          notes?: string | null
+          receipt_number: string
+          received_by?: string | null
+          received_date?: string
+          status?: string
+          supplier_id?: string | null
+          supplier_invoice_number?: string | null
+          supplier_invoice_total?: number | null
+          supplier_name: string
+          updated_at?: string | null
+          validated_at?: string | null
+        }
+        Update: {
+          calculated_total?: number
+          created_at?: string | null
+          has_discrepancy?: boolean | null
+          id?: string
+          notes?: string | null
+          receipt_number?: string
+          received_by?: string | null
+          received_date?: string
+          status?: string
+          supplier_id?: string | null
+          supplier_invoice_number?: string | null
+          supplier_invoice_total?: number | null
+          supplier_name?: string
+          updated_at?: string | null
+          validated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_receipts_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_preferences: {
         Row: {
           created_at: string | null
@@ -2237,6 +2356,7 @@ export type Database = {
         Args: { is_invoice_param?: boolean }
         Returns: string
       }
+      generate_supplier_receipt_number: { Args: never; Returns: string }
       generate_z_serial_number: { Args: never; Returns: string }
       has_role: {
         Args: {
