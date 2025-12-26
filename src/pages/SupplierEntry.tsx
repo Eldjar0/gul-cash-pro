@@ -11,9 +11,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import { 
   ArrowLeft, Plus, Trash2, Search, Package, AlertTriangle, 
   CheckCircle, TrendingUp, TrendingDown, Save, FileCheck, 
-  Calculator, Barcode, Euro
+  Calculator, Barcode, Euro, Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProducts, Product } from '@/hooks/useProducts';
@@ -27,6 +35,7 @@ import {
   useDeleteReceiptItem,
   useValidateReceipt,
   useUpdateSupplierReceipt,
+  useUpdateReceiptStatus,
 } from '@/hooks/useSupplierReceipts';
 
 interface ReceiptItem {
@@ -52,6 +61,7 @@ export default function SupplierEntry() {
   const deleteItem = useDeleteReceiptItem();
   const validateReceipt = useValidateReceipt();
   const updateReceipt = useUpdateSupplierReceipt();
+  const updateStatus = useUpdateReceiptStatus();
 
   // State
   const [currentReceiptId, setCurrentReceiptId] = useState<string | null>(null);
@@ -64,6 +74,14 @@ export default function SupplierEntry() {
   const [searchTerm, setSearchTerm] = useState('');
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [discrepancyDialogOpen, setDiscrepancyDialogOpen] = useState(false);
+  
+  // View receipt dialog
+  const [viewReceiptId, setViewReceiptId] = useState<string | null>(null);
+  const { data: viewReceiptDetails } = useSupplierReceiptDetails(viewReceiptId || undefined);
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   // Load receipt details if editing
   const { data: receiptDetails } = useSupplierReceiptDetails(currentReceiptId || undefined);
@@ -99,6 +117,14 @@ export default function SupplierEntry() {
     items.filter(item => item.has_price_change),
     [items]
   );
+
+  // Pagination calculations
+  const totalPages = Math.ceil((receipts?.length || 0) / ITEMS_PER_PAGE);
+  const paginatedReceipts = useMemo(() => {
+    if (!receipts) return [];
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return receipts.slice(start, start + ITEMS_PER_PAGE);
+  }, [receipts, currentPage]);
 
   // Start new receipt
   const handleStartReceipt = async () => {
@@ -554,11 +580,16 @@ export default function SupplierEntry() {
                 <TableHead>Date</TableHead>
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead>Statut</TableHead>
+                <TableHead className="w-16"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {receipts?.slice(0, 10).map((receipt) => (
-                <TableRow key={receipt.id}>
+              {paginatedReceipts.map((receipt) => (
+                <TableRow 
+                  key={receipt.id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => setViewReceiptId(receipt.id)}
+                >
                   <TableCell className="font-medium">{receipt.receipt_number}</TableCell>
                   <TableCell>{receipt.supplier_name}</TableCell>
                   <TableCell>{new Date(receipt.received_date).toLocaleDateString('fr-FR')}</TableCell>
@@ -577,17 +608,55 @@ export default function SupplierEntry() {
                       </Badge>
                     )}
                   </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
               {(!receipts || receipts.length === 0) && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     Aucune réception enregistrée
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        isActive={page === currentPage}
+                        onClick={() => setCurrentPage(page)}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -681,6 +750,134 @@ export default function SupplierEntry() {
               disabled={validateReceipt.isPending}
             >
               Valider quand même
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Receipt Details Dialog */}
+      <Dialog open={!!viewReceiptId} onOpenChange={(open) => !open && setViewReceiptId(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Détails de la réception {viewReceiptDetails?.receipt_number}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {viewReceiptDetails && (
+            <div className="space-y-6">
+              {/* Receipt info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Fournisseur</Label>
+                  <p className="font-medium">{viewReceiptDetails.supplier_name}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Date de réception</Label>
+                  <p className="font-medium">
+                    {new Date(viewReceiptDetails.received_date).toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">N° Facture fournisseur</Label>
+                  <p className="font-medium">{viewReceiptDetails.supplier_invoice_number || '-'}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Statut</Label>
+                  <Select
+                    value={viewReceiptDetails.status}
+                    onValueChange={(value: 'draft' | 'validated' | 'cancelled') => {
+                      updateStatus.mutate({ id: viewReceiptDetails.id, status: value });
+                    }}
+                    disabled={updateStatus.isPending}
+                  >
+                    <SelectTrigger className="w-full mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Brouillon</SelectItem>
+                      <SelectItem value="validated">Validé</SelectItem>
+                      <SelectItem value="cancelled">Annulé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Notes */}
+              {viewReceiptDetails.notes && (
+                <div>
+                  <Label className="text-muted-foreground">Notes</Label>
+                  <p className="text-sm">{viewReceiptDetails.notes}</p>
+                </div>
+              )}
+
+              {/* Items table */}
+              <div>
+                <Label className="text-muted-foreground mb-2 block">Articles ({viewReceiptDetails.items.length})</Label>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Produit</TableHead>
+                      <TableHead className="text-center">Qté</TableHead>
+                      <TableHead className="text-right">P.A.</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {viewReceiptDetails.items.map((item) => (
+                      <TableRow key={item.id} className={item.has_price_change ? 'bg-yellow-50' : ''}>
+                        <TableCell>
+                          <div className="font-medium">{item.product_name}</div>
+                          {item.product_barcode && (
+                            <div className="text-xs text-muted-foreground">{item.product_barcode}</div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">{item.quantity}</TableCell>
+                        <TableCell className="text-right">{item.actual_unit_cost.toFixed(2)} €</TableCell>
+                        <TableCell className="text-right font-medium">
+                          {(item.quantity * item.actual_unit_cost).toFixed(2)} €
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Totals */}
+              <div className="bg-muted p-4 rounded-lg space-y-2">
+                <div className="flex justify-between">
+                  <span>Total calculé:</span>
+                  <span className="font-bold">{viewReceiptDetails.calculated_total.toFixed(2)} €</span>
+                </div>
+                {viewReceiptDetails.supplier_invoice_total && (
+                  <>
+                    <div className="flex justify-between">
+                      <span>Total facture:</span>
+                      <span>{viewReceiptDetails.supplier_invoice_total.toFixed(2)} €</span>
+                    </div>
+                    <div className={`flex justify-between font-bold ${
+                      viewReceiptDetails.has_discrepancy ? 'text-yellow-600' : 'text-green-600'
+                    }`}>
+                      <span>Écart:</span>
+                      <span className="flex items-center gap-1">
+                        {viewReceiptDetails.has_discrepancy ? (
+                          <AlertTriangle className="h-4 w-4" />
+                        ) : (
+                          <CheckCircle className="h-4 w-4" />
+                        )}
+                        {(viewReceiptDetails.calculated_total - viewReceiptDetails.supplier_invoice_total).toFixed(2)} €
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewReceiptId(null)}>
+              Fermer
             </Button>
           </DialogFooter>
         </DialogContent>
