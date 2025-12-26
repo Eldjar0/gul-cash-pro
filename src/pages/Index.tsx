@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
@@ -17,6 +17,8 @@ import { CustomerCreditManagementDialog } from '@/components/customers/CustomerC
 import { Receipt } from '@/components/pos/Receipt';
 import { PinLockDialog } from '@/components/pos/PinLockDialog';
 import { SavedCartsDialog } from '@/components/pos/SavedCartsDialog';
+import { HeldTicketsSheet } from '@/components/pos/HeldTicketsSheet';
+import { useHeldTickets, useHoldTicket } from '@/hooks/useHeldTickets';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { PhysicalScanActionDialog } from '@/components/pos/PhysicalScanActionDialog';
 import { UnknownBarcodeDialog } from '@/components/pos/UnknownBarcodeDialog';
@@ -234,6 +236,7 @@ const Index = () => {
 
   // New features states
   const [savedCartsDialogOpen, setSavedCartsDialogOpen] = useState(false);
+  const [heldTicketsSheetOpen, setHeldTicketsSheetOpen] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
   const [customerCreditDialogOpen, setCustomerCreditDialogOpen] = useState(false);
@@ -243,6 +246,10 @@ const Index = () => {
   const [customerSearchTerm, setCustomerSearchTerm] = useState('');
   const [creditManagementDialogOpen, setCreditManagementDialogOpen] = useState(false);
   const [creditManagementCustomer, setCreditManagementCustomer] = useState<{ id: string; name: string } | null>(null);
+  
+  // Held tickets hook
+  const { data: heldTickets } = useHeldTickets();
+  const holdTicket = useHoldTicket();
   
   // Historique des scans
   const [scanHistory, setScanHistory] = useState<Array<{
@@ -1954,7 +1961,7 @@ const Index = () => {
           {/* Payment buttons - Modern JL Prod style */}
           <div className="bg-background p-1.5 space-y-1.5 border-t-2 border-border flex-shrink-0">
             {/* Nouveaux boutons fonctionnalités */}
-            <div className="grid grid-cols-4 gap-1 mb-1">
+            <div className="grid grid-cols-5 gap-1 mb-1">
               <Button variant="outline" size="sm" onClick={() => setSavedCartsDialogOpen(true)} className="h-7 text-[9px] border-blue-500 text-blue-500 hover:bg-blue-500/10" title="Paniers sauvegardés">
                 <FolderOpen className="h-3 w-3 mr-0.5" />
                 Charger
@@ -1962,6 +1969,34 @@ const Index = () => {
               <Button variant="outline" size="sm" onClick={() => setSelectCustomerDialogOpen(true)} className={`h-7 text-[9px] ${selectedCustomer ? 'border-cyan-500 text-cyan-500 bg-cyan-500/10' : 'border-purple-500 text-purple-500'} hover:bg-purple-500/10`} title="Sélectionner un client">
                 <User className="h-3 w-3 mr-0.5" />
                 {selectedCustomer ? selectedCustomer.name.split(' ')[0] : 'Client'}
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={async () => {
+                  if (cart.length > 0) {
+                    await holdTicket.mutateAsync({ cartData: cart });
+                    setCart([]);
+                    setGlobalDiscount(null);
+                    setAppliedPromoCode(null);
+                  } else if (heldTickets && heldTickets.length > 0) {
+                    setHeldTicketsSheetOpen(true);
+                  }
+                }}
+                className={`h-7 text-[9px] relative ${
+                  heldTickets && heldTickets.length > 0 
+                    ? 'border-amber-500 text-amber-600 bg-amber-500/10' 
+                    : 'border-amber-500 text-amber-500'
+                } hover:bg-amber-500/10`} 
+                title={cart.length > 0 ? "Mettre le ticket en attente" : "Voir les tickets en attente"}
+              >
+                <Pause className="h-3 w-3 mr-0.5" />
+                Attente
+                {heldTickets && heldTickets.length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center">
+                    {heldTickets.length}
+                  </span>
+                )}
               </Button>
               <Button variant="outline" size="sm" onClick={() => {
               if (cart.length > 0) {
@@ -2751,6 +2786,18 @@ const Index = () => {
           customerName={creditManagementCustomer.name}
         />
       )}
+
+      {/* Held Tickets Sheet */}
+      <HeldTicketsSheet
+        open={heldTicketsSheetOpen}
+        onOpenChange={setHeldTicketsSheetOpen}
+        onResumeTicket={(cartItems) => {
+          setCart(cartItems);
+          setGlobalDiscount(null);
+          setAppliedPromoCode(null);
+        }}
+        hasCurrentCart={cart.length > 0}
+      />
     </div>;
 };
 export default Index;
