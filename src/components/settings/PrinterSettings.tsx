@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Printer, RefreshCw, CheckCircle, XCircle, Info } from "lucide-react";
 import { useElectronPrint } from "@/hooks/useElectronPrint";
 import { toast } from "sonner";
-
 export function PrinterSettings() {
   const {
     isElectron,
@@ -18,19 +17,16 @@ export function PrinterSettings() {
     isLoading,
     loadPrinters,
     saveSelectedPrinter,
-    testPrinter,
+    testPrinter
   } = useElectronPrint();
-
   const [silentPrintEnabled, setSilentPrintEnabled] = useState(() => {
     return localStorage.getItem('silent_print_enabled') === 'true';
   });
-
   const handleSilentPrintToggle = (enabled: boolean) => {
     setSilentPrintEnabled(enabled);
     localStorage.setItem('silent_print_enabled', String(enabled));
     toast.success(enabled ? 'Impression silencieuse activée' : 'Impression silencieuse désactivée');
   };
-
   const handleTestPrint = async () => {
     const result = await testPrinter();
     if (result.success) {
@@ -39,15 +35,12 @@ export function PrinterSettings() {
       toast.error('Échec du test d\'impression');
     }
   };
-
   const handlePrinterChange = (printerName: string) => {
     saveSelectedPrinter(printerName);
     toast.success(`Imprimante sélectionnée: ${printerName}`);
   };
-
   if (!isElectron) {
-    return (
-      <Card>
+    return <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Printer className="h-5 w-5" />
@@ -69,18 +62,13 @@ export function PrinterSettings() {
               <p className="mt-2 text-sm">
                 <strong>Alternative :</strong> Utilisez Chrome en mode kiosk pour une impression semi-automatique :
               </p>
-              <code className="mt-1 block text-xs bg-muted p-2 rounded">
-                chrome.exe --kiosk-printing "https://votre-app.lovable.app"
-              </code>
+              
             </AlertDescription>
           </Alert>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Printer className="h-5 w-5" />
@@ -103,69 +91,43 @@ export function PrinterSettings() {
               Imprimer automatiquement sans popup de confirmation
             </p>
           </div>
-          <Switch
-            id="silent-print"
-            checked={silentPrintEnabled}
-            onCheckedChange={handleSilentPrintToggle}
-          />
+          <Switch id="silent-print" checked={silentPrintEnabled} onCheckedChange={handleSilentPrintToggle} />
         </div>
 
         {/* Sélection de l'imprimante */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="printer-select">Imprimante par défaut</Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={loadPrinters}
-              disabled={isLoading}
-            >
+            <Button variant="ghost" size="sm" onClick={loadPrinters} disabled={isLoading}>
               <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
               Actualiser
             </Button>
           </div>
-          <Select
-            value={selectedPrinter}
-            onValueChange={handlePrinterChange}
-          >
+          <Select value={selectedPrinter} onValueChange={handlePrinterChange}>
             <SelectTrigger id="printer-select">
               <SelectValue placeholder="Sélectionner une imprimante" />
             </SelectTrigger>
             <SelectContent>
-              {printers.map((printer) => (
-                <SelectItem key={printer.name} value={printer.name}>
+              {printers.map(printer => <SelectItem key={printer.name} value={printer.name}>
                   <div className="flex items-center gap-2">
                     <Printer className="h-4 w-4" />
                     <span>{printer.displayName || printer.name}</span>
-                    {printer.isDefault && (
-                      <Badge variant="outline" className="text-xs">
+                    {printer.isDefault && <Badge variant="outline" className="text-xs">
                         Par défaut
-                      </Badge>
-                    )}
+                      </Badge>}
                   </div>
-                </SelectItem>
-              ))}
-              {printers.length === 0 && (
-                <SelectItem value="" disabled>
+                </SelectItem>)}
+              {printers.length === 0 && <SelectItem value="" disabled>
                   Aucune imprimante trouvée
-                </SelectItem>
-              )}
+                </SelectItem>}
             </SelectContent>
           </Select>
         </div>
 
         {/* Test d'impression */}
         <div className="pt-4 border-t">
-          <Button
-            onClick={handleTestPrint}
-            disabled={isLoading || !selectedPrinter}
-            className="w-full"
-          >
-            {isLoading ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Printer className="h-4 w-4 mr-2" />
-            )}
+          <Button onClick={handleTestPrint} disabled={isLoading || !selectedPrinter} className="w-full">
+            {isLoading ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Printer className="h-4 w-4 mr-2" />}
             Imprimer une page de test
           </Button>
         </div>
@@ -180,6 +142,5 @@ export function PrinterSettings() {
           </AlertDescription>
         </Alert>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
