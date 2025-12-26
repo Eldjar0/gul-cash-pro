@@ -362,6 +362,33 @@ async function updateReceiptTotal(receiptId: string) {
     .eq('id', receiptId);
 }
 
+// Update receipt status
+export const useUpdateReceiptStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: 'draft' | 'validated' | 'cancelled' }) => {
+      const { error } = await supabase
+        .from('supplier_receipts')
+        .update({
+          status,
+          validated_at: status === 'validated' ? new Date().toISOString() : null,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['supplier-receipts'] });
+      toast.success('Statut mis à jour');
+    },
+    onError: (error: Error) => {
+      console.error('Error updating status:', error);
+      toast.error('Erreur lors de la mise à jour du statut');
+    },
+  });
+};
+
 // Update receipt header info
 export const useUpdateSupplierReceipt = () => {
   const queryClient = useQueryClient();
