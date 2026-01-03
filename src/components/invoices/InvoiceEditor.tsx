@@ -235,6 +235,20 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     setItems(newItems);
   };
 
+  // Mise à jour du prix HTVA à partir du prix TVAC
+  const updateItemFromTVAC = (index: number, priceTVAC: number) => {
+    const newItems = [...items];
+    const vatRate = newItems[index].vatRate;
+    const priceHTVA = priceTVAC / (1 + vatRate / 100);
+    newItems[index] = { ...newItems[index], unitPrice: Math.round(priceHTVA * 100) / 100 };
+    setItems(newItems);
+  };
+
+  // Calcul du prix TVAC à partir du prix HTVA
+  const calculatePriceTVAC = (item: InvoiceItem) => {
+    return item.unitPrice * (1 + item.vatRate / 100);
+  };
+
   const calculateItemTotal = (item: InvoiceItem) => {
     const subtotal = item.quantity * item.unitPrice;
     const vatAmount = subtotal * (item.vatRate / 100);
@@ -658,7 +672,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                             </Popover>
                             <Input placeholder="Description" value={item.description} onChange={(e) => updateItem(index, 'description', e.target.value)} className="h-9 text-sm flex-1" />
                           </div>
-                          <div className="grid grid-cols-4 gap-2">
+                          <div className="grid grid-cols-5 gap-2">
                             <div>
                               <Label className="text-xs text-muted-foreground">Qté</Label>
                               <Input type="number" min="0" step="0.01" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)} className="h-8 text-sm text-center" />
@@ -666,6 +680,10 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                             <div>
                               <Label className="text-xs text-muted-foreground">Prix {labelHT}</Label>
                               <Input type="number" min="0" step="0.01" value={item.unitPrice} onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="h-8 text-sm text-right" />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Prix {labelTTC}</Label>
+                              <Input type="number" min="0" step="0.01" value={calculatePriceTVAC(item).toFixed(2)} onChange={(e) => updateItemFromTVAC(index, parseFloat(e.target.value) || 0)} className="h-8 text-sm text-right" />
                             </div>
                             <div>
                               <Label className="text-xs text-muted-foreground">TVA %</Label>
