@@ -1804,7 +1804,10 @@ export default function Documents() {
                                     <Button 
                                       variant="ghost" 
                                       size="sm" 
-                                      onClick={() => handleEditClick(invoice)} 
+                                      onClick={() => {
+                                        setEditingInvoiceId(invoice.id);
+                                        setInvoiceEditorOpen(true);
+                                      }} 
                                       className="h-8 text-blue-600 hover:text-blue-700"
                                       title="Modifier cette facture"
                                     >

@@ -4,9 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Save, X, Plus, Trash2, Search, Check } from 'lucide-react';
+import { Save, X, Plus, Trash2, Search, Check, FileText, User, Calendar, Euro, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useCustomers } from '@/hooks/useCustomers';
@@ -459,381 +463,391 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     }
   };
 
+  // Calcul pour l'aperçu (similaire à InvoiceCreate)
+  const calculateItemTotalForPreview = (item: InvoiceItem) => {
+    const subtotal = item.quantity * item.unitPrice;
+    const vatAmount = subtotal * (item.vatRate / 100);
+    return subtotal + vatAmount;
+  };
+
+  const selectedCustomer = customers?.find(c => c.id === selectedCustomerId);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-[90vw] md:max-w-[1000px] max-h-[95vh] p-0 overflow-hidden [&>button]:hidden">
+      <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden [&>button]:hidden">
         <div className="flex flex-col h-full max-h-[95vh]">
           {/* Header */}
-          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary to-primary-glow shadow-lg">
-            <div className="flex items-center justify-between gap-8">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
+          <div className="px-4 sm:px-6 py-4 border-b bg-gradient-to-r from-primary to-primary-glow shadow-lg">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-lg sm:text-xl font-bold text-white">
                 {invoiceId ? 'Modifier la facture' : 'Nouvelle facture'}
               </h2>
               <div className="flex items-center gap-3">
                 <Button 
                   variant="secondary" 
-                  size="lg" 
+                  size="sm" 
                   onClick={handleSave} 
                   disabled={loading} 
-                  className="h-10 px-6 font-semibold shadow-md hover:shadow-lg"
+                  className="font-semibold shadow-md hover:shadow-lg"
                 >
-                  <Save className="h-5 w-5 mr-2" />
+                  <Save className="h-4 w-4 mr-2" />
                   Enregistrer
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   onClick={() => onOpenChange(false)} 
-                  className="h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 text-white border-2 border-white/30 hover:border-white/50 transition-all shadow-md hover:shadow-lg"
+                  className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/30"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-            
-            {/* UBL Warning Alert */}
-            {(ublValidation.errors.length > 0 || ublValidation.warnings.length > 0) && (
-              <div className="px-4 sm:px-6 pb-0 pt-3 bg-gray-100">
-                <div className="mx-auto max-w-[21cm]">
-                  <UBLWarningAlert validation={ublValidation} />
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* A4 Invoice Content */}
-          <div className="flex-1 overflow-y-auto bg-gray-100 p-4 sm:p-6 md:p-8">
-            <div className="mx-auto bg-white shadow-xl w-full max-w-[21cm]" style={{ minHeight: '29.7cm', padding: '1.5cm' }}>
-              {/* Header */}
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  <img src={logoInvoice} alt="Logo" className="h-20 w-auto mb-4" />
-                </div>
-                <div className="text-right text-sm">
-                  <p className="font-semibold">{settings.name}</p>
-                  <p>{settings.address}</p>
-                  <p>{settings.postal_code} {settings.city}</p>
-                  <p className="mt-2">{settings.email}</p>
-                  <p className="mt-2 font-semibold">TVA: {settings.vat_number}</p>
-                </div>
-              </div>
+          {/* UBL Warning */}
+          {(ublValidation.errors.length > 0 || ublValidation.warnings.length > 0) && (
+            <div className="px-4 py-2 bg-gray-100">
+              <UBLWarningAlert validation={ublValidation} />
+            </div>
+          )}
 
-              {/* Client & Invoice Info */}
-              <div className="flex justify-between mb-8">
-                <div className="flex-1">
-                  <h2 className="text-lg font-bold mb-4">Facture</h2>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Popover open={customerSearchOpen} onOpenChange={setCustomerSearchOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className="w-full justify-between"
-                          >
-                            {selectedCustomerId
-                              ? customers?.find((c) => c.id === selectedCustomerId)?.name
-                              : "Sélectionner un client..."}
-                            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[400px] p-0">
-                          <Command>
-                            <CommandInput placeholder="Rechercher un client..." />
-                            <CommandList>
-                              <CommandEmpty>Aucun client trouvé.</CommandEmpty>
-                              <CommandGroup>
-                                {customers?.map((customer) => (
-                                  <CommandItem
-                                    key={customer.id}
-                                    value={customer.name}
-                                    onSelect={() => selectCustomer(customer)}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                    {customer.name}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <Input
-                      placeholder="Nom du client"
-                      value={clientName}
-                      onChange={(e) => setClientName(e.target.value)}
-                      className="font-semibold border-0 border-b border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 px-0 rounded-none bg-transparent transition-colors"
-                    />
-                    <Input
-                      placeholder="Adresse"
-                      value={clientAddress}
-                      onChange={(e) => setClientAddress(e.target.value)}
-                      className="border-0 border-b border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 px-0 rounded-none bg-transparent transition-colors"
-                    />
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Code postal"
-                        value={clientPostalCode}
-                        onChange={(e) => setClientPostalCode(e.target.value)}
-                        className="border-0 border-b border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 px-0 rounded-none bg-transparent transition-colors w-32"
-                      />
-                      <Input
-                        placeholder="Ville"
-                        value={clientCity}
-                        onChange={(e) => setClientCity(e.target.value)}
-                        className="border-0 border-b border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 px-0 rounded-none bg-transparent transition-colors flex-1"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="w-72 space-y-3 text-sm">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Numéro de facture</span>
-                    <Input
-                      value={invoiceNumber}
-                      onChange={(e) => setInvoiceNumber(e.target.value)}
-                      className="h-8 w-36 text-xs border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors font-mono"
-                    />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-xs">Communication structurée</span>
-                    <span className="font-mono text-xs bg-gray-50 px-2 py-1 rounded border">{structuredCommunication}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Date de facturation</span>
-                    <Input
-                      type="date"
-                      value={invoiceDate}
-                      onChange={(e) => setInvoiceDate(e.target.value)}
-                      className="h-8 w-36 text-xs border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors"
-                    />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Date d'échéance</span>
-                    <Input
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className="h-8 w-36 text-xs border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors"
-                    />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Numéro TVA client</span>
-                    <Input
-                      placeholder="BE..."
-                      value={clientVatNumber}
-                      onChange={(e) => setClientVatNumber(e.target.value)}
-                      className="h-8 w-48 text-xs border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Items Table */}
-              <div className="mb-8">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b-2 border-gray-800">
-                      <th className="text-left py-2 px-2 w-10"></th>
-                      <th className="text-left py-2 px-2">Description</th>
-                      <th className="text-center py-2 px-2 w-24">Quantité</th>
-                      <th className="text-right py-2 px-2 w-32">Prix unitaire</th>
-                      <th className="text-right py-2 px-2 w-24">TVA %</th>
-                      <th className="text-right py-2 px-2 w-32">Total</th>
-                      <th className="w-8"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item, index) => (
-                      <tr key={index} className="border-b hover:bg-gray-50">
-                        <td className="py-2 px-2">
-                          <Popover open={productSearchOpen && currentItemIndex === index} onOpenChange={(open) => {
-                            setProductSearchOpen(open);
-                            if (open) setCurrentItemIndex(index);
-                            else setCurrentItemIndex(null);
-                          }}>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                              >
-                                <Search className="h-4 w-4" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[400px] p-0" align="start">
-                              <Command>
-                                <CommandInput placeholder="Rechercher un produit..." />
-                                <CommandList>
-                                  <CommandEmpty>Aucun produit trouvé.</CommandEmpty>
-                                  <CommandGroup>
-                                    {products?.filter(p => p.is_active).map((product) => (
-                                      <CommandItem
-                                        key={product.id}
-                                        value={product.name}
-                                        onSelect={() => selectProduct(product, index)}
-                                      >
-                                        <div className="flex flex-col">
-                                          <span className="font-medium">{product.name}</span>
-                                          <span className="text-sm text-muted-foreground">
-                                            {product.price.toFixed(2)}€ - TVA: {product.vat_rate}%
-                                          </span>
-                                        </div>
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                        </td>
-                        <td className="py-2 px-2">
-                          <Input
-                            placeholder="Description de l'article"
-                            value={item.description}
-                            onChange={(e) => updateItem(index, 'description', e.target.value)}
-                            className="border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors h-9"
-                          />
-                        </td>
-                        <td className="py-2 px-2">
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.quantity}
-                            onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                            className="text-center border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors h-9"
-                          />
-                        </td>
-                        <td className="py-2 px-2">
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.unitPrice}
-                            onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                            className="text-right border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors h-9"
-                          />
-                        </td>
-                        <td className="py-2 px-2">
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.vatRate}
-                            onChange={(e) => updateItem(index, 'vatRate', parseFloat(e.target.value) || 0)}
-                            className="text-center border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors h-9 w-20"
-                          />
-                        </td>
-                        <td className="py-2 px-2 text-right font-semibold">
-                          {calculateItemTotal(item).toFixed(2)} €
-                        </td>
-                        <td className="py-2 px-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeItem(index)}
-                            className="h-7 w-7 hover:bg-red-100 hover:text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addItem}
-                  className="mt-4"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ajouter une ligne
-                </Button>
-              </div>
-
-              {/* Reference & Totals */}
-              <div className="flex justify-between items-start mb-8">
-                <div className="bg-primary text-white p-4 rounded-lg max-w-xs">
-                  <p className="font-bold mb-2">Référence de paiement</p>
-                  <p className="text-xl font-mono">{invoiceNumber}</p>
-                </div>
-
-                <div className="space-y-2 text-sm w-80">
-                  <div className="flex justify-between pb-2">
-                    <span>Montant imposable</span>
-                    <span className="font-semibold">{calculateSubtotal().toFixed(2)} €</span>
-                  </div>
-                  
-                  {/* TVA détaillée par taux */}
-                  <div className="border-t pt-2 space-y-1">
-                    <div className="font-semibold text-xs text-muted-foreground mb-1">TVA détaillée:</div>
-                    {Object.entries(calculateVatByRate()).map(([rate, amounts]) => (
-                      <div key={rate} className="flex justify-between text-xs pl-4">
-                        <span>TVA {rate}% sur {amounts.base.toFixed(2)}€</span>
-                        <span className="font-medium">{amounts.vat.toFixed(2)} €</span>
+          {/* Main Content - Two Columns */}
+          <div className="flex-1 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+              {/* Left: Form */}
+              <ScrollArea className="h-[calc(95vh-100px)] bg-gray-50">
+                <div className="p-4 sm:p-6 space-y-4">
+                  {/* Invoice Info */}
+                  <Card className="p-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-xs font-semibold">Numéro de facture</Label>
+                        <Input
+                          value={invoiceNumber}
+                          onChange={(e) => setInvoiceNumber(e.target.value)}
+                          className="h-9 font-mono text-sm"
+                        />
                       </div>
-                    ))}
-                  </div>
-                  
-                  <div className="flex justify-between pb-2 border-b pt-2">
-                    <span className="font-semibold">Total TVA</span>
-                    <span className="font-semibold">{calculateTotalVat().toFixed(2)} €</span>
-                  </div>
-                  
-                  <div className="flex justify-between text-lg font-bold pt-2">
-                    <span>Total TTC</span>
-                    <span>{calculateTotal().toFixed(2)} €</span>
-                  </div>
-                </div>
-              </div>
+                      <div>
+                        <Label className="text-xs font-semibold">Communication</Label>
+                        <div className="h-9 flex items-center text-xs font-mono bg-muted px-3 rounded-md border">
+                          {structuredCommunication}
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs font-semibold">Date</Label>
+                        <Input
+                          type="date"
+                          value={invoiceDate}
+                          onChange={(e) => setInvoiceDate(e.target.value)}
+                          className="h-9 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-semibold">Échéance</Label>
+                        <Input
+                          type="date"
+                          value={dueDate}
+                          onChange={(e) => setDueDate(e.target.value)}
+                          className="h-9 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </Card>
 
-              {/* Notes */}
-              <div className="mb-8">
-                <Label className="text-sm font-semibold mb-2 block">Notes</Label>
-                <Textarea
-                  placeholder="Notes ou instructions de paiement..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="min-h-[100px] text-sm border-transparent hover:border-gray-300 focus-visible:border-primary focus-visible:ring-0 bg-transparent transition-colors"
-                />
-              </div>
+                  {/* Client Selection */}
+                  <Card className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <User className="h-4 w-4 text-primary" />
+                      <Label className="font-bold text-primary">Client</Label>
+                    </div>
+                    <Popover open={customerSearchOpen} onOpenChange={setCustomerSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-between h-9">
+                          {selectedCustomerId
+                            ? customers?.find((c) => c.id === selectedCustomerId)?.name
+                            : "Sélectionner un client..."}
+                          <Search className="h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[350px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Rechercher..." />
+                          <CommandList>
+                            <CommandEmpty>Aucun client trouvé.</CommandEmpty>
+                            <CommandGroup>
+                              {customers?.map((customer) => (
+                                <CommandItem
+                                  key={customer.id}
+                                  value={customer.name}
+                                  onSelect={() => selectCustomer(customer)}
+                                >
+                                  <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === customer.id ? "opacity-100" : "opacity-0")} />
+                                  {customer.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <div className="grid grid-cols-2 gap-2 mt-3">
+                      <Input placeholder="Nom" value={clientName} onChange={(e) => setClientName(e.target.value)} className="h-9 text-sm" />
+                      <Input placeholder="N° TVA" value={clientVatNumber} onChange={(e) => setClientVatNumber(e.target.value)} className="h-9 text-sm" />
+                      <Input placeholder="Adresse" value={clientAddress} onChange={(e) => setClientAddress(e.target.value)} className="h-9 text-sm col-span-2" />
+                      <Input placeholder="Code postal" value={clientPostalCode} onChange={(e) => setClientPostalCode(e.target.value)} className="h-9 text-sm" />
+                      <Input placeholder="Ville" value={clientCity} onChange={(e) => setClientCity(e.target.value)} className="h-9 text-sm" />
+                    </div>
+                  </Card>
 
-              {/* Footer */}
-              <div className="border-t pt-4 space-y-4">
-                <div className="text-sm text-center font-semibold text-primary">
-                  {getPaymentConditions()}
+                  {/* Items */}
+                  <Card className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <ShoppingCart className="h-4 w-4 text-primary" />
+                        <Label className="font-bold text-primary">Articles</Label>
+                        <Badge variant="secondary" className="text-xs">{items.length}</Badge>
+                      </div>
+                      <Button size="sm" onClick={addItem} className="h-8">
+                        <Plus className="h-3 w-3 mr-1" />
+                        Ajouter
+                      </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {items.map((item, index) => (
+                        <div key={index} className="border rounded-lg p-3 bg-white">
+                          <div className="flex items-center justify-between mb-2">
+                            <Badge variant="outline" className="text-xs">#{index + 1}</Badge>
+                            {items.length > 1 && (
+                              <Button variant="ghost" size="icon" onClick={() => removeItem(index)} className="h-6 w-6 text-destructive hover:bg-destructive/10">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="flex gap-2 mb-2">
+                            <Popover open={productSearchOpen && currentItemIndex === index} onOpenChange={(open) => { setProductSearchOpen(open); if (open) setCurrentItemIndex(index); else setCurrentItemIndex(null); }}>
+                              <PopoverTrigger asChild>
+                                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+                                  <Search className="h-4 w-4" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[300px] p-0">
+                                <Command>
+                                  <CommandInput placeholder="Rechercher produit..." />
+                                  <CommandList>
+                                    <CommandEmpty>Aucun produit.</CommandEmpty>
+                                    <CommandGroup>
+                                      {products?.filter(p => p.is_active).map((product) => (
+                                        <CommandItem key={product.id} value={product.name} onSelect={() => selectProduct(product, index)}>
+                                          <div className="flex flex-col">
+                                            <span className="font-medium">{product.name}</span>
+                                            <span className="text-xs text-muted-foreground">{product.price.toFixed(2)}€ - TVA {product.vat_rate}%</span>
+                                          </div>
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            <Input placeholder="Description" value={item.description} onChange={(e) => updateItem(index, 'description', e.target.value)} className="h-9 text-sm flex-1" />
+                          </div>
+                          <div className="grid grid-cols-4 gap-2">
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Qté</Label>
+                              <Input type="number" min="0" step="0.01" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)} className="h-8 text-sm text-center" />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Prix HT</Label>
+                              <Input type="number" min="0" step="0.01" value={item.unitPrice} onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="h-8 text-sm text-right" />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">TVA %</Label>
+                              <Input type="number" min="0" step="0.01" value={item.vatRate} onChange={(e) => updateItem(index, 'vatRate', parseFloat(e.target.value) || 0)} className="h-8 text-sm text-center" />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Total TTC</Label>
+                              <div className="h-8 flex items-center justify-end text-sm font-semibold text-primary">{calculateItemTotalForPreview(item).toFixed(2)}€</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  {/* Notes */}
+                  <Card className="p-4">
+                    <Label className="text-xs font-semibold mb-2 block">Notes</Label>
+                    <Textarea
+                      placeholder="Notes ou instructions..."
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="min-h-[80px] text-sm"
+                    />
+                  </Card>
                 </div>
-                <div className="grid grid-cols-4 gap-8 text-xs text-gray-600">
-                  <div>
-                    <p className="font-semibold mb-1">Siège social</p>
-                    <p>{settings.address}</p>
-                    <p>{settings.postal_code} {settings.city}</p>
+              </ScrollArea>
+
+              {/* Right: Preview (identical to InvoiceCreate) */}
+              <div className="hidden lg:block border-l bg-white">
+                <ScrollArea className="h-[calc(95vh-100px)]">
+                  <div className="p-6">
+                    <Card className="bg-white shadow-xl border-2 border-primary/20 overflow-hidden">
+                      {/* Preview Header */}
+                      <div className="bg-gradient-to-r from-primary via-primary-glow to-primary p-5 text-white">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-white/20 rounded-lg">
+                            <FileText className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold">Aperçu Facture</h2>
+                            <p className="text-sm text-white/90">Prévisualisation en temps réel</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-5 space-y-5">
+                        {/* Company Header */}
+                        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20">
+                          <div className="text-lg font-bold text-primary mb-1">{settings.name}</div>
+                          <div className="space-y-0.5 text-sm text-muted-foreground">
+                            <div>{settings.address}</div>
+                            <div>{settings.postal_code} {settings.city}</div>
+                            <div className="font-semibold text-foreground">TVA: {settings.vat_number}</div>
+                          </div>
+                        </div>
+
+                        {/* Invoice Info */}
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="h-4 w-4" />
+                              <span>{format(new Date(invoiceDate), 'dd MMMM yyyy', { locale: fr })}</span>
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Échéance: {format(new Date(dueDate), 'dd/MM/yyyy', { locale: fr })}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-primary mb-1">FACTURE</div>
+                            <Badge variant="outline" className="font-mono text-xs">{invoiceNumber}</Badge>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Customer Section */}
+                        {clientName ? (
+                          <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
+                            <div className="flex items-center gap-2 text-xs font-semibold text-primary mb-2">
+                              <User className="h-3 w-3" />
+                              FACTURÉ À
+                            </div>
+                            <div className="space-y-0.5">
+                              <div className="font-bold">{clientName}</div>
+                              {clientVatNumber && <div className="text-sm text-muted-foreground">N° TVA: {clientVatNumber}</div>}
+                              {clientAddress && <div className="text-sm text-muted-foreground">{clientAddress}</div>}
+                              {clientCity && <div className="text-sm text-muted-foreground">{clientPostalCode} {clientCity}</div>}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="bg-muted/50 rounded-xl p-4 border-2 border-dashed border-muted-foreground/20 text-center">
+                            <User className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
+                            <p className="text-xs text-muted-foreground">Aucun client sélectionné</p>
+                          </div>
+                        )}
+
+                        <Separator />
+
+                        {/* Items Section */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <ShoppingCart className="h-4 w-4 text-primary" />
+                            <h3 className="font-bold text-primary">Articles</h3>
+                            <Badge variant="secondary" className="text-xs">{items.length}</Badge>
+                          </div>
+                          
+                          {items.length > 0 && items[0].description ? (
+                            <div className="space-y-2">
+                              {items.map((item, index) => (
+                                <div key={index} className="border rounded-lg p-3 bg-gradient-to-br from-white to-gray-50">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Badge variant="outline" className="text-xs">#{index + 1}</Badge>
+                                        <span className="font-medium text-sm">{item.description || 'Article sans nom'}</span>
+                                      </div>
+                                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                        <span>Qté: <span className="font-semibold text-foreground">{item.quantity}</span></span>
+                                        <span>×</span>
+                                        <span>PU HT: <span className="font-semibold text-foreground">{item.unitPrice.toFixed(2)}€</span></span>
+                                        <span>TVA: <span className="font-semibold text-accent">{item.vatRate}%</span></span>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-xs text-muted-foreground">Total TTC</div>
+                                      <div className="font-bold text-primary">{calculateItemTotalForPreview(item).toFixed(2)}€</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="bg-muted/50 rounded-xl p-6 border-2 border-dashed border-muted-foreground/20 text-center">
+                              <ShoppingCart className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                              <p className="text-sm text-muted-foreground">Aucun article ajouté</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <Separator />
+
+                        {/* Totals Section */}
+                        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20">
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-muted-foreground">Total HT:</span>
+                              <span className="font-bold">{calculateSubtotal().toFixed(2)}€</span>
+                            </div>
+                            
+                            {Object.entries(calculateVatByRate()).map(([rate, amounts]) => (
+                              <div key={rate} className="flex justify-between items-center">
+                                <span className="text-sm text-muted-foreground">TVA {rate}%:</span>
+                                <span className="font-semibold text-accent">{amounts.vat.toFixed(2)}€</span>
+                              </div>
+                            ))}
+                            
+                            <Separator className="bg-primary/20" />
+                            
+                            <div className="flex justify-between items-center bg-primary text-white rounded-lg p-3 shadow-lg">
+                              <div className="flex items-center gap-2">
+                                <Euro className="h-5 w-5" />
+                                <span className="font-bold">Total TTC:</span>
+                              </div>
+                              <span className="text-xl font-bold">{calculateTotal().toFixed(2)}€</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Notes Section */}
+                        {notes && (
+                          <>
+                            <Separator />
+                            <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
+                              <div className="flex items-center gap-2 mb-2">
+                                <FileText className="h-4 w-4 text-primary" />
+                                <h4 className="text-sm font-bold text-primary">Notes</h4>
+                              </div>
+                              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{notes}</p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </Card>
                   </div>
-                  <div>
-                    <p className="font-semibold mb-1">Bureau</p>
-                    <p>{settings.address}</p>
-                    <p>{settings.postal_code} {settings.city}</p>
-                  </div>
-                  <div>
-                    <p className="font-semibold mb-1">Compte bancaire</p>
-                    <p>IBAN à configurer</p>
-                  </div>
-                  <div>
-                    <p className="font-semibold mb-1">Questions ?</p>
-                    <p>{settings.phone}</p>
-                    <p>{settings.email}</p>
-                  </div>
-                </div>
+                </ScrollArea>
               </div>
             </div>
           </div>
