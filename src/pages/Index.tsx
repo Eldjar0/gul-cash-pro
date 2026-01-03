@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause, QrCode } from 'lucide-react';
 import logoMarket from '@/assets/logo-market.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
@@ -51,6 +51,8 @@ import { useCartPersistence } from '@/hooks/useCartPersistence';
 import { usePhysicalScanner } from '@/hooks/usePhysicalScanner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useCashDrawer } from '@/hooks/useCashDrawer';
+import { PriceEditDialog } from '@/components/pos/PriceEditDialog';
+import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 
 type DiscountType = 'percentage' | 'amount';
 interface CartItem {
@@ -248,6 +250,13 @@ const Index = () => {
   const [customerSearchTerm, setCustomerSearchTerm] = useState('');
   const [creditManagementDialogOpen, setCreditManagementDialogOpen] = useState(false);
   const [creditManagementCustomer, setCreditManagementCustomer] = useState<{ id: string; name: string } | null>(null);
+  
+  // Price edit dialog states
+  const [priceEditDialogOpen, setPriceEditDialogOpen] = useState(false);
+  const [priceEditIndex, setPriceEditIndex] = useState<number | null>(null);
+  
+  // Remote scan dialog state
+  const [remoteScanDialogOpen, setRemoteScanDialogOpen] = useState(false);
   
   // Held tickets hook
   const { data: heldTickets } = useHeldTickets();
@@ -1742,6 +1751,10 @@ const Index = () => {
                 <FileText className="h-3 w-3 mr-1" />
                 <span>Rapport X</span>
               </Button>
+              <Button onClick={() => setRemoteScanDialogOpen(true)} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md whitespace-nowrap" title="Scanner avec mobile">
+                <QrCode className="h-3 w-3 mr-1" />
+                <span>Scan Mobile</span>
+              </Button>
               <Button onClick={() => setCloseDayDialogOpen(true)} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md whitespace-nowrap">
                 <CalendarX className="h-3 w-3 mr-1" />
                 <span>Fermer</span>
@@ -1843,11 +1856,10 @@ const Index = () => {
                       </div>
                       <div className="flex gap-1 items-center flex-shrink-0">
                         <Button variant="outline" size="icon" onClick={() => {
-                          if (item.product.id) {
-                            navigate(`/products?id=${item.product.id}`);
-                          }
-                        }} className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" title="Modifier le produit">
-                          <Edit className="h-3.5 w-3.5" />
+                          setPriceEditIndex(index);
+                          setPriceEditDialogOpen(true);
+                        }} className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" title="Modifier le prix">
+                          <Euro className="h-3.5 w-3.5" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleToggleGift(index)} className={`h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity ${item.is_gift ? 'bg-pink-500/20 text-pink-600 hover:bg-pink-500/30' : 'hover:bg-pink-500/10 text-pink-500'}`} title={item.is_gift ? 'Annuler cadeau' : 'Offrir'}>
                           <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -2804,6 +2816,30 @@ const Index = () => {
           setAppliedPromoCode(null);
         }}
         hasCurrentCart={cart.length > 0}
+      />
+
+      {/* Price Edit Dialog */}
+      {priceEditIndex !== null && cart[priceEditIndex] && (
+        <PriceEditDialog
+          open={priceEditDialogOpen}
+          onOpenChange={(open) => {
+            setPriceEditDialogOpen(open);
+            if (!open) setPriceEditIndex(null);
+          }}
+          currentPrice={cart[priceEditIndex].custom_price ?? cart[priceEditIndex].product.price}
+          vatRate={cart[priceEditIndex].product.vat_rate}
+          productName={cart[priceEditIndex].product.name}
+          onConfirm={(newPrice) => {
+            handleUpdatePrice(priceEditIndex, newPrice);
+            setPriceEditIndex(null);
+          }}
+        />
+      )}
+
+      {/* Remote Scan Dialog */}
+      <RemoteScanDialog
+        open={remoteScanDialogOpen}
+        onOpenChange={setRemoteScanDialogOpen}
       />
     </div>;
 };
