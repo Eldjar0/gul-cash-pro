@@ -617,10 +617,21 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         <Label className="font-bold text-primary">Articles</Label>
                         <Badge variant="secondary" className="text-xs">{items.length}</Badge>
                       </div>
-                      <Button size="sm" onClick={addItem} className="h-8">
-                        <Plus className="h-3 w-3 mr-1" />
-                        Ajouter
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Select value={priceTerminology} onValueChange={(v) => setPriceTerminology(v as 'TTC' | 'TVAC')}>
+                          <SelectTrigger className="w-20 h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="TTC">TTC</SelectItem>
+                            <SelectItem value="TVAC">TVAC</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button size="sm" onClick={addItem} className="h-8">
+                          <Plus className="h-3 w-3 mr-1" />
+                          Ajouter
+                        </Button>
+                      </div>
                     </div>
 
                     <div className="space-y-3">
@@ -668,7 +679,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               <Input type="number" min="0" step="0.01" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)} className="h-8 text-sm text-center" />
                             </div>
                             <div>
-                              <Label className="text-xs text-muted-foreground">Prix HT</Label>
+                              <Label className="text-xs text-muted-foreground">Prix {labelHT}</Label>
                               <Input type="number" min="0" step="0.01" value={item.unitPrice} onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="h-8 text-sm text-right" />
                             </div>
                             <div>
@@ -676,7 +687,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               <Input type="number" min="0" step="0.01" value={item.vatRate} onChange={(e) => updateItem(index, 'vatRate', parseFloat(e.target.value) || 0)} className="h-8 text-sm text-center" />
                             </div>
                             <div>
-                              <Label className="text-xs text-muted-foreground">Total TTC</Label>
+                              <Label className="text-xs text-muted-foreground">Total {labelTTC}</Label>
                               <div className="h-8 flex items-center justify-end text-sm font-semibold text-primary">{calculateItemTotalForPreview(item).toFixed(2)}€</div>
                             </div>
                           </div>
