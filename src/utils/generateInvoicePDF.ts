@@ -262,21 +262,19 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     yPos += 15;
   }
 
-  // ============ INFORMATIONS DE PAIEMENT (ENCADRÉ ÉLÉGANT) ============
+  // ============ INFORMATIONS DE PAIEMENT + QR CODE ============
   if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
-    checkAndAddPage(45);
+    checkAndAddPage(50);
     yPos += 10;
+    
+    const account = invoice.bankAccounts[0];
+    const boxWidth = pageWidth - 70; // Espace pour le QR code
     
     // Cadre avec bordure
     doc.setDrawColor(0, 122, 204);
     doc.setLineWidth(0.8);
-    doc.roundedRect(15, yPos, pageWidth - 30, 28, 2, 2);
-    
-    // Fond légèrement coloré
     doc.setFillColor(240, 248, 255);
-    doc.roundedRect(15, yPos, pageWidth - 30, 28, 2, 2, 'F');
-    doc.setDrawColor(0, 122, 204);
-    doc.roundedRect(15, yPos, pageWidth - 30, 28, 2, 2, 'S');
+    doc.roundedRect(15, yPos, boxWidth, 32, 2, 2, 'FD');
     
     let paymentY = yPos + 8;
     
@@ -285,158 +283,131 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 122, 204);
     doc.text('Informations de paiement', 20, paymentY);
-    paymentY += 7;
+    paymentY += 8;
     
     // Informations en colonnes
     doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
     doc.setTextColor(0, 0, 0);
     
-    const account = invoice.bankAccounts[0];
-    const col1 = 20;
-    const col2 = 90;
-    const col3 = 140;
+    const payCol1 = 20;
+    const payCol2 = 75;
     
     // Colonne 1: Banque et IBAN
-    doc.text(`Banque: ${account.bank_name}`, col1, paymentY);
-    doc.text(`IBAN: ${account.account_number}`, col1, paymentY + 5);
-    
-    // Colonne 2: Montant et Communication
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Montant: ${invoice.total.toFixed(2)} €`, col2, paymentY);
     doc.setFont('helvetica', 'normal');
+    doc.text(`Banque: ${account.bank_name}`, payCol1, paymentY);
+    doc.text(`IBAN: ${account.account_number}`, payCol1, paymentY + 5);
     if (invoice.structuredCommunication) {
-      doc.text(`Communication: ${invoice.structuredCommunication}`, col2, paymentY + 5);
+      doc.text(`Communication: ${invoice.structuredCommunication}`, payCol1, paymentY + 10);
     }
     
-    // Colonne 3: Échéance
+    // Colonne 2: Montant et Échéance
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Montant: ${invoice.total.toFixed(2)} €`, payCol2, paymentY);
+    doc.setFont('helvetica', 'normal');
     if (invoice.dueDate) {
       const daysDiff = differenceInDays(new Date(invoice.dueDate), new Date(invoice.date));
-      doc.text(`Paiement à ${daysDiff} jours`, col3, paymentY);
-      doc.text(`Échéance: ${format(new Date(invoice.dueDate), 'dd/MM/yyyy', { locale: fr })}`, col3, paymentY + 5);
+      doc.text(`Paiement à ${daysDiff} jours`, payCol2, paymentY + 5);
+      doc.text(`Échéance: ${format(new Date(invoice.dueDate), 'dd/MM/yyyy', { locale: fr })}`, payCol2, paymentY + 10);
     }
     
-    doc.setTextColor(0, 0, 0);
-    yPos += 35;
-  }
-
-  // ============ NOTES ============
-  if (invoice.notes) {
-    const splitNotes = doc.splitTextToSize(invoice.notes, pageWidth - 30);
-    const notesHeight = splitNotes.length * 5 + 15;
-    checkAndAddPage(notesHeight);
-    yPos += 5;
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text(splitNotes, 15, yPos);
-    yPos += splitNotes.length * 5 + 5;
-  }
-
-  // ============ QR CODE PAIEMENT ============
-  if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
-    const account = invoice.bankAccounts[0];
-    
-    // Format EPC QR Code (European Payments Council) pour virement SEPA
-    const epcData = [
-      'BCD',                                    // Service Tag
-      '002',                                    // Version
-      '1',                                      // Character set (UTF-8)
-      'SCT',                                    // Identification (SEPA Credit Transfer)
-      '',                                       // BIC (optional)
-      invoice.company.name.substring(0, 70),   // Beneficiary name (max 70 chars)
-      account.account_number.replace(/\s/g, ''), // IBAN
-      `EUR${invoice.total.toFixed(2)}`,        // Amount
-      '',                                       // Purpose code (optional)
-      invoice.structuredCommunication || invoice.saleNumber, // Reference
-      '',                                       // Unstructured reference
-      ''                                        // Information
-    ].join('\n');
-    
+    // QR Code à droite du cadre
     try {
+      const epcData = [
+        'BCD', '002', '1', 'SCT', '',
+        invoice.company.name.substring(0, 70),
+        account.account_number.replace(/\s/g, ''),
+        `EUR${invoice.total.toFixed(2)}`, '',
+        invoice.structuredCommunication || invoice.saleNumber, '', ''
+      ].join('\n');
+      
       const qrCodeDataUrl = await QRCode.toDataURL(epcData, {
-        width: 80,
+        width: 100,
         margin: 1,
         color: { dark: '#000000', light: '#ffffff' }
       });
       
-      // Position du QR code en bas à droite
-      const qrSize = 28;
+      const qrSize = 30;
       const qrX = pageWidth - 15 - qrSize;
-      const qrY = pageHeight - 55;
+      const qrY = yPos + 1;
       
       doc.addImage(qrCodeDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
       
       // Label sous le QR code
-      doc.setFontSize(6);
+      doc.setFontSize(5);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(100, 100, 100);
-      doc.text('Scanner pour payer', qrX + qrSize / 2, qrY + qrSize + 3, { align: 'center' });
+      doc.text('Scannez pour payer', qrX + qrSize / 2, qrY + qrSize + 2, { align: 'center' });
     } catch (error) {
       console.error('Erreur génération QR code:', error);
     }
+    
+    doc.setTextColor(0, 0, 0);
+    yPos += 40;
   }
 
-  // ============ FOOTER AMÉLIORÉ ============
-  const footerY = pageHeight - 52;
+  // ============ NOTES (exclure les notes génériques de paiement) ============
+  if (invoice.notes) {
+    // Filtrer les notes génériques comme "VIREMENT", "ESPECES", etc.
+    const genericPaymentNotes = ['virement', 'espèces', 'especes', 'cb', 'carte', 'cash'];
+    const cleanedNotes = invoice.notes.trim();
+    const isGenericNote = genericPaymentNotes.some(
+      note => cleanedNotes.toLowerCase() === note
+    );
+    
+    if (!isGenericNote && cleanedNotes.length > 0) {
+      const splitNotes = doc.splitTextToSize(cleanedNotes, pageWidth - 30);
+      const notesHeight = splitNotes.length * 5 + 15;
+      checkAndAddPage(notesHeight);
+      yPos += 5;
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(80, 80, 80);
+      doc.text('Notes:', 15, yPos);
+      yPos += 5;
+      doc.setFont('helvetica', 'normal');
+      doc.text(splitNotes, 15, yPos);
+      yPos += splitNotes.length * 5 + 5;
+      doc.setTextColor(0, 0, 0);
+    }
+  }
+
+  // ============ FOOTER COMPACT ============
+  const footerY = pageHeight - 35;
   
-  // Ligne de séparation avec dégradé visuel
-  doc.setDrawColor(0, 122, 204);
-  doc.setLineWidth(0.8);
+  // Ligne de séparation
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
   doc.line(15, footerY, pageWidth - 15, footerY);
   
-  yPos = footerY + 6;
-  
-  // Fond légèrement coloré pour le footer
-  doc.setFillColor(248, 250, 252);
-  doc.rect(15, footerY + 1, pageWidth - 30, 38, 'F');
-  
-  doc.setFontSize(7);
-  doc.setTextColor(60, 60, 60);
-  
-  const col1X = 20;
-  const col2X = 65;
-  const col3X = 115;
-  
-  // Colonne 1: Siège social
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 122, 204);
-  doc.text('Siège social', col1X, yPos);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(60, 60, 60);
-  doc.text(invoice.company.address, col1X, yPos + 5);
-  doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, col1X, yPos + 10);
-  if (invoice.company.phone) {
-    doc.text(`Tél: ${invoice.company.phone}`, col1X, yPos + 15);
-  }
-  
-  // Colonne 2: Contact
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 122, 204);
-  doc.text('Contact', col2X, yPos);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(60, 60, 60);
-  if (invoice.company.email) {
-    doc.text(invoice.company.email, col2X, yPos + 5);
-  }
-  doc.text(`TVA: ${invoice.company.vatNumber}`, col2X, yPos + 10);
-  
-  // Colonne 3: Banque
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 122, 204);
-  doc.text('Coordonnées bancaires', col3X, yPos);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(60, 60, 60);
-  if (invoice.bankAccounts && invoice.bankAccounts.length > 0) {
-    doc.text(invoice.bankAccounts[0].bank_name, col3X, yPos + 5);
-    doc.text(invoice.bankAccounts[0].account_number, col3X, yPos + 10);
-  }
-
-  // Mention légale en bas
-  yPos = pageHeight - 8;
+  let footerTextY = footerY + 6;
   doc.setFontSize(6);
+  doc.setTextColor(100, 100, 100);
+  
+  // Ligne 1: Coordonnées
+  doc.setFont('helvetica', 'normal');
+  const footerLine1 = `${invoice.company.name} • ${invoice.company.address}, ${invoice.company.postalCode} ${invoice.company.city}`;
+  doc.text(footerLine1, pageWidth / 2, footerTextY, { align: 'center' });
+  footerTextY += 4;
+  
+  // Ligne 2: Contact et TVA
+  let footerLine2 = `TVA: ${invoice.company.vatNumber}`;
+  if (invoice.company.phone) footerLine2 += ` • Tél: ${invoice.company.phone}`;
+  if (invoice.company.email) footerLine2 += ` • ${invoice.company.email}`;
+  doc.text(footerLine2, pageWidth / 2, footerTextY, { align: 'center' });
+  footerTextY += 4;
+  
+  // Ligne 3: Banque
+  if (invoice.bankAccounts && invoice.bankAccounts.length > 0) {
+    const footerLine3 = `${invoice.bankAccounts[0].bank_name}: ${invoice.bankAccounts[0].account_number}`;
+    doc.text(footerLine3, pageWidth / 2, footerTextY, { align: 'center' });
+    footerTextY += 4;
+  }
+  
+  // Mention légale
+  doc.setFontSize(5);
   doc.setFont('helvetica', 'italic');
-  doc.setTextColor(120, 120, 120);
-  doc.text('Document à conserver 10 ans conformément à l\'Art. 315bis CIR92 - Facture générée électroniquement', pageWidth / 2, yPos, { align: 'center' });
+  doc.setTextColor(140, 140, 140);
+  doc.text("Document à conserver 10 ans - Art. 315bis CIR92", pageWidth / 2, footerTextY + 2, { align: 'center' });
 
   return doc;
 };
