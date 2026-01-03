@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split, X } from 'lucide-react';
+import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split, X, Info } from 'lucide-react';
+import { calculateBelgianRounding, formatRoundingDifference } from '@/utils/belgianRounding';
 
 type PaymentMethod = 'cash' | 'card' | 'mobile' | 'customer_credit';
 
@@ -316,93 +317,116 @@ export function PaymentDialog({
             </div>
           </div>
         ) : method === 'cash' ? (
-          <div className="space-y-2">
-            {/* MONTANT À PAYER */}
-            <Card className="bg-muted/50 border-2 p-2">
-              <div className="flex items-center gap-2 mb-1">
-                <Wallet className="h-5 w-5" />
-                <p className="text-base font-bold">Montant à payer</p>
-              </div>
-              <div className="text-3xl font-black text-center py-1">
-                {total.toFixed(2)}€
-              </div>
-            </Card>
-
-            {/* MONTANT REÇU DU CLIENT */}
-            <Card className="bg-green-500/10 border-2 border-green-500 p-2">
-              <div className="flex items-center gap-2 mb-1">
-                <HandCoins className="h-5 w-5 text-green-500" />
-                <p className="text-base font-bold">Montant reçu</p>
-              </div>
-              <div className="text-3xl font-black text-center py-1 text-green-500">
-                {amountPaid || '0.00'}€
-              </div>
-            </Card>
-
-            {/* RENDU DE MONNAIE */}
-            {amountPaid && parseFloat(amountPaid) >= total && (
-              <Card className="bg-blue-500/10 border-2 border-blue-500 p-2 animate-in">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <p className="font-bold text-base">Rendu de monnaie</p>
-                      <Badge className="bg-blue-500 text-white text-xs">À remettre au client</Badge>
+          (() => {
+            const rounding = calculateBelgianRounding(total);
+            const hasRounding = rounding.difference !== 0;
+            const roundedTotal = rounding.roundedAmount;
+            
+            return (
+              <div className="space-y-2">
+                {/* MONTANT À PAYER */}
+                <Card className="bg-muted/50 border-2 p-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Wallet className="h-5 w-5" />
+                    <p className="text-base font-bold">Montant à payer</p>
+                  </div>
+                  {hasRounding ? (
+                    <div className="text-center py-1">
+                      <div className="text-lg text-muted-foreground line-through">
+                        {total.toFixed(2)}€
+                      </div>
+                      <div className="text-3xl font-black">
+                        {roundedTotal.toFixed(2)}€
+                      </div>
+                      <Badge variant="secondary" className="mt-1">
+                        <Info className="h-3 w-3 mr-1" />
+                        Arrondi belge {formatRoundingDifference(rounding.difference)}
+                      </Badge>
                     </div>
+                  ) : (
+                    <div className="text-3xl font-black text-center py-1">
+                      {total.toFixed(2)}€
+                    </div>
+                  )}
+                </Card>
+
+                {/* MONTANT REÇU DU CLIENT */}
+                <Card className="bg-green-500/10 border-2 border-green-500 p-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <HandCoins className="h-5 w-5 text-green-500" />
+                    <p className="text-base font-bold">Montant reçu</p>
                   </div>
-                  <div className="text-3xl font-black text-blue-500">
-                    {getCashChange().toFixed(2)}€
+                  <div className="text-3xl font-black text-center py-1 text-green-500">
+                    {amountPaid || '0.00'}€
                   </div>
+                </Card>
+
+                {/* RENDU DE MONNAIE */}
+                {amountPaid && parseFloat(amountPaid) >= roundedTotal && (
+                  <Card className="bg-blue-500/10 border-2 border-blue-500 p-2 animate-in">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <p className="font-bold text-base">Rendu de monnaie</p>
+                          <Badge className="bg-blue-500 text-white text-xs">À remettre au client</Badge>
+                        </div>
+                      </div>
+                      <div className="text-3xl font-black text-blue-500">
+                        {(parseFloat(amountPaid) - roundedTotal).toFixed(2)}€
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                {suggestedAmounts.length > 0 && (
+                  <div className="grid grid-cols-6 gap-1">
+                    {suggestedAmounts.map((amount) => (
+                      <Button
+                        key={amount}
+                        onClick={() => setAmountPaid(amount.toFixed(2))}
+                        variant="outline"
+                        className="h-9 text-sm font-bold"
+                      >
+                        {amount}€
+                      </Button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-3 gap-1">
+                  {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
+                    <Button
+                      key={key}
+                      onClick={() => handleNumberClick(key)}
+                      variant="outline"
+                      className="h-11 text-lg font-bold"
+                    >
+                      {key}
+                    </Button>
+                  ))}
                 </div>
-              </Card>
-            )}
 
-            {suggestedAmounts.length > 0 && (
-              <div className="grid grid-cols-6 gap-1">
-                {suggestedAmounts.map((amount) => (
-                  <Button
-                    key={amount}
-                    onClick={() => setAmountPaid(amount.toFixed(2))}
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleBack} 
                     variant="outline"
-                    className="h-9 text-sm font-bold"
+                    className="flex-1 h-10"
                   >
-                    {amount}€
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Retour
                   </Button>
-                ))}
+                  <Button
+                    onClick={handleConfirm}
+                    disabled={!amountPaid || parseFloat(amountPaid) < roundedTotal}
+                    className="flex-1 h-10 font-bold text-base"
+                  >
+                    Valider
+                  </Button>
+                </div>
               </div>
-            )}
-
-            <div className="grid grid-cols-3 gap-1">
-              {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
-                <Button
-                  key={key}
-                  onClick={() => handleNumberClick(key)}
-                  variant="outline"
-                  className="h-11 text-lg font-bold"
-                >
-                  {key}
-                </Button>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleBack} 
-                variant="outline"
-                className="flex-1 h-10"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Retour
-              </Button>
-              <Button
-                onClick={handleConfirm}
-                disabled={!amountPaid || parseFloat(amountPaid) < total}
-                className="flex-1 h-10 font-bold text-base"
-              >
-                Valider
-              </Button>
-            </div>
-          </div>
+            );
+          })()
         ) : (
           <div className="space-y-4 py-4">
             <Card className="p-6 text-center bg-muted/50 border-2">

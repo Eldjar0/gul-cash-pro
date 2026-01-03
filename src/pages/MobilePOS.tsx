@@ -13,7 +13,7 @@ import {
   Search, ShoppingCart, Plus, Minus, X, CreditCard, Banknote, Smartphone, 
   Scan, Package, User, FileText, Percent, Gift, Grid3X3, DollarSign,
   Save, FolderOpen, Calculator, Clock, Euro, Wallet, Tag, RefreshCw,
-  CalendarX, Calendar, FileSpreadsheet, Eye, Trash2
+  CalendarX, Calendar, FileSpreadsheet, Eye, Trash2, QrCode
 } from 'lucide-react';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
@@ -36,6 +36,8 @@ import { CloseDayDialog } from '@/components/pos/CloseDayDialog';
 import { ReportXDialog } from '@/components/pos/ReportXDialog';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { Receipt } from '@/components/pos/Receipt';
+import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
+import { PriceEditDialog } from '@/components/pos/PriceEditDialog';
 import { useTodayReport } from '@/hooks/useDailyReports';
 import { getSpecialPriceForCustomer } from '@/hooks/useCustomerSpecialPrices';
 import { useActivePromotions, calculateDiscount } from '@/hooks/usePromotions';
@@ -96,6 +98,7 @@ export default function MobilePOS() {
   const [quantityDialogOpen, setQuantityDialogOpen] = useState(false);
   const [priceDialogOpen, setPriceDialogOpen] = useState(false);
   const [customerSearchOpen, setCustomerSearchOpen] = useState(false);
+  const [remoteScanDialogOpen, setRemoteScanDialogOpen] = useState(false);
   
   // États temporaires
   const [discountTarget, setDiscountTarget] = useState<{ type: 'item' | 'global', index?: number } | null>(null);
@@ -664,6 +667,14 @@ export default function MobilePOS() {
                 >
                   <Scan className="h-4 w-4" />
                 </Button>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={() => setRemoteScanDialogOpen(true)}
+                  title="QR Scan Mobile"
+                >
+                  <QrCode className="h-4 w-4" />
+                </Button>
               </div>
 
               {/* Catégories */}
@@ -821,15 +832,15 @@ export default function MobilePOS() {
 
                       <div className="flex items-center gap-2">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          className="h-7 px-2"
+                          className="h-7 px-2 gap-1"
                           onClick={() => {
                             setEditingItemIndex(index);
-                            setTempPrice((item.custom_price ?? item.product.price).toString());
                             setPriceDialogOpen(true);
                           }}
                         >
+                          <Euro className="h-3 w-3" />
                           {(item.custom_price ?? item.product.price).toFixed(2)}€
                         </Button>
                         <span className="text-sm font-bold">=</span>
@@ -1144,45 +1155,26 @@ export default function MobilePOS() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog prix */}
-      <Dialog open={priceDialogOpen} onOpenChange={setPriceDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Modifier le prix</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              type="number"
-              step="0.01"
-              value={tempPrice}
-              onChange={(e) => setTempPrice(e.target.value)}
-              autoFocus
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPriceDialogOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={() => {
-              if (editingItemIndex !== null) {
-                const newPrice = parseFloat(tempPrice);
-                if (!isNaN(newPrice) && newPrice >= 0) {
-                  setCart(prev => {
-                    const newCart = [...prev];
-                    const item = newCart[editingItemIndex];
-                    const totals = calculateItemTotal(item.product, item.quantity, item.discount, newPrice, item.is_gift);
-                    newCart[editingItemIndex] = { ...item, custom_price: newPrice, ...totals };
-                    return newCart;
-                  });
-                }
-              }
-              setPriceDialogOpen(false);
-            }}>
-              Valider
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Dialog prix avec HTVA/TVAC */}
+      <PriceEditDialog
+        open={priceDialogOpen}
+        onOpenChange={setPriceDialogOpen}
+        currentPrice={editingItemIndex !== null ? (cart[editingItemIndex]?.custom_price ?? cart[editingItemIndex]?.product.price ?? 0) : 0}
+        vatRate={editingItemIndex !== null ? (cart[editingItemIndex]?.product.vat_rate ?? 21) : 21}
+        productName={editingItemIndex !== null ? (cart[editingItemIndex]?.product.name ?? '') : ''}
+        onConfirm={(newPrice) => {
+          if (editingItemIndex !== null) {
+            setCart(prev => {
+              const newCart = [...prev];
+              const item = newCart[editingItemIndex];
+              const totals = calculateItemTotal(item.product, item.quantity, item.discount, newPrice, item.is_gift);
+              newCart[editingItemIndex] = { ...item, custom_price: newPrice, ...totals };
+              return newCart;
+            });
+            toast.success('Prix modifié');
+          }
+        }}
+      />
 
       {/* Scanner */}
       <MobileBarcodeScanner
@@ -1324,6 +1316,12 @@ export default function MobilePOS() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* QR Code Scan Mobile */}
+      <RemoteScanDialog
+        open={remoteScanDialogOpen}
+        onOpenChange={setRemoteScanDialogOpen}
+      />
     </MobileLayout>
   );
 }
