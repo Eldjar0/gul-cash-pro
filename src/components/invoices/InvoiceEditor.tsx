@@ -837,58 +837,127 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                           )}
                         </div>
 
-                        <Separator />
+                        <Separator className="my-6" />
 
-                        {/* Totals Section */}
-                        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-5 border-2 border-primary/20">
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-muted-foreground">Total HT:</span>
-                              <span className="text-base font-bold">{calculateSubtotal().toFixed(2)}€</span>
+                        {/* Récapitulatif TVA par taux - Tableau détaillé */}
+                        <div className="bg-gradient-to-br from-muted/30 to-muted/50 rounded-xl p-5 border border-muted-foreground/20">
+                          <h4 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                            <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs">RÉCAPITULATIF TVA</span>
+                          </h4>
+                          <div className="overflow-hidden rounded-lg border border-muted-foreground/20">
+                            <table className="w-full text-sm">
+                              <thead className="bg-muted/80">
+                                <tr>
+                                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Taux</th>
+                                  <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Base HT</th>
+                                  <th className="text-right px-3 py-2 font-semibold text-muted-foreground">TVA</th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white">
+                                {Object.entries(calculateVatByRate()).map(([rate, amounts], idx, arr) => (
+                                  <tr key={rate} className={idx < arr.length - 1 ? "border-b border-muted/50" : ""}>
+                                    <td className="px-3 py-2">
+                                      <Badge variant="outline" className="font-mono">{rate}%</Badge>
+                                    </td>
+                                    <td className="text-right px-3 py-2 font-medium">{amounts.base.toFixed(2)}€</td>
+                                    <td className="text-right px-3 py-2 font-bold text-accent">{amounts.vat.toFixed(2)}€</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        {/* Totals Section - Plus détaillé */}
+                        <div className="bg-gradient-to-br from-primary/5 to-primary/15 rounded-xl p-6 border-2 border-primary/30 shadow-lg">
+                          <div className="space-y-4">
+                            {/* Sous-total HT */}
+                            <div className="flex justify-between items-center pb-3 border-b border-primary/20">
+                              <span className="text-base font-semibold text-muted-foreground">Sous-total HT</span>
+                              <span className="text-xl font-bold">{calculateSubtotal().toFixed(2)}€</span>
                             </div>
                             
-                            {Object.entries(calculateVatByRate()).map(([rate, amounts]) => (
-                              <div key={rate} className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-muted-foreground">TVA {rate}%:</span>
-                                <span className="text-base font-semibold text-accent">{amounts.vat.toFixed(2)}€</span>
-                              </div>
-                            ))}
+                            {/* Détail TVA par taux */}
+                            <div className="space-y-2">
+                              {Object.entries(calculateVatByRate()).map(([rate, amounts]) => (
+                                <div key={rate} className="flex justify-between items-center bg-white/50 rounded-lg px-4 py-2">
+                                  <div className="flex items-center gap-3">
+                                    <Badge className="bg-accent/20 text-accent border-accent/30 font-mono">{rate}%</Badge>
+                                    <span className="text-sm text-muted-foreground">sur {amounts.base.toFixed(2)}€</span>
+                                  </div>
+                                  <span className="text-base font-bold text-accent">+{amounts.vat.toFixed(2)}€</span>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Total TVA */}
+                            <div className="flex justify-between items-center pt-3 border-t border-primary/20">
+                              <span className="text-base font-semibold text-muted-foreground">Total TVA</span>
+                              <span className="text-xl font-bold text-accent">{calculateTotalVat().toFixed(2)}€</span>
+                            </div>
                             
-                            <Separator className="bg-primary/20" />
-                            
-                            <div className="flex justify-between items-center bg-primary text-white rounded-lg p-4 shadow-lg">
-                              <div className="flex items-center gap-2">
-                                <Euro className="h-6 w-6" />
-                                <span className="text-lg font-bold">Total TTC:</span>
+                            {/* Total TTC - Mis en avant */}
+                            <div className="flex justify-between items-center bg-primary text-white rounded-xl p-5 shadow-xl mt-4">
+                              <div className="flex items-center gap-3">
+                                <div className="bg-white/20 p-2 rounded-lg">
+                                  <Euro className="h-7 w-7" />
+                                </div>
+                                <div>
+                                  <div className="text-xs text-white/80 uppercase tracking-wide">Montant à payer</div>
+                                  <span className="text-xl font-bold">Total TTC</span>
+                                </div>
                               </div>
-                              <span className="text-2xl font-bold">{calculateTotal().toFixed(2)}€</span>
+                              <span className="text-3xl font-black">{calculateTotal().toFixed(2)}€</span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Notes Section */}
-                        {notes && (
-                          <>
-                            <Separator />
-                            <div className="bg-primary/5 rounded-xl p-5 border border-primary/20">
-                              <div className="flex items-center gap-2 mb-2">
-                                <FileText className="h-4 w-4 text-primary" />
-                                <h4 className="text-sm font-bold text-primary">Notes</h4>
+                        {/* Conditions de paiement */}
+                        <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Calendar className="h-4 w-4 text-amber-600" />
+                            <h4 className="text-sm font-bold text-amber-800">Conditions de paiement</h4>
+                          </div>
+                          <p className="text-sm text-amber-700">{getPaymentConditions()}</p>
+                        </div>
+
+                        {/* Coordonnées bancaires */}
+                        {settings.bank_iban && (
+                          <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                            <h4 className="text-sm font-bold text-blue-800 mb-3">Coordonnées bancaires</h4>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <div className="text-xs text-blue-600 font-medium">IBAN</div>
+                                <div className="font-mono font-bold text-blue-900">{settings.bank_iban}</div>
                               </div>
-                              <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{notes}</p>
+                              {settings.bank_bic && (
+                                <div>
+                                  <div className="text-xs text-blue-600 font-medium">BIC</div>
+                                  <div className="font-mono font-bold text-blue-900">{settings.bank_bic}</div>
+                                </div>
+                              )}
                             </div>
-                          </>
+                          </div>
                         )}
 
                         {/* Communication structurée */}
                         {structuredCommunication && (
-                          <>
-                            <Separator />
-                            <div className="bg-primary/10 rounded-xl p-4 border border-primary/30 text-center">
-                              <div className="text-xs font-semibold text-primary mb-1">Communication structurée</div>
-                              <div className="text-lg font-mono font-bold text-primary">{structuredCommunication}</div>
+                          <div className="bg-gradient-to-r from-primary/10 via-primary/20 to-primary/10 rounded-xl p-5 border-2 border-primary/30 text-center">
+                            <div className="text-xs font-semibold text-primary mb-2 uppercase tracking-wide">Communication structurée</div>
+                            <div className="text-2xl font-mono font-black text-primary tracking-wider">{structuredCommunication}</div>
+                            <div className="text-xs text-muted-foreground mt-2">À mentionner lors du paiement</div>
+                          </div>
+                        )}
+
+                        {/* Notes Section */}
+                        {notes && (
+                          <div className="bg-muted/30 rounded-xl p-5 border border-muted-foreground/20">
+                            <div className="flex items-center gap-2 mb-3">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <h4 className="text-sm font-bold text-foreground">Notes & Remarques</h4>
                             </div>
-                          </>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed bg-white/50 p-3 rounded-lg">{notes}</p>
+                          </div>
                         )}
                       </div>
                     </Card>
