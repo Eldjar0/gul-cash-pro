@@ -1120,7 +1120,8 @@ const Index = () => {
         amountPaid: amountPaid || totals.total,
         change: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
         is_invoice: method === 'customer_credit' ? false : finalIsInvoiceMode, // Crédit = toujours ticket
-        customer: selectedCustomer
+        customer: selectedCustomer,
+        belgian_rounding: method === 'cash' ? (metadata?.belgianRounding || 0) : undefined
       };
       setCurrentSale(saleForReceipt);
 

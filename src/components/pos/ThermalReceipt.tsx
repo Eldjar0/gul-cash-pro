@@ -52,6 +52,7 @@ interface Sale {
   is_invoice?: boolean;
   is_cancelled?: boolean;
   customer?: Customer;
+  belgian_rounding?: number;
 }
 
 interface ThermalReceiptProps {
@@ -366,6 +367,24 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           <span>TOTAL</span>
           <span style={{ whiteSpace: 'nowrap' }}>{sale.total.toFixed(2)}€</span>
         </div>
+        {/* Arrondi belge - Obligation légale Belgique */}
+        {sale.belgian_rounding !== undefined && sale.belgian_rounding !== 0 && (
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            fontSize: '11px', 
+            fontWeight: '800', 
+            paddingRight: '24px',
+            marginTop: '4px',
+            color: '#666',
+            fontStyle: 'italic'
+          }}>
+            <span>Arrondi belge</span>
+            <span style={{ whiteSpace: 'nowrap' }}>
+              {sale.belgian_rounding > 0 ? '+' : ''}{sale.belgian_rounding.toFixed(2)}€
+            </span>
+          </div>
+        )}
       </div>
       
       <div style={{ borderTop: '1px solid #000', margin: '4px 0' }}></div>

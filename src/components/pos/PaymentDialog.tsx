@@ -61,7 +61,13 @@ export function PaymentDialog({
   const handleConfirm = () => {
     if (method) {
       const paid = parseFloat(amountPaid) || total;
-      onConfirmPayment(method, method === 'cash' ? paid : undefined);
+      // Pour les paiements en espèces, calculer l'arrondi belge
+      let metadata: any = undefined;
+      if (method === 'cash') {
+        const rounding = calculateBelgianRounding(total);
+        metadata = { belgianRounding: rounding.difference };
+      }
+      onConfirmPayment(method, method === 'cash' ? paid : undefined, metadata);
       setMethod(null);
       setAmountPaid('');
     }
