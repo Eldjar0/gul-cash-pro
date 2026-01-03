@@ -10,8 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Save, X, Plus, Trash2, Search, Check, FileText, User, Calendar, Euro, ShoppingCart, ToggleLeft, ToggleRight } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Save, X, Plus, Trash2, Search, Check, FileText, User, Calendar, Euro, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useCustomers } from '@/hooks/useCustomers';
@@ -71,12 +70,9 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   
   const [notes, setNotes] = useState('');
   
-  // Terminologie prix: TTC (France) ou TVAC (Belgique)
-  const [priceTerminology, setPriceTerminology] = useState<'TTC' | 'TVAC'>('TVAC');
-  
-  // Helper pour afficher le bon terme
-  const labelTTC = priceTerminology;
-  const labelHT = priceTerminology === 'TTC' ? 'HT' : 'HTVA';
+  // Terminologie belge: HTVA (hors TVA) et TVAC (TVA comprise)
+  const labelHT = 'HTVA';
+  const labelTTC = 'TVAC';
 
   useEffect(() => {
     if (open && !invoiceId) {
@@ -617,21 +613,10 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         <Label className="font-bold text-primary">Articles</Label>
                         <Badge variant="secondary" className="text-xs">{items.length}</Badge>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Select value={priceTerminology} onValueChange={(v) => setPriceTerminology(v as 'TTC' | 'TVAC')}>
-                          <SelectTrigger className="w-20 h-8 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="TTC">TTC</SelectItem>
-                            <SelectItem value="TVAC">TVAC</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button size="sm" onClick={addItem} className="h-8">
-                          <Plus className="h-3 w-3 mr-1" />
-                          Ajouter
-                        </Button>
-                      </div>
+                      <Button size="sm" onClick={addItem} className="h-8">
+                        <Plus className="h-3 w-3 mr-1" />
+                        Ajouter
+                      </Button>
                     </div>
 
                     <div className="space-y-3">
@@ -725,19 +710,6 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               <h2 className="text-2xl font-bold">Aperçu Facture</h2>
                               <p className="text-sm text-white/90">Prévisualisation en temps réel</p>
                             </div>
-                          </div>
-                          {/* Sélecteur TTC/TVAC */}
-                          <div className="flex items-center gap-2 bg-white/20 rounded-lg p-2 backdrop-blur-sm">
-                            <span className="text-xs font-medium">Format prix:</span>
-                            <Select value={priceTerminology} onValueChange={(v) => setPriceTerminology(v as 'TTC' | 'TVAC')}>
-                              <SelectTrigger className="w-24 h-8 bg-white text-primary border-0 font-bold">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="TTC">TTC</SelectItem>
-                                <SelectItem value="TVAC">TVAC</SelectItem>
-                              </SelectContent>
-                            </Select>
                           </div>
                         </div>
                       </div>
