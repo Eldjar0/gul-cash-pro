@@ -332,59 +332,111 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     yPos += splitNotes.length * 5 + 5;
   }
 
-  // ============ FOOTER ============
-  const footerY = pageHeight - 40;
+  // ============ QR CODE PAIEMENT ============
+  if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
+    const account = invoice.bankAccounts[0];
+    
+    // Format EPC QR Code (European Payments Council) pour virement SEPA
+    const epcData = [
+      'BCD',                                    // Service Tag
+      '002',                                    // Version
+      '1',                                      // Character set (UTF-8)
+      'SCT',                                    // Identification (SEPA Credit Transfer)
+      '',                                       // BIC (optional)
+      invoice.company.name.substring(0, 70),   // Beneficiary name (max 70 chars)
+      account.account_number.replace(/\s/g, ''), // IBAN
+      `EUR${invoice.total.toFixed(2)}`,        // Amount
+      '',                                       // Purpose code (optional)
+      invoice.structuredCommunication || invoice.saleNumber, // Reference
+      '',                                       // Unstructured reference
+      ''                                        // Information
+    ].join('\n');
+    
+    try {
+      const qrCodeDataUrl = await QRCode.toDataURL(epcData, {
+        width: 80,
+        margin: 1,
+        color: { dark: '#000000', light: '#ffffff' }
+      });
+      
+      // Position du QR code en bas à droite
+      const qrSize = 28;
+      const qrX = pageWidth - 15 - qrSize;
+      const qrY = pageHeight - 55;
+      
+      doc.addImage(qrCodeDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+      
+      // Label sous le QR code
+      doc.setFontSize(6);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text('Scanner pour payer', qrX + qrSize / 2, qrY + qrSize + 3, { align: 'center' });
+    } catch (error) {
+      console.error('Erreur génération QR code:', error);
+    }
+  }
+
+  // ============ FOOTER AMÉLIORÉ ============
+  const footerY = pageHeight - 52;
   
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.5);
+  // Ligne de séparation avec dégradé visuel
+  doc.setDrawColor(0, 122, 204);
+  doc.setLineWidth(0.8);
   doc.line(15, footerY, pageWidth - 15, footerY);
   
-  yPos = footerY + 5;
+  yPos = footerY + 6;
+  
+  // Fond légèrement coloré pour le footer
+  doc.setFillColor(248, 250, 252);
+  doc.rect(15, footerY + 1, pageWidth - 30, 38, 'F');
+  
   doc.setFontSize(7);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(100, 100, 100);
+  doc.setTextColor(60, 60, 60);
   
   const col1X = 20;
-  const col2X = 70;
-  const col3X = 120;
-  const col4X = 160;
+  const col2X = 65;
+  const col3X = 115;
   
-  // Siège social
+  // Colonne 1: Siège social
   doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 122, 204);
   doc.text('Siège social', col1X, yPos);
   doc.setFont('helvetica', 'normal');
-  doc.text(invoice.company.address, col1X, yPos + 4);
-  doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, col1X, yPos + 8);
-  
-  // Adresse magasin
-  doc.setFont('helvetica', 'bold');
-  doc.text('Adresse magasin', col2X, yPos);
-  doc.setFont('helvetica', 'normal');
-  doc.text(invoice.company.address, col2X, yPos + 4);
-  doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, col2X, yPos + 8);
-  
-  // Compte bancaire
-  doc.setFont('helvetica', 'bold');
-  doc.text('Compte bancaire', col3X, yPos);
-  doc.setFont('helvetica', 'normal');
-  if (invoice.bankAccounts && invoice.bankAccounts.length > 0) {
-    doc.text(invoice.bankAccounts[0].account_number, col3X, yPos + 4);
-  } else {
-    doc.text('BE00 0000 0000 0000', col3X, yPos + 4);
+  doc.setTextColor(60, 60, 60);
+  doc.text(invoice.company.address, col1X, yPos + 5);
+  doc.text(`${invoice.company.postalCode} ${invoice.company.city}`, col1X, yPos + 10);
+  if (invoice.company.phone) {
+    doc.text(`Tél: ${invoice.company.phone}`, col1X, yPos + 15);
   }
   
-  // TVA
+  // Colonne 2: Contact
   doc.setFont('helvetica', 'bold');
-  doc.text('TVA', col4X, yPos);
+  doc.setTextColor(0, 122, 204);
+  doc.text('Contact', col2X, yPos);
   doc.setFont('helvetica', 'normal');
-  doc.text(invoice.company.vatNumber, col4X, yPos + 4);
+  doc.setTextColor(60, 60, 60);
+  if (invoice.company.email) {
+    doc.text(invoice.company.email, col2X, yPos + 5);
+  }
+  doc.text(`TVA: ${invoice.company.vatNumber}`, col2X, yPos + 10);
+  
+  // Colonne 3: Banque
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 122, 204);
+  doc.text('Coordonnées bancaires', col3X, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  if (invoice.bankAccounts && invoice.bankAccounts.length > 0) {
+    doc.text(invoice.bankAccounts[0].bank_name, col3X, yPos + 5);
+    doc.text(invoice.bankAccounts[0].account_number, col3X, yPos + 10);
+  }
 
-  // Footer avec mention légale
-  yPos = pageHeight - 10;
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(100, 100, 100);
-  doc.text('Document à conserver 10 ans - Art. 315bis CIR92', pageWidth / 2, yPos, { align: 'center' });
+  // Mention légale en bas
+  yPos = pageHeight - 8;
+  doc.setFontSize(6);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(120, 120, 120);
+  doc.text('Document à conserver 10 ans conformément à l\'Art. 315bis CIR92 - Facture générée électroniquement', pageWidth / 2, yPos, { align: 'center' });
 
   return doc;
 };
