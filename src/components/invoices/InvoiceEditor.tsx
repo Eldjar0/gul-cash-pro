@@ -35,6 +35,7 @@ interface InvoiceItem {
   description: string;
   quantity: number;
   unitPrice: number;
+  unitPriceTVAC: number; // Prix TVAC pour édition directe
   vatRate: number;
 }
 
@@ -65,7 +66,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   
   // Items
   const [items, setItems] = useState<InvoiceItem[]>([
-    { description: '', quantity: 1, unitPrice: 0, vatRate: 21 }
+    { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21 }
   ]);
   
   const [notes, setNotes] = useState('');
@@ -86,7 +87,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       setClientCity('');
       setClientPostalCode('');
       setClientVatNumber('');
-      setItems([{ description: '', quantity: 1, unitPrice: 0, vatRate: 21 }]);
+      setItems([{ description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21 }]);
       setNotes('');
     } else if (open && invoiceId) {
       loadInvoice(invoiceId);
@@ -172,13 +173,19 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       }
 
       if (data.sale_items) {
-        setItems(data.sale_items.map((item: any) => ({
-          id: item.id,
-          description: item.product_name,
-          quantity: item.quantity,
-          unitPrice: item.unit_price,
-          vatRate: item.vat_rate,
-        })));
+        setItems(data.sale_items.map((item: any) => {
+          const unitPrice = item.unit_price;
+          const vatRate = item.vat_rate;
+          const unitPriceTVAC = unitPrice * (1 + vatRate / 100);
+          return {
+            id: item.id,
+            description: item.product_name,
+            quantity: item.quantity,
+            unitPrice,
+            unitPriceTVAC: Math.round(unitPriceTVAC * 100) / 100,
+            vatRate,
+          };
+        }));
       }
     } catch (error) {
       console.error('Error loading invoice:', error);
@@ -210,10 +217,12 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       }
     }
     
+    const unitPriceTVAC = finalPrice * (1 + product.vat_rate / 100);
     newItems[index] = {
       ...newItems[index],
       description: product.name,
       unitPrice: finalPrice,
+      unitPriceTVAC: Math.round(unitPriceTVAC * 100) / 100,
       vatRate: product.vat_rate,
     };
     setItems(newItems);
@@ -222,31 +231,50 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   };
 
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, unitPrice: 0, vatRate: 21 }]);
+    setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21 }]);
   };
 
   const removeItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index));
   };
 
-  const updateItem = (index: number, field: keyof InvoiceItem, value: any) => {
+  // Mise à jour du prix HTVA et recalcul du TVAC
+  const updateItemHTVA = (index: number, priceHTVA: number) => {
     const newItems = [...items];
-    newItems[index] = { ...newItems[index], [field]: value };
+    const vatRate = newItems[index].vatRate;
+    const priceTVAC = priceHTVA * (1 + vatRate / 100);
+    newItems[index] = { 
+      ...newItems[index], 
+      unitPrice: priceHTVA,
+      unitPriceTVAC: Math.round(priceTVAC * 100) / 100
+    };
     setItems(newItems);
   };
 
-  // Mise à jour du prix HTVA à partir du prix TVAC
-  const updateItemFromTVAC = (index: number, priceTVAC: number) => {
+  // Mise à jour du prix TVAC et recalcul du HTVA
+  const updateItemTVAC = (index: number, priceTVAC: number) => {
     const newItems = [...items];
     const vatRate = newItems[index].vatRate;
     const priceHTVA = priceTVAC / (1 + vatRate / 100);
-    newItems[index] = { ...newItems[index], unitPrice: Math.round(priceHTVA * 100) / 100 };
+    newItems[index] = { 
+      ...newItems[index], 
+      unitPrice: Math.round(priceHTVA * 100) / 100,
+      unitPriceTVAC: priceTVAC
+    };
     setItems(newItems);
   };
 
-  // Calcul du prix TVAC à partir du prix HTVA
-  const calculatePriceTVAC = (item: InvoiceItem) => {
-    return item.unitPrice * (1 + item.vatRate / 100);
+  // Mise à jour du taux TVA et recalcul du prix TVAC
+  const updateItemVatRate = (index: number, newVatRate: number) => {
+    const newItems = [...items];
+    const unitPrice = newItems[index].unitPrice;
+    const priceTVAC = unitPrice * (1 + newVatRate / 100);
+    newItems[index] = { 
+      ...newItems[index], 
+      vatRate: newVatRate,
+      unitPriceTVAC: Math.round(priceTVAC * 100) / 100
+    };
+    setItems(newItems);
   };
 
   const calculateItemTotal = (item: InvoiceItem) => {
@@ -670,24 +698,32 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                                 </Command>
                               </PopoverContent>
                             </Popover>
-                            <Input placeholder="Description" value={item.description} onChange={(e) => updateItem(index, 'description', e.target.value)} className="h-9 text-sm flex-1" />
+                            <Input placeholder="Description" value={item.description} onChange={(e) => {
+                              const newItems = [...items];
+                              newItems[index] = { ...newItems[index], description: e.target.value };
+                              setItems(newItems);
+                            }} className="h-9 text-sm flex-1" />
                           </div>
                           <div className="grid grid-cols-5 gap-2">
                             <div>
                               <Label className="text-xs text-muted-foreground">Qté</Label>
-                              <Input type="number" min="0" step="0.01" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)} className="h-8 text-sm text-center" />
+                              <Input type="number" min="0" step="0.01" value={item.quantity} onChange={(e) => {
+                                const newItems = [...items];
+                                newItems[index] = { ...newItems[index], quantity: parseFloat(e.target.value) || 0 };
+                                setItems(newItems);
+                              }} className="h-8 text-sm text-center" />
                             </div>
                             <div>
                               <Label className="text-xs text-muted-foreground">Prix {labelHT}</Label>
-                              <Input type="number" min="0" step="0.01" value={item.unitPrice} onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)} className="h-8 text-sm text-right" />
+                              <Input type="number" min="0" step="0.01" value={item.unitPrice} onChange={(e) => updateItemHTVA(index, parseFloat(e.target.value) || 0)} className="h-8 text-sm text-right" />
                             </div>
                             <div>
                               <Label className="text-xs text-muted-foreground">Prix {labelTTC}</Label>
-                              <Input type="number" min="0" step="0.01" value={calculatePriceTVAC(item).toFixed(2)} onChange={(e) => updateItemFromTVAC(index, parseFloat(e.target.value) || 0)} className="h-8 text-sm text-right" />
+                              <Input type="number" min="0" step="0.01" value={item.unitPriceTVAC} onChange={(e) => updateItemTVAC(index, parseFloat(e.target.value) || 0)} className="h-8 text-sm text-right" />
                             </div>
                             <div>
                               <Label className="text-xs text-muted-foreground">TVA %</Label>
-                              <Input type="number" min="0" step="0.01" value={item.vatRate} onChange={(e) => updateItem(index, 'vatRate', parseFloat(e.target.value) || 0)} className="h-8 text-sm text-center" />
+                              <Input type="number" min="0" step="0.01" value={item.vatRate} onChange={(e) => updateItemVatRate(index, parseFloat(e.target.value) || 0)} className="h-8 text-sm text-center" />
                             </div>
                             <div>
                               <Label className="text-xs text-muted-foreground">Total {labelTTC}</Label>
