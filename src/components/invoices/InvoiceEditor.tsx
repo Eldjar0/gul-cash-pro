@@ -690,32 +690,35 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                 </div>
               </ScrollArea>
 
-              {/* Right: Preview (identical to InvoiceCreate) */}
+              {/* Right: Preview - Identique à InvoiceCreate */}
               <div className="hidden lg:block border-l bg-white">
                 <ScrollArea className="h-[calc(95vh-100px)]">
                   <div className="p-6">
-                    <Card className="bg-white shadow-xl border-2 border-primary/20 overflow-hidden">
+                    <Card className="bg-white shadow-2xl border-2 border-primary/20 overflow-hidden">
                       {/* Preview Header */}
-                      <div className="bg-gradient-to-r from-primary via-primary-glow to-primary p-5 text-white">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-white/20 rounded-lg">
-                            <FileText className="h-6 w-6" />
-                          </div>
-                          <div>
-                            <h2 className="text-xl font-bold">Aperçu Facture</h2>
-                            <p className="text-sm text-white/90">Prévisualisation en temps réel</p>
+                      <div className="bg-gradient-to-r from-primary via-primary-glow to-primary p-6 text-white">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                              <FileText className="h-7 w-7" />
+                            </div>
+                            <div>
+                              <h2 className="text-2xl font-bold">Aperçu Facture</h2>
+                              <p className="text-sm text-white/90">Prévisualisation en temps réel</p>
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="p-5 space-y-5">
+                      <div className="p-6 space-y-6">
                         {/* Company Header */}
-                        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20">
-                          <div className="text-lg font-bold text-primary mb-1">{settings.name}</div>
-                          <div className="space-y-0.5 text-sm text-muted-foreground">
+                        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-5 border-2 border-primary/20">
+                          <div className="text-xl font-bold text-primary mb-2">{settings.name}</div>
+                          <div className="space-y-1 text-sm text-muted-foreground">
                             <div>{settings.address}</div>
                             <div>{settings.postal_code} {settings.city}</div>
                             <div className="font-semibold text-foreground">TVA: {settings.vat_number}</div>
+                            {settings.phone && <div>Tél: {settings.phone}</div>}
                           </div>
                         </div>
 
@@ -726,13 +729,15 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               <Calendar className="h-4 w-4" />
                               <span>{format(new Date(invoiceDate), 'dd MMMM yyyy', { locale: fr })}</span>
                             </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-sm text-muted-foreground">
                               Échéance: {format(new Date(dueDate), 'dd/MM/yyyy', { locale: fr })}
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-2xl font-bold text-primary mb-1">FACTURE</div>
-                            <Badge variant="outline" className="font-mono text-xs">{invoiceNumber}</Badge>
+                            <div className="text-3xl font-bold text-primary mb-1">FACTURE</div>
+                            <Badge variant="outline" className="font-mono">
+                              N° {invoiceNumber}
+                            </Badge>
                           </div>
                         </div>
 
@@ -740,22 +745,30 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
                         {/* Customer Section */}
                         {clientName ? (
-                          <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
-                            <div className="flex items-center gap-2 text-xs font-semibold text-primary mb-2">
-                              <User className="h-3 w-3" />
+                          <div className="bg-primary/5 rounded-xl p-5 border-2 border-primary/20">
+                            <div className="flex items-center gap-2 text-sm font-semibold text-primary mb-3">
+                              <User className="h-4 w-4" />
                               FACTURÉ À
                             </div>
-                            <div className="space-y-0.5">
-                              <div className="font-bold">{clientName}</div>
-                              {clientVatNumber && <div className="text-sm text-muted-foreground">N° TVA: {clientVatNumber}</div>}
-                              {clientAddress && <div className="text-sm text-muted-foreground">{clientAddress}</div>}
-                              {clientCity && <div className="text-sm text-muted-foreground">{clientPostalCode} {clientCity}</div>}
+                            <div className="space-y-1">
+                              <div className="font-bold text-lg">{clientName}</div>
+                              {clientVatNumber && (
+                                <div className="text-sm text-muted-foreground">N° TVA: {clientVatNumber}</div>
+                              )}
+                              {clientAddress && (
+                                <div className="text-sm text-muted-foreground">{clientAddress}</div>
+                              )}
+                              {clientCity && (
+                                <div className="text-sm text-muted-foreground">
+                                  {clientPostalCode} {clientCity}
+                                </div>
+                              )}
                             </div>
                           </div>
                         ) : (
-                          <div className="bg-muted/50 rounded-xl p-4 border-2 border-dashed border-muted-foreground/20 text-center">
-                            <User className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
-                            <p className="text-xs text-muted-foreground">Aucun client sélectionné</p>
+                          <div className="bg-muted/50 rounded-xl p-5 border-2 border-dashed border-muted-foreground/20 text-center">
+                            <User className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                            <p className="text-sm text-muted-foreground">Aucun client sélectionné</p>
                           </div>
                         )}
 
@@ -763,40 +776,62 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
                         {/* Items Section */}
                         <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <ShoppingCart className="h-4 w-4 text-primary" />
-                            <h3 className="font-bold text-primary">Articles</h3>
-                            <Badge variant="secondary" className="text-xs">{items.length}</Badge>
+                          <div className="flex items-center gap-2 mb-4">
+                            <ShoppingCart className="h-5 w-5 text-primary" />
+                            <h3 className="text-lg font-bold text-primary">Articles</h3>
+                            <Badge variant="secondary">{items.length}</Badge>
                           </div>
                           
                           {items.length > 0 && items[0].description ? (
-                            <div className="space-y-2">
-                              {items.map((item, index) => (
-                                <div key={index} className="border rounded-lg p-3 bg-gradient-to-br from-white to-gray-50">
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <Badge variant="outline" className="text-xs">#{index + 1}</Badge>
-                                        <span className="font-medium text-sm">{item.description || 'Article sans nom'}</span>
+                            <div className="space-y-3">
+                              {items.map((item, index) => {
+                                const itemSubtotal = item.quantity * item.unitPrice;
+                                const itemVat = itemSubtotal * (item.vatRate / 100);
+                                const itemTotal = itemSubtotal + itemVat;
+                                return (
+                                  <div key={index} className="border-2 rounded-xl p-4 bg-gradient-to-br from-white to-gray-50 hover:border-primary/30 transition-smooth">
+                                    <div className="flex items-start justify-between mb-2">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <Badge variant="outline" className="text-xs">#{index + 1}</Badge>
+                                          <span className="font-semibold text-sm">{item.description || 'Article sans nom'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                          <span>Qté: <span className="font-semibold text-foreground">{item.quantity}</span></span>
+                                          <span>×</span>
+                                          <span>PU HT: <span className="font-semibold text-foreground">{item.unitPrice.toFixed(2)}€</span></span>
+                                          <span>TVA: <span className="font-semibold text-accent">{item.vatRate}%</span></span>
+                                        </div>
                                       </div>
-                                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                        <span>Qté: <span className="font-semibold text-foreground">{item.quantity}</span></span>
-                                        <span>×</span>
-                                        <span>PU HT: <span className="font-semibold text-foreground">{item.unitPrice.toFixed(2)}€</span></span>
-                                        <span>TVA: <span className="font-semibold text-accent">{item.vatRate}%</span></span>
+                                      <div className="text-right">
+                                        <div className="text-xs text-muted-foreground mb-1">Total TTC</div>
+                                        <div className="text-lg font-bold text-primary">{itemTotal.toFixed(2)}€</div>
                                       </div>
                                     </div>
-                                    <div className="text-right">
-                                      <div className="text-xs text-muted-foreground">Total TTC</div>
-                                      <div className="font-bold text-primary">{calculateItemTotalForPreview(item).toFixed(2)}€</div>
+                                    {/* Détails ligne */}
+                                    <div className="bg-primary/5 rounded-lg p-3 border border-primary/20 mt-2">
+                                      <div className="grid grid-cols-3 gap-2">
+                                        <div className="text-center">
+                                          <div className="text-xs text-muted-foreground font-medium mb-1">Total HT</div>
+                                          <div className="font-bold text-sm">{itemSubtotal.toFixed(2)}€</div>
+                                        </div>
+                                        <div className="text-center border-x border-primary/20">
+                                          <div className="text-xs text-muted-foreground font-medium mb-1">TVA ({item.vatRate}%)</div>
+                                          <div className="font-bold text-sm text-accent">{itemVat.toFixed(2)}€</div>
+                                        </div>
+                                        <div className="text-center">
+                                          <div className="text-xs text-muted-foreground font-medium mb-1">Total TTC</div>
+                                          <div className="font-bold text-base text-primary">{itemTotal.toFixed(2)}€</div>
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           ) : (
-                            <div className="bg-muted/50 rounded-xl p-6 border-2 border-dashed border-muted-foreground/20 text-center">
-                              <ShoppingCart className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                            <div className="bg-muted/50 rounded-xl p-8 border-2 border-dashed border-muted-foreground/20 text-center">
+                              <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                               <p className="text-sm text-muted-foreground">Aucun article ajouté</p>
                             </div>
                           )}
@@ -805,28 +840,28 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         <Separator />
 
                         {/* Totals Section */}
-                        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20">
-                          <div className="space-y-2">
+                        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-5 border-2 border-primary/20">
+                          <div className="space-y-3">
                             <div className="flex justify-between items-center">
-                              <span className="text-sm text-muted-foreground">Total HT:</span>
-                              <span className="font-bold">{calculateSubtotal().toFixed(2)}€</span>
+                              <span className="text-sm font-medium text-muted-foreground">Total HT:</span>
+                              <span className="text-base font-bold">{calculateSubtotal().toFixed(2)}€</span>
                             </div>
                             
                             {Object.entries(calculateVatByRate()).map(([rate, amounts]) => (
                               <div key={rate} className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">TVA {rate}%:</span>
-                                <span className="font-semibold text-accent">{amounts.vat.toFixed(2)}€</span>
+                                <span className="text-sm font-medium text-muted-foreground">TVA {rate}%:</span>
+                                <span className="text-base font-semibold text-accent">{amounts.vat.toFixed(2)}€</span>
                               </div>
                             ))}
                             
                             <Separator className="bg-primary/20" />
                             
-                            <div className="flex justify-between items-center bg-primary text-white rounded-lg p-3 shadow-lg">
+                            <div className="flex justify-between items-center bg-primary text-white rounded-lg p-4 shadow-lg">
                               <div className="flex items-center gap-2">
-                                <Euro className="h-5 w-5" />
-                                <span className="font-bold">Total TTC:</span>
+                                <Euro className="h-6 w-6" />
+                                <span className="text-lg font-bold">Total TTC:</span>
                               </div>
-                              <span className="text-xl font-bold">{calculateTotal().toFixed(2)}€</span>
+                              <span className="text-2xl font-bold">{calculateTotal().toFixed(2)}€</span>
                             </div>
                           </div>
                         </div>
@@ -835,12 +870,23 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         {notes && (
                           <>
                             <Separator />
-                            <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
+                            <div className="bg-primary/5 rounded-xl p-5 border border-primary/20">
                               <div className="flex items-center gap-2 mb-2">
                                 <FileText className="h-4 w-4 text-primary" />
                                 <h4 className="text-sm font-bold text-primary">Notes</h4>
                               </div>
-                              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{notes}</p>
+                              <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{notes}</p>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Communication structurée */}
+                        {structuredCommunication && (
+                          <>
+                            <Separator />
+                            <div className="bg-primary/10 rounded-xl p-4 border border-primary/30 text-center">
+                              <div className="text-xs font-semibold text-primary mb-1">Communication structurée</div>
+                              <div className="text-lg font-mono font-bold text-primary">{structuredCommunication}</div>
                             </div>
                           </>
                         )}
