@@ -11,7 +11,7 @@ interface RemoteScanDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const ADMIN_PASSWORD = 'jlprod2024'; // Mot de passe pour accéder au QR code
+const ADMIN_PASSWORD = '3679'; // Mot de passe pour accéder au QR code
 
 export function RemoteScanDialog({ open, onOpenChange }: RemoteScanDialogProps) {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
