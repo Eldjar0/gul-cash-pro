@@ -10,7 +10,8 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Save, X, Plus, Trash2, Search, Check, FileText, User, Calendar, Euro, ShoppingCart } from 'lucide-react';
+import { Save, X, Plus, Trash2, Search, Check, FileText, User, Calendar, Euro, ShoppingCart, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useCustomers } from '@/hooks/useCustomers';
@@ -69,6 +70,13 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   ]);
   
   const [notes, setNotes] = useState('');
+  
+  // Terminologie prix: TTC (France) ou TVAC (Belgique)
+  const [priceTerminology, setPriceTerminology] = useState<'TTC' | 'TVAC'>('TVAC');
+  
+  // Helper pour afficher le bon terme
+  const labelTTC = priceTerminology;
+  const labelHT = priceTerminology === 'TTC' ? 'HT' : 'HTVA';
 
   useEffect(() => {
     if (open && !invoiceId) {
@@ -707,6 +715,19 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               <p className="text-sm text-white/90">Prévisualisation en temps réel</p>
                             </div>
                           </div>
+                          {/* Sélecteur TTC/TVAC */}
+                          <div className="flex items-center gap-2 bg-white/20 rounded-lg p-2 backdrop-blur-sm">
+                            <span className="text-xs font-medium">Format prix:</span>
+                            <Select value={priceTerminology} onValueChange={(v) => setPriceTerminology(v as 'TTC' | 'TVAC')}>
+                              <SelectTrigger className="w-24 h-8 bg-white text-primary border-0 font-bold">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="TTC">TTC</SelectItem>
+                                <SelectItem value="TVAC">TVAC</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                       </div>
 
@@ -799,12 +820,12 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                           <span>Qté: <span className="font-semibold text-foreground">{item.quantity}</span></span>
                                           <span>×</span>
-                                          <span>PU HT: <span className="font-semibold text-foreground">{item.unitPrice.toFixed(2)}€</span></span>
+                                          <span>PU {labelHT}: <span className="font-semibold text-foreground">{item.unitPrice.toFixed(2)}€</span></span>
                                           <span>TVA: <span className="font-semibold text-accent">{item.vatRate}%</span></span>
                                         </div>
                                       </div>
                                       <div className="text-right">
-                                        <div className="text-xs text-muted-foreground mb-1">Total TTC</div>
+                                        <div className="text-xs text-muted-foreground mb-1">Total {labelTTC}</div>
                                         <div className="text-lg font-bold text-primary">{itemTotal.toFixed(2)}€</div>
                                       </div>
                                     </div>
@@ -812,7 +833,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                                     <div className="bg-primary/5 rounded-lg p-3 border border-primary/20 mt-2">
                                       <div className="grid grid-cols-3 gap-2">
                                         <div className="text-center">
-                                          <div className="text-xs text-muted-foreground font-medium mb-1">Total HT</div>
+                                          <div className="text-xs text-muted-foreground font-medium mb-1">Total {labelHT}</div>
                                           <div className="font-bold text-sm">{itemSubtotal.toFixed(2)}€</div>
                                         </div>
                                         <div className="text-center border-x border-primary/20">
@@ -820,7 +841,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                                           <div className="font-bold text-sm text-accent">{itemVat.toFixed(2)}€</div>
                                         </div>
                                         <div className="text-center">
-                                          <div className="text-xs text-muted-foreground font-medium mb-1">Total TTC</div>
+                                          <div className="text-xs text-muted-foreground font-medium mb-1">Total {labelTTC}</div>
                                           <div className="font-bold text-base text-primary">{itemTotal.toFixed(2)}€</div>
                                         </div>
                                       </div>
@@ -849,7 +870,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               <thead className="bg-muted/80">
                                 <tr>
                                   <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Taux</th>
-                                  <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Base HT</th>
+                                  <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Base {labelHT}</th>
                                   <th className="text-right px-3 py-2 font-semibold text-muted-foreground">TVA</th>
                                 </tr>
                               </thead>
@@ -873,7 +894,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                           <div className="space-y-4">
                             {/* Sous-total HT */}
                             <div className="flex justify-between items-center pb-3 border-b border-primary/20">
-                              <span className="text-base font-semibold text-muted-foreground">Sous-total HT</span>
+                              <span className="text-base font-semibold text-muted-foreground">Sous-total {labelHT}</span>
                               <span className="text-xl font-bold">{calculateSubtotal().toFixed(2)}€</span>
                             </div>
                             
@@ -904,7 +925,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                                 </div>
                                 <div>
                                   <div className="text-xs text-white/80 uppercase tracking-wide">Montant à payer</div>
-                                  <span className="text-xl font-bold">Total TTC</span>
+                                  <span className="text-xl font-bold">Total {labelTTC}</span>
                                 </div>
                               </div>
                               <span className="text-3xl font-black">{calculateTotal().toFixed(2)}€</span>
