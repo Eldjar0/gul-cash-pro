@@ -237,9 +237,22 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
 
   yPos = Math.max(yPos + refBoxHeight + 10, totalsY + 10);
 
+  // Constante pour la zone du footer
+  const footerStartY = pageHeight - 50;
+
+  // Fonction helper pour gérer les sauts de page
+  const checkAndAddPage = (requiredSpace: number): boolean => {
+    if (yPos + requiredSpace > footerStartY) {
+      doc.addPage();
+      yPos = 20;
+      return true;
+    }
+    return false;
+  };
+
   // ============ STATUT DE PAIEMENT ============
   if (invoice.isPaid) {
-    // Afficher "PAYÉ" en grand en bleu
+    checkAndAddPage(30);
     yPos += 10;
     doc.setFontSize(32);
     doc.setFont('helvetica', 'bold');
@@ -251,6 +264,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
 
   // ============ INFORMATIONS DE PAIEMENT (ENCADRÉ ÉLÉGANT) ============
   if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
+    checkAndAddPage(45);
     yPos += 10;
     
     // Cadre avec bordure
@@ -308,10 +322,12 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
 
   // ============ NOTES ============
   if (invoice.notes) {
+    const splitNotes = doc.splitTextToSize(invoice.notes, pageWidth - 30);
+    const notesHeight = splitNotes.length * 5 + 15;
+    checkAndAddPage(notesHeight);
     yPos += 5;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    const splitNotes = doc.splitTextToSize(invoice.notes, pageWidth - 30);
     doc.text(splitNotes, 15, yPos);
     yPos += splitNotes.length * 5 + 5;
   }
