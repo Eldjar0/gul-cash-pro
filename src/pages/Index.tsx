@@ -1780,8 +1780,8 @@ const Index = () => {
     }} autoFocus={false} />
       {/* Main content - Toujours 3 colonnes (proportions adaptées mobile) */}
       <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
-        {/* LEFT PANEL - Ticket (col-span adapté: 6 sur mobile, 5 sur desktop) */}
-        <div className="col-span-6 md:col-span-5 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
+        {/* LEFT PANEL - Ticket (col-span adapté: 6 sur mobile, 6 sur desktop) */}
+        <div className="col-span-6 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
           {/* Ticket header - Clean gradient */}
           <div className="bg-gradient-to-r from-primary to-primary-glow p-2 flex-shrink-0 shadow-lg">
             <div className="flex items-center justify-between text-white">
@@ -2044,8 +2044,8 @@ const Index = () => {
           </div>
         </div>
 
-        {/* COLONNE CENTRE - Calculatrice (col-span adapté: 4 sur mobile, 4 sur desktop) */}
-        <div className="col-span-4 bg-background p-1 flex flex-col gap-1 overflow-hidden h-full">
+        {/* COLONNE CENTRE - Calculatrice (col-span adapté: 3 colonnes) */}
+        <div className="col-span-3 bg-background p-1 flex flex-col gap-1 overflow-hidden h-full">
 
           {/* Statistiques rapides - Améliorées */}
           <Card className="bg-gradient-to-br from-primary/15 via-primary/5 to-secondary/10 border-2 border-primary/30 p-2.5 flex-shrink-0 shadow-lg relative overflow-hidden">
