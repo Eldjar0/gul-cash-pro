@@ -1804,40 +1804,45 @@ const Index = () => {
                 <p className="text-muted-foreground font-medium text-[10px]">Panier vide</p>
               </div> : <div className="space-y-1">
                 {cart.map((item, index) => <div key={index} className="bg-white border border-border p-1.5 rounded-lg hover:border-primary/40 transition-all group hover:shadow-sm">
-                    {/* Layout compact pour tablette */}
-                    <div className="flex items-center gap-1.5">
-                      {/* Image du produit - plus petite */}
-                      {item.product.image && (
-                        <div className="shrink-0 w-10 h-10 rounded overflow-hidden border border-border hidden lg:block">
-                          <img 
-                            src={item.product.image} 
-                            alt={item.product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Infos produit */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1">
-                          <h4 className="text-foreground font-bold text-xs truncate">{item.product.name}</h4>
-                          {item.is_gift && <span className="text-[7px] bg-gradient-to-r from-pink-500 to-red-500 text-white px-1 py-0.5 rounded-full font-bold whitespace-nowrap">🎁</span>}
-                        </div>
-                        <div className="flex items-center gap-0.5 text-[10px]">
-                          <span className="font-semibold text-primary">{(item.custom_price ?? item.product.price).toFixed(2)}€</span>
-                          <span className="text-muted-foreground">×</span>
-                          <span className="font-bold">{item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}</span>
-                          {item.discount && (
-                            <span className="text-accent font-semibold ml-1">
-                              -{item.discount.type === 'percentage' ? `${item.discount.value}%` : `${item.discount.value}€`}
-                            </span>
-                          )}
+                    {/* Ligne 1: Nom + Prix */}
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                        {/* Image du produit - cachée sur tablette */}
+                        {item.product.image && (
+                          <div className="shrink-0 w-8 h-8 rounded overflow-hidden border border-border hidden xl:block">
+                            <img 
+                              src={item.product.image} 
+                              alt={item.product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1">
+                            <h4 className="text-foreground font-bold text-xs truncate">{item.product.name}</h4>
+                            {item.is_gift && <span className="text-[7px] bg-gradient-to-r from-pink-500 to-red-500 text-white px-1 py-0.5 rounded-full font-bold">🎁</span>}
+                            {item.discount && (
+                              <span className="text-[8px] text-accent font-semibold">
+                                -{item.discount.type === 'percentage' ? `${item.discount.value}%` : `${item.discount.value}€`}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[9px] text-muted-foreground">
+                            {(item.custom_price ?? item.product.price).toFixed(2)}€ × {item.quantity.toFixed(item.product.type === 'weight' ? 2 : 0)}
+                          </div>
                         </div>
                       </div>
-                      
-                      {/* Contrôles quantité compacts */}
+                      {/* Prix total */}
+                      <div className={`text-sm font-bold whitespace-nowrap ${item.is_gift ? 'text-pink-600' : 'text-primary'}`}>
+                        {item.is_gift ? 'OFFERT' : `${item.total.toFixed(2)}€`}
+                      </div>
+                    </div>
+                    
+                    {/* Ligne 2: Quantité + Actions */}
+                    <div className="flex items-center justify-between gap-1">
+                      {/* Contrôles quantité */}
                       <div className="flex items-center gap-0.5 bg-muted/50 p-0.5 rounded">
-                        <Button size="sm" onClick={() => handleUpdateQuantity(index, Math.max(0.1, item.quantity - 1))} className="h-5 w-5 p-0 bg-white hover:bg-primary/10 text-foreground border border-border text-[10px] font-bold">
+                        <Button size="sm" onClick={() => handleUpdateQuantity(index, Math.max(0.1, item.quantity - 1))} className="h-6 w-6 p-0 bg-white hover:bg-primary/10 text-foreground border border-border text-xs font-bold">
                           -
                         </Button>
                         <Input data-scan-ignore="true" type="text" key={`qty-${index}-${item.quantity}`} defaultValue={item.quantity.toFixed(3)} onBlur={e => {
@@ -1848,37 +1853,32 @@ const Index = () => {
                           } else {
                             e.target.value = item.quantity.toFixed(3);
                           }
-                        }} className="h-5 w-12 text-[10px] px-0.5 text-center bg-white font-bold" />
-                        <Button size="sm" onClick={() => handleUpdateQuantity(index, item.quantity + 1)} className="h-5 w-5 p-0 bg-white hover:bg-primary/10 text-foreground border border-border text-[10px] font-bold">
+                        }} className="h-6 w-14 text-xs px-1 text-center bg-white font-bold" />
+                        <Button size="sm" onClick={() => handleUpdateQuantity(index, item.quantity + 1)} className="h-6 w-6 p-0 bg-white hover:bg-primary/10 text-foreground border border-border text-xs font-bold">
                           +
                         </Button>
                       </div>
                       
-                      {/* Prix total */}
-                      <div className={`text-sm font-bold min-w-[50px] text-right ${item.is_gift ? 'text-pink-600' : 'text-primary'}`}>
-                        {item.is_gift ? 'OFFERT' : `${item.total.toFixed(2)}€`}
-                      </div>
-                      
-                      {/* Boutons actions - toujours visibles */}
-                      <div className="flex gap-0.5 items-center flex-shrink-0">
-                        <Button variant="ghost" size="icon" onClick={() => {
+                      {/* Boutons actions */}
+                      <div className="flex gap-1 items-center">
+                        <Button variant="outline" size="sm" onClick={() => {
                           setPriceEditIndex(index);
                           setPriceEditDialogOpen(true);
-                        }} className="h-6 w-6" title="Modifier le prix">
+                        }} className="h-6 px-2 text-[10px]" title="Modifier le prix">
                           <Euro className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleToggleGift(index)} className={`h-6 w-6 ${item.is_gift ? 'bg-pink-500/20 text-pink-600' : 'text-pink-500'}`} title={item.is_gift ? 'Annuler cadeau' : 'Offrir'}>
+                        <Button variant="outline" size="sm" onClick={() => handleToggleGift(index)} className={`h-6 px-2 text-[10px] ${item.is_gift ? 'bg-pink-500/20 text-pink-600 border-pink-300' : 'text-pink-500 border-pink-300'}`} title={item.is_gift ? 'Annuler cadeau' : 'Offrir'}>
                           <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>
                           </svg>
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => {
+                        <Button variant="outline" size="sm" onClick={() => {
                           setDiscountTarget({ type: 'item', index });
                           setDiscountDialogOpen(true);
-                        }} className="h-6 w-6 text-accent hover:bg-accent/20" disabled={item.is_gift} title="Remise">
+                        }} className="h-6 px-2 text-[10px] text-accent border-accent/50" disabled={item.is_gift} title="Remise">
                           <Percent className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(index)} className="h-6 w-6 text-destructive hover:bg-destructive/20" title="Supprimer">
+                        <Button variant="outline" size="sm" onClick={() => handleRemoveItem(index)} className="h-6 px-2 text-[10px] text-destructive border-destructive/50" title="Supprimer">
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
