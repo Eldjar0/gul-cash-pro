@@ -248,7 +248,7 @@ export default function Documents() {
     
     if (saleDate.getTime() !== today.getTime()) {
       toast.error('Modification interdite', {
-        description: '⚖️ Conformité Art. 315bis CIR92 : Les documents ne peuvent être modifiés qu\'avant la clôture du jour J',
+        description: 'Les documents ne peuvent être modifiés qu\'avant la clôture du jour J',
       });
       return;
     }
@@ -1895,20 +1895,20 @@ export default function Documents() {
             <Alert variant="destructive" className="mt-6 border-orange-500 bg-orange-50 dark:bg-orange-950/20">
               <AlertTriangle className="h-5 w-5 text-orange-600" />
               <AlertTitle className="text-orange-900 dark:text-orange-100 font-bold">
-                ⚠️ Passage obligatoire à la facturation numérique - 1er janvier 2026
+                ⚠️ Passage à la facturation numérique - 1er janvier 2026
               </AlertTitle>
               <AlertDescription className="text-orange-800 dark:text-orange-200 space-y-2">
                 <p className="font-semibold">
                   À partir du 1er janvier 2026, la Belgique impose la facturation électronique pour toutes les entreprises.
                 </p>
                 <p>
-                  Les factures créées ici ne seront plus conformes et serviront uniquement d'<strong>archives et de consultation</strong>.
+                  Les factures créées ici serviront d'<strong>archives et de consultation</strong>.
                 </p>
                 <p>
-                  Vous devrez utiliser un logiciel de facturation certifié recommandé par votre comptable pour être en conformité légale.
+                  Vous devrez utiliser un logiciel de facturation recommandé par votre comptable.
                 </p>
                 <p className="text-sm">
-                  <strong>Contact recommandé :</strong> Rapprochez-vous de votre comptable dès maintenant pour anticiper cette transition obligatoire.
+                  <strong>Contact recommandé :</strong> Rapprochez-vous de votre comptable pour anticiper cette transition.
                 </p>
               </AlertDescription>
             </Alert>

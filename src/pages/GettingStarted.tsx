@@ -241,9 +241,9 @@ export default function GettingStarted() {
           <CardContent>
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="q1">
-                <AccordionTrigger>Le logiciel est-il conforme à la loi belge ?</AccordionTrigger>
+                <AccordionTrigger>Ce logiciel est-il un outil de gestion ?</AccordionTrigger>
                 <AccordionContent>
-                  Non, ce logiciel n'est PAS certifié fiscalement. Il s'agit d'un outil de gestion interne. Vous devez obligatoirement tenir un carnet de caisse papier ou utiliser un système certifié en parallèle. Le Rapport Z doit être reporté manuellement dans votre comptabilité officielle.
+                  Oui, ce logiciel est un outil de gestion interne. Vous devez tenir un carnet de caisse papier en parallèle. Le Rapport Z doit être reporté manuellement dans votre comptabilité.
                 </AccordionContent>
               </AccordionItem>
 
