@@ -49,6 +49,7 @@ const MobileStockAdjust = lazy(() => import("./pages/MobileStockAdjust"));
 const MobilePOS = lazy(() => import("./pages/MobilePOS"));
 const MobileCustomerSpecialPricesPage = lazy(() => import("./pages/MobileCustomerSpecialPrices"));
 const SupplierEntry = lazy(() => import("./pages/SupplierEntry"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
             <Route path="/download-app" element={<DownloadApp />} />
             <Route path="/download-desktop" element={<DownloadDesktopApp />} />
             <Route path="/legal-info" element={<LegalInfo />} />
+            <Route path="/terms" element={<TermsOfService />} />
             <Route path="/getting-started" element={<GettingStarted />} />
             <Route path="/mobile" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />
             <Route path="/mobile/management" element={<ProtectedRoute><MobileManagement /></ProtectedRoute>} />

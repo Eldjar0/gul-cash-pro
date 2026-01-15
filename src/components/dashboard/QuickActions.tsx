@@ -83,6 +83,17 @@ export function QuickActions() {
     },
   ];
 
+  const legalActions = [
+    {
+      label: 'CGU',
+      onClick: () => navigate('/terms'),
+    },
+    {
+      label: 'Mentions légales',
+      onClick: () => navigate('/legal-info'),
+    },
+  ];
+
   return (
     <Card className="p-6">
       <h2 className="text-lg font-semibold mb-4">Actions Rapides</h2>
