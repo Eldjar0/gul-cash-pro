@@ -274,10 +274,10 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
         <div>✓ Conservation 10 ans recommandée</div>
       </div>
 
-      {/* Signature numérique - HASH FISCAL CONFORME */}
+      {/* Signature numérique */}
       <div style={{ fontSize: '9px', fontWeight: '700', fontFamily: 'monospace', wordBreak: 'break-all', backgroundColor: '#000', color: '#fff', padding: '4px' }}>
         {(() => {
-          // Génération du hash fiscal conforme
+          // Génération d'une signature numérique
           const hashData = [
             todayReport?.serial_number || 'TEMP',
             new Date().toISOString(),
@@ -303,7 +303,7 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
           const timestamp = Date.now().toString(16).toUpperCase().slice(-8);
           const finalHash = `${hexHash}${timestamp}${Math.abs(hash * 7).toString(16).toUpperCase().slice(0, 16).padStart(16, '0')}`;
           
-          return `HASH FISCAL: ${finalHash}`;
+          return `SIGNATURE: ${finalHash}`;
         })()}
       </div>
 

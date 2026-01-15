@@ -247,7 +247,7 @@ export default function InvoiceCreate() {
     // Avertissement UBL (informatif, ne bloque pas)
     if (ublValidation.errors.length > 0 || ublValidation.warnings.length > 0) {
       toast({
-        title: 'Conformité UBL.BE',
+        title: 'Validation UBL.BE',
         description: `${ublValidation.errors.length} erreur(s), ${ublValidation.warnings.length} avertissement(s) pour l'export UBL`,
       });
     }

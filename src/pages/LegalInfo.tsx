@@ -27,9 +27,9 @@ export default function LegalInfo() {
         {/* Critical Warning */}
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle className="font-bold">⚠️ AVERTISSEMENT CRITIQUE</AlertTitle>
+          <AlertTitle className="font-bold">⚠️ AVERTISSEMENT</AlertTitle>
           <AlertDescription className="text-sm">
-            Ce logiciel est un <strong>outil de gestion interne NON CERTIFIÉ</strong> par le SPF Finances de Belgique. Il ne peut <strong>EN AUCUN CAS remplacer</strong> un carnet de caisse officiel ou un système de caisse enregistreuse certifié. L'utilisateur est seul responsable de sa conformité fiscale et légale.
+            Ce logiciel est un <strong>outil de gestion interne</strong>. Il ne remplace pas un carnet de caisse papier. L'utilisateur est seul responsable de ses obligations.
           </AlertDescription>
         </Alert>
 
@@ -135,15 +135,15 @@ export default function LegalInfo() {
                   <div className="flex items-start gap-3">
                     <XCircle className="h-5 w-5 text-destructive mt-0.5" />
                     <div>
-                      <p className="font-semibold">NON certifié par le SPF Finances</p>
-                      <p className="text-sm text-muted-foreground">Le logiciel ne possède pas la certification SCE (Système de Caisse Enregistreuse)</p>
+                      <p className="font-semibold">Outil non certifié</p>
+                      <p className="text-sm text-muted-foreground">Le logiciel est un outil de gestion interne uniquement</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <XCircle className="h-5 w-5 text-destructive mt-0.5" />
                     <div>
                       <p className="font-semibold">Pas de Module FDM (Black Box)</p>
-                      <p className="text-sm text-muted-foreground">Obligatoire pour le secteur HORECA depuis juillet 2016</p>
+                      <p className="text-sm text-muted-foreground">Module requis pour le secteur HORECA depuis juillet 2016</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">

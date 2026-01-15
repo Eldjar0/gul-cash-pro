@@ -112,7 +112,7 @@ export function ComplianceChecklist() {
             <AlertTitle>Attention</AlertTitle>
             <AlertDescription>
               Vous avez {criticalUnchecked} élément{criticalUnchecked > 1 ? 's' : ''} critique{criticalUnchecked > 1 ? 's' : ''} non coché{criticalUnchecked > 1 ? 's' : ''}. 
-              Ces éléments sont <strong>obligatoires</strong> pour la conformité légale belge.
+              Ces éléments sont <strong>recommandés</strong> pour une gestion complète.
             </AlertDescription>
           </Alert>
         )}

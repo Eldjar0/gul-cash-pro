@@ -184,9 +184,9 @@ export function TicketSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label>Afficher le numéro fiscal</Label>
+              <Label>Afficher le numéro de document</Label>
               <p className="text-xs text-muted-foreground">
-                ⚠️ Requis pour la conformité fiscale belge
+                Affiche le numéro unique du document
               </p>
             </div>
             <Switch

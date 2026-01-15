@@ -24,8 +24,8 @@ export function CompanyLegalSettings({ settings, onChange }: CompanyLegalSetting
             <Scale className="h-6 w-6" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-bold">Informations légales obligatoires</h3>
-            <p className="text-sm text-muted-foreground">Conformité légale belge (Art. 315bis CIR92)</p>
+            <h3 className="text-xl font-bold">Informations légales</h3>
+            <p className="text-sm text-muted-foreground">Requis pour les documents commerciaux</p>
           </div>
         </div>
         <div className="space-y-4">

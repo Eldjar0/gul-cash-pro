@@ -296,10 +296,10 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
               </div>
             </div>
 
-            {/* Footer légal */}
+            {/* Footer */}
             <div style={{ borderTop: '2px dashed #000', marginTop: '8px', paddingTop: '6px' }}>
               <div className="text-center" style={{ fontSize: '9px', color: '#999', fontWeight: '700', marginTop: '2px' }}>
-                Document conforme pratique commerciale belge
+                Document commercial - Usage interne
               </div>
               <div className="text-center" style={{ fontSize: '9px', color: '#999', fontWeight: '700' }}>
                 Conservation recommandée 10 ans
