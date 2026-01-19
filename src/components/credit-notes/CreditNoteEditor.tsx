@@ -74,11 +74,11 @@ export function CreditNoteEditor({ open, onOpenChange, creditNoteId }: CreditNot
   }, [customers, customerSearch]);
 
   const filteredProducts = useMemo(() => {
-    if (!productSearch) return products.slice(0, 10);
+    if (!productSearch || productSearch.length < 2) return [];
     return products.filter(p => 
       p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
       p.barcode?.toLowerCase().includes(productSearch.toLowerCase())
-    ).slice(0, 10);
+    ).slice(0, 15);
   }, [products, productSearch]);
 
   const addItem = (product: typeof products[0]) => {
@@ -237,29 +237,50 @@ export function CreditNoteEditor({ open, onOpenChange, creditNoteId }: CreditNot
                       Ajouter un article
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-0" align="end">
-                    <Command>
+                  <PopoverContent className="w-[450px] p-0 bg-background z-50" align="end">
+                    <Command shouldFilter={false}>
                       <CommandInput 
-                        placeholder="Rechercher un produit..." 
+                        placeholder="Tapez au moins 2 lettres pour rechercher..." 
                         value={productSearch}
                         onValueChange={setProductSearch}
                       />
-                      <CommandList>
-                        <CommandEmpty>Aucun produit trouvé</CommandEmpty>
-                        <CommandGroup>
-                          {filteredProducts.map(product => (
-                            <CommandItem
-                              key={product.id}
-                              onSelect={() => addItem(product)}
-                            >
-                              <Package className="h-4 w-4 mr-2" />
-                              <div className="flex-1">
-                                <p className="font-medium">{product.name}</p>
-                                <p className="text-sm text-muted-foreground">{product.price.toFixed(2)}€ TTC</p>
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
+                      <CommandList className="max-h-[300px]">
+                        {productSearch.length < 2 ? (
+                          <div className="py-6 text-center text-sm text-muted-foreground">
+                            <Search className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                            <p>Tapez au moins 2 caractères pour rechercher</p>
+                          </div>
+                        ) : filteredProducts.length === 0 ? (
+                          <CommandEmpty>Aucun produit trouvé</CommandEmpty>
+                        ) : (
+                          <CommandGroup heading={`${filteredProducts.length} résultat(s)`}>
+                            {filteredProducts.map(product => (
+                              <CommandItem
+                                key={product.id}
+                                value={product.id}
+                                onSelect={() => addItem(product)}
+                                className="cursor-pointer py-3 hover:bg-accent"
+                              >
+                                <div className="flex items-center gap-3 w-full">
+                                  <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                    <Package className="h-5 w-5 text-primary" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium truncate">{product.name}</p>
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                      {product.barcode && <span className="font-mono">{product.barcode}</span>}
+                                      <span>TVA {product.vat_rate}%</span>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-bold text-primary">{product.price.toFixed(2)}€</p>
+                                    <p className="text-xs text-muted-foreground">TTC</p>
+                                  </div>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
                       </CommandList>
                     </Command>
                   </PopoverContent>
