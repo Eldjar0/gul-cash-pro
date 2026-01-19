@@ -50,6 +50,7 @@ const MobilePOS = lazy(() => import("./pages/MobilePOS"));
 const MobileCustomerSpecialPricesPage = lazy(() => import("./pages/MobileCustomerSpecialPrices"));
 const SupplierEntry = lazy(() => import("./pages/SupplierEntry"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const CreditNotes = lazy(() => import("./pages/CreditNotes"));
 
 const queryClient = new QueryClient();
 
@@ -118,6 +119,7 @@ const App = () => (
             <Route path="/supplier-entry" element={<ProtectedRoute><ProtectedLayout><SupplierEntry /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/sales" element={<ProtectedRoute><ProtectedLayout><Documents /></ProtectedLayout></ProtectedRoute>} />
             <Route path="/invoices" element={<ProtectedRoute><ProtectedLayout><Documents /></ProtectedLayout></ProtectedRoute>} />
+            <Route path="/credit-notes" element={<ProtectedRoute><ProtectedLayout><CreditNotes /></ProtectedLayout></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
