@@ -128,6 +128,136 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_note_items: {
+        Row: {
+          created_at: string
+          credit_note_id: string
+          id: string
+          product_barcode: string | null
+          product_id: string | null
+          product_name: string
+          quantity: number
+          subtotal: number
+          total: number
+          unit_price: number
+          vat_amount: number
+          vat_rate: number
+        }
+        Insert: {
+          created_at?: string
+          credit_note_id: string
+          id?: string
+          product_barcode?: string | null
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          subtotal: number
+          total: number
+          unit_price: number
+          vat_amount: number
+          vat_rate?: number
+        }
+        Update: {
+          created_at?: string
+          credit_note_id?: string
+          id?: string
+          product_barcode?: string | null
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          subtotal?: number
+          total?: number
+          unit_price?: number
+          vat_amount?: number
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_note_items_credit_note_id_fkey"
+            columns: ["credit_note_id"]
+            isOneToOne: false
+            referencedRelation: "credit_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_note_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_notes: {
+        Row: {
+          cashier_id: string | null
+          created_at: string
+          credit_note_number: string
+          customer_id: string | null
+          id: string
+          notes: string | null
+          original_invoice_id: string | null
+          reason: string
+          status: string
+          subtotal: number
+          total: number
+          total_vat: number
+          validated_at: string | null
+        }
+        Insert: {
+          cashier_id?: string | null
+          created_at?: string
+          credit_note_number: string
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          original_invoice_id?: string | null
+          reason: string
+          status?: string
+          subtotal?: number
+          total?: number
+          total_vat?: number
+          validated_at?: string | null
+        }
+        Update: {
+          cashier_id?: string | null
+          created_at?: string
+          credit_note_number?: string
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          original_invoice_id?: string | null
+          reason?: string
+          status?: string
+          subtotal?: number
+          total?: number
+          total_vat?: number
+          validated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_notes_cashier_id_fkey"
+            columns: ["cashier_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_notes_original_invoice_id_fkey"
+            columns: ["original_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_reports: {
         Row: {
           configuration: Json | null
@@ -2345,6 +2475,7 @@ export type Database = {
           fiscal_number: string
         }[]
       }
+      generate_credit_note_number: { Args: never; Returns: string }
       generate_customer_order_number: { Args: never; Returns: string }
       generate_fiscal_number: { Args: never; Returns: string }
       generate_inventory_count_number: { Args: never; Returns: string }
