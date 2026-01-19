@@ -1664,7 +1664,7 @@ export default function Documents() {
               </div>
 
               <div className="overflow-x-auto">
-                <ScrollArea className="min-h-[300px] max-h-[calc(100vh-400px)]" orientation="both">
+                <ScrollArea className="min-h-[400px] max-h-[calc(100vh-320px)]" orientation="both">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -1891,27 +1891,6 @@ export default function Documents() {
               </div>
             )}
 
-            {/* Avertissement facturation numérique 2026 */}
-            <Alert variant="destructive" className="mt-6 border-orange-500 bg-orange-50 dark:bg-orange-950/20">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
-              <AlertTitle className="text-orange-900 dark:text-orange-100 font-bold">
-                ⚠️ Passage à la facturation numérique - 1er janvier 2026
-              </AlertTitle>
-              <AlertDescription className="text-orange-800 dark:text-orange-200 space-y-2">
-                <p className="font-semibold">
-                  À partir du 1er janvier 2026, la Belgique impose la facturation électronique pour toutes les entreprises.
-                </p>
-                <p>
-                  Les factures créées ici serviront d'<strong>archives et de consultation</strong>.
-                </p>
-                <p>
-                  Vous devrez utiliser un logiciel de facturation recommandé par votre comptable.
-                </p>
-                <p className="text-sm">
-                  <strong>Contact recommandé :</strong> Rapprochez-vous de votre comptable pour anticiper cette transition.
-                </p>
-              </AlertDescription>
-            </Alert>
           </TabsContent>
 
           {/* Onglet Produits vendus */}
