@@ -49,6 +49,8 @@ import {
 import { useSales, useCancelSale, useRestoreSale } from '@/hooks/useSales';
 import { useRefunds, useDeleteRefund } from '@/hooks/useRefunds';
 import { useSavedCarts } from '@/hooks/useSavedCarts';
+import { CreditNotesTab } from '@/components/credit-notes/CreditNotesTab';
+import { FileCheck } from 'lucide-react';
 import { RefundDialog } from '@/components/pos/RefundDialog';
 import { SavedCartsContent } from '@/components/orders/SavedCartsContent';
 import {
@@ -1155,7 +1157,7 @@ export default function Documents() {
 
         {/* Tabs */}
         <Tabs defaultValue="sales" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="sales" className="gap-2">
               <Receipt className="h-4 w-4" />
               <span className="hidden sm:inline">Ventes</span>
@@ -1163,6 +1165,10 @@ export default function Documents() {
             <TabsTrigger value="invoices" className="gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Factures</span>
+            </TabsTrigger>
+            <TabsTrigger value="credit-notes" className="gap-2">
+              <FileCheck className="h-4 w-4" />
+              <span className="hidden sm:inline">Notes de crédit</span>
             </TabsTrigger>
             <TabsTrigger value="products" className="gap-2">
               <Package className="h-4 w-4" />
@@ -1891,6 +1897,11 @@ export default function Documents() {
               </div>
             )}
 
+          </TabsContent>
+
+          {/* Onglet Notes de crédit */}
+          <TabsContent value="credit-notes" className="space-y-4">
+            <CreditNotesTab />
           </TabsContent>
 
           {/* Onglet Produits vendus */}
