@@ -38,7 +38,7 @@ import { RefundDialog } from '@/components/pos/RefundDialog';
 import { Receipt } from '@/components/pos/Receipt';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 import { PriceEditDialog } from '@/components/pos/PriceEditDialog';
-import { useTodayReport } from '@/hooks/useDailyReports';
+import { useTodayReport, getTodayReportData, type ReportData } from '@/hooks/useDailyReports';
 import { getSpecialPriceForCustomer } from '@/hooks/useCustomerSpecialPrices';
 import { useActivePromotions, calculateDiscount } from '@/hooks/usePromotions';
 import { useCartPersistence } from '@/hooks/useCartPersistence';
@@ -115,6 +115,16 @@ export default function MobilePOS() {
   const [zeroPriceDialogOpen, setZeroPriceDialogOpen] = useState(false);
   const [zeroPriceProduct, setZeroPriceProduct] = useState<Product | null>(null);
   const [zeroPriceQuantity, setZeroPriceQuantity] = useState<number>(1);
+  
+  // Report data
+  const [reportData, setReportData] = useState<ReportData>({
+    totalSales: 0,
+    totalCash: 0,
+    totalCard: 0,
+    totalMobile: 0,
+    salesCount: 0,
+    vatByRate: {},
+  });
 
   // Scanner physique automatique
   useUnifiedScanner({
@@ -195,6 +205,23 @@ export default function MobilePOS() {
       setAppliedAutoPromotion(null);
     }
   }, [cart, activePromotions, selectedCustomer]);
+
+  // Chargement des données du rapport
+  useEffect(() => {
+    const loadReportData = async () => {
+      try {
+        const data = await getTodayReportData();
+        setReportData(data);
+      } catch (error) {
+        console.error('Erreur chargement rapport:', error);
+      }
+    };
+    
+    loadReportData();
+    // Rafraîchir toutes les 30 secondes
+    const interval = setInterval(loadReportData, 30000);
+    return () => clearInterval(interval);
+  }, [todayReport]);
 
   // Calcul du total d'un article
   const calculateItemTotal = (
@@ -1279,28 +1306,14 @@ export default function MobilePOS() {
         open={closeDayDialogOpen}
         onOpenChange={setCloseDayDialogOpen}
         onConfirm={() => setCloseDayDialogOpen(false)}
-        reportData={{
-          totalSales: 0,
-          totalCash: 0,
-          totalCard: 0,
-          totalMobile: 0,
-          salesCount: 0,
-          vatByRate: {},
-        }}
+        reportData={reportData}
         todayReport={todayReport || null}
       />
 
       <ReportXDialog
         open={reportXDialogOpen}
         onOpenChange={setReportXDialogOpen}
-        reportData={{
-          totalSales: 0,
-          totalCash: 0,
-          totalCard: 0,
-          totalMobile: 0,
-          salesCount: 0,
-          vatByRate: {},
-        }}
+        reportData={reportData}
         todayReport={todayReport || null}
       />
 
