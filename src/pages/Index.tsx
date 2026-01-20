@@ -4,8 +4,10 @@ import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause, QrCode } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause, QrCode, Monitor, Tablet } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import logoMarket from '@/assets/logo-market.png';
+import logoHeader from '@/assets/logo-gul-reyhan-header.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
 import { MixedPaymentDialog } from '@/components/pos/MixedPaymentDialog';
@@ -72,6 +74,7 @@ const CART_STORAGE_KEY = 'pos_active_cart_v1';
 const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
   const {
     user,
     loading: authLoading
@@ -85,6 +88,70 @@ const Index = () => {
       });
     }
   }, [navigate]);
+  
+  // Afficher un message pour les mobiles (navigateur web)
+  if (isMobile && !Capacitor.isNativePlatform()) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-8 text-center space-y-6 shadow-2xl border-2">
+          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary to-primary-glow rounded-2xl flex items-center justify-center shadow-lg">
+            <Monitor className="h-10 w-10 text-white" />
+          </div>
+          
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-foreground">Caisse PC / Tablette</h1>
+            <p className="text-muted-foreground">
+              Cette interface de caisse est optimisée pour les écrans larges (PC et tablettes).
+            </p>
+          </div>
+          
+          <div className="bg-muted/50 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-3 text-left">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Monitor className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm">Sur PC ou Tablette</p>
+                <p className="text-xs text-muted-foreground">Accédez à la caisse complète avec toutes les fonctionnalités</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3 text-left">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <Smartphone className="h-5 w-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm">Sur Mobile</p>
+                <p className="text-xs text-muted-foreground">Utilisez l'interface mobile optimisée</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <Button 
+              onClick={() => navigate('/mobile/pos')} 
+              className="w-full h-12 text-base bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+            >
+              <Smartphone className="h-5 w-5 mr-2" />
+              Ouvrir la caisse mobile
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/mobile/management')} 
+              className="w-full"
+            >
+              Accéder au menu mobile
+            </Button>
+          </div>
+          
+          <p className="text-xs text-muted-foreground">
+            💡 Pour une meilleure expérience, utilisez un écran de 10 pouces ou plus.
+          </p>
+        </Card>
+      </div>
+    );
+  }
   const {
     data: products
   } = useProducts();
