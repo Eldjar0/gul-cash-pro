@@ -1102,137 +1102,136 @@ export default function Documents() {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="p-6 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+      <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        {/* Stats Cards - Responsive */}
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-6">
+          <Card className="p-3 sm:p-6 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-emerald-100 text-sm font-medium">Total Aujourd'hui (Net)</p>
-                <p className="text-3xl font-bold mt-1">{todayTotalWithRefunds.toFixed(2)}€</p>
-                <p className="text-emerald-100 text-xs mt-1">Remb: -{todayRefundsTotal.toFixed(2)}€</p>
+                <p className="text-emerald-100 text-[10px] sm:text-sm font-medium">Total Aujourd'hui</p>
+                <p className="text-lg sm:text-3xl font-bold mt-0.5 sm:mt-1">{todayTotalWithRefunds.toFixed(2)}€</p>
+                <p className="text-emerald-100 text-[9px] sm:text-xs mt-0.5">Remb: -{todayRefundsTotal.toFixed(2)}€</p>
               </div>
-              <div className="p-3 bg-white/20 rounded-lg">
+              <div className="p-2 sm:p-3 bg-white/20 rounded-lg hidden sm:block">
                 <Euro className="h-6 w-6" />
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-teal-500 to-teal-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+          <Card className="p-3 sm:p-6 bg-gradient-to-br from-teal-500 to-teal-600 text-white border-0 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-teal-100 text-sm font-medium">Ventes Aujourd'hui</p>
-                <p className="text-3xl font-bold mt-1">{countToday}</p>
+                <p className="text-teal-100 text-[10px] sm:text-sm font-medium">Ventes</p>
+                <p className="text-lg sm:text-3xl font-bold mt-0.5 sm:mt-1">{countToday}</p>
               </div>
-              <div className="p-3 bg-white/20 rounded-lg">
+              <div className="p-2 sm:p-3 bg-white/20 rounded-lg hidden sm:block">
                 <Receipt className="h-6 w-6" />
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-cyan-500 to-cyan-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+          <Card className="p-3 sm:p-6 bg-gradient-to-br from-cyan-500 to-cyan-600 text-white border-0 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-cyan-100 text-sm font-medium">Total Factures</p>
-                <p className="text-3xl font-bold mt-1">{totalAmount.toFixed(2)}€</p>
+                <p className="text-cyan-100 text-[10px] sm:text-sm font-medium">Factures</p>
+                <p className="text-lg sm:text-3xl font-bold mt-0.5 sm:mt-1">{totalAmount.toFixed(2)}€</p>
               </div>
-              <div className="p-3 bg-white/20 rounded-lg">
+              <div className="p-2 sm:p-3 bg-white/20 rounded-lg hidden sm:block">
                 <FileText className="h-6 w-6" />
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+          <Card className="p-3 sm:p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-100 text-sm font-medium">Remboursements</p>
-                <p className="text-3xl font-bold mt-1">{todayRefunds.length}</p>
+                <p className="text-orange-100 text-[10px] sm:text-sm font-medium">Remboursements</p>
+                <p className="text-lg sm:text-3xl font-bold mt-0.5 sm:mt-1">{todayRefunds.length}</p>
               </div>
-              <div className="p-3 bg-white/20 rounded-lg">
+              <div className="p-2 sm:p-3 bg-white/20 rounded-lg hidden sm:block">
                 <Undo2 className="h-6 w-6" />
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="sales" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="sales" className="gap-2">
-              <Receipt className="h-4 w-4" />
+        {/* Tabs - Responsive */}
+        <Tabs defaultValue="sales" className="space-y-3 sm:space-y-4">
+          <TabsList className="grid w-full grid-cols-6 h-auto p-1">
+            <TabsTrigger value="sales" className="gap-1 sm:gap-2 px-1 sm:px-3 py-2 text-xs sm:text-sm">
+              <Receipt className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Ventes</span>
             </TabsTrigger>
-            <TabsTrigger value="invoices" className="gap-2">
-              <FileText className="h-4 w-4" />
+            <TabsTrigger value="invoices" className="gap-1 sm:gap-2 px-1 sm:px-3 py-2 text-xs sm:text-sm">
+              <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Factures</span>
             </TabsTrigger>
-            <TabsTrigger value="credit-notes" className="gap-2">
-              <FileCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">Notes de crédit</span>
+            <TabsTrigger value="credit-notes" className="gap-1 sm:gap-2 px-1 sm:px-3 py-2 text-xs sm:text-sm">
+              <FileCheck className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Notes</span>
             </TabsTrigger>
-            <TabsTrigger value="products" className="gap-2">
-              <Package className="h-4 w-4" />
+            <TabsTrigger value="products" className="gap-1 sm:gap-2 px-1 sm:px-3 py-2 text-xs sm:text-sm">
+              <Package className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Produits</span>
             </TabsTrigger>
-            <TabsTrigger value="saved-carts" className="gap-2">
-              <ShoppingCart className="h-4 w-4" />
+            <TabsTrigger value="saved-carts" className="gap-1 sm:gap-2 px-1 sm:px-3 py-2 text-xs sm:text-sm">
+              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Paniers</span>
             </TabsTrigger>
-            <TabsTrigger value="refunds" className="gap-2">
-              <Undo2 className="h-4 w-4" />
+            <TabsTrigger value="refunds" className="gap-1 sm:gap-2 px-1 sm:px-3 py-2 text-xs sm:text-sm">
+              <Undo2 className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Remb.</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Onglet Ventes */}
-          <TabsContent value="sales" className="space-y-4">
-            <Alert className="bg-blue-50 border-blue-200">
+          <TabsContent value="sales" className="space-y-3 sm:space-y-4">
+            <Alert className="bg-blue-50 border-blue-200 hidden sm:flex">
               <AlertCircle className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                <strong>Note importante :</strong> Cet onglet affiche uniquement les tickets de caisse. Les factures sont dans l'onglet "Factures" pour éviter les doublons dans les déclarations.
+              <AlertDescription className="text-blue-800 text-xs sm:text-sm">
+                <strong>Note :</strong> Les factures sont dans l'onglet "Factures" pour éviter les doublons.
               </AlertDescription>
             </Alert>
 
-            {/* Filtres et Export */}
-            <Card className="p-4 bg-white">
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="flex-1 flex gap-2">
+            {/* Filtres et Export - Responsive */}
+            <Card className="p-2 sm:p-4 bg-white">
+              <div className="flex flex-col gap-2 sm:gap-3">
+                {/* Première ligne: Filtre + Actions */}
+                <div className="flex flex-wrap items-center gap-2">
                   {!selectionMode && (
-                    <>
-                      <Select value={dateFilter} onValueChange={(value) => { setDateFilter(value); setSalesPage(1); }}>
-                        <SelectTrigger className="w-[200px]">
-                          <Filter className="h-4 w-4 mr-2" />
-                          <SelectValue placeholder="Période" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Toutes les dates</SelectItem>
-                          <SelectItem value="today">Aujourd'hui</SelectItem>
-                          <SelectItem value="yesterday">Hier</SelectItem>
-                          <SelectItem value="week">Cette semaine</SelectItem>
-                          <SelectItem value="month">Ce mois</SelectItem>
-                          <SelectItem value="quarter">Ce trimestre</SelectItem>
-                          <SelectItem value="custom">Personnalisé</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </>
+                    <Select value={dateFilter} onValueChange={(value) => { setDateFilter(value); setSalesPage(1); }}>
+                      <SelectTrigger className="w-full sm:w-[180px] h-9 text-xs sm:text-sm">
+                        <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                        <SelectValue placeholder="Période" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Toutes les dates</SelectItem>
+                        <SelectItem value="today">Aujourd'hui</SelectItem>
+                        <SelectItem value="yesterday">Hier</SelectItem>
+                        <SelectItem value="week">Cette semaine</SelectItem>
+                        <SelectItem value="month">Ce mois</SelectItem>
+                        <SelectItem value="quarter">Ce trimestre</SelectItem>
+                        <SelectItem value="custom">Personnalisé</SelectItem>
+                      </SelectContent>
+                    </Select>
                   )}
                   
                   {selectionMode && (
-                    <div className="flex items-center gap-3 flex-1 bg-blue-50 p-3 rounded-lg border-2 border-blue-200">
-                      <CheckCircle className="h-5 w-5 text-blue-600" />
-                      <span className="font-semibold text-blue-900">
-                        {selectedTickets.length} ticket(s) sélectionné(s)
+                    <div className="flex items-center gap-2 flex-1 bg-blue-50 p-2 sm:p-3 rounded-lg border-2 border-blue-200">
+                      <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                      <span className="font-semibold text-blue-900 text-xs sm:text-sm">
+                        {selectedTickets.length} sélectionné(s)
                       </span>
                     </div>
                   )}
                   
                   {dateFilter === 'custom' && (
-                    <>
+                    <div className="flex gap-2 w-full sm:w-auto">
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="justify-start text-left font-normal">
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {customStartDate ? format(customStartDate, 'dd/MM/yyyy') : 'Date début'}
+                          <Button variant="outline" size="sm" className="flex-1 sm:flex-none justify-start text-left font-normal text-xs">
+                            <CalendarIcon className="mr-1 h-3 w-3" />
+                            {customStartDate ? format(customStartDate, 'dd/MM/yy') : 'Début'}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
@@ -1241,92 +1240,178 @@ export default function Documents() {
                       </Popover>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="justify-start text-left font-normal">
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {customEndDate ? format(customEndDate, 'dd/MM/yyyy') : 'Date fin'}
+                          <Button variant="outline" size="sm" className="flex-1 sm:flex-none justify-start text-left font-normal text-xs">
+                            <CalendarIcon className="mr-1 h-3 w-3" />
+                            {customEndDate ? format(customEndDate, 'dd/MM/yy') : 'Fin'}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
                           <CalendarComponent mode="single" selected={customEndDate} onSelect={setCustomEndDate} />
                         </PopoverContent>
                       </Popover>
-                    </>
+                    </div>
                   )}
-                </div>
-                
-                {!selectionMode ? (
-                  <>
-                    <Button 
-                      variant="default" 
-                      onClick={() => setSelectionMode(true)}
-                      className="gap-2 bg-blue-600 hover:bg-blue-700"
-                    >
-                      <FileText className="h-4 w-4" />
-                      Créer facture
-                    </Button>
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="gap-2">
-                          <FileDown className="h-4 w-4" />
-                          Exporter
+                  
+                  <div className="flex gap-2 ml-auto">
+                    {!selectionMode ? (
+                      <>
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => setSelectionMode(true)}
+                          className="gap-1 bg-blue-600 hover:bg-blue-700 text-xs"
+                        >
+                          <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="hidden sm:inline">Créer facture</span>
+                          <span className="sm:hidden">Facture</span>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 bg-background z-50">
-                        <DropdownMenuLabel>Formats disponibles</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleExportSalesPDF}>
-                          <FileDown className="h-4 w-4 mr-2" />
-                          PDF (Art. 315bis CIR92)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportSalesXML}>
-                          <FileDown className="h-4 w-4 mr-2" />
-                          XML Standard
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportSalesCSV}>
-                          <FileDown className="h-4 w-4 mr-2" />
-                          CSV (Excel)
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
-                ) : (
-                  <>
-                    <Button 
-                      variant="default" 
-                      onClick={handleCreateInvoiceFromTickets}
-                      disabled={selectedTickets.length === 0}
-                      className="gap-2 bg-green-600 hover:bg-green-700"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Générer facture ({selectedTickets.length})
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={handleCancelSelection}
-                      className="gap-2"
-                    >
-                      <X className="h-4 w-4" />
-                      Annuler
-                    </Button>
-                  </>
-                )}
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="gap-1 text-xs">
+                              <FileDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                              <span className="hidden sm:inline">Exporter</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-56 bg-background z-50">
+                            <DropdownMenuLabel>Formats disponibles</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={handleExportSalesPDF}>
+                              <FileDown className="h-4 w-4 mr-2" />
+                              PDF
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleExportSalesXML}>
+                              <FileDown className="h-4 w-4 mr-2" />
+                              XML
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleExportSalesCSV}>
+                              <FileDown className="h-4 w-4 mr-2" />
+                              CSV
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </>
+                    ) : (
+                      <>
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={handleCreateInvoiceFromTickets}
+                          disabled={selectedTickets.length === 0}
+                          className="gap-1 bg-green-600 hover:bg-green-700 text-xs"
+                        >
+                          <Plus className="h-3 w-3" />
+                          Générer ({selectedTickets.length})
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleCancelSelection}
+                          className="gap-1 text-xs"
+                        >
+                          <X className="h-3 w-3" />
+                          <span className="hidden sm:inline">Annuler</span>
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             </Card>
 
-            <Card className="p-4 bg-white">
+            {/* Recherche */}
+            <Card className="p-2 sm:p-4 bg-white">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher par numéro ou date..."
+                  placeholder="Rechercher..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-9 text-sm"
                 />
               </div>
             </Card>
 
-            <Card className="bg-white overflow-hidden">
+            {/* Vue Mobile: Cards */}
+            <div className="sm:hidden space-y-2">
+              {paginatedSales.map((sale) => (
+                <Card key={sale.id} className={`p-3 ${sale.is_cancelled ? 'bg-red-50 opacity-70' : 'bg-white'}`}>
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-sm">{sale.sale_number}</span>
+                        {(sale as any).source === 'mobile' && (
+                          <Badge variant="outline" className="text-[10px] px-1 py-0">
+                            <Smartphone className="h-2.5 w-2.5" />
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {format(new Date(sale.date), 'dd/MM/yy HH:mm', { locale: fr })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-bold ${sale.is_cancelled ? 'line-through text-muted-foreground' : 'text-primary'}`}>
+                        {sale.total.toFixed(2)}€
+                      </p>
+                      <Badge variant={sale.is_invoice ? 'default' : 'secondary'} className="text-[10px]">
+                        {sale.is_invoice ? 'Facture' : 'Ticket'}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                    <span>{sale.sale_items?.length || 0} articles</span>
+                    <span className="capitalize">
+                      {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : 'Mobile'}
+                    </span>
+                  </div>
+                  
+                  {sale.is_cancelled && (
+                    <Badge variant="destructive" className="text-xs mb-2">❌ ANNULÉE</Badge>
+                  )}
+                  
+                  {!selectionMode ? (
+                    <div className="flex gap-1 justify-end border-t pt-2">
+                      <Button variant="ghost" size="sm" onClick={() => handleViewReceipt(sale)} className="h-7 px-2">
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                      {!sale.is_cancelled && (
+                        <>
+                          <Button variant="ghost" size="sm" onClick={() => handleEditClick(sale)} className="h-7 px-2 text-blue-600">
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleCancelClick(sale.id)} className="h-7 px-2 text-orange-600">
+                            <XCircle className="h-3 w-3" />
+                          </Button>
+                        </>
+                      )}
+                      {sale.is_cancelled && (
+                        <Button variant="ghost" size="sm" onClick={() => handleRestoreClick(sale.id)} className="h-7 px-2 text-green-600">
+                          <RotateCcw className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex justify-end border-t pt-2">
+                      <Checkbox
+                        checked={selectedTickets.includes(sale.id)}
+                        onCheckedChange={() => handleToggleSelection(sale.id)}
+                        disabled={sale.is_cancelled}
+                      />
+                    </div>
+                  )}
+                </Card>
+              ))}
+              {paginatedSales.length === 0 && (
+                <Card className="p-8 text-center text-muted-foreground">
+                  Aucune vente trouvée
+                </Card>
+              )}
+            </div>
+
+            {/* Vue Desktop: Table */}
+            <Card className="bg-white overflow-hidden hidden sm:block">
               <div className="overflow-x-auto">
                 <ScrollArea className="min-h-[300px] max-h-[calc(100vh-400px)]" orientation="both">
                   <Table>
