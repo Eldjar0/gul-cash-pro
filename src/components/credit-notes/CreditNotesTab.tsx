@@ -243,8 +243,82 @@ export function CreditNotesTab() {
         </div>
       </Card>
 
-      {/* Table */}
-      <Card className="bg-white">
+      {/* Vue Mobile: Cards */}
+      <div className="sm:hidden space-y-2">
+        {paginatedCreditNotes.map((creditNote) => (
+          <Card key={creditNote.id} className="p-3">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="font-mono font-semibold text-sm">{creditNote.credit_note_number}</p>
+                <p className="text-xs text-muted-foreground">
+                  {format(new Date(creditNote.created_at), 'dd/MM/yy', { locale: fr })}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-primary">{creditNote.total.toFixed(2)}€</p>
+                {getStatusBadge(creditNote.status)}
+              </div>
+            </div>
+            
+            {creditNote.customers && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                <User className="h-3 w-3" />
+                <span>{creditNote.customers.name}</span>
+              </div>
+            )}
+            
+            <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+              {creditNote.reason}
+            </p>
+            
+            <div className="text-xs text-muted-foreground mb-2">
+              HT: {creditNote.subtotal.toFixed(2)}€
+            </div>
+            
+            <div className="flex gap-1 justify-end border-t pt-2">
+              <Button variant="ghost" size="sm" onClick={() => handleView(creditNote)} className="h-7 px-2">
+                <Eye className="h-3 w-3" />
+              </Button>
+              {creditNote.status === 'draft' && (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleValidate(creditNote)}
+                    className="h-7 px-2 text-green-600"
+                  >
+                    <CheckCircle className="h-3 w-3" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleEdit(creditNote)}
+                    className="h-7 px-2 text-blue-600"
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleDelete(creditNote.id)}
+                    className="h-7 px-2 text-red-600"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </>
+              )}
+            </div>
+          </Card>
+        ))}
+        {paginatedCreditNotes.length === 0 && (
+          <Card className="p-8 text-center text-muted-foreground">
+            Aucune note de crédit trouvée
+          </Card>
+        )}
+      </div>
+
+      {/* Vue Desktop: Table */}
+      <Card className="bg-white hidden sm:block">
         <div className="overflow-hidden">
           <ScrollArea className="h-[500px]">
             <Table>

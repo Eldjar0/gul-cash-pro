@@ -1737,23 +1737,110 @@ export default function Documents() {
               </div>
             </Card>
 
+            {/* Header + Button nouvelle facture */}
             <Card className="bg-white overflow-hidden">
-              <div className="p-6 border-b bg-gradient-to-r from-muted/30 to-muted/10">
+              <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-muted/30 to-muted/10">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-6 w-6 text-primary" />
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                     <div>
-                      <h2 className="text-xl font-bold text-foreground">Liste des Factures</h2>
-                      <p className="text-sm text-muted-foreground">{filteredInvoices.length} facture{filteredInvoices.length > 1 ? 's' : ''}</p>
+                      <h2 className="text-lg sm:text-xl font-bold text-foreground">Factures</h2>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{filteredInvoices.length} facture{filteredInvoices.length > 1 ? 's' : ''}</p>
                     </div>
                   </div>
-                  <Button onClick={() => { setEditingInvoiceId(undefined); setInvoiceEditorOpen(true); }} size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nouvelle Facture
+                  <Button onClick={() => { setEditingInvoiceId(undefined); setInvoiceEditorOpen(true); }} size="sm" className="text-xs sm:text-sm">
+                    <Plus className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Nouvelle Facture</span>
                   </Button>
                 </div>
               </div>
+            </Card>
 
+            {/* Vue Mobile: Cards */}
+            <div className="sm:hidden space-y-2">
+              {paginatedInvoices.map((invoice) => (
+                <Card key={invoice.id} className="p-3">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="font-mono font-semibold text-sm">{invoice.sale_number}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(invoice.date), 'dd/MM/yy HH:mm', { locale: fr })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-primary">{invoice.total.toFixed(2)}€</p>
+                      {getStatusBadge(invoice.invoice_status || 'paye')}
+                    </div>
+                  </div>
+                  
+                  {invoice.customers && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+                      <User className="h-3 w-3" />
+                      <span>{invoice.customers.name}</span>
+                    </div>
+                  )}
+                  
+                  <div className="text-xs text-muted-foreground mb-2">
+                    {invoice.sale_items?.length || 0} article{(invoice.sale_items?.length || 0) > 1 ? 's' : ''} • HT: {invoice.subtotal.toFixed(2)}€
+                  </div>
+                  
+                  <div className="flex gap-1 justify-end border-t pt-2">
+                    {invoiceSelectionMode ? (
+                      <Checkbox
+                        checked={selectedInvoices.includes(invoice.id)}
+                        onCheckedChange={() => handleToggleInvoiceSelection(invoice.id)}
+                      />
+                    ) : (
+                      <>
+                        <Button variant="ghost" size="sm" onClick={() => handleViewInvoice(invoice)} className="h-7 px-2">
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-7 px-2">
+                              <Download className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="bg-background">
+                            <DropdownMenuItem onClick={() => handleExportSingleInvoice(invoice, 'pdf')}>PDF</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExportSingleInvoice(invoice, 'xml')}>XML</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExportSingleInvoice(invoice, 'ubl')}>UBL</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {canModifyInvoice(invoice.invoice_status) && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => { setEditingInvoiceId(invoice.id); setInvoiceEditorOpen(true); }} 
+                            className="h-7 px-2 text-blue-600"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                        )}
+                        {canDeleteInvoice(invoice.invoice_status) && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleCancelClick(invoice.id)} 
+                            className="h-7 px-2 text-orange-600"
+                          >
+                            <XCircle className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </Card>
+              ))}
+              {paginatedInvoices.length === 0 && (
+                <Card className="p-8 text-center text-muted-foreground">
+                  Aucune facture trouvée
+                </Card>
+              )}
+            </div>
+
+            {/* Vue Desktop: Table */}
+            <Card className="bg-white overflow-hidden hidden sm:block">
               <div className="overflow-x-auto">
                 <ScrollArea className="min-h-[400px] max-h-[calc(100vh-320px)]" orientation="both">
                   <Table>
@@ -2117,25 +2204,81 @@ export default function Documents() {
               </div>
             </Card>
 
-            <div className="flex justify-between items-center">
-              <Card className="p-4 bg-white flex-1 mr-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+              <Card className="p-3 sm:p-4 bg-white flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Rechercher un remboursement..."
+                    placeholder="Rechercher..."
                     value={refundSearchTerm}
                     onChange={(e) => setRefundSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-sm"
                   />
                 </div>
               </Card>
-              <Button onClick={() => setRefundDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nouveau Remboursement
+              <Button onClick={() => setRefundDialogOpen(true)} className="text-sm">
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Nouveau Remboursement</span>
+                <span className="sm:hidden">Nouveau</span>
               </Button>
             </div>
 
-            <ScrollArea className="min-h-[300px] max-h-[calc(100vh-400px)]">
+            {/* Vue Mobile: Cards */}
+            <div className="sm:hidden space-y-2">
+              {paginatedRefunds.map((refund) => (
+                <Card key={refund.id} className="p-3">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <Badge variant="outline" className="font-mono text-xs">
+                        {refund.refund_number}
+                      </Badge>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {format(new Date(refund.created_at), 'dd/MM/yy HH:mm', { locale: fr })}
+                      </p>
+                    </div>
+                    <p className="text-lg font-bold text-destructive">-{refund.total.toFixed(2)}€</p>
+                  </div>
+                  
+                  {refund.customers && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                      <User className="h-3 w-3" />
+                      <span>{refund.customers.name}</span>
+                    </div>
+                  )}
+                  
+                  <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                    {refund.reason}
+                  </p>
+                  
+                  {refund.original_sale_id && getSaleForRefund(refund.original_sale_id) && (
+                    <Badge variant="outline" className="text-[10px] gap-1 mb-2">
+                      <Receipt className="h-2.5 w-2.5" />
+                      Vente: {getSaleForRefund(refund.original_sale_id)?.sale_number}
+                    </Badge>
+                  )}
+                  
+                  <div className="flex justify-end border-t pt-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleDeleteRefundClick(refund.id)}
+                      className="h-7 px-2 text-destructive"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+              {paginatedRefunds.length === 0 && (
+                <Card className="p-8 text-center">
+                  <Undo2 className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">Aucun remboursement trouvé</p>
+                </Card>
+              )}
+            </div>
+
+            {/* Vue Desktop: Cards */}
+            <ScrollArea className="min-h-[300px] max-h-[calc(100vh-400px)] hidden sm:block">
               <div className="space-y-3">
                 {paginatedRefunds.map((refund) => (
                   <Card key={refund.id} className="p-4 bg-white hover:shadow-lg transition-shadow">
