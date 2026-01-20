@@ -2,10 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   Package,
-  ShoppingCart,
   Scan,
   FolderKanban,
   Home,
+  CreditCard,
 } from 'lucide-react';
 
 interface MobileBottomNavProps {
@@ -18,7 +18,8 @@ export function MobileBottomNav({ currentPath }: MobileBottomNavProps) {
   const navItems = [
     { path: '/mobile/management', icon: Home, label: 'Menu' },
     { path: '/mobile/products', icon: Package, label: 'Produits' },
-    { path: '/mobile/scan-rapid', icon: Scan, label: 'Scan', isSpecial: true },
+    { path: '/mobile/pos', icon: CreditCard, label: 'Caisse', isMain: true },
+    { path: '/mobile/scan-rapid', icon: Scan, label: 'Scan' },
     { path: '/mobile/categories', icon: FolderKanban, label: 'Catégories' },
   ];
 
@@ -28,21 +29,38 @@ export function MobileBottomNav({ currentPath }: MobileBottomNavProps) {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentPath === item.path;
+          const isMain = 'isMain' in item && item.isMain;
           
-          const isSpecial = 'isSpecial' in item && item.isSpecial;
+          if (isMain) {
+            return (
+              <Button
+                key={item.path}
+                size="sm"
+                onClick={() => navigate(item.path)}
+                className={`flex-col h-auto py-2 sm:py-2.5 px-4 sm:px-5 gap-0.5 sm:gap-1 min-w-0 relative -mt-4 rounded-full shadow-lg ${
+                  isActive 
+                    ? 'bg-primary hover:bg-primary/90' 
+                    : 'bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700'
+                }`}
+              >
+                <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                <span className="text-[10px] sm:text-xs font-medium text-white">
+                  {item.label}
+                </span>
+              </Button>
+            );
+          }
           
           return (
             <Button
               key={item.path}
-              variant={isActive ? 'default' : isSpecial ? 'default' : 'ghost'}
+              variant={isActive ? 'default' : 'ghost'}
               size="sm"
               onClick={() => navigate(item.path)}
-              className={`flex-col h-auto py-1.5 sm:py-2 px-2 sm:px-3 gap-0.5 sm:gap-1 min-w-0 ${
-                isSpecial ? 'bg-primary hover:bg-primary/90 scale-110' : ''
-              }`}
+              className="flex-col h-auto py-1.5 sm:py-2 px-2 sm:px-3 gap-0.5 sm:gap-1 min-w-0"
             >
-              <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${isActive || isSpecial ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
-              <span className={`text-[10px] sm:text-xs truncate ${isActive || isSpecial ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
+              <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
+              <span className={`text-[10px] sm:text-xs truncate ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
                 {item.label}
               </span>
             </Button>
