@@ -68,8 +68,11 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   const rightX = pageWidth - margin;
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
+  const companyNameWithSRL = invoice.company.name.toUpperCase().includes('SRL') 
+    ? invoice.company.name 
+    : `${invoice.company.name} SRL`;
   doc.text([
-    `${invoice.company.name} SRL`,
+    companyNameWithSRL,
     invoice.company.address,
     `${invoice.company.postalCode} ${invoice.company.city}`,
     `TVA: ${invoice.company.vatNumber}`
