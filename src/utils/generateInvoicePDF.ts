@@ -155,15 +155,27 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
 
   yPos += 5;
 
-  // ============ TOTAUX (compact, aligné à droite) ============
-  const totalsLabelX = pageWidth - margin - 50;
+  // ============ TOTAUX (3 colonnes: Label | HTVA | TVA) ============
   const valuesX = pageWidth - margin;
+  const tvaX = valuesX - 30; // Colonne TVA
+  const htvaX = tvaX - 30;   // Colonne HTVA
+  const labelX = htvaX - 5;  // Labels à gauche
+  
+  // En-têtes des colonnes
+  doc.setFontSize(6);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(100, 100, 100);
+  doc.text('HTVA', htvaX + 15, yPos, { align: 'right' });
+  doc.text('TVA', valuesX, yPos, { align: 'right' });
+  yPos += 4;
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.text('Total HTVA:', totalsLabelX, yPos, { align: 'right' });
-  doc.text(`${invoice.subtotal.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
-  yPos += 4;
+  doc.setTextColor(0, 0, 0);
+  doc.text('Total HTVA:', labelX, yPos, { align: 'right' });
+  doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaX + 15, yPos, { align: 'right' });
+  doc.text(`${invoice.totalVat.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
+  yPos += 5;
   
   // Détail TVA par taux
   const vatByRate: { [key: number]: { ht: number; vat: number } } = {};
@@ -182,25 +194,22 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     doc.setFontSize(7);
     doc.setTextColor(80, 80, 80);
     const rateLabel = rate === 0 ? 'Exempté' : `${rate}%`;
-    doc.text(`Total HTVA ${rateLabel}:`, totalsLabelX, yPos, { align: 'right' });
-    doc.text(`${data.ht.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
+    doc.text(`Total HTVA ${rateLabel}:`, labelX, yPos, { align: 'right' });
+    doc.text(`${data.ht.toFixed(2)} €`, htvaX + 15, yPos, { align: 'right' });
+    doc.text(`${data.vat.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
     yPos += 3.5;
   });
   
   doc.setTextColor(0, 0, 0);
-  doc.setFontSize(8);
-  yPos += 1;
-  doc.text('Total TVA:', totalsLabelX, yPos, { align: 'right' });
-  doc.text(`${invoice.totalVat.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
-  yPos += 4;
+  yPos += 2;
   
   doc.setLineWidth(0.3);
-  doc.line(totalsLabelX - 25, yPos, valuesX, yPos);
+  doc.line(labelX - 30, yPos, valuesX, yPos);
   yPos += 4;
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('TOTAL TVAC:', totalsLabelX, yPos, { align: 'right' });
+  doc.text('TOTAL TVAC:', labelX, yPos, { align: 'right' });
   doc.text(`${invoice.total.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
   yPos += 8;
 
