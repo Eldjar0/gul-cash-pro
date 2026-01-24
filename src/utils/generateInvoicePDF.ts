@@ -175,13 +175,14 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     vatByRate[item.vatRate].vat += item.vatAmount;
   });
   
-  // Afficher les taux dans l'ordre: 0%, 6%, 12%, 21%
-  const orderedRates = [0, 6, 12, 21].filter(rate => vatByRate[rate]);
-  orderedRates.forEach(rate => {
-    const data = vatByRate[rate];
+  // Afficher TOUS les taux dans l'ordre: Exempté (0%), 6%, 12%, 21%
+  const allRates = [0, 6, 12, 21];
+  allRates.forEach(rate => {
+    const data = vatByRate[rate] || { ht: 0, vat: 0 };
     doc.setFontSize(7);
     doc.setTextColor(80, 80, 80);
-    doc.text(`Total HTVA ${rate}%:`, totalsLabelX, yPos, { align: 'right' });
+    const rateLabel = rate === 0 ? 'Exempté' : `${rate}%`;
+    doc.text(`Total HTVA ${rateLabel}:`, totalsLabelX, yPos, { align: 'right' });
     doc.text(`${data.ht.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
     yPos += 3.5;
   });
