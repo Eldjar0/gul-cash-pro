@@ -416,14 +416,18 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
   ubl += '  </cac:TaxTotal>\n';
   
   // TOTAUX MONETAIRES (BG-22)
+  // BR-CO-15: TaxInclusiveAmount = TaxExclusiveAmount + TaxAmount
+  const taxExclusiveAmount = doc.subtotal || 0;
+  const calculatedTaxInclusiveAmount = taxExclusiveAmount + totalVatAmount;
+  
   ubl += '  <cac:LegalMonetaryTotal>\n';
-  ubl += '    <cbc:LineExtensionAmount currencyID="EUR">' + (doc.subtotal || 0).toFixed(2) + '</cbc:LineExtensionAmount>\n';
-  ubl += '    <cbc:TaxExclusiveAmount currencyID="EUR">' + (doc.subtotal || 0).toFixed(2) + '</cbc:TaxExclusiveAmount>\n';
-  ubl += '    <cbc:TaxInclusiveAmount currencyID="EUR">' + (doc.total || 0).toFixed(2) + '</cbc:TaxInclusiveAmount>\n';
+  ubl += '    <cbc:LineExtensionAmount currencyID="EUR">' + taxExclusiveAmount.toFixed(2) + '</cbc:LineExtensionAmount>\n';
+  ubl += '    <cbc:TaxExclusiveAmount currencyID="EUR">' + taxExclusiveAmount.toFixed(2) + '</cbc:TaxExclusiveAmount>\n';
+  ubl += '    <cbc:TaxInclusiveAmount currencyID="EUR">' + calculatedTaxInclusiveAmount.toFixed(2) + '</cbc:TaxInclusiveAmount>\n';
   if (doc.total_discount && doc.total_discount > 0) {
     ubl += '    <cbc:AllowanceTotalAmount currencyID="EUR">' + doc.total_discount.toFixed(2) + '</cbc:AllowanceTotalAmount>\n';
   }
-  ubl += '    <cbc:PayableAmount currencyID="EUR">' + (doc.total || 0).toFixed(2) + '</cbc:PayableAmount>\n';
+  ubl += '    <cbc:PayableAmount currencyID="EUR">' + calculatedTaxInclusiveAmount.toFixed(2) + '</cbc:PayableAmount>\n';
   ubl += '  </cac:LegalMonetaryTotal>\n';
   
   // LIGNES DE FACTURE (BG-25) avec TaxTotal par ligne (ubl-BE-14)
