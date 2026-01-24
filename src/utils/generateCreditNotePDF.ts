@@ -140,7 +140,7 @@ export const generateCreditNotePDF = async (creditNote: CreditNoteData): Promise
     item.description || 'Article',
     item.quantity.toString(),
     `${(item.unitPrice || 0).toFixed(2)} €`,
-    `${item.vatRate || 0}%`,
+    item.vatRate === 0 ? 'Exempté' : `${item.vatRate ?? 21}%`,
     `${(item.total || 0).toFixed(2)} €`
   ]);
 
