@@ -315,7 +315,9 @@ export function exportCreditNoteToUBL(creditNote: CreditNoteExportData, companyI
   // LIGNES
   creditNote.credit_note_items?.forEach((item, index) => {
     const itemName = item.product_name || 'Article non désigné';
-    const vatRate = parseFloat(String(item.vat_rate)) || 21;
+    // IMPORTANT: Ne pas utiliser || 21 car 0 est un taux valide (exempté)
+    const parsedRate = parseFloat(String(item.vat_rate));
+    const vatRate = isNaN(parsedRate) ? 21 : parsedRate;
     
     ubl += '  <cac:CreditNoteLine>\n';
     ubl += '    <cbc:ID>' + (index + 1) + '</cbc:ID>\n';
