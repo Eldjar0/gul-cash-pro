@@ -160,10 +160,14 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
 
   yPos += 8;
 
-  // ============ TOTAUX - Style professionnel compact à droite ============
-  const totalsWidth = 85; // Largeur de la zone de totaux (mm)
+  // ============ SECTION PAIEMENT (gauche) + TOTAUX (droite) ============
+  const sectionStartY = yPos;
+  
+  // Dimensions
+  const totalsWidth = 85;
   const totalsX = pageWidth - margin - totalsWidth;
-  const colWidth = 28;
+  const rightEdge = pageWidth - margin;
+  const paymentBoxWidth = totalsX - margin - 8; // Espace de 8mm entre paiement et totaux
   
   // Calculer le détail TVA par taux
   const vatByRate: { [key: number]: { ht: number; vat: number } } = {};
@@ -176,16 +180,50 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   });
   const presentRates = [0, 6, 12, 21].filter(rate => vatByRate[rate]);
   
-  // Ligne de base pour les totaux
-  const rightEdge = pageWidth - margin;
+  // ============ PAIEMENT À GAUCHE ============
+  let paymentEndY = sectionStartY;
+  if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
+    const account = invoice.bankAccounts[0];
+    const boxHeight = 22;
+    
+    doc.setDrawColor(0, 100, 180);
+    doc.setLineWidth(0.5);
+    doc.setFillColor(245, 250, 255);
+    doc.roundedRect(margin, sectionStartY, paymentBoxWidth, boxHeight, 1, 1, 'FD');
+    
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 80, 150);
+    doc.text('PAIEMENT', margin + 3, sectionStartY + 5);
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text(`${account.bank_name}: ${account.account_number}`, margin + 3, sectionStartY + 10);
+    
+    const payInfo = invoice.structuredCommunication 
+      ? `Communication: ${invoice.structuredCommunication}`
+      : `Réf: ${invoice.saleNumber}`;
+    doc.text(payInfo, margin + 3, sectionStartY + 15);
+    
+    if (invoice.dueDate) {
+      const daysDiff = differenceInDays(new Date(invoice.dueDate), new Date(invoice.date));
+      doc.text(`Paiement à ${daysDiff} jours • Montant: ${invoice.total.toFixed(2)} €`, margin + 3, sectionStartY + 20);
+    }
+    
+    paymentEndY = sectionStartY + boxHeight + 3;
+  }
+  
+  // ============ TOTAUX À DROITE ============
+  let totalsYPos = sectionStartY;
   
   // Sous-total HTVA
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
-  doc.text('Sous-total HTVA', totalsX, yPos);
-  doc.text(`${invoice.subtotal.toFixed(2)} €`, rightEdge, yPos, { align: 'right' });
-  yPos += 4.5;
+  doc.text('Sous-total HTVA', totalsX, totalsYPos);
+  doc.text(`${invoice.subtotal.toFixed(2)} €`, rightEdge, totalsYPos, { align: 'right' });
+  totalsYPos += 4.5;
   
   // Détail TVA par taux
   presentRates.forEach(rate => {
@@ -193,85 +231,49 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     doc.setFontSize(7);
     doc.setTextColor(100, 100, 100);
     const rateLabel = rate === 0 ? 'TVA exempté' : `TVA ${rate}%`;
-    doc.text(rateLabel, totalsX, yPos);
-    doc.text(`${data.vat.toFixed(2)} €`, rightEdge, yPos, { align: 'right' });
-    yPos += 3.5;
+    doc.text(rateLabel, totalsX, totalsYPos);
+    doc.text(`${data.vat.toFixed(2)} €`, rightEdge, totalsYPos, { align: 'right' });
+    totalsYPos += 3.5;
   });
   
-  yPos += 2;
+  totalsYPos += 2;
   
   // Ligne de séparation fine
   doc.setDrawColor(180, 180, 180);
   doc.setLineWidth(0.3);
-  doc.line(totalsX, yPos, rightEdge, yPos);
-  yPos += 4;
+  doc.line(totalsX, totalsYPos, rightEdge, totalsYPos);
+  totalsYPos += 4;
   
   // Total TVA
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
-  doc.text('Total TVA', totalsX, yPos);
-  doc.text(`${invoice.totalVat.toFixed(2)} €`, rightEdge, yPos, { align: 'right' });
-  yPos += 6;
+  doc.text('Total TVA', totalsX, totalsYPos);
+  doc.text(`${invoice.totalVat.toFixed(2)} €`, rightEdge, totalsYPos, { align: 'right' });
+  totalsYPos += 6;
   
-  // Bandeau TOTAL TVAC - fond bleu subtil avec coins arrondis
+  // Bandeau TOTAL TVAC
   const totalBoxHeight = 8;
   doc.setFillColor(0, 90, 160);
-  doc.roundedRect(totalsX - 3, yPos - 5, totalsWidth + 6, totalBoxHeight, 1.5, 1.5, 'F');
+  doc.roundedRect(totalsX - 3, totalsYPos - 5, totalsWidth + 6, totalBoxHeight, 1.5, 1.5, 'F');
   
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  doc.text('TOTAL TVAC', totalsX, yPos);
+  doc.text('TOTAL TVAC', totalsX, totalsYPos);
   doc.setFontSize(10);
-  doc.text(`${invoice.total.toFixed(2)} €`, rightEdge, yPos, { align: 'right' });
+  doc.text(`${invoice.total.toFixed(2)} €`, rightEdge, totalsYPos, { align: 'right' });
   
   doc.setTextColor(0, 0, 0);
-  yPos += 12;
-
-  // ============ STATUT PAYÉ (compact) ============
-  if (invoice.isPaid) {
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 150, 0);
-    doc.text('PAYÉ', pageWidth / 2, yPos + 5, { align: 'center' });
-    doc.setTextColor(0, 0, 0);
-    yPos += 12;
-  }
-
-  // ============ PAIEMENT + QR CODE (compact) ============
+  const totalsEndY = totalsYPos + 5;
+  
+  // ============ QR CODE SOUS LE PAIEMENT ============
+  yPos = Math.max(paymentEndY, totalsEndY) + 3;
+  
   if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
     const account = invoice.bankAccounts[0];
-    const boxHeight = 25;
     const qrSize = 25;
-    const gapBetween = 5; // Espace entre la box et le QR code
     
-    doc.setDrawColor(0, 100, 180);
-    doc.setLineWidth(0.5);
-    doc.setFillColor(245, 250, 255);
-    doc.roundedRect(tableMargin, yPos, pageWidth - tableMargin * 2 - qrSize - gapBetween - 5, boxHeight, 1, 1, 'FD');
-    
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 80, 150);
-    doc.text('PAIEMENT', tableMargin + 3, yPos + 5);
-    
-    doc.setTextColor(0, 0, 0);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.text(`${account.bank_name}: ${account.account_number}`, tableMargin + 3, yPos + 10);
-    
-    const payInfo = invoice.structuredCommunication 
-      ? `Communication: ${invoice.structuredCommunication}`
-      : `Réf: ${invoice.saleNumber}`;
-    doc.text(payInfo, tableMargin + 3, yPos + 15);
-    
-    if (invoice.dueDate) {
-      const daysDiff = differenceInDays(new Date(invoice.dueDate), new Date(invoice.date));
-      doc.text(`Paiement à ${daysDiff} jours • Montant: ${invoice.total.toFixed(2)} €`, tableMargin + 3, yPos + 20);
-    }
-    
-    // QR Code compact
     try {
       const epcData = [
         'BCD', '002', '1', 'SCT', '',
@@ -282,10 +284,27 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
       ].join('\n');
       
       const qrCodeDataUrl = await QRCode.toDataURL(epcData, { width: 80, margin: 0 });
-      doc.addImage(qrCodeDataUrl, 'PNG', pageWidth - margin - 28, yPos, 25, 25);
+      doc.addImage(qrCodeDataUrl, 'PNG', margin, yPos, qrSize, qrSize);
+      
+      doc.setFontSize(5);
+      doc.setTextColor(100, 100, 100);
+      doc.text('Scanner pour payer', margin + qrSize / 2, yPos + qrSize + 3, { align: 'center' });
+      doc.setTextColor(0, 0, 0);
+      
+      yPos += qrSize + 8;
     } catch { /* ignore */ }
-    
-    yPos += boxHeight + 5;
+  } else {
+    yPos += 5;
+  }
+  
+  // ============ STATUT PAYÉ ============
+  if (invoice.isPaid) {
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 150, 0);
+    doc.text('PAYÉ', margin + 30, sectionStartY + 15, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
+    yPos = Math.max(yPos, totalsEndY + 8);
   }
 
   // ============ NOTES (compact) ============
