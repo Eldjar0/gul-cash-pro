@@ -378,8 +378,12 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
   ubl += '  </cac:PaymentTerms>\n';
   
   // VENTILATION TVA (BG-23) - Peppol BIS Billing 3.0 (sans Name)
+  // BR-CO-14: TaxTotal/TaxAmount DOIT être égal à la somme des TaxSubtotal/TaxAmount
+  const calculatedTotalVat = vatBreakdown.reduce((sum, vat) => sum + vat.taxAmount, 0);
+  const totalVatAmount = vatBreakdown.length > 0 ? calculatedTotalVat : (doc.total_vat || 0);
+  
   ubl += '  <cac:TaxTotal>\n';
-  ubl += '    <cbc:TaxAmount currencyID="EUR">' + (doc.total_vat || 0).toFixed(2) + '</cbc:TaxAmount>\n';
+  ubl += '    <cbc:TaxAmount currencyID="EUR">' + totalVatAmount.toFixed(2) + '</cbc:TaxAmount>\n';
   
   if (vatBreakdown.length > 0) {
     vatBreakdown.forEach(function(vat) {
