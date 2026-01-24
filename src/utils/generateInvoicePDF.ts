@@ -249,26 +249,26 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     doc.setDrawColor(0, 100, 180);
     doc.setLineWidth(0.5);
     doc.setFillColor(245, 250, 255);
-    doc.roundedRect(margin, yPos, pageWidth - margin * 2 - 35, boxHeight, 1, 1, 'FD');
+    doc.roundedRect(tableMargin, yPos, pageWidth - tableMargin * 2 - 35, boxHeight, 1, 1, 'FD');
     
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 80, 150);
-    doc.text('PAIEMENT', margin + 3, yPos + 5);
+    doc.text('PAIEMENT', tableMargin + 3, yPos + 5);
     
     doc.setTextColor(0, 0, 0);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
-    doc.text(`${account.bank_name}: ${account.account_number}`, margin + 3, yPos + 10);
+    doc.text(`${account.bank_name}: ${account.account_number}`, tableMargin + 3, yPos + 10);
     
     const payInfo = invoice.structuredCommunication 
       ? `Communication: ${invoice.structuredCommunication}`
       : `Réf: ${invoice.saleNumber}`;
-    doc.text(payInfo, margin + 3, yPos + 15);
+    doc.text(payInfo, tableMargin + 3, yPos + 15);
     
     if (invoice.dueDate) {
       const daysDiff = differenceInDays(new Date(invoice.dueDate), new Date(invoice.date));
-      doc.text(`Paiement à ${daysDiff} jours • Montant: ${invoice.total.toFixed(2)} €`, margin + 3, yPos + 20);
+      doc.text(`Paiement à ${daysDiff} jours • Montant: ${invoice.total.toFixed(2)} €`, tableMargin + 3, yPos + 20);
     }
     
     // QR Code compact
