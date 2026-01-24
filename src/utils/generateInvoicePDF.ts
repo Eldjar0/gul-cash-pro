@@ -158,24 +158,14 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     didDrawPage: (data) => { yPos = data.cursor?.y || yPos; }
   });
 
-  yPos += 5;
+  yPos += 8;
 
-  // ============ TOTAUX alignés à droite comme dans l'image ============
-  const tableRightEdge = pageWidth - 5; // Marge réduite pour le tableau
-  const colWidth = 24;
+  // ============ TOTAUX - Style professionnel compact à droite ============
+  const totalsWidth = 85; // Largeur de la zone de totaux (mm)
+  const totalsX = pageWidth - margin - totalsWidth;
+  const colWidth = 28;
   
-  // Bords droits des colonnes
-  const ttcRight = tableRightEdge;
-  const tvaRight = tableRightEdge - colWidth;
-  const htvaRight = tableRightEdge - (2 * colWidth);
-  
-  // Centres des colonnes (pour les titres)
-  const ttcCenter = tableRightEdge - (colWidth / 2);
-  const tvaCenter = tableRightEdge - colWidth - (colWidth / 2);
-  const htvaCenter = tableRightEdge - (2 * colWidth) - (colWidth / 2);
-  const labelRightX = tableRightEdge - (3 * colWidth) - 8; // Labels décalés vers la gauche pour alignement
-  
-  // Calculer la hauteur du bloc totaux pour le rectangle
+  // Calculer le détail TVA par taux
   const vatByRate: { [key: number]: { ht: number; vat: number } } = {};
   invoice.items.forEach(item => {
     if (!vatByRate[item.vatRate]) {
@@ -185,62 +175,59 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     vatByRate[item.vatRate].vat += item.vatAmount;
   });
   const presentRates = [0, 6, 12, 21].filter(rate => vatByRate[rate]);
-  const totalsZoneHeight = 12 + (presentRates.length * 3.5) + 12; // headers + détails + total bar
   
-  // Rectangle de zone pour les totaux
-  doc.setDrawColor(220, 220, 220);
-  doc.setLineWidth(0.3);
-  doc.setFillColor(252, 252, 252);
-  doc.roundedRect(tableMargin, yPos - 2, pageWidth - tableMargin * 2, totalsZoneHeight, 2, 2, 'FD');
+  // Ligne de base pour les totaux
+  const rightEdge = pageWidth - margin;
   
-  // En-têtes des colonnes (centrés)
-  doc.setFontSize(6);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(100, 100, 100);
-  doc.text('HTVA', htvaCenter, yPos + 2, { align: 'center' });
-  doc.text('TVA', tvaCenter, yPos + 2, { align: 'center' });
-  doc.text('TTC', ttcCenter, yPos + 2, { align: 'center' });
-  yPos += 6;
-  
+  // Sous-total HTVA
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(0, 0, 0);
-  doc.text('Total HTVA:', labelRightX, yPos, { align: 'right' });
-  doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaRight, yPos, { align: 'right' });
-  doc.text(`${invoice.totalVat.toFixed(2)} €`, tvaRight, yPos, { align: 'right' });
-  doc.text(`${invoice.total.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
-  yPos += 4;
+  doc.setTextColor(60, 60, 60);
+  doc.text('Sous-total HTVA', totalsX, yPos);
+  doc.text(`${invoice.subtotal.toFixed(2)} €`, rightEdge, yPos, { align: 'right' });
+  yPos += 4.5;
   
   // Détail TVA par taux
   presentRates.forEach(rate => {
     const data = vatByRate[rate];
-    const ttc = data.ht + data.vat;
     doc.setFontSize(7);
     doc.setTextColor(100, 100, 100);
-    const rateLabel = rate === 0 ? 'Exempté' : `${rate}%`;
-    doc.text(`Total HTVA ${rateLabel}:`, labelRightX, yPos, { align: 'right' });
-    doc.text(`${data.ht.toFixed(2)} €`, htvaRight, yPos, { align: 'right' });
-    doc.text(`${data.vat.toFixed(2)} €`, tvaRight, yPos, { align: 'right' });
-    doc.text(`${ttc.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
+    const rateLabel = rate === 0 ? 'TVA exempté' : `TVA ${rate}%`;
+    doc.text(rateLabel, totalsX, yPos);
+    doc.text(`${data.vat.toFixed(2)} €`, rightEdge, yPos, { align: 'right' });
     yPos += 3.5;
   });
   
-  yPos += 1;
+  yPos += 2;
   
-  // Bandeau coloré pour TOTAL TVAC (à l'intérieur du rectangle)
-  const totalBoxHeight = 7;
-  doc.setFillColor(0, 100, 180);
-  doc.roundedRect(tableMargin + 1, yPos, pageWidth - tableMargin * 2 - 2, totalBoxHeight, 1, 1, 'F');
+  // Ligne de séparation fine
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.3);
+  doc.line(totalsX, yPos, rightEdge, yPos);
+  yPos += 4;
   
-  // Texte TOTAL TVAC en blanc sur fond bleu
+  // Total TVA
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  doc.text('Total TVA', totalsX, yPos);
+  doc.text(`${invoice.totalVat.toFixed(2)} €`, rightEdge, yPos, { align: 'right' });
+  yPos += 6;
+  
+  // Bandeau TOTAL TVAC - fond bleu subtil avec coins arrondis
+  const totalBoxHeight = 8;
+  doc.setFillColor(0, 90, 160);
+  doc.roundedRect(totalsX - 3, yPos - 5, totalsWidth + 6, totalBoxHeight, 1.5, 1.5, 'F');
+  
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  doc.text('TOTAL TVAC:', tableMargin + 5, yPos + 5);
-  doc.text(`${invoice.total.toFixed(2)} €`, tableRightEdge - 5, yPos + 5, { align: 'right' });
+  doc.text('TOTAL TVAC', totalsX, yPos);
+  doc.setFontSize(10);
+  doc.text(`${invoice.total.toFixed(2)} €`, rightEdge, yPos, { align: 'right' });
   
   doc.setTextColor(0, 0, 0);
-  yPos += totalsZoneHeight - (yPos - (yPos - totalBoxHeight)) + 8; // Espace après la zone totaux
+  yPos += 12;
 
   // ============ STATUT PAYÉ (compact) ============
   if (invoice.isPaid) {
