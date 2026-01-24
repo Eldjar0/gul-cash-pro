@@ -156,13 +156,13 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   yPos += 5;
 
   // ============ TOTAUX (compact, aligné à droite) ============
-  const totalsWidth = 70;
-  const totalsX = pageWidth - margin - totalsWidth;
+  const totalsLabelX = pageWidth - margin - 50;
+  const valuesX = pageWidth - margin;
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.text('Total HTVA:', totalsX, yPos);
-  doc.text(`${invoice.subtotal.toFixed(2)} €`, rightX, yPos, { align: 'right' });
+  doc.text('Total HTVA:', totalsLabelX, yPos, { align: 'right' });
+  doc.text(`${invoice.subtotal.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
   yPos += 4;
   
   // Détail TVA par taux
@@ -181,26 +181,26 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     const data = vatByRate[rate];
     doc.setFontSize(7);
     doc.setTextColor(80, 80, 80);
-    doc.text(`Total HTVA ${rate}%:`, totalsX, yPos);
-    doc.text(`${data.ht.toFixed(2)} €`, rightX, yPos, { align: 'right' });
+    doc.text(`Total HTVA ${rate}%:`, totalsLabelX, yPos, { align: 'right' });
+    doc.text(`${data.ht.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
     yPos += 3.5;
   });
   
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(8);
   yPos += 1;
-  doc.text('Total TVA:', totalsX, yPos);
-  doc.text(`${invoice.totalVat.toFixed(2)} €`, rightX, yPos, { align: 'right' });
+  doc.text('Total TVA:', totalsLabelX, yPos, { align: 'right' });
+  doc.text(`${invoice.totalVat.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
   yPos += 4;
   
   doc.setLineWidth(0.3);
-  doc.line(totalsX, yPos, rightX, yPos);
+  doc.line(totalsLabelX - 25, yPos, valuesX, yPos);
   yPos += 4;
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('TOTAL TVAC:', totalsX, yPos);
-  doc.text(`${invoice.total.toFixed(2)} €`, rightX, yPos, { align: 'right' });
+  doc.text('TOTAL TVAC:', totalsLabelX, yPos, { align: 'right' });
+  doc.text(`${invoice.total.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
   yPos += 8;
 
   // ============ STATUT PAYÉ (compact) ============
