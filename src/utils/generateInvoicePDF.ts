@@ -162,10 +162,10 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   const tableRightEdge = pageWidth - margin;
   const colWidth = 24;
   
-  // Bords gauches des colonnes (pour aligner les valeurs à gauche)
-  const ttcLeft = tableRightEdge - colWidth;           // Bord gauche colonne Total TTC
-  const tvaLeft = tableRightEdge - (2 * colWidth);     // Bord gauche colonne Montant TVA
-  const htvaLeft = tableRightEdge - (3 * colWidth);    // Bord gauche colonne Total HT
+  // Bords droits des colonnes (alignés avec le tableau qui utilise halign: 'right')
+  const ttcRight = tableRightEdge;                     // Bord droit colonne Total TTC
+  const tvaRight = tableRightEdge - colWidth;          // Bord droit colonne Montant TVA
+  const htvaRight = tableRightEdge - (2 * colWidth);   // Bord droit colonne Total HT
   
   // Centres des colonnes (pour les titres uniquement)
   const ttcCenter = tableRightEdge - (colWidth / 2);
@@ -186,9 +186,9 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
   doc.text('Total HTVA:', labelStartX, yPos, { align: 'left' });
-  doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaLeft, yPos, { align: 'left' });
-  doc.text(`${invoice.totalVat.toFixed(2)} €`, tvaLeft, yPos, { align: 'left' });
-  doc.text(`${invoice.total.toFixed(2)} €`, ttcLeft, yPos, { align: 'left' });
+  doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaRight, yPos, { align: 'right' });
+  doc.text(`${invoice.totalVat.toFixed(2)} €`, tvaRight, yPos, { align: 'right' });
+  doc.text(`${invoice.total.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
   yPos += 5;
   
   // Détail TVA par taux
@@ -210,9 +210,9 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     doc.setTextColor(80, 80, 80);
     const rateLabel = rate === 0 ? 'Exempté' : `${rate}%`;
     doc.text(`Total HTVA ${rateLabel}:`, labelStartX, yPos, { align: 'left' });
-    doc.text(`${data.ht.toFixed(2)} €`, htvaLeft, yPos, { align: 'left' });
-    doc.text(`${data.vat.toFixed(2)} €`, tvaLeft, yPos, { align: 'left' });
-    doc.text(`${ttc.toFixed(2)} €`, ttcLeft, yPos, { align: 'left' });
+    doc.text(`${data.ht.toFixed(2)} €`, htvaRight, yPos, { align: 'right' });
+    doc.text(`${data.vat.toFixed(2)} €`, tvaRight, yPos, { align: 'right' });
+    doc.text(`${ttc.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
     yPos += 3.5;
   });
   
@@ -226,7 +226,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text('TOTAL TVAC:', labelStartX, yPos, { align: 'left' });
-  doc.text(`${invoice.total.toFixed(2)} €`, ttcLeft, yPos, { align: 'left' });
+  doc.text(`${invoice.total.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
   yPos += 8;
 
   // ============ STATUT PAYÉ (compact) ============
