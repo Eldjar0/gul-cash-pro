@@ -127,27 +127,29 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     `${item.unitPrice.toFixed(2)} €`,
     `${item.vatRate}%`,
     `${item.subtotal.toFixed(2)} €`,
+    `${item.vatAmount.toFixed(2)} €`,
     `${item.total.toFixed(2)} €`
   ]);
 
   autoTable(doc, {
     startY: yPos,
-    head: [['Description', 'Qté', 'P.U. HT', 'TVA', 'Total HT', 'Total TTC']],
+    head: [['Description', 'Qté', 'P.U. HT', 'TVA %', 'Total HT', 'Montant TVA', 'Total TTC']],
     body: tableData,
     theme: 'plain',
-    styles: { fontSize: 8, cellPadding: 2 },
+    styles: { fontSize: 7, cellPadding: 2 },
     headStyles: {
       fontStyle: 'bold',
       fillColor: [240, 240, 240],
       textColor: [0, 0, 0],
     },
     columnStyles: {
-      0: { cellWidth: 65 },
-      1: { cellWidth: 15, halign: 'center' },
-      2: { cellWidth: 25, halign: 'right' },
-      3: { cellWidth: 15, halign: 'center' },
-      4: { cellWidth: 28, halign: 'right' },
-      5: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
+      0: { cellWidth: 50 },
+      1: { cellWidth: 12, halign: 'center' },
+      2: { cellWidth: 22, halign: 'right' },
+      3: { cellWidth: 14, halign: 'center' },
+      4: { cellWidth: 24, halign: 'right' },
+      5: { cellWidth: 24, halign: 'right' },
+      6: { cellWidth: 24, halign: 'right', fontStyle: 'bold' },
     },
     margin: { left: margin, right: margin },
     didDrawPage: (data) => { yPos = data.cursor?.y || yPos; }
@@ -155,26 +157,28 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
 
   yPos += 5;
 
-  // ============ TOTAUX (3 colonnes: Label | HTVA | TVA) ============
-  const valuesX = pageWidth - margin;
-  const tvaX = valuesX - 30; // Colonne TVA
-  const htvaX = tvaX - 30;   // Colonne HTVA
-  const labelX = htvaX - 5;  // Labels à gauche
+  // ============ TOTAUX (4 colonnes: Label | HTVA | TVA | TTC) ============
+  const ttcX = pageWidth - margin;
+  const tvaX = ttcX - 28;
+  const htvaX = tvaX - 28;
+  const labelX = htvaX - 5;
   
   // En-têtes des colonnes
   doc.setFontSize(6);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(100, 100, 100);
-  doc.text('HTVA', htvaX + 15, yPos, { align: 'right' });
-  doc.text('TVA', valuesX, yPos, { align: 'right' });
+  doc.text('HTVA', htvaX + 14, yPos, { align: 'right' });
+  doc.text('TVA', tvaX + 14, yPos, { align: 'right' });
+  doc.text('TTC', ttcX, yPos, { align: 'right' });
   yPos += 4;
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
   doc.text('Total HTVA:', labelX, yPos, { align: 'right' });
-  doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaX + 15, yPos, { align: 'right' });
-  doc.text(`${invoice.totalVat.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
+  doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaX + 14, yPos, { align: 'right' });
+  doc.text(`${invoice.totalVat.toFixed(2)} €`, tvaX + 14, yPos, { align: 'right' });
+  doc.text(`${invoice.total.toFixed(2)} €`, ttcX, yPos, { align: 'right' });
   yPos += 5;
   
   // Détail TVA par taux
@@ -191,12 +195,14 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   const presentRates = [0, 6, 12, 21].filter(rate => vatByRate[rate]);
   presentRates.forEach(rate => {
     const data = vatByRate[rate];
+    const ttc = data.ht + data.vat;
     doc.setFontSize(7);
     doc.setTextColor(80, 80, 80);
     const rateLabel = rate === 0 ? 'Exempté' : `${rate}%`;
     doc.text(`Total HTVA ${rateLabel}:`, labelX, yPos, { align: 'right' });
-    doc.text(`${data.ht.toFixed(2)} €`, htvaX + 15, yPos, { align: 'right' });
-    doc.text(`${data.vat.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
+    doc.text(`${data.ht.toFixed(2)} €`, htvaX + 14, yPos, { align: 'right' });
+    doc.text(`${data.vat.toFixed(2)} €`, tvaX + 14, yPos, { align: 'right' });
+    doc.text(`${ttc.toFixed(2)} €`, ttcX, yPos, { align: 'right' });
     yPos += 3.5;
   });
   
@@ -204,13 +210,13 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   yPos += 2;
   
   doc.setLineWidth(0.3);
-  doc.line(labelX - 30, yPos, valuesX, yPos);
+  doc.line(labelX - 30, yPos, ttcX, yPos);
   yPos += 4;
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text('TOTAL TVAC:', labelX, yPos, { align: 'right' });
-  doc.text(`${invoice.total.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
+  doc.text(`${invoice.total.toFixed(2)} €`, ttcX, yPos, { align: 'right' });
   yPos += 8;
 
   // ============ STATUT PAYÉ (compact) ============
