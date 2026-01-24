@@ -181,8 +181,8 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     const data = vatByRate[rate];
     doc.setFontSize(7);
     doc.setTextColor(80, 80, 80);
-    doc.text(`TVA ${rate}% sur ${data.ht.toFixed(2)} €:`, totalsX, yPos);
-    doc.text(`${data.vat.toFixed(2)} €`, rightX, yPos, { align: 'right' });
+    doc.text(`Total HTVA ${rate}%:`, totalsX, yPos);
+    doc.text(`${data.ht.toFixed(2)} €`, rightX, yPos, { align: 'right' });
     yPos += 3.5;
   });
   
