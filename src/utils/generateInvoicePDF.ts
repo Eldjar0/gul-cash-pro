@@ -171,7 +171,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   const ttcCenter = tableRightEdge - (colWidth / 2);
   const tvaCenter = tableRightEdge - colWidth - (colWidth / 2);
   const htvaCenter = tableRightEdge - (2 * colWidth) - (colWidth / 2);
-  const labelRightX = tableRightEdge - (3 * colWidth) - 2; // Labels alignés à droite avant les colonnes
+  const labelStartX = margin; // Labels alignés à gauche comme la colonne Description
   
   // En-têtes des colonnes (centrés dans chaque colonne)
   doc.setFontSize(6);
@@ -185,7 +185,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
-  doc.text('Total HTVA:', labelRightX, yPos, { align: 'right' });
+  doc.text('Total HTVA:', labelStartX, yPos, { align: 'left' });
   doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaRight, yPos, { align: 'right' });
   doc.text(`${invoice.totalVat.toFixed(2)} €`, tvaRight, yPos, { align: 'right' });
   doc.text(`${invoice.total.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
@@ -209,7 +209,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     doc.setFontSize(7);
     doc.setTextColor(80, 80, 80);
     const rateLabel = rate === 0 ? 'Exempté' : `${rate}%`;
-    doc.text(`Total HTVA ${rateLabel}:`, labelRightX, yPos, { align: 'right' });
+    doc.text(`Total HTVA ${rateLabel}:`, labelStartX, yPos, { align: 'left' });
     doc.text(`${data.ht.toFixed(2)} €`, htvaRight, yPos, { align: 'right' });
     doc.text(`${data.vat.toFixed(2)} €`, tvaRight, yPos, { align: 'right' });
     doc.text(`${ttc.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
@@ -225,7 +225,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('TOTAL TVAC:', labelRightX, yPos, { align: 'right' });
+  doc.text('TOTAL TVAC:', labelStartX, yPos, { align: 'left' });
   doc.text(`${invoice.total.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
   yPos += 8;
 
