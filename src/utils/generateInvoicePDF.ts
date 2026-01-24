@@ -131,6 +131,9 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     `${item.total.toFixed(2)} €`
   ]);
 
+  // Tableau pleine largeur avec marges réduites
+  const tableMargin = 5;
+  
   autoTable(doc, {
     startY: yPos,
     head: [['Description', 'Qté', 'P.U. HT', 'TVA %', 'Total HT', 'Montant TVA', 'Total TTC']],
@@ -143,7 +146,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
       textColor: [0, 0, 0],
     },
     columnStyles: {
-      0: { cellWidth: 50 },
+      0: { cellWidth: 'auto' }, // Description prend l'espace restant
       1: { cellWidth: 12, halign: 'left' },
       2: { cellWidth: 22, halign: 'left' },
       3: { cellWidth: 14, halign: 'left' },
@@ -151,29 +154,28 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
       5: { cellWidth: 24, halign: 'left' },
       6: { cellWidth: 24, halign: 'left', fontStyle: 'bold' },
     },
-    margin: { left: margin, right: margin },
+    margin: { left: tableMargin, right: tableMargin },
     didDrawPage: (data) => { yPos = data.cursor?.y || yPos; }
   });
 
   yPos += 5;
 
-  // ============ TOTAUX alignés dans les colonnes du tableau ============
-  // Colonnes du tableau: Total HT (24), Montant TVA (24), Total TTC (24)
-  const tableRightEdge = pageWidth - margin;
+  // ============ TOTAUX alignés à droite comme dans l'image ============
+  const tableRightEdge = pageWidth - 5; // Marge réduite pour le tableau
   const colWidth = 24;
   
-  // Bords droits des colonnes (alignés avec le tableau qui utilise halign: 'right')
-  const ttcRight = tableRightEdge;                     // Bord droit colonne Total TTC
-  const tvaRight = tableRightEdge - colWidth;          // Bord droit colonne Montant TVA
-  const htvaRight = tableRightEdge - (2 * colWidth);   // Bord droit colonne Total HT
+  // Bords droits des colonnes
+  const ttcRight = tableRightEdge;
+  const tvaRight = tableRightEdge - colWidth;
+  const htvaRight = tableRightEdge - (2 * colWidth);
   
-  // Centres des colonnes (pour les titres uniquement)
+  // Centres des colonnes (pour les titres)
   const ttcCenter = tableRightEdge - (colWidth / 2);
   const tvaCenter = tableRightEdge - colWidth - (colWidth / 2);
   const htvaCenter = tableRightEdge - (2 * colWidth) - (colWidth / 2);
-  const labelStartX = margin; // Labels alignés à gauche comme la colonne Description
+  const labelRightX = tableRightEdge - (3 * colWidth) - 2; // Labels alignés à droite avant les valeurs
   
-  // En-têtes des colonnes (centrés dans chaque colonne)
+  // En-têtes des colonnes (centrés)
   doc.setFontSize(6);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(100, 100, 100);
@@ -185,7 +187,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
-  doc.text('Total HTVA:', labelStartX, yPos, { align: 'left' });
+  doc.text('Total HTVA:', labelRightX, yPos, { align: 'right' });
   doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaRight, yPos, { align: 'right' });
   doc.text(`${invoice.totalVat.toFixed(2)} €`, tvaRight, yPos, { align: 'right' });
   doc.text(`${invoice.total.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
@@ -201,7 +203,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     vatByRate[item.vatRate].vat += item.vatAmount;
   });
   
-  // Afficher uniquement les taux présents sur la facture
+  // Afficher uniquement les taux présents
   const presentRates = [0, 6, 12, 21].filter(rate => vatByRate[rate]);
   presentRates.forEach(rate => {
     const data = vatByRate[rate];
@@ -209,7 +211,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     doc.setFontSize(7);
     doc.setTextColor(80, 80, 80);
     const rateLabel = rate === 0 ? 'Exempté' : `${rate}%`;
-    doc.text(`Total HTVA ${rateLabel}:`, labelStartX, yPos, { align: 'left' });
+    doc.text(`Total HTVA ${rateLabel}:`, labelRightX, yPos, { align: 'right' });
     doc.text(`${data.ht.toFixed(2)} €`, htvaRight, yPos, { align: 'right' });
     doc.text(`${data.vat.toFixed(2)} €`, tvaRight, yPos, { align: 'right' });
     doc.text(`${ttc.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
@@ -220,12 +222,12 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   yPos += 2;
   
   doc.setLineWidth(0.3);
-  doc.line(margin, yPos, tableRightEdge, yPos);
+  doc.line(5, yPos, tableRightEdge, yPos);
   yPos += 4;
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('TOTAL TVAC:', labelStartX, yPos, { align: 'left' });
+  doc.text('TOTAL TVAC:', labelRightX, yPos, { align: 'right' });
   doc.text(`${invoice.total.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
   yPos += 8;
 
