@@ -180,16 +180,35 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   });
   const presentRates = [0, 6, 12, 21].filter(rate => vatByRate[rate]);
   
-  // ============ PAIEMENT À GAUCHE ============
+  // ============ PAIEMENT À GAUCHE (avec QR code intégré) ============
   let paymentEndY = sectionStartY;
   if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
     const account = invoice.bankAccounts[0];
-    const boxHeight = 22;
+    const qrSize = 22;
+    const boxHeight = qrSize + 4; // Hauteur adaptée au QR code
     
     doc.setDrawColor(0, 100, 180);
     doc.setLineWidth(0.5);
     doc.setFillColor(245, 250, 255);
     doc.roundedRect(margin, sectionStartY, paymentBoxWidth, boxHeight, 1, 1, 'FD');
+    
+    // QR Code à droite dans la box
+    try {
+      const epcData = [
+        'BCD', '002', '1', 'SCT', '',
+        invoice.company.name.substring(0, 70),
+        account.account_number.replace(/\s/g, ''),
+        `EUR${invoice.total.toFixed(2)}`, '',
+        invoice.structuredCommunication || invoice.saleNumber, '', ''
+      ].join('\n');
+      
+      const qrCodeDataUrl = await QRCode.toDataURL(epcData, { width: 80, margin: 0 });
+      const qrX = margin + paymentBoxWidth - qrSize - 2;
+      doc.addImage(qrCodeDataUrl, 'PNG', qrX, sectionStartY + 2, qrSize, qrSize);
+    } catch { /* ignore */ }
+    
+    // Texte à gauche du QR
+    const textMaxWidth = paymentBoxWidth - qrSize - 8;
     
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
@@ -267,35 +286,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setTextColor(0, 0, 0);
   const totalsEndY = totalsYPos + 5;
   
-  // ============ QR CODE SOUS LE PAIEMENT ============
-  yPos = Math.max(paymentEndY, totalsEndY) + 3;
-  
-  if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
-    const account = invoice.bankAccounts[0];
-    const qrSize = 25;
-    
-    try {
-      const epcData = [
-        'BCD', '002', '1', 'SCT', '',
-        invoice.company.name.substring(0, 70),
-        account.account_number.replace(/\s/g, ''),
-        `EUR${invoice.total.toFixed(2)}`, '',
-        invoice.structuredCommunication || invoice.saleNumber, '', ''
-      ].join('\n');
-      
-      const qrCodeDataUrl = await QRCode.toDataURL(epcData, { width: 80, margin: 0 });
-      doc.addImage(qrCodeDataUrl, 'PNG', margin, yPos, qrSize, qrSize);
-      
-      doc.setFontSize(5);
-      doc.setTextColor(100, 100, 100);
-      doc.text('Scanner pour payer', margin + qrSize / 2, yPos + qrSize + 3, { align: 'center' });
-      doc.setTextColor(0, 0, 0);
-      
-      yPos += qrSize + 8;
-    } catch { /* ignore */ }
-  } else {
-    yPos += 5;
-  }
+  yPos = Math.max(paymentEndY, totalsEndY) + 5;
   
   // ============ STATUT PAYÉ ============
   if (invoice.isPaid) {
