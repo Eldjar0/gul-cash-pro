@@ -173,7 +173,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   const ttcCenter = tableRightEdge - (colWidth / 2);
   const tvaCenter = tableRightEdge - colWidth - (colWidth / 2);
   const htvaCenter = tableRightEdge - (2 * colWidth) - (colWidth / 2);
-  const labelRightX = tableRightEdge - (3 * colWidth) - 2; // Labels alignés à droite avant les valeurs
+  const labelRightX = tableRightEdge - (3 * colWidth) - 8; // Labels décalés vers la gauche pour alignement
   
   // En-têtes des colonnes (centrés)
   doc.setFontSize(6);
