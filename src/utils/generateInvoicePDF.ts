@@ -123,12 +123,13 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     item.quantity.toString(),
     `${item.unitPrice.toFixed(2)} €`,
     `${item.vatRate}%`,
+    `${item.subtotal.toFixed(2)} €`,
     `${item.total.toFixed(2)} €`
   ]);
 
   autoTable(doc, {
     startY: yPos,
-    head: [['Description', 'Qté', 'P.U.', 'TVA', 'Total']],
+    head: [['Description', 'Qté', 'P.U. HT', 'TVA', 'Total HT', 'Total TTC']],
     body: tableData,
     theme: 'plain',
     styles: { fontSize: 8, cellPadding: 2 },
@@ -138,11 +139,12 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
       textColor: [0, 0, 0],
     },
     columnStyles: {
-      0: { cellWidth: 85 },
-      1: { cellWidth: 18, halign: 'center' },
-      2: { cellWidth: 28, halign: 'right' },
-      3: { cellWidth: 18, halign: 'center' },
-      4: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
+      0: { cellWidth: 65 },
+      1: { cellWidth: 15, halign: 'center' },
+      2: { cellWidth: 25, halign: 'right' },
+      3: { cellWidth: 15, halign: 'center' },
+      4: { cellWidth: 28, halign: 'right' },
+      5: { cellWidth: 28, halign: 'right', fontStyle: 'bold' },
     },
     margin: { left: margin, right: margin },
     didDrawPage: (data) => { yPos = data.cursor?.y || yPos; }
