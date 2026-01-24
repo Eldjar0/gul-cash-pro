@@ -53,7 +53,9 @@ function calculateVATBreakdown(items: any[]): { vatRate: number; taxableAmount: 
   const breakdown: { [key: number]: { taxableAmount: number } } = {};
   
   items?.forEach((item: any) => {
-    const rate = parseFloat(item.vat_rate) || 21;
+    // IMPORTANT: Ne pas utiliser || 21 car 0 est un taux valide (exempté)
+    const parsedRate = parseFloat(item.vat_rate);
+    const rate = isNaN(parsedRate) ? 21 : parsedRate;
     if (!breakdown[rate]) {
       breakdown[rate] = { taxableAmount: 0 };
     }
