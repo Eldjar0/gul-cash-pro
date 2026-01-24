@@ -435,7 +435,9 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
   // LIGNES DE FACTURE (BG-25) avec TaxTotal par ligne (ubl-BE-14)
   if (doc.sale_items?.length > 0) {
     doc.sale_items.forEach(function(item: any, idx: number) {
-      const itemVatRate = parseFloat(item.vat_rate) || 21;
+      // IMPORTANT: Ne pas utiliser || 21 car 0 est un taux valide (exempté)
+      const parsedItemRate = parseFloat(item.vat_rate);
+      const itemVatRate = isNaN(parsedItemRate) ? 21 : parsedItemRate;
       const itemVatAmount = parseFloat(item.vat_amount) || 0;
       const productName = item.product_name?.trim() || 'Article non designe';
       
