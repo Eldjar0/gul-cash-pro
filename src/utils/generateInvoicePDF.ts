@@ -236,22 +236,42 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   // ============ TOTAUX À DROITE ============
   let totalsYPos = sectionStartY;
   
-  // Sous-total HTVA
+  // Colonnes pour les 3 valeurs
+  const colWidth = 28;
+  const ttcRight = rightEdge;
+  const tvaRight = rightEdge - colWidth;
+  const htvaRight = rightEdge - (2 * colWidth);
+  
+  // En-têtes des colonnes
+  doc.setFontSize(6);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(100, 100, 100);
+  doc.text('HTVA', htvaRight, totalsYPos, { align: 'right' });
+  doc.text('TVA', tvaRight, totalsYPos, { align: 'right' });
+  doc.text('TTC', ttcRight, totalsYPos, { align: 'right' });
+  totalsYPos += 5;
+  
+  // Ligne Total HTVA avec les 3 colonnes
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
-  doc.text('Sous-total HTVA', totalsX, totalsYPos);
-  doc.text(`${invoice.subtotal.toFixed(2)} €`, rightEdge, totalsYPos, { align: 'right' });
-  totalsYPos += 4.5;
+  doc.text('Total', totalsX, totalsYPos);
+  doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaRight, totalsYPos, { align: 'right' });
+  doc.text(`${invoice.totalVat.toFixed(2)} €`, tvaRight, totalsYPos, { align: 'right' });
+  doc.text(`${invoice.total.toFixed(2)} €`, ttcRight, totalsYPos, { align: 'right' });
+  totalsYPos += 4;
   
   // Détail TVA par taux
   presentRates.forEach(rate => {
     const data = vatByRate[rate];
+    const ttc = data.ht + data.vat;
     doc.setFontSize(7);
     doc.setTextColor(100, 100, 100);
-    const rateLabel = rate === 0 ? 'TVA exempté' : `TVA ${rate}%`;
+    const rateLabel = rate === 0 ? 'Exempté' : `${rate}%`;
     doc.text(rateLabel, totalsX, totalsYPos);
-    doc.text(`${data.vat.toFixed(2)} €`, rightEdge, totalsYPos, { align: 'right' });
+    doc.text(`${data.ht.toFixed(2)} €`, htvaRight, totalsYPos, { align: 'right' });
+    doc.text(`${data.vat.toFixed(2)} €`, tvaRight, totalsYPos, { align: 'right' });
+    doc.text(`${ttc.toFixed(2)} €`, ttcRight, totalsYPos, { align: 'right' });
     totalsYPos += 3.5;
   });
   
@@ -261,15 +281,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setDrawColor(180, 180, 180);
   doc.setLineWidth(0.3);
   doc.line(totalsX, totalsYPos, rightEdge, totalsYPos);
-  totalsYPos += 4;
-  
-  // Total TVA
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(60, 60, 60);
-  doc.text('Total TVA', totalsX, totalsYPos);
-  doc.text(`${invoice.totalVat.toFixed(2)} €`, rightEdge, totalsYPos, { align: 'right' });
-  totalsYPos += 6;
+  totalsYPos += 5;
   
   // Bandeau TOTAL TVAC
   const totalBoxHeight = 8;
