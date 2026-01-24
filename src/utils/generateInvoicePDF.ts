@@ -169,9 +169,10 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setFontSize(6);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(100, 100, 100);
-  doc.text('HTVA', htvaX - 12, yPos, { align: 'center' });
-  doc.text('TVA', tvaX - 12, yPos, { align: 'center' });
-  doc.text('TTC', ttcX - 12, yPos, { align: 'center' });
+  // Titres alignés comme les valeurs (même alignement que les colonnes du tableau)
+  doc.text('HTVA', htvaX, yPos, { align: 'right' });
+  doc.text('TVA', tvaX, yPos, { align: 'right' });
+  doc.text('TTC', ttcX, yPos, { align: 'right' });
   yPos += 4;
   
   doc.setFontSize(8);
