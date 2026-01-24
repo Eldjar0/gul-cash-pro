@@ -175,10 +175,10 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     vatByRate[item.vatRate].vat += item.vatAmount;
   });
   
-  // Afficher TOUS les taux dans l'ordre: Exempté (0%), 6%, 12%, 21%
-  const allRates = [0, 6, 12, 21];
-  allRates.forEach(rate => {
-    const data = vatByRate[rate] || { ht: 0, vat: 0 };
+  // Afficher uniquement les taux présents sur la facture
+  const presentRates = [0, 6, 12, 21].filter(rate => vatByRate[rate]);
+  presentRates.forEach(rate => {
+    const data = vatByRate[rate];
     doc.setFontSize(7);
     doc.setTextColor(80, 80, 80);
     const rateLabel = rate === 0 ? 'Exempté' : `${rate}%`;
