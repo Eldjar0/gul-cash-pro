@@ -157,16 +157,21 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
 
   yPos += 5;
 
-  // ============ TOTAUX centrés dans les colonnes du tableau ============
+  // ============ TOTAUX alignés dans les colonnes du tableau ============
   // Colonnes du tableau: Total HT (24), Montant TVA (24), Total TTC (24)
   const tableRightEdge = pageWidth - margin;
   const colWidth = 24;
   
-  // Centres des colonnes (milieu de chaque colonne de 24mm)
-  const ttcCenter = tableRightEdge - (colWidth / 2);           // Centre colonne Total TTC
-  const tvaCenter = tableRightEdge - colWidth - (colWidth / 2); // Centre colonne Montant TVA
-  const htvaCenter = tableRightEdge - (2 * colWidth) - (colWidth / 2); // Centre colonne Total HT
-  const labelStartX = margin;  // Labels alignés à gauche depuis la marge
+  // Bords gauches des colonnes (pour aligner les valeurs à gauche)
+  const ttcLeft = tableRightEdge - colWidth;           // Bord gauche colonne Total TTC
+  const tvaLeft = tableRightEdge - (2 * colWidth);     // Bord gauche colonne Montant TVA
+  const htvaLeft = tableRightEdge - (3 * colWidth);    // Bord gauche colonne Total HT
+  
+  // Centres des colonnes (pour les titres uniquement)
+  const ttcCenter = tableRightEdge - (colWidth / 2);
+  const tvaCenter = tableRightEdge - colWidth - (colWidth / 2);
+  const htvaCenter = tableRightEdge - (2 * colWidth) - (colWidth / 2);
+  const labelStartX = margin;
   
   // En-têtes des colonnes (centrés dans chaque colonne)
   doc.setFontSize(6);
@@ -181,9 +186,9 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
   doc.text('Total HTVA:', labelStartX, yPos, { align: 'left' });
-  doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaCenter, yPos, { align: 'center' });
-  doc.text(`${invoice.totalVat.toFixed(2)} €`, tvaCenter, yPos, { align: 'center' });
-  doc.text(`${invoice.total.toFixed(2)} €`, ttcCenter, yPos, { align: 'center' });
+  doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaLeft, yPos, { align: 'left' });
+  doc.text(`${invoice.totalVat.toFixed(2)} €`, tvaLeft, yPos, { align: 'left' });
+  doc.text(`${invoice.total.toFixed(2)} €`, ttcLeft, yPos, { align: 'left' });
   yPos += 5;
   
   // Détail TVA par taux
@@ -205,9 +210,9 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     doc.setTextColor(80, 80, 80);
     const rateLabel = rate === 0 ? 'Exempté' : `${rate}%`;
     doc.text(`Total HTVA ${rateLabel}:`, labelStartX, yPos, { align: 'left' });
-    doc.text(`${data.ht.toFixed(2)} €`, htvaCenter, yPos, { align: 'center' });
-    doc.text(`${data.vat.toFixed(2)} €`, tvaCenter, yPos, { align: 'center' });
-    doc.text(`${ttc.toFixed(2)} €`, ttcCenter, yPos, { align: 'center' });
+    doc.text(`${data.ht.toFixed(2)} €`, htvaLeft, yPos, { align: 'left' });
+    doc.text(`${data.vat.toFixed(2)} €`, tvaLeft, yPos, { align: 'left' });
+    doc.text(`${ttc.toFixed(2)} €`, ttcLeft, yPos, { align: 'left' });
     yPos += 3.5;
   });
   
@@ -221,7 +226,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text('TOTAL TVAC:', labelStartX, yPos, { align: 'left' });
-  doc.text(`${invoice.total.toFixed(2)} €`, ttcCenter, yPos, { align: 'center' });
+  doc.text(`${invoice.total.toFixed(2)} €`, ttcLeft, yPos, { align: 'left' });
   yPos += 8;
 
   // ============ STATUT PAYÉ (compact) ============
