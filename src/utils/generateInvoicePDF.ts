@@ -169,7 +169,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   const rightEdge = pageWidth - margin;
   const paymentBoxWidth = totalsX - margin - 8; // Espace de 8mm entre paiement et totaux
   
-  // Calculer le détail TVA par taux
+  // Calculer le détail TVA par taux (uniquement les taux présents dans les articles)
   const vatByRate: { [key: number]: { ht: number; vat: number } } = {};
   invoice.items.forEach(item => {
     if (!vatByRate[item.vatRate]) {
@@ -178,7 +178,8 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     vatByRate[item.vatRate].ht += item.subtotal;
     vatByRate[item.vatRate].vat += item.vatAmount;
   });
-  const presentRates = [0, 6, 12, 21].filter(rate => vatByRate[rate]);
+  // Récupérer uniquement les taux réellement utilisés, triés
+  const presentRates = Object.keys(vatByRate).map(Number).sort((a, b) => a - b);
   
   // ============ PAIEMENT À GAUCHE (avec QR code intégré) ============
   let paymentEndY = sectionStartY;
