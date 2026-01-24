@@ -174,7 +174,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setTextColor(0, 0, 0);
   doc.text('Total HTVA:', labelX, yPos, { align: 'right' });
   doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaX + 15, yPos, { align: 'right' });
-  doc.text(`${invoice.totalVat.toFixed(2)} €`, valuesX, yPos, { align: 'right' });
+  // TVA totale affichée uniquement dans le détail par taux, pas ici
   yPos += 5;
   
   // Détail TVA par taux
