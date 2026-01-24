@@ -243,11 +243,13 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   if (!invoice.isPaid && invoice.bankAccounts && invoice.bankAccounts.length > 0) {
     const account = invoice.bankAccounts[0];
     const boxHeight = 25;
+    const qrSize = 25;
+    const gapBetween = 5; // Espace entre la box et le QR code
     
     doc.setDrawColor(0, 100, 180);
     doc.setLineWidth(0.5);
     doc.setFillColor(245, 250, 255);
-    doc.roundedRect(tableMargin, yPos, pageWidth - tableMargin * 2 - 35, boxHeight, 1, 1, 'FD');
+    doc.roundedRect(tableMargin, yPos, pageWidth - tableMargin * 2 - qrSize - gapBetween - 5, boxHeight, 1, 1, 'FD');
     
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
