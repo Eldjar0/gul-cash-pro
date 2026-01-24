@@ -219,17 +219,28 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   });
   
   doc.setTextColor(0, 0, 0);
-  yPos += 2;
+  yPos += 3;
   
-  doc.setLineWidth(0.3);
-  doc.line(5, yPos, tableRightEdge, yPos);
-  yPos += 4;
+  // Ligne de séparation élégante
+  doc.setDrawColor(0, 100, 180);
+  doc.setLineWidth(0.5);
+  doc.line(tableMargin, yPos, tableRightEdge, yPos);
+  yPos += 1;
   
+  // Bandeau coloré pour TOTAL TVAC
+  const totalBoxHeight = 8;
+  doc.setFillColor(0, 100, 180);
+  doc.rect(tableMargin, yPos, pageWidth - tableMargin * 2, totalBoxHeight, 'F');
+  
+  // Texte TOTAL TVAC en blanc sur fond bleu
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('TOTAL TVAC:', labelRightX, yPos, { align: 'right' });
-  doc.text(`${invoice.total.toFixed(2)} €`, ttcRight, yPos, { align: 'right' });
-  yPos += 8;
+  doc.setTextColor(255, 255, 255);
+  doc.text('TOTAL TVAC:', tableMargin + 5, yPos + 5.5);
+  doc.text(`${invoice.total.toFixed(2)} €`, tableRightEdge - 3, yPos + 5.5, { align: 'right' });
+  
+  doc.setTextColor(0, 0, 0);
+  yPos += totalBoxHeight + 6;
 
   // ============ STATUT PAYÉ (compact) ============
   if (invoice.isPaid) {
