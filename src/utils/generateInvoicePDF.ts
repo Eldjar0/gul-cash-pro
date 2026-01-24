@@ -69,7 +69,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
   doc.text([
-    invoice.company.name,
+    `${invoice.company.name} SRL`,
     invoice.company.address,
     `${invoice.company.postalCode} ${invoice.company.city}`,
     `TVA: ${invoice.company.vatNumber}`
@@ -158,11 +158,35 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.text('HT:', totalsX, yPos);
+  doc.text('Total HTVA:', totalsX, yPos);
   doc.text(`${invoice.subtotal.toFixed(2)} €`, rightX, yPos, { align: 'right' });
   yPos += 4;
   
-  doc.text('TVA:', totalsX, yPos);
+  // Détail TVA par taux
+  const vatByRate: { [key: number]: { ht: number; vat: number } } = {};
+  invoice.items.forEach(item => {
+    if (!vatByRate[item.vatRate]) {
+      vatByRate[item.vatRate] = { ht: 0, vat: 0 };
+    }
+    vatByRate[item.vatRate].ht += item.subtotal;
+    vatByRate[item.vatRate].vat += item.vatAmount;
+  });
+  
+  // Afficher les taux dans l'ordre: 0%, 6%, 12%, 21%
+  const orderedRates = [0, 6, 12, 21].filter(rate => vatByRate[rate]);
+  orderedRates.forEach(rate => {
+    const data = vatByRate[rate];
+    doc.setFontSize(7);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`TVA ${rate}% sur ${data.ht.toFixed(2)} €:`, totalsX, yPos);
+    doc.text(`${data.vat.toFixed(2)} €`, rightX, yPos, { align: 'right' });
+    yPos += 3.5;
+  });
+  
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(8);
+  yPos += 1;
+  doc.text('Total TVA:', totalsX, yPos);
   doc.text(`${invoice.totalVat.toFixed(2)} €`, rightX, yPos, { align: 'right' });
   yPos += 4;
   
@@ -172,7 +196,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('TOTAL TTC:', totalsX, yPos);
+  doc.text('TOTAL TVAC:', totalsX, yPos);
   doc.text(`${invoice.total.toFixed(2)} €`, rightX, yPos, { align: 'right' });
   yPos += 8;
 
