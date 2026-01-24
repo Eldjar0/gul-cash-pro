@@ -157,27 +157,29 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
 
   yPos += 5;
 
-  // ============ TOTAUX (4 colonnes: Label | HTVA | TVA | TTC) ============
-  const ttcX = pageWidth - margin;
-  const tvaX = ttcX - 28;
-  const htvaX = tvaX - 28;
-  const labelX = htvaX - 5;
+  // ============ TOTAUX alignés avec les colonnes du tableau ============
+  // Colonnes du tableau: Total HT (24), Montant TVA (24), Total TTC (24)
+  const tableRightEdge = pageWidth - margin;
+  const ttcX = tableRightEdge;           // Aligné avec colonne Total TTC
+  const tvaX = tableRightEdge - 24;      // Aligné avec colonne Montant TVA
+  const htvaX = tableRightEdge - 48;     // Aligné avec colonne Total HT
+  const labelX = htvaX - 8;
   
-  // En-têtes des colonnes
+  // En-têtes des colonnes (alignés avec le tableau)
   doc.setFontSize(6);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(100, 100, 100);
-  doc.text('HTVA', htvaX + 14, yPos, { align: 'right' });
-  doc.text('TVA', tvaX + 14, yPos, { align: 'right' });
-  doc.text('TTC', ttcX, yPos, { align: 'right' });
+  doc.text('HTVA', htvaX - 12, yPos, { align: 'center' });
+  doc.text('TVA', tvaX - 12, yPos, { align: 'center' });
+  doc.text('TTC', ttcX - 12, yPos, { align: 'center' });
   yPos += 4;
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
   doc.text('Total HTVA:', labelX, yPos, { align: 'right' });
-  doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaX + 14, yPos, { align: 'right' });
-  doc.text(`${invoice.totalVat.toFixed(2)} €`, tvaX + 14, yPos, { align: 'right' });
+  doc.text(`${invoice.subtotal.toFixed(2)} €`, htvaX, yPos, { align: 'right' });
+  doc.text(`${invoice.totalVat.toFixed(2)} €`, tvaX, yPos, { align: 'right' });
   doc.text(`${invoice.total.toFixed(2)} €`, ttcX, yPos, { align: 'right' });
   yPos += 5;
   
@@ -200,8 +202,8 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     doc.setTextColor(80, 80, 80);
     const rateLabel = rate === 0 ? 'Exempté' : `${rate}%`;
     doc.text(`Total HTVA ${rateLabel}:`, labelX, yPos, { align: 'right' });
-    doc.text(`${data.ht.toFixed(2)} €`, htvaX + 14, yPos, { align: 'right' });
-    doc.text(`${data.vat.toFixed(2)} €`, tvaX + 14, yPos, { align: 'right' });
+    doc.text(`${data.ht.toFixed(2)} €`, htvaX, yPos, { align: 'right' });
+    doc.text(`${data.vat.toFixed(2)} €`, tvaX, yPos, { align: 'right' });
     doc.text(`${ttc.toFixed(2)} €`, ttcX, yPos, { align: 'right' });
     yPos += 3.5;
   });
