@@ -26,27 +26,52 @@ function getVATCategoryCode(vatRate: number): string {
   return 'S';
 }
 
-// Note: Peppol BIS Billing 3.0 ne requiert pas le champ Name dans TaxCategory
-// La fonction getVATCategoryName a été supprimée car non nécessaire
+// Helper pour formater le numéro d'entreprise belge pour Peppol
+// Format attendu: 10 chiffres sans "BE" (ex: "0808695829")
+function formatBelgianEnterpriseNumber(vatOrBce: string | undefined): string {
+  if (!vatOrBce) return '';
+  // Supprimer espaces, points, tirets
+  let cleaned = vatOrBce.replace(/[\s.\-]/g, '').toUpperCase();
+  // Supprimer le préfixe BE s'il existe
+  if (cleaned.startsWith('BE')) {
+    cleaned = cleaned.substring(2);
+  }
+  // S'assurer qu'on a 10 chiffres (ajouter 0 devant si 9 chiffres)
+  if (cleaned.length === 9 && /^\d+$/.test(cleaned)) {
+    cleaned = '0' + cleaned;
+  }
+  // Valider que c'est bien 10 chiffres
+  if (cleaned.length === 10 && /^\d+$/.test(cleaned)) {
+    return cleaned;
+  }
+  return cleaned; // Retourner tel quel si format non reconnu
+}
 
 // Helper pour calculer la ventilation TVA par taux
+// IMPORTANT: Recalcule le montant TVA pour garantir la cohérence Peppol BR-CO-17
 function calculateVATBreakdown(items: any[]): { vatRate: number; taxableAmount: number; taxAmount: number }[] {
-  const breakdown: { [key: number]: { taxableAmount: number; taxAmount: number } } = {};
+  const breakdown: { [key: number]: { taxableAmount: number } } = {};
   
   items?.forEach((item: any) => {
     const rate = parseFloat(item.vat_rate) || 21;
     if (!breakdown[rate]) {
-      breakdown[rate] = { taxableAmount: 0, taxAmount: 0 };
+      breakdown[rate] = { taxableAmount: 0 };
     }
     breakdown[rate].taxableAmount += parseFloat(item.subtotal) || 0;
-    breakdown[rate].taxAmount += parseFloat(item.vat_amount) || 0;
   });
   
-  return Object.entries(breakdown).map(([rate, amounts]) => ({
-    vatRate: parseFloat(rate),
-    taxableAmount: amounts.taxableAmount,
-    taxAmount: amounts.taxAmount,
-  }));
+  // Recalculer le montant TVA à partir du montant taxable et du taux
+  // Ceci garantit BR-CO-17: VAT amount = taxable amount × (rate / 100)
+  return Object.entries(breakdown).map(([rate, amounts]) => {
+    const vatRate = parseFloat(rate);
+    const taxableAmount = Math.round(amounts.taxableAmount * 100) / 100;
+    const taxAmount = Math.round(taxableAmount * vatRate) / 100;
+    return {
+      vatRate,
+      taxableAmount,
+      taxAmount,
+    };
+  });
 }
 
 // Export XML standard
@@ -181,11 +206,14 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
     ubl += '  <cac:AccountingSupplierParty>\n';
     ubl += '    <cac:Party>\n';
     
-    const sellerVAT = companyInfo.vatNumber?.replace(/\s/g, '') || '';
-    if (sellerVAT) {
-      ubl += '      <cbc:EndpointID schemeID="0208">' + escapeXML(sellerVAT) + '</cbc:EndpointID>\n';
+    // Format numéro entreprise belge: 10 chiffres sans "BE"
+    const sellerEnterpriseNumber = formatBelgianEnterpriseNumber(companyInfo.bceNumber || companyInfo.vatNumber);
+    const sellerVAT = companyInfo.vatNumber?.replace(/[\s.\-]/g, '').toUpperCase() || '';
+    
+    if (sellerEnterpriseNumber) {
+      ubl += '      <cbc:EndpointID schemeID="0208">' + escapeXML(sellerEnterpriseNumber) + '</cbc:EndpointID>\n';
       ubl += '      <cac:PartyIdentification>\n';
-      ubl += '        <cbc:ID schemeID="0208">' + escapeXML(sellerVAT) + '</cbc:ID>\n';
+      ubl += '        <cbc:ID schemeID="0208">' + escapeXML(sellerEnterpriseNumber) + '</cbc:ID>\n';
       ubl += '      </cac:PartyIdentification>\n';
     }
     
@@ -215,10 +243,8 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
     
     ubl += '      <cac:PartyLegalEntity>\n';
     ubl += '        <cbc:RegistrationName>' + escapeXML(companyInfo.name) + '</cbc:RegistrationName>\n';
-    if (companyInfo.bceNumber) {
-      ubl += '        <cbc:CompanyID schemeID="0208">' + escapeXML(companyInfo.bceNumber) + '</cbc:CompanyID>\n';
-    } else if (sellerVAT) {
-      ubl += '        <cbc:CompanyID schemeID="0208">' + escapeXML(sellerVAT) + '</cbc:CompanyID>\n';
+    if (sellerEnterpriseNumber) {
+      ubl += '        <cbc:CompanyID schemeID="0208">' + escapeXML(sellerEnterpriseNumber) + '</cbc:CompanyID>\n';
     }
     if (companyInfo.legalForm) {
       ubl += '        <cbc:CompanyLegalForm>' + escapeXML(companyInfo.legalForm) + '</cbc:CompanyLegalForm>\n';
@@ -246,12 +272,14 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
   ubl += '    <cac:Party>\n';
   
   if (doc.customers) {
-    const customerVAT = doc.customers.vat_number?.replace(/\s/g, '') || '';
+    // Format numéro entreprise belge: 10 chiffres sans "BE"
+    const customerEnterpriseNumber = formatBelgianEnterpriseNumber(doc.customers.vat_number);
+    const customerVAT = doc.customers.vat_number?.replace(/[\s.\-]/g, '').toUpperCase() || '';
     
-    if (customerVAT) {
-      ubl += '      <cbc:EndpointID schemeID="0208">' + escapeXML(customerVAT) + '</cbc:EndpointID>\n';
+    if (customerEnterpriseNumber) {
+      ubl += '      <cbc:EndpointID schemeID="0208">' + escapeXML(customerEnterpriseNumber) + '</cbc:EndpointID>\n';
       ubl += '      <cac:PartyIdentification>\n';
-      ubl += '        <cbc:ID schemeID="0208">' + escapeXML(customerVAT) + '</cbc:ID>\n';
+      ubl += '        <cbc:ID schemeID="0208">' + escapeXML(customerEnterpriseNumber) + '</cbc:ID>\n';
       ubl += '      </cac:PartyIdentification>\n';
     } else {
       ubl += '      <cbc:EndpointID schemeID="0002">' + escapeXML(doc.customers.name) + '</cbc:EndpointID>\n';
@@ -283,8 +311,8 @@ function generateUBLContent(doc: any, companyInfo?: ExportOptions['companyInfo']
     
     ubl += '      <cac:PartyLegalEntity>\n';
     ubl += '        <cbc:RegistrationName>' + escapeXML(doc.customers.name) + '</cbc:RegistrationName>\n';
-    if (customerVAT) {
-      ubl += '        <cbc:CompanyID schemeID="0208">' + escapeXML(customerVAT) + '</cbc:CompanyID>\n';
+    if (customerEnterpriseNumber) {
+      ubl += '        <cbc:CompanyID schemeID="0208">' + escapeXML(customerEnterpriseNumber) + '</cbc:CompanyID>\n';
     }
     ubl += '      </cac:PartyLegalEntity>\n';
     
