@@ -164,6 +164,21 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   const tableRightEdge = pageWidth - 5; // Marge réduite pour le tableau
   const colWidth = 24;
   
+  // Calcul de la hauteur du rectangle des totaux
+  const vatByRateForHeight: { [key: number]: boolean } = {};
+  invoice.items.forEach(item => {
+    vatByRateForHeight[item.vatRate] = true;
+  });
+  const ratesCount = Object.keys(vatByRateForHeight).length;
+  const totalsBoxHeight = 18 + (ratesCount * 3.5); // Hauteur de base + lignes TVA
+  
+  // Rectangle autour des totaux
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
+  doc.setFillColor(250, 250, 250);
+  const totalsBoxWidth = (3 * colWidth) + 35;
+  doc.roundedRect(tableRightEdge - totalsBoxWidth, yPos - 2, totalsBoxWidth + 5, totalsBoxHeight, 1, 1, 'FD');
+  
   // Bords droits des colonnes
   const ttcRight = tableRightEdge;
   const tvaRight = tableRightEdge - colWidth;
