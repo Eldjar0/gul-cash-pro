@@ -125,7 +125,7 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
     item.description,
     item.quantity.toString(),
     `${item.unitPrice.toFixed(2)} €`,
-    `${item.vatRate}%`,
+    item.vatRate === 0 ? 'Exempté' : `${item.vatRate}%`,
     `${item.subtotal.toFixed(2)} €`,
     `${item.vatAmount.toFixed(2)} €`,
     `${item.total.toFixed(2)} €`
