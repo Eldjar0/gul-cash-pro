@@ -157,6 +157,7 @@ const Index = () => {
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
   const [currentSale, setCurrentSale] = useState<any>(null);
   const [scanInput, setScanInput] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [quantityInput, setQuantityInput] = useState('1');
   const [calcMode, setCalcMode] = useState<'input' | 'math'>('input');
@@ -1518,6 +1519,12 @@ const Index = () => {
     toast.info('Remise retirée');
   };
   const handleNumberClick = (num: string) => {
+    // Si la barre de recherche est focusée, écrire dedans
+    if (isSearchFocused) {
+      setScanInput(prev => prev + num);
+      return;
+    }
+    
     if (calcMode === 'math' && waitingForOperand) {
       setQuantityInput(num);
       setWaitingForOperand(false);
@@ -1526,6 +1533,14 @@ const Index = () => {
     }
   };
   const handleClearQuantity = () => {
+    // Si la barre de recherche est focusée, effacer la recherche
+    if (isSearchFocused) {
+      setScanInput('');
+      setSearchResults([]);
+      setPrefixQuantity(null);
+      return;
+    }
+    
     setQuantityInput('1');
     setCurrentValue(null);
     setOperation(null);
@@ -1794,13 +1809,15 @@ const Index = () => {
                     setSearchResults([]);
                     setPrefixQuantity(null);
                   }
-                }} 
+                }}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
                 placeholder="Rechercher..." 
                 autoComplete="off" 
                 inputMode="text" 
                 enterKeyHint="search" 
                 data-scan-ignore 
-                className="h-7 pl-7 pr-6 text-xs bg-background border-input text-foreground" 
+                className={`h-7 pl-7 pr-6 text-xs bg-background border-input text-foreground ${isSearchFocused ? 'ring-2 ring-primary border-primary' : ''}`}
               />
               {scanInput && (
                 <Button 
