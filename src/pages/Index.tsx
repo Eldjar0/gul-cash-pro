@@ -1791,7 +1791,7 @@ const Index = () => {
                 setSearchResults([]);
                 setPrefixQuantity(null);
               }
-            }} placeholder="Rechercher..." autoComplete="off" inputMode="text" enterKeyHint="search" className="h-7 pl-7 pr-6 text-xs bg-background border-input text-foreground" />
+            }} placeholder="Rechercher..." autoComplete="off" inputMode="search" enterKeyHint="search" data-scan-ignore className="h-7 pl-7 pr-6 text-xs bg-background border-input text-foreground" />
               {scanInput && <Button type="button" onClick={() => {
               setScanInput('');
               setSearchResults([]);
