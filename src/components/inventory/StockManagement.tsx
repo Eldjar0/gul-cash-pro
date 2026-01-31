@@ -1,23 +1,38 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, FileDown, Save, AlertTriangle, Package } from 'lucide-react';
+import { Search, FileDown, Save, AlertTriangle, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { generateOrderPDF } from '@/utils/generateOrderPDF';
+
+const ITEMS_PER_PAGE = 20;
 
 export function StockManagement() {
   const { data: products = [], refetch } = useProducts();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingStocks, setEditingStocks] = useState<Record<string, number>>({});
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.barcode && p.barcode.includes(searchTerm))
-  );
+  const filteredProducts = useMemo(() => 
+    products.filter(p => 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.barcode && p.barcode.includes(searchTerm))
+    ), [products, searchTerm]);
+
+  // Reset to page 1 when search changes
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  // Pagination
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handleStockChange = (productId: string, newStock: number) => {
     setEditingStocks(prev => ({
@@ -98,7 +113,7 @@ export function StockManagement() {
           <Input
             placeholder="Rechercher un produit..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -110,11 +125,16 @@ export function StockManagement() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Gestion des Stocks ({filteredProducts.length} produits)</CardTitle>
+          <CardTitle className="flex items-center justify-between flex-wrap gap-2">
+            <span>Gestion des Stocks ({filteredProducts.length} produits)</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              Page {currentPage} sur {totalPages || 1}
+            </span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {filteredProducts.map((product) => (
+            {paginatedProducts.map((product) => (
               <div 
                 key={product.id} 
                 className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors flex-wrap"
@@ -210,6 +230,56 @@ export function StockManagement() {
               </div>
             ))}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                // Afficher: première, dernière, et pages proches de la page actuelle
+                const showPage = page === 1 || 
+                                 page === totalPages || 
+                                 Math.abs(page - currentPage) <= 2;
+                const showEllipsis = page === 2 && currentPage > 4 ||
+                                    page === totalPages - 1 && currentPage < totalPages - 3;
+                
+                if (showEllipsis && !showPage) {
+                  return <span key={page} className="px-2 text-muted-foreground">...</span>;
+                }
+                
+                if (!showPage) return null;
+                
+                return (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                    className="min-w-[36px]"
+                  >
+                    {page}
+                  </Button>
+                );
+              })}
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
