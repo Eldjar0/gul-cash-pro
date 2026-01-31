@@ -894,8 +894,8 @@ const Index = () => {
     // Recherche exacte par code-barres normalisé d'abord
     const exactBarcode = products.find(p => p.barcode && normalizeBarcode(p.barcode) === normalizedInput);
     if (exactBarcode) {
-      // Ajout direct au panier
-      handleProductSelect(exactBarcode);
+      // Afficher dans les résultats au lieu d'ajouter directement
+      setSearchResults([exactBarcode]);
       return;
     }
 
