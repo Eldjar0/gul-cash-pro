@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database, AlertTriangle, Printer, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database, AlertTriangle, Printer, RotateCcw, Smartphone } from 'lucide-react';
 import { PrinterSettings } from '@/components/settings/PrinterSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { FiscalSettings } from '@/components/settings/FiscalSettings';
 import { BackupSettings } from '@/components/settings/BackupSettings';
+import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 import UserManagement from './UserManagement';
 import ContactInfo from './ContactInfo';
 import { useDataCleanup } from '@/hooks/useDataCleanup';
@@ -66,6 +67,7 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { deleteAllData, isDeleting, resetSalesHistory, isResetting } = useDataCleanup();
+  const [remoteScanOpen, setRemoteScanOpen] = useState(false);
 
   const [settings, setSettings] = useState<InvoiceSettings>({
     is_company: true,
@@ -278,6 +280,10 @@ export default function Settings() {
             <TabsTrigger value="contact" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Info className="h-4 w-4" />
               <span className="hidden sm:inline">Contact</span>
+            </TabsTrigger>
+            <TabsTrigger value="mobile" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+              <Smartphone className="h-4 w-4" />
+              <span className="hidden sm:inline">Scan Mobile</span>
             </TabsTrigger>
           </TabsList>
 
@@ -941,6 +947,35 @@ export default function Settings() {
               <ContactInfo />
             </div>
           </TabsContent>
+
+          <TabsContent value="mobile">
+            <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl text-white">
+                  <Smartphone className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold">Scan Mobile</h3>
+                  <p className="text-sm text-muted-foreground">Accédez à l'interface mobile pour scanner les produits</p>
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-4">
+                <p className="text-muted-foreground text-center max-w-md">
+                  Utilisez votre téléphone pour scanner les codes-barres et gérer vos produits. 
+                  Cliquez sur le bouton ci-dessous pour afficher le QR code d'accès.
+                </p>
+                <Button 
+                  onClick={() => setRemoteScanOpen(true)}
+                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold px-6 py-3"
+                >
+                  <Smartphone className="h-5 w-5 mr-2" />
+                  Afficher le QR Code
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <RemoteScanDialog open={remoteScanOpen} onOpenChange={setRemoteScanOpen} />
         </Tabs>
       </div>
     </div>
