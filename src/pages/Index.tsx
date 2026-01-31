@@ -2201,6 +2201,7 @@ const Index = () => {
                   variant={calcMode === 'input' ? 'default' : 'outline'} 
                   size="sm" 
                   className={`h-6 px-2 text-[9px] font-bold ${calcMode === 'input' ? 'bg-primary text-white' : 'bg-white'}`} 
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setCalcMode('input')}
                 >
                   QTÉ
@@ -2209,6 +2210,7 @@ const Index = () => {
                   variant={calcMode === 'math' ? 'default' : 'outline'} 
                   size="sm" 
                   className={`h-6 px-2 text-[9px] font-bold ${calcMode === 'math' ? 'bg-primary text-white' : 'bg-white'}`} 
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setCalcMode('math')}
                 >
                   CALC
@@ -2228,6 +2230,7 @@ const Index = () => {
               {['7', '8', '9', '4', '5', '6', '1', '2', '3', '.', '0', 'C'].map(key => (
                 <Button 
                   key={key} 
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)} 
                   className={`h-10 text-lg font-bold shadow-md transition-all active:scale-95 ${
                     key === 'C' 
@@ -2248,6 +2251,7 @@ const Index = () => {
                   {['+', '-', '×', '÷'].map((op, idx) => (
                     <Button 
                       key={op}
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => handleOperation(['+', '-', '*', '/'][idx])} 
                       className="h-9 text-base font-bold bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-2 border-blue-700 shadow-md"
                     >
@@ -2257,12 +2261,14 @@ const Index = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-1">
                   <Button 
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleOperation('%')} 
                     className="h-9 text-sm font-bold bg-gradient-to-b from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-2 border-purple-700 shadow-md"
                   >
                     %
                   </Button>
                   <Button 
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={handleEqualsCalc} 
                     disabled={!quantityInput} 
                     className="h-9 text-base font-bold bg-gradient-to-b from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-2 border-green-700 shadow-md disabled:opacity-50"
