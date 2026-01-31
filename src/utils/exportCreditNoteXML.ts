@@ -60,25 +60,48 @@ function getVATCategoryCode(vatRate: number): string {
   return 'S';
 }
 
+// Helper pour formater le numéro d'entreprise belge pour Peppol
+// Format attendu: 10 chiffres sans "BE" (ex: "0808695829")
+function formatBelgianEnterpriseNumber(vatOrBce: string | undefined): string {
+  if (!vatOrBce) return '';
+  let cleaned = vatOrBce.replace(/[\s.\-]/g, '').toUpperCase();
+  if (cleaned.startsWith('BE')) {
+    cleaned = cleaned.substring(2);
+  }
+  if (cleaned.length === 9 && /^\d+$/.test(cleaned)) {
+    cleaned = '0' + cleaned;
+  }
+  if (cleaned.length === 10 && /^\d+$/.test(cleaned)) {
+    return cleaned;
+  }
+  return cleaned;
+}
+
+// Helper pour calculer la ventilation TVA par taux
+// IMPORTANT: Recalcule le montant TVA pour garantir la cohérence Peppol BR-CO-17
 function calculateVATBreakdown(items: any[]): { vatRate: number; taxableAmount: number; taxAmount: number }[] {
-  const breakdown: { [key: number]: { taxableAmount: number; taxAmount: number } } = {};
+  const breakdown: { [key: number]: { taxableAmount: number } } = {};
   
   items?.forEach((item: any) => {
-    // IMPORTANT: Ne pas utiliser || 21 car 0 est un taux valide (exempté)
     const parsedRate = parseFloat(item.vat_rate);
     const rate = isNaN(parsedRate) ? 21 : parsedRate;
     if (!breakdown[rate]) {
-      breakdown[rate] = { taxableAmount: 0, taxAmount: 0 };
+      breakdown[rate] = { taxableAmount: 0 };
     }
     breakdown[rate].taxableAmount += parseFloat(item.subtotal) || 0;
-    breakdown[rate].taxAmount += parseFloat(item.vat_amount) || 0;
   });
   
-  return Object.entries(breakdown).map(([rate, amounts]) => ({
-    vatRate: parseFloat(rate),
-    taxableAmount: amounts.taxableAmount,
-    taxAmount: amounts.taxAmount,
-  }));
+  // Recalculer le montant TVA à partir du montant taxable et du taux
+  return Object.entries(breakdown).map(([rate, amounts]) => {
+    const vatRate = parseFloat(rate);
+    const taxableAmount = Math.round(amounts.taxableAmount * 100) / 100;
+    const taxAmount = Math.round(taxableAmount * vatRate) / 100;
+    return {
+      vatRate,
+      taxableAmount,
+      taxAmount,
+    };
+  });
 }
 
 // Export XML standard pour note de crédit
@@ -144,7 +167,7 @@ export function exportCreditNoteToXML(creditNote: CreditNoteExportData, companyI
   return xml;
 }
 
-// Export UBL Peppol BIS 3.0 pour note de crédit (InvoiceTypeCode 381)
+// Export UBL Peppol BIS 3.0 pour note de crédit (CreditNoteTypeCode 381)
 export function exportCreditNoteToUBL(creditNote: CreditNoteExportData, companyInfo?: CompanyInfo): string {
   const creditNoteDate = format(new Date(creditNote.created_at), 'yyyy-MM-dd');
   const vatBreakdown = calculateVATBreakdown(creditNote.credit_note_items || []);
@@ -176,16 +199,18 @@ export function exportCreditNoteToUBL(creditNote: CreditNoteExportData, companyI
   ubl += '    <cbc:EndDate>' + creditNoteDate + '</cbc:EndDate>\n';
   ubl += '  </cac:InvoicePeriod>\n';
   
-  // VENDEUR
+  // VENDEUR (BG-4) - Format identique aux factures
   if (companyInfo) {
     ubl += '  <cac:AccountingSupplierParty>\n';
     ubl += '    <cac:Party>\n';
     
-    const sellerVAT = companyInfo.vatNumber?.replace(/\s/g, '') || '';
-    if (sellerVAT) {
-      ubl += '      <cbc:EndpointID schemeID="0208">' + escapeXML(sellerVAT) + '</cbc:EndpointID>\n';
+    const sellerEnterpriseNumber = formatBelgianEnterpriseNumber(companyInfo.bceNumber || companyInfo.vatNumber);
+    const sellerVAT = companyInfo.vatNumber?.replace(/[\s.\-]/g, '').toUpperCase() || '';
+    
+    if (sellerEnterpriseNumber) {
+      ubl += '      <cbc:EndpointID schemeID="0208">' + escapeXML(sellerEnterpriseNumber) + '</cbc:EndpointID>\n';
       ubl += '      <cac:PartyIdentification>\n';
-      ubl += '        <cbc:ID schemeID="0208">' + escapeXML(sellerVAT) + '</cbc:ID>\n';
+      ubl += '        <cbc:ID schemeID="0208">' + escapeXML(sellerEnterpriseNumber) + '</cbc:ID>\n';
       ubl += '      </cac:PartyIdentification>\n';
     }
     
@@ -215,24 +240,43 @@ export function exportCreditNoteToUBL(creditNote: CreditNoteExportData, companyI
     
     ubl += '      <cac:PartyLegalEntity>\n';
     ubl += '        <cbc:RegistrationName>' + escapeXML(companyInfo.name) + '</cbc:RegistrationName>\n';
-    if (companyInfo.bceNumber || sellerVAT) {
-      ubl += '        <cbc:CompanyID schemeID="0208">' + escapeXML(companyInfo.bceNumber || sellerVAT) + '</cbc:CompanyID>\n';
+    if (sellerEnterpriseNumber) {
+      ubl += '        <cbc:CompanyID schemeID="0208">' + escapeXML(sellerEnterpriseNumber) + '</cbc:CompanyID>\n';
+    }
+    if (companyInfo.legalForm) {
+      ubl += '        <cbc:CompanyLegalForm>' + escapeXML(companyInfo.legalForm) + '</cbc:CompanyLegalForm>\n';
     }
     ubl += '      </cac:PartyLegalEntity>\n';
+    
+    if (companyInfo.phone || companyInfo.email) {
+      ubl += '      <cac:Contact>\n';
+      ubl += '        <cbc:Name>' + escapeXML(companyInfo.name) + '</cbc:Name>\n';
+      if (companyInfo.phone) {
+        ubl += '        <cbc:Telephone>' + escapeXML(companyInfo.phone) + '</cbc:Telephone>\n';
+      }
+      if (companyInfo.email) {
+        ubl += '        <cbc:ElectronicMail>' + escapeXML(companyInfo.email) + '</cbc:ElectronicMail>\n';
+      }
+      ubl += '      </cac:Contact>\n';
+    }
     
     ubl += '    </cac:Party>\n';
     ubl += '  </cac:AccountingSupplierParty>\n';
   }
   
-  // ACHETEUR
+  // ACHETEUR (BG-7) - Format identique aux factures
   ubl += '  <cac:AccountingCustomerParty>\n';
   ubl += '    <cac:Party>\n';
   
   if (creditNote.customers) {
-    const customerVAT = creditNote.customers.vat_number?.replace(/\s/g, '') || '';
+    const customerEnterpriseNumber = formatBelgianEnterpriseNumber(creditNote.customers.vat_number);
+    const customerVAT = creditNote.customers.vat_number?.replace(/[\s.\-]/g, '').toUpperCase() || '';
     
-    if (customerVAT) {
-      ubl += '      <cbc:EndpointID schemeID="0208">' + escapeXML(customerVAT) + '</cbc:EndpointID>\n';
+    if (customerEnterpriseNumber) {
+      ubl += '      <cbc:EndpointID schemeID="0208">' + escapeXML(customerEnterpriseNumber) + '</cbc:EndpointID>\n';
+      ubl += '      <cac:PartyIdentification>\n';
+      ubl += '        <cbc:ID schemeID="0208">' + escapeXML(customerEnterpriseNumber) + '</cbc:ID>\n';
+      ubl += '      </cac:PartyIdentification>\n';
     } else {
       ubl += '      <cbc:EndpointID schemeID="0002">' + escapeXML(creditNote.customers.name) + '</cbc:EndpointID>\n';
     }
@@ -263,11 +307,26 @@ export function exportCreditNoteToUBL(creditNote: CreditNoteExportData, companyI
     
     ubl += '      <cac:PartyLegalEntity>\n';
     ubl += '        <cbc:RegistrationName>' + escapeXML(creditNote.customers.name) + '</cbc:RegistrationName>\n';
+    if (customerEnterpriseNumber) {
+      ubl += '        <cbc:CompanyID schemeID="0208">' + escapeXML(customerEnterpriseNumber) + '</cbc:CompanyID>\n';
+    }
     ubl += '      </cac:PartyLegalEntity>\n';
+    
+    if (creditNote.customers.email || creditNote.customers.phone) {
+      ubl += '      <cac:Contact>\n';
+      ubl += '        <cbc:Name>' + escapeXML(creditNote.customers.name) + '</cbc:Name>\n';
+      if (creditNote.customers.phone) {
+        ubl += '        <cbc:Telephone>' + escapeXML(creditNote.customers.phone) + '</cbc:Telephone>\n';
+      }
+      if (creditNote.customers.email) {
+        ubl += '        <cbc:ElectronicMail>' + escapeXML(creditNote.customers.email) + '</cbc:ElectronicMail>\n';
+      }
+      ubl += '      </cac:Contact>\n';
+    }
   } else {
-    ubl += '      <cbc:EndpointID schemeID="0002">Client Anonyme</cbc:EndpointID>\n';
+    ubl += '      <cbc:EndpointID schemeID="0002">ANONYMOUS</cbc:EndpointID>\n';
     ubl += '      <cac:PartyName>\n';
-    ubl += '        <cbc:Name>Client Anonyme</cbc:Name>\n';
+    ubl += '        <cbc:Name>Client anonyme</cbc:Name>\n';
     ubl += '      </cac:PartyName>\n';
     ubl += '      <cac:PostalAddress>\n';
     ubl += '        <cbc:CityName>Non specifiee</cbc:CityName>\n';
@@ -277,66 +336,94 @@ export function exportCreditNoteToUBL(creditNote: CreditNoteExportData, companyI
     ubl += '        </cac:Country>\n';
     ubl += '      </cac:PostalAddress>\n';
     ubl += '      <cac:PartyLegalEntity>\n';
-    ubl += '        <cbc:RegistrationName>Client Anonyme</cbc:RegistrationName>\n';
+    ubl += '        <cbc:RegistrationName>Client anonyme</cbc:RegistrationName>\n';
     ubl += '      </cac:PartyLegalEntity>\n';
   }
   
   ubl += '    </cac:Party>\n';
   ubl += '  </cac:AccountingCustomerParty>\n';
   
-  // TVA GLOBALE
-  ubl += '  <cac:TaxTotal>\n';
-  ubl += '    <cbc:TaxAmount currencyID="EUR">' + creditNote.total_vat.toFixed(2) + '</cbc:TaxAmount>\n';
+  // VENTILATION TVA (BG-23) - BR-CO-14: TaxTotal/TaxAmount DOIT être égal à la somme des TaxSubtotal/TaxAmount
+  const calculatedTotalVat = vatBreakdown.reduce((sum, vat) => sum + vat.taxAmount, 0);
+  const totalVatAmount = vatBreakdown.length > 0 ? calculatedTotalVat : (creditNote.total_vat || 0);
   
-  vatBreakdown.forEach((vat) => {
+  ubl += '  <cac:TaxTotal>\n';
+  ubl += '    <cbc:TaxAmount currencyID="EUR">' + totalVatAmount.toFixed(2) + '</cbc:TaxAmount>\n';
+  
+  if (vatBreakdown.length > 0) {
+    vatBreakdown.forEach((vat) => {
+      ubl += '    <cac:TaxSubtotal>\n';
+      ubl += '      <cbc:TaxableAmount currencyID="EUR">' + vat.taxableAmount.toFixed(2) + '</cbc:TaxableAmount>\n';
+      ubl += '      <cbc:TaxAmount currencyID="EUR">' + vat.taxAmount.toFixed(2) + '</cbc:TaxAmount>\n';
+      ubl += '      <cac:TaxCategory>\n';
+      ubl += '        <cbc:ID>' + getVATCategoryCode(vat.vatRate) + '</cbc:ID>\n';
+      ubl += '        <cbc:Percent>' + vat.vatRate.toFixed(2) + '</cbc:Percent>\n';
+      ubl += '        <cac:TaxScheme>\n';
+      ubl += '          <cbc:ID>VAT</cbc:ID>\n';
+      ubl += '        </cac:TaxScheme>\n';
+      ubl += '      </cac:TaxCategory>\n';
+      ubl += '    </cac:TaxSubtotal>\n';
+    });
+  } else {
     ubl += '    <cac:TaxSubtotal>\n';
-    ubl += '      <cbc:TaxableAmount currencyID="EUR">' + vat.taxableAmount.toFixed(2) + '</cbc:TaxableAmount>\n';
-    ubl += '      <cbc:TaxAmount currencyID="EUR">' + vat.taxAmount.toFixed(2) + '</cbc:TaxAmount>\n';
+    ubl += '      <cbc:TaxableAmount currencyID="EUR">' + (creditNote.subtotal || 0).toFixed(2) + '</cbc:TaxableAmount>\n';
+    ubl += '      <cbc:TaxAmount currencyID="EUR">' + (creditNote.total_vat || 0).toFixed(2) + '</cbc:TaxAmount>\n';
     ubl += '      <cac:TaxCategory>\n';
-    ubl += '        <cbc:ID>' + getVATCategoryCode(vat.vatRate) + '</cbc:ID>\n';
-    ubl += '        <cbc:Percent>' + vat.vatRate.toFixed(2) + '</cbc:Percent>\n';
+    ubl += '        <cbc:ID>S</cbc:ID>\n';
+    ubl += '        <cbc:Percent>21.00</cbc:Percent>\n';
     ubl += '        <cac:TaxScheme>\n';
     ubl += '          <cbc:ID>VAT</cbc:ID>\n';
     ubl += '        </cac:TaxScheme>\n';
     ubl += '      </cac:TaxCategory>\n';
     ubl += '    </cac:TaxSubtotal>\n';
-  });
+  }
   
   ubl += '  </cac:TaxTotal>\n';
   
-  // TOTAUX
+  // TOTAUX MONETAIRES (BG-22)
+  // BR-CO-15: TaxInclusiveAmount = TaxExclusiveAmount + TaxAmount
+  const taxExclusiveAmount = creditNote.subtotal || 0;
+  const calculatedTaxInclusiveAmount = taxExclusiveAmount + totalVatAmount;
+  
   ubl += '  <cac:LegalMonetaryTotal>\n';
-  ubl += '    <cbc:LineExtensionAmount currencyID="EUR">' + creditNote.subtotal.toFixed(2) + '</cbc:LineExtensionAmount>\n';
-  ubl += '    <cbc:TaxExclusiveAmount currencyID="EUR">' + creditNote.subtotal.toFixed(2) + '</cbc:TaxExclusiveAmount>\n';
-  ubl += '    <cbc:TaxInclusiveAmount currencyID="EUR">' + creditNote.total.toFixed(2) + '</cbc:TaxInclusiveAmount>\n';
-  ubl += '    <cbc:PayableAmount currencyID="EUR">' + creditNote.total.toFixed(2) + '</cbc:PayableAmount>\n';
+  ubl += '    <cbc:LineExtensionAmount currencyID="EUR">' + taxExclusiveAmount.toFixed(2) + '</cbc:LineExtensionAmount>\n';
+  ubl += '    <cbc:TaxExclusiveAmount currencyID="EUR">' + taxExclusiveAmount.toFixed(2) + '</cbc:TaxExclusiveAmount>\n';
+  ubl += '    <cbc:TaxInclusiveAmount currencyID="EUR">' + calculatedTaxInclusiveAmount.toFixed(2) + '</cbc:TaxInclusiveAmount>\n';
+  ubl += '    <cbc:PayableAmount currencyID="EUR">' + calculatedTaxInclusiveAmount.toFixed(2) + '</cbc:PayableAmount>\n';
   ubl += '  </cac:LegalMonetaryTotal>\n';
   
-  // LIGNES
+  // LIGNES DE NOTE DE CREDIT (BG-25)
   creditNote.credit_note_items?.forEach((item, index) => {
-    const itemName = item.product_name || 'Article non désigné';
-    // IMPORTANT: Ne pas utiliser || 21 car 0 est un taux valide (exempté)
-    const parsedRate = parseFloat(String(item.vat_rate));
-    const vatRate = isNaN(parsedRate) ? 21 : parsedRate;
+    const itemName = item.product_name?.trim() || 'Article non designe';
+    const parsedItemRate = parseFloat(String(item.vat_rate));
+    const itemVatRate = isNaN(parsedItemRate) ? 21 : parsedItemRate;
     
     ubl += '  <cac:CreditNoteLine>\n';
     ubl += '    <cbc:ID>' + (index + 1) + '</cbc:ID>\n';
-    ubl += '    <cbc:CreditedQuantity unitCode="EA">' + item.quantity + '</cbc:CreditedQuantity>\n';
-    ubl += '    <cbc:LineExtensionAmount currencyID="EUR">' + item.subtotal.toFixed(2) + '</cbc:LineExtensionAmount>\n';
+    ubl += '    <cbc:CreditedQuantity unitCode="C62">' + parseFloat(String(item.quantity)).toFixed(3) + '</cbc:CreditedQuantity>\n';
+    ubl += '    <cbc:LineExtensionAmount currencyID="EUR">' + (parseFloat(String(item.subtotal)) || 0).toFixed(2) + '</cbc:LineExtensionAmount>\n';
     
     ubl += '    <cac:Item>\n';
     ubl += '      <cbc:Name>' + escapeXML(itemName) + '</cbc:Name>\n';
+    
+    if (item.product_barcode) {
+      ubl += '      <cac:SellersItemIdentification>\n';
+      ubl += '        <cbc:ID>' + escapeXML(item.product_barcode) + '</cbc:ID>\n';
+      ubl += '      </cac:SellersItemIdentification>\n';
+    }
+    
     ubl += '      <cac:ClassifiedTaxCategory>\n';
-    ubl += '        <cbc:ID>' + getVATCategoryCode(vatRate) + '</cbc:ID>\n';
-    ubl += '        <cbc:Percent>' + vatRate.toFixed(2) + '</cbc:Percent>\n';
+    ubl += '        <cbc:ID>' + getVATCategoryCode(itemVatRate) + '</cbc:ID>\n';
+    ubl += '        <cbc:Percent>' + itemVatRate.toFixed(2) + '</cbc:Percent>\n';
     ubl += '        <cac:TaxScheme>\n';
     ubl += '          <cbc:ID>VAT</cbc:ID>\n';
     ubl += '        </cac:TaxScheme>\n';
     ubl += '      </cac:ClassifiedTaxCategory>\n';
+    
     ubl += '    </cac:Item>\n';
     
     ubl += '    <cac:Price>\n';
-    ubl += '      <cbc:PriceAmount currencyID="EUR">' + item.unit_price.toFixed(2) + '</cbc:PriceAmount>\n';
+    ubl += '      <cbc:PriceAmount currencyID="EUR">' + (parseFloat(String(item.unit_price)) || 0).toFixed(2) + '</cbc:PriceAmount>\n';
     ubl += '    </cac:Price>\n';
     
     ubl += '  </cac:CreditNoteLine>\n';
