@@ -171,13 +171,6 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
             <span>Réglages</span>
           </Button>
 
-          <Button
-            onClick={() => setRemoteScanOpen(true)}
-            className="h-10 px-2 flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-xs whitespace-nowrap"
-          >
-            <Smartphone className="h-4 w-4" />
-            <span>Scan Mobile</span>
-          </Button>
         </div>
 
         {/* Menu burger - visible uniquement sur mobile (moins de md) */}
