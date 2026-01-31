@@ -15,6 +15,7 @@ export function NumericKeypad({ onNumberClick, onClear, onBackspace }: NumericKe
       {numbers.map((num) => (
         <Button
           key={num}
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => onNumberClick(num)}
           className="aspect-square text-3xl font-light text-white border-0 transition-all duration-100 hover:brightness-125 active:brightness-90 rounded-full shadow-lg hover:shadow-xl"
           style={{ backgroundColor: '#505050' }}
@@ -23,6 +24,7 @@ export function NumericKeypad({ onNumberClick, onClear, onBackspace }: NumericKe
         </Button>
       ))}
       <Button
+        onMouseDown={(e) => e.preventDefault()}
         onClick={onBackspace}
         className="aspect-square text-white border-0 transition-all duration-100 hover:brightness-110 active:brightness-90 rounded-full shadow-xl hover:shadow-2xl hover:shadow-primary/60 group"
         style={{ background: 'linear-gradient(135deg, hsl(217, 91%, 60%), hsl(262, 83%, 58%))' }}
@@ -30,6 +32,7 @@ export function NumericKeypad({ onNumberClick, onClear, onBackspace }: NumericKe
         <Delete className="h-6 w-6 text-white group-hover:rotate-12 transition-transform duration-100" />
       </Button>
       <Button
+        onMouseDown={(e) => e.preventDefault()}
         onClick={onClear}
         className="aspect-square text-xl font-semibold border-0 transition-all duration-100 hover:brightness-110 active:brightness-90 rounded-full col-span-2 shadow-lg hover:shadow-xl"
         style={{ backgroundColor: '#D4D4D2', color: '#000000' }}
