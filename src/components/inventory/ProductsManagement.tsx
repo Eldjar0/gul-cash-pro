@@ -47,7 +47,7 @@ const normalizeBarcodeInput = (raw: string) => {
     .replace(/\D+/g, ''); // Supprimer tous les caractères non-numériques à la fin
 };
 
-const ITEMS_PER_PAGE = 50;
+const ITEMS_PER_PAGE = 15;
 
 export const ProductsManagement = () => {
   const { data: products = [] } = useProducts();
@@ -59,6 +59,7 @@ export const ProductsManagement = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [stockFilter, setStockFilter] = useState<'all' | 'low' | 'out'>('all');
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
@@ -123,7 +124,7 @@ export const ProductsManagement = () => {
   // Reset page when search or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, stockFilter]);
+  }, [debouncedSearch, stockFilter, categoryFilter]);
 
   const filteredProducts = useMemo(() => {
     const trimmedSearch = debouncedSearch.trim().toLowerCase();
@@ -132,11 +133,14 @@ export const ProductsManagement = () => {
       const matchesSearch = p.name.toLowerCase().includes(trimmedSearch) ||
         p.barcode?.toLowerCase().includes(trimmedSearch);
       
-      if (stockFilter === 'out') return matchesSearch && p.stock === 0;
-      if (stockFilter === 'low') return matchesSearch && p.stock > 0 && p.stock <= (p.min_stock || 0);
-      return matchesSearch;
+      // Filtre par catégorie
+      const matchesCategory = categoryFilter === 'all' || p.category_id === categoryFilter;
+      
+      if (stockFilter === 'out') return matchesSearch && matchesCategory && p.stock === 0;
+      if (stockFilter === 'low') return matchesSearch && matchesCategory && p.stock > 0 && p.stock <= (p.min_stock || 0);
+      return matchesSearch && matchesCategory;
     });
-  }, [products, debouncedSearch, stockFilter]);
+  }, [products, debouncedSearch, stockFilter, categoryFilter]);
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const paginatedProducts = useMemo(() => {
@@ -425,8 +429,19 @@ export const ProductsManagement = () => {
             className="pl-10"
           />
         </div>
-        <Select value={stockFilter} onValueChange={(v: any) => setStockFilter(v)}>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Catégorie" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes catégories</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={stockFilter} onValueChange={(v: any) => setStockFilter(v)}>
+          <SelectTrigger className="w-[150px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -467,23 +482,58 @@ export const ProductsManagement = () => {
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                size="sm"
+                size="icon"
+                className="h-8 w-8"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Précédent
               </Button>
-              <span className="text-sm text-muted-foreground px-2">
-                Page {currentPage} sur {totalPages}
-              </span>
+              
+              {/* Pagination numérotée */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => {
+                    // Toujours afficher: première, dernière, courante, et 2 pages autour de la courante
+                    if (page === 1 || page === totalPages) return true;
+                    if (Math.abs(page - currentPage) <= 2) return true;
+                    return false;
+                  })
+                  .reduce((acc: (number | string)[], page, idx, arr) => {
+                    // Ajouter "..." si écart > 1 entre les pages
+                    if (idx > 0) {
+                      const prevPage = arr[idx - 1];
+                      if (page - prevPage > 1) {
+                        acc.push('...');
+                      }
+                    }
+                    acc.push(page);
+                    return acc;
+                  }, [])
+                  .map((item, idx) => 
+                    item === '...' ? (
+                      <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">...</span>
+                    ) : (
+                      <Button
+                        key={item}
+                        variant={currentPage === item ? 'default' : 'outline'}
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setCurrentPage(item as number)}
+                      >
+                        {item}
+                      </Button>
+                    )
+                  )}
+              </div>
+              
               <Button
                 variant="outline"
-                size="sm"
+                size="icon"
+                className="h-8 w-8"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
               >
-                Suivant
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
