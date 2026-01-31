@@ -55,6 +55,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useCashDrawer } from '@/hooks/useCashDrawer';
 import { PriceEditDialog } from '@/components/pos/PriceEditDialog';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
+import { VirtualKeyboard } from '@/components/pos/VirtualKeyboard';
 
 type DiscountType = 'percentage' | 'amount';
 interface CartItem {
@@ -261,6 +262,9 @@ const Index = () => {
   
   // Remote scan dialog state
   const [remoteScanDialogOpen, setRemoteScanDialogOpen] = useState(false);
+  
+  // Virtual keyboard state
+  const [virtualKeyboardOpen, setVirtualKeyboardOpen] = useState(false);
   
   // Held tickets hook
   const { data: heldTickets } = useHeldTickets();
@@ -1771,37 +1775,34 @@ const Index = () => {
 
         {/* Centre: Barre de recherche */}
         <div className="flex-1 max-w-xs">
-          <form onSubmit={handleScanSubmit}>
-            <div className="relative">
-              <Scan className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-primary" />
-              <Input ref={scanInputRef} value={scanInput} onChange={e => {
-              const value = e.target.value;
-              setScanInput(value);
-              
-              // Si c'est un nombre pur, le stocker comme quantité préfixe
-              const numValue = parseFloat(value);
-              if (value.trim() !== '' && !isNaN(numValue) && numValue > 0 && /^\d+\.?\d*$/.test(value.trim())) {
-                setPrefixQuantity(numValue);
-                setQuantityInput(value);
-              } else {
-                setPrefixQuantity(null);
-              }
-              
-              if (!value.trim()) {
-                setSearchResults([]);
-                setPrefixQuantity(null);
-              }
-            }} placeholder="Rechercher..." autoComplete="off" inputMode="search" enterKeyHint="search" data-scan-ignore className="h-7 pl-7 pr-6 text-xs bg-background border-input text-foreground" />
-              {scanInput && <Button type="button" onClick={() => {
-              setScanInput('');
-              setSearchResults([]);
-              setPrefixQuantity(null);
-              scanInputRef.current?.focus();
-            }} className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 p-0 bg-transparent hover:bg-destructive/10 text-muted-foreground hover:text-destructive" variant="ghost">
-                  ×
-                </Button>}
+          <div className="relative">
+            <Scan className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-primary" />
+            <div 
+              onClick={() => setVirtualKeyboardOpen(true)}
+              className="h-7 pl-7 pr-6 text-xs bg-background border border-input text-foreground rounded-md flex items-center cursor-pointer hover:border-primary/50 transition-colors"
+            >
+              {scanInput ? (
+                <span className="text-foreground">{scanInput}</span>
+              ) : (
+                <span className="text-muted-foreground">Rechercher...</span>
+              )}
             </div>
-          </form>
+            {scanInput && (
+              <Button 
+                type="button" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setScanInput('');
+                  setSearchResults([]);
+                  setPrefixQuantity(null);
+                }} 
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 p-0 bg-transparent hover:bg-destructive/10 text-muted-foreground hover:text-destructive" 
+                variant="ghost"
+              >
+                ×
+              </Button>
+            )}
+          </div>
         </div>
         
         {/* Droite: Boutons Affichage et Gestion */}
@@ -2889,6 +2890,33 @@ const Index = () => {
         open={remoteScanDialogOpen}
         onOpenChange={setRemoteScanDialogOpen}
       />
+
+      {/* Virtual Keyboard */}
+      {virtualKeyboardOpen && (
+        <VirtualKeyboard
+          value={scanInput}
+          onChange={(value) => {
+            setScanInput(value);
+            // Si c'est un nombre pur, le stocker comme quantité préfixe
+            const numValue = parseFloat(value);
+            if (value.trim() !== '' && !isNaN(numValue) && numValue > 0 && /^\d+\.?\d*$/.test(value.trim())) {
+              setPrefixQuantity(numValue);
+              setQuantityInput(value);
+            } else {
+              setPrefixQuantity(null);
+            }
+            if (!value.trim()) {
+              setSearchResults([]);
+              setPrefixQuantity(null);
+            }
+          }}
+          onClose={() => setVirtualKeyboardOpen(false)}
+          onSubmit={() => {
+            setVirtualKeyboardOpen(false);
+            handleSearch();
+          }}
+        />
+      )}
     </div>;
 };
 export default Index;
