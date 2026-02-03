@@ -701,8 +701,8 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
           <div className="flex-1 overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
               {/* Left: Form */}
-              <ScrollArea className="h-[calc(95vh-100px)] bg-gray-50">
-                <div className="p-4 sm:p-6 space-y-4">
+              <ScrollArea className="h-[calc(95vh-120px)] bg-gray-50">
+                <div className="p-4 sm:p-6 space-y-4 pb-20">
                   {/* Invoice Info */}
                   <Card className="p-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -874,16 +874,22 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                     </div>
                   </Card>
 
-                  {/* Notes */}
-                  <Card className="p-4">
-                    <Label className="text-xs font-semibold mb-2 block">Notes</Label>
+                  {/* Notes - Section bien visible */}
+                  <Card className="p-4 border-2 border-primary/20 bg-gradient-to-br from-white to-primary/5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FileText className="h-4 w-4 text-primary" />
+                      <Label className="font-bold text-primary">Notes & Remarques</Label>
+                    </div>
                     <Textarea
-                      placeholder="Notes ou instructions..."
+                      placeholder="Notes, instructions ou conditions particulières..."
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="min-h-[80px] text-sm"
+                      className="min-h-[120px] text-sm resize-y"
                     />
                   </Card>
+                  
+                  {/* Spacer pour garantir le scroll */}
+                  <div className="h-8" />
                 </div>
               </ScrollArea>
 
