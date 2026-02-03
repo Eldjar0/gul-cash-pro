@@ -171,14 +171,10 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     }
   };
 
-  // Gérer la tentative de fermeture
+  // Gérer la tentative de fermeture - TOUJOURS afficher la confirmation
   const handleCloseAttempt = useCallback(() => {
-    if (hasFormData()) {
-      setShowExitConfirm(true);
-    } else {
-      onOpenChange(false);
-    }
-  }, [hasFormData, onOpenChange]);
+    setShowExitConfirm(true);
+  }, []);
 
   // Fermer sans sauvegarder
   const handleCloseWithoutSaving = () => {
@@ -645,7 +641,8 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
         }
       }}>
         <DialogContent 
-          className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden [&>button]:hidden"
+          preventClose
+          className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden"
           onPointerDownOutside={(e) => {
             e.preventDefault();
             handleCloseAttempt();
@@ -654,7 +651,10 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
             e.preventDefault();
             handleCloseAttempt();
           }}
-          onInteractOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => {
+            e.preventDefault();
+            handleCloseAttempt();
+          }}
         >
           <div className="flex flex-col h-full max-h-[95vh]">
             {/* Header */}
@@ -1163,21 +1163,21 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       </DialogContent>
     </Dialog>
 
-    {/* Confirmation Dialog */}
+    {/* Confirmation Dialog - z-index élevé pour être au-dessus */}
     <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
-      <AlertDialogContent>
+      <AlertDialogContent className="z-[100]">
         <AlertDialogHeader>
-          <AlertDialogTitle>Quitter la facture ?</AlertDialogTitle>
+          <AlertDialogTitle>Êtes-vous sûr de vouloir quitter ?</AlertDialogTitle>
           <AlertDialogDescription>
-            Vous avez des données non enregistrées. Voulez-vous sauvegarder cette facture en brouillon avant de quitter ?
+            Si vous quittez maintenant, votre facture sera automatiquement sauvegardée en brouillon.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleCloseWithoutSaving}>
-            Quitter sans sauvegarder
+        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+          <AlertDialogCancel onClick={() => setShowExitConfirm(false)}>
+            Rester
           </AlertDialogCancel>
           <AlertDialogAction onClick={handleSaveAndClose} disabled={savingDraft}>
-            {savingDraft ? 'Sauvegarde...' : 'Sauvegarder en brouillon'}
+            {savingDraft ? 'Sauvegarde...' : 'Quitter et sauvegarder'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
