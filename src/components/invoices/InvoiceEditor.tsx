@@ -171,14 +171,11 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     }
   };
 
-  // Gérer la tentative de fermeture - confirmation uniquement si données présentes
+  // Gérer la tentative de fermeture - TOUJOURS demander confirmation
   const handleCloseAttempt = useCallback(() => {
-    if (hasFormData()) {
-      setShowExitConfirm(true);
-    } else {
-      onOpenChange(false);
-    }
-  }, [hasFormData, onOpenChange]);
+    // Toujours afficher la confirmation quand le dialog est ouvert
+    setShowExitConfirm(true);
+  }, []);
 
   // Fermer sans sauvegarder
   const handleCloseWithoutSaving = () => {
@@ -1181,16 +1178,25 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
         <AlertDialogHeader>
           <AlertDialogTitle>Êtes-vous sûr de vouloir quitter ?</AlertDialogTitle>
           <AlertDialogDescription>
-            Si vous quittez maintenant, votre facture sera automatiquement sauvegardée en brouillon.
+            {hasFormData() 
+              ? "Vous avez des données non enregistrées. Votre facture sera sauvegardée en brouillon si vous quittez."
+              : "Voulez-vous vraiment fermer l'éditeur de facture ?"
+            }
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <AlertDialogCancel onClick={() => setShowExitConfirm(false)}>
             Rester
           </AlertDialogCancel>
-          <AlertDialogAction onClick={handleSaveAndClose} disabled={savingDraft}>
-            {savingDraft ? 'Sauvegarde...' : 'Quitter et sauvegarder'}
-          </AlertDialogAction>
+          {hasFormData() ? (
+            <AlertDialogAction onClick={handleSaveAndClose} disabled={savingDraft}>
+              {savingDraft ? 'Sauvegarde...' : 'Quitter et sauvegarder'}
+            </AlertDialogAction>
+          ) : (
+            <AlertDialogAction onClick={() => { setShowExitConfirm(false); onOpenChange(false); }}>
+              Quitter
+            </AlertDialogAction>
+          )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
