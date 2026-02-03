@@ -702,7 +702,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
             <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
               {/* Left: Form */}
               <ScrollArea className="h-[calc(95vh-120px)] bg-gray-50">
-                <div className="p-4 sm:p-6 space-y-4 pb-20">
+                <div className="p-4 sm:p-6 space-y-4 pb-40">
                   {/* Invoice Info */}
                   <Card className="p-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -889,7 +889,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                   </Card>
                   
                   {/* Spacer pour garantir le scroll */}
-                  <div className="h-8" />
+                  <div className="h-32" />
                 </div>
               </ScrollArea>
 
