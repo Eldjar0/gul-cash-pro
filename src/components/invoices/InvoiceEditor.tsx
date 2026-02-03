@@ -646,7 +646,10 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       }}>
         <DialogContent 
           className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden [&>button]:hidden"
-          onPointerDownOutside={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => {
+            e.preventDefault();
+            handleCloseAttempt();
+          }}
           onEscapeKeyDown={(e) => {
             e.preventDefault();
             handleCloseAttempt();
