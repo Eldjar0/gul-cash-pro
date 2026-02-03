@@ -171,10 +171,14 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     }
   };
 
-  // Gérer la tentative de fermeture - TOUJOURS afficher la confirmation
+  // Gérer la tentative de fermeture - confirmation uniquement si données présentes
   const handleCloseAttempt = useCallback(() => {
-    setShowExitConfirm(true);
-  }, []);
+    if (hasFormData()) {
+      setShowExitConfirm(true);
+    } else {
+      onOpenChange(false);
+    }
+  }, [hasFormData, onOpenChange]);
 
   // Fermer sans sauvegarder
   const handleCloseWithoutSaving = () => {
