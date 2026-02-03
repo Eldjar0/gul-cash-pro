@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -70,10 +71,128 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   ]);
   
   const [notes, setNotes] = useState('');
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   
   // Terminologie belge: HTVA (hors TVA) et TVAC (TVA comprise)
   const labelHT = 'HTVA';
   const labelTTC = 'TVAC';
+
+  // Vérifier si le formulaire a des données
+  const hasFormData = useCallback(() => {
+    return clientName.trim() !== '' || 
+           items.some(item => item.description.trim() !== '' || item.unitPrice > 0);
+  }, [clientName, items]);
+
+  // Sauvegarde automatique en brouillon
+  const saveDraft = async () => {
+    if (!hasFormData()) return;
+    
+    setSavingDraft(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Créer ou trouver le client
+      let customerId = selectedCustomerId;
+      if (!customerId && clientName.trim()) {
+        const { data: existingCustomer } = await supabase
+          .from('customers')
+          .select('id')
+          .eq('name', clientName)
+          .maybeSingle();
+
+        if (existingCustomer) {
+          customerId = existingCustomer.id;
+        } else {
+          const { data: newCustomer } = await supabase
+            .from('customers')
+            .insert({
+              name: clientName,
+              address: clientAddress,
+              city: clientCity,
+              postal_code: clientPostalCode,
+              vat_number: clientVatNumber,
+            })
+            .select()
+            .single();
+          
+          if (newCustomer) customerId = newCustomer.id;
+        }
+      }
+
+      // Créer la facture brouillon
+      const { data: sale, error: saleError } = await supabase
+        .from('sales')
+        .insert({
+          sale_number: invoiceNumber,
+          customer_id: customerId,
+          cashier_id: user.id,
+          subtotal: calculateSubtotal(),
+          total_vat: calculateTotalVat(),
+          total_discount: 0,
+          total: calculateTotal(),
+          payment_method: 'card',
+          is_invoice: true,
+          invoice_status: 'brouillon',
+          notes: notes || 'Brouillon auto-sauvegardé',
+          date: new Date(invoiceDate),
+          due_date: new Date(dueDate),
+        } as any)
+        .select()
+        .single();
+
+      if (saleError) throw saleError;
+
+      // Insérer les articles si la facture a été créée
+      if (sale && items.some(item => item.description.trim() !== '')) {
+        const saleItems = items
+          .filter(item => item.description.trim() !== '')
+          .map(item => ({
+            sale_id: sale.id,
+            product_name: item.description,
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            vat_rate: item.vatRate,
+            subtotal: item.quantity * item.unitPrice,
+            vat_amount: (item.quantity * item.unitPrice) * (item.vatRate / 100),
+            total: item.quantity * item.unitPrice * (1 + item.vatRate / 100),
+          }));
+
+        await supabase.from('sale_items').insert(saleItems);
+      }
+
+      toast.success('Facture sauvegardée en brouillon');
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast.error('Erreur lors de la sauvegarde du brouillon');
+    } finally {
+      setSavingDraft(false);
+    }
+  };
+
+  // Gérer la tentative de fermeture
+  const handleCloseAttempt = useCallback(() => {
+    if (hasFormData()) {
+      setShowExitConfirm(true);
+    } else {
+      onOpenChange(false);
+    }
+  }, [hasFormData, onOpenChange]);
+
+  // Fermer sans sauvegarder
+  const handleCloseWithoutSaving = () => {
+    setShowExitConfirm(false);
+    onOpenChange(false);
+  };
+
+  // Sauvegarder et fermer
+  const handleSaveAndClose = async () => {
+    setShowExitConfirm(false);
+    await saveDraft();
+    onOpenChange(false);
+    window.location.reload();
+  };
 
   useEffect(() => {
     if (open && !invoiceId) {
@@ -519,37 +638,50 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   const selectedCustomer = customers?.find(c => c.id === selectedCustomerId);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden [&>button]:hidden">
-        <div className="flex flex-col h-full max-h-[95vh]">
-          {/* Header */}
-          <div className="px-4 sm:px-6 py-4 border-b bg-gradient-to-r from-primary to-primary-glow shadow-lg">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-lg sm:text-xl font-bold text-white">
-                {invoiceId ? 'Modifier la facture' : 'Nouvelle facture'}
-              </h2>
-              <div className="flex items-center gap-3">
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
-                  onClick={handleSave} 
-                  disabled={loading} 
-                  className="font-semibold shadow-md hover:shadow-lg"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Enregistrer
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => onOpenChange(false)} 
-                  className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/30"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+    <>
+      <Dialog open={open} onOpenChange={(newOpen) => {
+        if (!newOpen) {
+          handleCloseAttempt();
+        }
+      }}>
+        <DialogContent 
+          className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden [&>button]:hidden"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => {
+            e.preventDefault();
+            handleCloseAttempt();
+          }}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <div className="flex flex-col h-full max-h-[95vh]">
+            {/* Header */}
+            <div className="px-4 sm:px-6 py-4 border-b bg-gradient-to-r from-primary to-primary-glow shadow-lg">
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="text-lg sm:text-xl font-bold text-white">
+                  {invoiceId ? 'Modifier la facture' : 'Nouvelle facture'}
+                </h2>
+                <div className="flex items-center gap-3">
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    onClick={handleSave} 
+                    disabled={loading} 
+                    className="font-semibold shadow-md hover:shadow-lg"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Enregistrer
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={handleCloseAttempt} 
+                    className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/30"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
 
           {/* UBL Warning */}
           {(ublValidation.errors.length > 0 || ublValidation.warnings.length > 0) && (
@@ -1027,5 +1159,26 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Confirmation Dialog */}
+    <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Quitter la facture ?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Vous avez des données non enregistrées. Voulez-vous sauvegarder cette facture en brouillon avant de quitter ?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={handleCloseWithoutSaving}>
+            Quitter sans sauvegarder
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={handleSaveAndClose} disabled={savingDraft}>
+            {savingDraft ? 'Sauvegarde...' : 'Sauvegarder en brouillon'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
