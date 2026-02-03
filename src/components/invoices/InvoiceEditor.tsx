@@ -895,8 +895,8 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
               {/* Right: Preview - Identique à InvoiceCreate */}
               <div className="hidden lg:block border-l bg-white">
-                <ScrollArea className="h-[calc(95vh-100px)]">
-                  <div className="p-6">
+                <ScrollArea className="h-[calc(95vh-120px)]">
+                  <div className="p-6 pb-40">
                     <Card className="bg-white shadow-2xl border-2 border-primary/20 overflow-hidden">
                       {/* Preview Header */}
                       <div className="bg-gradient-to-r from-primary via-primary-glow to-primary p-6 text-white">
@@ -1164,6 +1164,8 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         )}
                       </div>
                     </Card>
+                    {/* Spacer pour scroll */}
+                    <div className="h-32" />
                   </div>
                 </ScrollArea>
               </div>
