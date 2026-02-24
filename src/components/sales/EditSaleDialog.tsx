@@ -320,15 +320,94 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
                   </div>
                   <ProductSearch onProductSelect={handleAddProduct} />
                 </div>
+              ) : showQuickAdd ? (
+                <div className="p-4 border-2 border-primary/30 rounded-lg bg-muted/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-primary" />
+                      Ajout rapide
+                    </h3>
+                    <Button variant="ghost" size="sm" onClick={() => setShowQuickAdd(false)}>
+                      Annuler
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {QUICK_PRESETS.map((p) => (
+                      <Button
+                        key={p.label}
+                        variant={quickName === p.name ? 'default' : 'outline'}
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => applyPreset(p)}
+                      >
+                        {p.label}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-1">
+                      <Label className="text-xs">Nom</Label>
+                      <Input
+                        value={quickName}
+                        onChange={(e) => setQuickName(e.target.value)}
+                        placeholder="Article..."
+                        className="h-9"
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Prix €</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        value={quickPrice}
+                        onChange={(e) => setQuickPrice(e.target.value)}
+                        placeholder="0.00"
+                        className="h-9"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">TVA %</Label>
+                      <div className="flex gap-1">
+                        {['0', '6', '21'].map((rate) => (
+                          <Button
+                            key={rate}
+                            variant={quickVat === rate ? 'default' : 'outline'}
+                            size="sm"
+                            className="h-9 flex-1 text-xs"
+                            onClick={() => setQuickVat(rate)}
+                          >
+                            {rate}%
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <Button onClick={handleQuickAdd} className="w-full" size="sm">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Ajouter
+                  </Button>
+                </div>
               ) : (
-                <Button
-                  onClick={() => setShowProductSearch(true)}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ajouter un produit
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setShowProductSearch(true)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Chercher produit
+                  </Button>
+                  <Button
+                    onClick={() => setShowQuickAdd(true)}
+                    variant="outline"
+                    className="flex-1 border-primary/30 text-primary"
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Ajout rapide
+                  </Button>
+                </div>
               )}
 
               <div className="border rounded-lg p-4 bg-background">
