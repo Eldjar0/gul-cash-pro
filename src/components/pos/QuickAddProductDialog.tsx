@@ -63,6 +63,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
   const handleSubmit = () => {
     const trimmedName = name.trim();
     const parsedPrice = parseFloat(price.replace(',', '.'));
+    const parsedQuantity = parseFloat(quantity.replace(',', '.'));
 
     if (!trimmedName) {
       toast.error('Entrez un nom');
@@ -74,10 +75,17 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
       setActiveField('price');
       return;
     }
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+      toast.error('Entrez une quantité valide');
+      setActiveField('quantity');
+      return;
+    }
 
     const finalPrice = isDeduction ? -parsedPrice : parsedPrice;
     const displayName = isDeduction ? `${trimmedName} (déduction)` : productType === 'weight' ? `${trimmedName} /kg` : trimmedName;
 
+    // We call onAdd once, but with the quantity baked into the price for simplicity
+    // Actually we need to add the item with the correct quantity
     const added = onAdd({
       id: `quick-${Date.now()}`,
       name: displayName,
@@ -90,7 +98,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
     });
 
     if (!added) return;
-    toast.success(isDeduction ? `−${parsedPrice.toFixed(2)}€ déduit` : `${trimmedName} ajouté`);
+    toast.success(isDeduction ? `−${parsedPrice.toFixed(2)}€ déduit` : `${trimmedName} x${parsedQuantity} ajouté`);
     onOpenChange(false);
   };
 
