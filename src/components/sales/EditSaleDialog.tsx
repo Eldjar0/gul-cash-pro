@@ -24,6 +24,10 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
   const [items, setItems] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [showProductSearch, setShowProductSearch] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [quickName, setQuickName] = useState('');
+  const [quickPrice, setQuickPrice] = useState('');
+  const [quickVat, setQuickVat] = useState('21');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
   const queryClient = useQueryClient();
