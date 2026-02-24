@@ -501,13 +501,6 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
                 onBackspace={handleKeyboardBackspace}
                 compact
               />
-            ) : (
-              <VirtualKeyboard
-                type="azerty"
-                onInput={handleKeyboardInput}
-                onBackspace={handleKeyboardBackspace}
-                compact
-              />
             )}
           </div>
 
