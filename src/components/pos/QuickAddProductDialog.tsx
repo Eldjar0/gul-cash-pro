@@ -19,6 +19,7 @@ const PRESETS = [
   { name: 'Consommable', vat: 21, icon: '🧴', deduction: false },
   { name: 'Cigarette', vat: 0, icon: '🚬', deduction: false },
   { name: 'Divers', vat: 21, icon: '📦', deduction: false },
+  { name: 'Viande', vat: 6, icon: '🥩', deduction: true },
   { name: 'Vidange', vat: 0, icon: '♻️', deduction: true },
   { name: 'Déduction', vat: 0, icon: '➖', deduction: true },
 ];
