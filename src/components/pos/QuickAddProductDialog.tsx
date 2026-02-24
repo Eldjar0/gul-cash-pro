@@ -9,7 +9,7 @@ import { VirtualKeyboard } from './VirtualKeyboard';
 interface QuickAddProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (product: { id: string; name: string; price: number; vat_rate: number; barcode: string | null; type: string; stock: number | null; category_id: string | null }) => boolean;
+  onAdd: (product: { id: string; name: string; price: number; vat_rate: number; barcode: string | null; type: string; stock: number | null; category_id: string | null; quantity?: number }) => boolean;
 }
 
 const PRESETS = [
