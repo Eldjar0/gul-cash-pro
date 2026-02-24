@@ -90,40 +90,40 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm p-0 gap-0 overflow-hidden">
-        <DialogHeader className="px-4 pt-4 pb-3">
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <Zap className="h-4 w-4 text-primary" />
+      <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-5 pt-5 pb-4">
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <Zap className="h-5 w-5 text-primary" />
             Ajout rapide
           </DialogTitle>
         </DialogHeader>
 
-        {/* Presets grid */}
-        <div className="px-4 grid grid-cols-4 gap-1.5">
+        {/* Presets grid — large touch targets */}
+        <div className="px-5 grid grid-cols-4 gap-2">
           {PRESETS.map((preset, i) => (
             <button
               key={preset.name}
               onClick={() => selectPreset(i)}
               className={cn(
-                "flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg border text-xs font-medium transition-all",
+                "flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-xl border-2 text-xs font-semibold transition-all active:scale-95 min-h-[72px]",
                 selectedPreset === i
                   ? preset.deduction
-                    ? "border-destructive bg-destructive/10 text-destructive shadow-sm"
-                    : "border-primary bg-primary/10 text-primary shadow-sm"
+                    ? "border-destructive bg-destructive/10 text-destructive shadow-md"
+                    : "border-primary bg-primary/10 text-primary shadow-md"
                   : preset.deduction
                     ? "border-destructive/30 bg-card hover:bg-destructive/5 text-foreground"
                     : "border-border bg-card hover:bg-muted/60 text-foreground"
               )}
             >
-              <span className="text-lg leading-none">{preset.icon}</span>
-              <span className="truncate w-full text-center">{preset.name}</span>
-              <span className="text-[10px] text-muted-foreground">{preset.vat}%</span>
+              <span className="text-2xl leading-none">{preset.icon}</span>
+              <span className="truncate w-full text-center text-[11px]">{preset.name}</span>
+              <span className="text-[10px] text-muted-foreground font-normal">{preset.vat}%</span>
             </button>
           ))}
         </div>
 
         {/* Form */}
-        <div className="px-4 pt-3 space-y-2.5">
+        <div className="px-5 pt-4 space-y-3">
           {/* Nom */}
           <Input
             value={name}
@@ -132,7 +132,8 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
               setSelectedPreset(null);
             }}
             placeholder="Nom de l'article"
-            className="h-9 text-sm"
+            className="h-12 text-base"
+            inputMode="text"
           />
 
           {/* Prix + mode */}
@@ -140,14 +141,14 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
             <button
               onClick={() => setIsDeduction(!isDeduction)}
               className={cn(
-                "shrink-0 w-10 h-9 rounded-md border flex items-center justify-center transition-colors",
+                "shrink-0 w-14 h-12 rounded-lg border-2 flex items-center justify-center transition-colors active:scale-95",
                 isDeduction
                   ? "bg-destructive text-destructive-foreground border-destructive"
                   : "bg-primary text-primary-foreground border-primary"
               )}
               title={isDeduction ? 'Mode déduction' : 'Mode ajout'}
             >
-              {isDeduction ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              {isDeduction ? <Minus className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
             </button>
             <div className="relative flex-1">
               <Input
@@ -158,25 +159,26 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="Prix TTC"
+                inputMode="decimal"
                 className={cn(
-                  "h-9 text-sm pr-8",
+                  "h-12 text-base pr-10",
                   isDeduction && "border-destructive/50"
                 )}
                 onKeyDown={(e) => e.key === 'Enter' && canSubmit && handleSubmit()}
               />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">€</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">€</span>
             </div>
           </div>
 
           {/* TVA chips */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground shrink-0">TVA</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground shrink-0 font-medium">TVA</span>
             {VAT_OPTIONS.map((rate) => (
               <button
                 key={rate}
                 onClick={() => setVat(rate)}
                 className={cn(
-                  "flex-1 h-7 rounded-md text-xs font-medium transition-colors",
+                  "flex-1 h-10 rounded-lg text-sm font-semibold transition-colors active:scale-95",
                   vat === rate
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -189,14 +191,14 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
         </div>
 
         {/* Submit */}
-        <div className="p-4 pt-3">
+        <div className="p-5 pt-4">
           <Button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="w-full"
+            className="w-full h-14 text-base font-semibold"
             variant={isDeduction ? 'destructive' : 'default'}
           >
-            <Check className="h-4 w-4 mr-1.5" />
+            <Check className="h-5 w-5 mr-2" />
             {isDeduction
               ? `Déduire${price ? ` −${parseFloat(price || '0').toFixed(2)}€` : ''}`
               : `Ajouter${price ? ` ${parseFloat(price || '0').toFixed(2)}€` : ''}`
