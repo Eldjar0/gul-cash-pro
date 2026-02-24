@@ -90,7 +90,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg w-full p-0 gap-0 overflow-hidden">
+      <DialogContent className="!max-w-2xl w-[95vw] p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-4">
           <DialogTitle className="flex items-center gap-2 text-lg">
             <Zap className="h-5 w-5 text-primary" />
