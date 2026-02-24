@@ -231,7 +231,33 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
               </div>
             </div>
 
-            {/* Type toggle: unité / kilo */}
+            {/* Quantity / Weight field */}
+            <div
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setActiveField('quantity')}
+              className={cn(
+                "h-11 px-3 rounded-xl border-2 flex items-center justify-between text-base cursor-pointer transition-colors",
+                activeField === 'quantity'
+                  ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                  : "border-border bg-card",
+                quantity === '0' && "text-muted-foreground"
+              )}
+            >
+              <span>
+                {quantity || '0'}
+                {activeField === 'quantity' && <span className="ml-0.5 animate-pulse text-primary">|</span>}
+              </span>
+              <span className="text-muted-foreground font-medium text-sm">{quantityLabel}</span>
+            </div>
+
+            {/* Total preview */}
+            {totalLine && (
+              <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-muted/50 text-sm">
+                <span className="text-muted-foreground">Total:</span>
+                <span className="font-bold">{isDeduction ? '−' : ''}{totalLine}€</span>
+              </div>
+            )}
+
             <div className="flex gap-2">
               <button
                 onMouseDown={(e) => e.preventDefault()}
