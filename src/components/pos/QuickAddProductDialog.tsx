@@ -84,8 +84,6 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
     const finalPrice = isDeduction ? -parsedPrice : parsedPrice;
     const displayName = isDeduction ? `${trimmedName} (déduction)` : productType === 'weight' ? `${trimmedName} /kg` : trimmedName;
 
-    // We call onAdd once, but with the quantity baked into the price for simplicity
-    // Actually we need to add the item with the correct quantity
     const added = onAdd({
       id: `quick-${Date.now()}`,
       name: displayName,
@@ -95,6 +93,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
       type: productType,
       stock: null,
       category_id: null,
+      quantity: parsedQuantity,
     });
 
     if (!added) return;
