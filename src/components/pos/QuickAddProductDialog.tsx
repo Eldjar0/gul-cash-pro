@@ -9,7 +9,7 @@ import { VirtualKeyboard } from './VirtualKeyboard';
 interface QuickAddProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (product: { id: string; name: string; price: number; vat_rate: number; barcode: string | null; type: string; stock: number | null; category_id: string | null }) => boolean;
+  onAdd: (product: { id: string; name: string; price: number; vat_rate: number; barcode: string | null; type: string; stock: number | null; category_id: string | null; quantity?: number }) => boolean;
 }
 
 const PRESETS = [
@@ -26,11 +26,12 @@ const PRESETS = [
 
 const VAT_OPTIONS = [0, 6, 12, 21];
 
-type ActiveField = 'name' | 'price';
+type ActiveField = 'name' | 'price' | 'quantity';
 
 export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddProductDialogProps) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
+  const [quantity, setQuantity] = useState('1');
   const [vat, setVat] = useState(21);
   const [isDeduction, setIsDeduction] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
@@ -41,6 +42,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
     if (open) {
       setName('');
       setPrice('');
+      setQuantity('1');
       setVat(21);
       setIsDeduction(false);
       setSelectedPreset(null);
@@ -61,6 +63,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
   const handleSubmit = () => {
     const trimmedName = name.trim();
     const parsedPrice = parseFloat(price.replace(',', '.'));
+    const parsedQuantity = parseFloat(quantity.replace(',', '.'));
 
     if (!trimmedName) {
       toast.error('Entrez un nom');
@@ -70,6 +73,11 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
     if (isNaN(parsedPrice) || parsedPrice <= 0) {
       toast.error('Entrez un prix valide');
       setActiveField('price');
+      return;
+    }
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+      toast.error('Entrez une quantité valide');
+      setActiveField('quantity');
       return;
     }
 
@@ -85,10 +93,11 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
       type: productType,
       stock: null,
       category_id: null,
+      quantity: parsedQuantity,
     });
 
     if (!added) return;
-    toast.success(isDeduction ? `−${parsedPrice.toFixed(2)}€ déduit` : `${trimmedName} ajouté`);
+    toast.success(isDeduction ? `−${parsedPrice.toFixed(2)}€ déduit` : `${trimmedName} x${parsedQuantity} ajouté`);
     onOpenChange(false);
   };
 
@@ -101,6 +110,15 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
       const commaIndex = price.indexOf(',');
       if (commaIndex !== -1 && price.substring(commaIndex + 1).length >= 2 && char !== ',') return;
       setPrice(prev => prev + char);
+    } else if (activeField === 'quantity') {
+      if (char === ',' && quantity.includes(',')) return;
+      const commaIndex = quantity.indexOf(',');
+      if (commaIndex !== -1 && quantity.substring(commaIndex + 1).length >= 3 && char !== ',') return;
+      setQuantity(prev => {
+        // If default "1", replace it on first input
+        if (prev === '1' && char !== ',') return char;
+        return prev + char;
+      });
     }
   };
 
@@ -109,12 +127,21 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
       setName(prev => prev.slice(0, -1));
     } else if (activeField === 'price') {
       setPrice(prev => prev.slice(0, -1));
+    } else if (activeField === 'quantity') {
+      setQuantity(prev => {
+        const newVal = prev.slice(0, -1);
+        return newVal || '0';
+      });
     }
   };
 
-  const canSubmit = name.trim().length > 0 && price.length > 0 && !isNaN(parseFloat(price.replace(',', '.'))) && parseFloat(price.replace(',', '.')) > 0;
+  const parsedQuantity = parseFloat(quantity.replace(',', '.'));
+  const parsedPrice = parseFloat(price.replace(',', '.'));
+  const canSubmit = name.trim().length > 0 && price.length > 0 && !isNaN(parsedPrice) && parsedPrice > 0 && !isNaN(parsedQuantity) && parsedQuantity > 0;
 
   const priceLabel = productType === 'weight' ? 'Prix/kg TTC' : 'Prix TTC';
+  const quantityLabel = productType === 'weight' ? 'Poids (kg)' : 'Quantité';
+  const totalLine = canSubmit ? (parsedPrice * parsedQuantity).toFixed(2) : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -204,7 +231,33 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
               </div>
             </div>
 
-            {/* Type toggle: unité / kilo */}
+            {/* Quantity / Weight field */}
+            <div
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setActiveField('quantity')}
+              className={cn(
+                "h-11 px-3 rounded-xl border-2 flex items-center justify-between text-base cursor-pointer transition-colors",
+                activeField === 'quantity'
+                  ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                  : "border-border bg-card",
+                quantity === '0' && "text-muted-foreground"
+              )}
+            >
+              <span>
+                {quantity || '0'}
+                {activeField === 'quantity' && <span className="ml-0.5 animate-pulse text-primary">|</span>}
+              </span>
+              <span className="text-muted-foreground font-medium text-sm">{quantityLabel}</span>
+            </div>
+
+            {/* Total preview */}
+            {totalLine && (
+              <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-muted/50 text-sm">
+                <span className="text-muted-foreground">Total:</span>
+                <span className="font-bold">{isDeduction ? '−' : ''}{totalLine}€</span>
+              </div>
+            )}
+
             <div className="flex gap-2">
               <button
                 onMouseDown={(e) => e.preventDefault()}
@@ -273,17 +326,17 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
           {/* Right: virtual keyboard */}
           <div className="w-[380px] flex flex-col justify-center p-4 bg-muted/30">
             <div className="text-xs font-medium text-muted-foreground mb-2 text-center">
-              {activeField === 'name' ? '🔤 Clavier — Nom' : '🔢 Clavier — Prix'}
+              {activeField === 'name' ? '🔤 Clavier — Nom' : activeField === 'price' ? '🔢 Clavier — Prix' : `🔢 Clavier — ${quantityLabel}`}
             </div>
-            {activeField === 'price' ? (
+            {activeField === 'name' ? (
               <VirtualKeyboard
-                type="numeric"
+                type="azerty"
                 onInput={handleKeyboardInput}
                 onBackspace={handleKeyboardBackspace}
               />
             ) : (
               <VirtualKeyboard
-                type="azerty"
+                type="numeric"
                 onInput={handleKeyboardInput}
                 onBackspace={handleKeyboardBackspace}
               />
@@ -372,6 +425,33 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
               </div>
             </div>
 
+            {/* Quantity / Weight */}
+            <div
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setActiveField('quantity')}
+              className={cn(
+                "h-10 px-3 rounded-lg border-2 flex items-center justify-between text-sm cursor-pointer transition-colors",
+                activeField === 'quantity'
+                  ? "border-primary bg-primary/5"
+                  : "border-border bg-card",
+                quantity === '0' && "text-muted-foreground"
+              )}
+            >
+              <span>
+                {quantity || '0'}
+                {activeField === 'quantity' && <span className="ml-0.5 animate-pulse text-primary">|</span>}
+              </span>
+              <span className="text-muted-foreground text-xs">{quantityLabel}</span>
+            </div>
+
+            {/* Total preview mobile */}
+            {totalLine && (
+              <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-muted/50 text-xs">
+                <span className="text-muted-foreground">Total:</span>
+                <span className="font-bold">{isDeduction ? '−' : ''}{totalLine}€</span>
+              </div>
+            )}
+
             {/* Type + TVA row */}
             <div className="flex gap-1.5">
               <button
@@ -407,16 +487,16 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
 
           {/* Virtual Keyboard mobile */}
           <div className="px-3 pt-2 pb-1">
-            {activeField === 'price' ? (
+            {activeField === 'name' ? (
               <VirtualKeyboard
-                type="numeric"
+                type="azerty"
                 onInput={handleKeyboardInput}
                 onBackspace={handleKeyboardBackspace}
                 compact
               />
             ) : (
               <VirtualKeyboard
-                type="azerty"
+                type="numeric"
                 onInput={handleKeyboardInput}
                 onBackspace={handleKeyboardBackspace}
                 compact

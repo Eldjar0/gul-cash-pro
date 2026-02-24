@@ -708,12 +708,14 @@ const Index = () => {
       category_id: product.category_id || undefined,
     };
     
+    const qty = product.quantity || 1;
+    
     const newItem: CartItem = {
       product: quickProduct,
-      quantity: 1,
-      subtotal: isNegative ? -unitPriceHT : unitPriceHT,
-      vatAmount: isNegative ? -vatAmount : vatAmount,
-      total: isNegative ? -absPrice : absPrice,
+      quantity: qty,
+      subtotal: isNegative ? -(unitPriceHT * qty) : unitPriceHT * qty,
+      vatAmount: isNegative ? -(vatAmount * qty) : vatAmount * qty,
+      total: isNegative ? -(absPrice * qty) : absPrice * qty,
     };
 
     setCart(prev => [...prev, newItem]);
