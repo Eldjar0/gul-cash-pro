@@ -3,16 +3,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Zap, Plus } from 'lucide-react';
+import { Zap, Plus, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'sonner';
 
+type SignMode = 'positive' | 'negative';
+
 const QUICK_PRESETS = [
-  { label: 'Légume', name: 'Légume', vat: '6' },
-  { label: 'Viande', name: 'Viande', vat: '6' },
-  { label: 'Cigarette', name: 'Cigarette', vat: '0' },
-  { label: 'Consommable', name: 'Consommable', vat: '21' },
-  { label: 'Positif', name: 'Positif', vat: '21' },
-  { label: 'Positif +', name: 'Positif +', vat: '21' },
+  { label: 'Légume', name: 'Légume', vat: '6', sign: 'positive' as SignMode },
+  { label: 'Viande', name: 'Viande', vat: '6', sign: 'positive' as SignMode },
+  { label: 'Cigarette', name: 'Cigarette', vat: '0', sign: 'positive' as SignMode },
+  { label: 'Consommable', name: 'Consommable', vat: '21', sign: 'positive' as SignMode },
+  { label: '➕ Positif', name: 'Positif', vat: '21', sign: 'positive' as SignMode },
+  { label: '➖ Négatif', name: 'Négatif', vat: '21', sign: 'negative' as SignMode },
 ];
 
 interface QuickAddProductDialogProps {
@@ -25,6 +27,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
   const [quickName, setQuickName] = useState('');
   const [quickPrice, setQuickPrice] = useState('');
   const [quickVat, setQuickVat] = useState('21');
+  const [signMode, setSignMode] = useState<SignMode>('positive');
 
   const handleAdd = () => {
     const name = quickName.trim();
@@ -40,10 +43,12 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
       return;
     }
 
+    const finalPrice = signMode === 'negative' ? -Math.abs(price) : Math.abs(price);
+
     onAdd({
       id: `quick-${Date.now()}`,
-      name,
-      price,
+      name: signMode === 'negative' ? `${name} (déduction)` : name,
+      price: finalPrice,
       vat_rate: vat,
       barcode: null,
       type: 'unit',
@@ -51,16 +56,18 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
       category_id: null,
     });
 
-    toast.success(`${name} ajouté`);
+    toast.success(signMode === 'negative' ? `${name} déduit` : `${name} ajouté`);
     setQuickName('');
     setQuickPrice('');
     setQuickVat('21');
+    setSignMode('positive');
     onOpenChange(false);
   };
 
   const applyPreset = (preset: typeof QUICK_PRESETS[0]) => {
     setQuickName(preset.name);
     setQuickVat(preset.vat);
+    setSignMode(preset.sign);
   };
 
   return (
@@ -74,13 +81,14 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Presets */}
           <div className="flex flex-wrap gap-1.5">
             {QUICK_PRESETS.map((p) => (
               <Button
                 key={p.label}
-                variant={quickName === p.name ? 'default' : 'outline'}
+                variant={quickName === p.name && signMode === p.sign ? 'default' : 'outline'}
                 size="sm"
-                className="h-8 text-xs"
+                className={`h-8 text-xs ${p.sign === 'negative' ? 'border-destructive/40 text-destructive hover:bg-destructive/10' : ''}`}
                 onClick={() => applyPreset(p)}
               >
                 {p.label}
@@ -88,6 +96,32 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
             ))}
           </div>
 
+          {/* Positif / Négatif toggle */}
+          <div>
+            <Label className="text-xs mb-1.5 block">Type de ligne</Label>
+            <div className="flex gap-2">
+              <Button
+                variant={signMode === 'positive' ? 'default' : 'outline'}
+                size="sm"
+                className="flex-1"
+                onClick={() => setSignMode('positive')}
+              >
+                <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
+                Positif (+)
+              </Button>
+              <Button
+                variant={signMode === 'negative' ? 'destructive' : 'outline'}
+                size="sm"
+                className="flex-1"
+                onClick={() => setSignMode('negative')}
+              >
+                <TrendingDown className="h-3.5 w-3.5 mr-1.5" />
+                Négatif (−)
+              </Button>
+            </div>
+          </div>
+
+          {/* Nom */}
           <div>
             <Label className="text-xs">Nom de l'article</Label>
             <Input
@@ -98,8 +132,11 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
             />
           </div>
 
+          {/* Prix */}
           <div>
-            <Label className="text-xs">Prix TTC (€)</Label>
+            <Label className="text-xs">
+              {signMode === 'negative' ? 'Montant à déduire (€)' : 'Prix TTC (€)'}
+            </Label>
             <Input
               type="number"
               step="0.01"
@@ -107,9 +144,11 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
               value={quickPrice}
               onChange={(e) => setQuickPrice(e.target.value)}
               placeholder="0.00"
+              className={signMode === 'negative' ? 'border-destructive/40' : ''}
             />
           </div>
 
+          {/* TVA */}
           <div>
             <Label className="text-xs mb-1.5 block">TVA</Label>
             <div className="flex gap-2">
@@ -127,9 +166,13 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
             </div>
           </div>
 
-          <Button onClick={handleAdd} className="w-full">
+          <Button
+            onClick={handleAdd}
+            className="w-full"
+            variant={signMode === 'negative' ? 'destructive' : 'default'}
+          >
             <Plus className="h-4 w-4 mr-2" />
-            Ajouter au panier
+            {signMode === 'negative' ? 'Déduire du panier' : 'Ajouter au panier'}
           </Button>
         </div>
       </DialogContent>
