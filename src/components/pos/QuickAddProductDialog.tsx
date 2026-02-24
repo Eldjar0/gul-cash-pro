@@ -90,7 +90,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-4xl w-[95vw] p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-[900px] w-[95vw] p-0 gap-0 overflow-hidden" style={{ maxWidth: '900px' }}>
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Zap className="h-6 w-6 text-primary" />
