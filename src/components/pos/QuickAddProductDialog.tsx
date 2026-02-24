@@ -330,13 +330,13 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
             </div>
             {activeField === 'name' ? (
               <VirtualKeyboard
-                type="numeric"
+                type="azerty"
                 onInput={handleKeyboardInput}
                 onBackspace={handleKeyboardBackspace}
               />
             ) : (
               <VirtualKeyboard
-                type="azerty"
+                type="numeric"
                 onInput={handleKeyboardInput}
                 onBackspace={handleKeyboardBackspace}
               />
