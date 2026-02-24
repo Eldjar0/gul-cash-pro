@@ -19,6 +19,7 @@ const PRESETS = [
   { name: 'Consommable', vat: 21, icon: '🧴', deduction: false },
   { name: 'Cigarette', vat: 0, icon: '🚬', deduction: false },
   { name: 'Divers', vat: 21, icon: '📦', deduction: false },
+  { name: 'Viande', vat: 6, icon: '🥩', deduction: true },
   { name: 'Vidange', vat: 0, icon: '♻️', deduction: true },
   { name: 'Déduction', vat: 0, icon: '➖', deduction: true },
 ];
@@ -126,7 +127,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
 
         <div className="overflow-y-auto max-h-[calc(98vh-80px)]">
           {/* Presets grid */}
-          <div className="px-4 grid grid-cols-4 gap-2">
+          <div className="px-4 grid grid-cols-3 gap-2">
             {PRESETS.map((preset, i) => (
               <button
                 key={preset.name}
