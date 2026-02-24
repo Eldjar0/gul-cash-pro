@@ -2489,12 +2489,12 @@ const Index = () => {
               </> : <div className="flex flex-col h-full">
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="mb-2 border-primary/30 text-primary"
+                  size="lg"
+                  className="mb-3 border-primary/30 text-primary h-12 text-base font-semibold w-full"
                   onClick={() => setQuickAddDialogOpen(true)}
                 >
-                  <Zap className="h-3.5 w-3.5 mr-1.5" />
-                  Ajout rapide
+                  <Zap className="h-5 w-5 mr-2" />
+                  ⚡ Ajout rapide
                 </Button>
                 <h2 className="text-foreground font-bold text-sm mb-4 px-2 flex items-center gap-2">
                   <div className="h-1 w-1 rounded-full bg-primary"></div>
