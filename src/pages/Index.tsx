@@ -678,6 +678,21 @@ const Index = () => {
     }
   }, [quantityInput, isDayOpenEffective, openDay, selectedCustomer]);
 
+  // Ajout rapide d'un produit libre au panier
+  const handleQuickAddProduct = useCallback((product: any) => {
+    if (!isDayOpenEffective) {
+      toast.error('Veuillez ouvrir la journée avant d\'ajouter des produits');
+      return;
+    }
+    const totals = calculateItemTotal(product, 1);
+    const newItem: CartItem = {
+      product,
+      quantity: 1,
+      ...totals,
+    };
+    setCart(prev => [...prev, newItem]);
+  }, [isDayOpenEffective]);
+
   // Handler pour confirmer le poids
   const handleWeightConfirm = (weight: number) => {
     if (!weightProduct) return;
@@ -2445,6 +2460,15 @@ const Index = () => {
                     </button>)}
                 </div>
               </> : <div className="flex flex-col h-full">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mb-2 border-primary/30 text-primary"
+                  onClick={() => setQuickAddDialogOpen(true)}
+                >
+                  <Zap className="h-3.5 w-3.5 mr-1.5" />
+                  Ajout rapide
+                </Button>
                 <h2 className="text-foreground font-bold text-sm mb-4 px-2 flex items-center gap-2">
                   <div className="h-1 w-1 rounded-full bg-primary"></div>
                   CATÉGORIES
@@ -2930,6 +2954,13 @@ const Index = () => {
       <RemoteScanDialog
         open={remoteScanDialogOpen}
         onOpenChange={setRemoteScanDialogOpen}
+      />
+
+      {/* Quick Add Product Dialog */}
+      <QuickAddProductDialog
+        open={quickAddDialogOpen}
+        onOpenChange={setQuickAddDialogOpen}
+        onAdd={handleQuickAddProduct}
       />
     </div>;
 };
