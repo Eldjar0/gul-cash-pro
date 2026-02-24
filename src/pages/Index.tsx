@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause, QrCode, Monitor, Tablet } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause, QrCode, Monitor, Tablet, Zap } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import logoMarket from '@/assets/logo-market.png';
 import logoHeader from '@/assets/logo-gul-reyhan-header.png';
@@ -55,6 +55,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useCashDrawer } from '@/hooks/useCashDrawer';
 import { PriceEditDialog } from '@/components/pos/PriceEditDialog';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
+import { QuickAddProductDialog } from '@/components/pos/QuickAddProductDialog';
 
 type DiscountType = 'percentage' | 'amount';
 interface CartItem {
@@ -184,6 +185,7 @@ const Index = () => {
   const [isInvoiceMode, setIsInvoiceMode] = useState(() => loadInvoiceMode());
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(() => loadCustomer());
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
+  const [quickAddDialogOpen, setQuickAddDialogOpen] = useState(false);
 
   // Persistance du panier
   useEffect(() => {
@@ -675,6 +677,21 @@ const Index = () => {
       toast.success(`${product.name} ajouté au panier`);
     }
   }, [quantityInput, isDayOpenEffective, openDay, selectedCustomer]);
+
+  // Ajout rapide d'un produit libre au panier
+  const handleQuickAddProduct = useCallback((product: any) => {
+    if (!isDayOpenEffective) {
+      toast.error('Veuillez ouvrir la journée avant d\'ajouter des produits');
+      return;
+    }
+    const totals = calculateItemTotal(product, 1);
+    const newItem: CartItem = {
+      product,
+      quantity: 1,
+      ...totals,
+    };
+    setCart(prev => [...prev, newItem]);
+  }, [isDayOpenEffective]);
 
   // Handler pour confirmer le poids
   const handleWeightConfirm = (weight: number) => {
@@ -2443,6 +2460,15 @@ const Index = () => {
                     </button>)}
                 </div>
               </> : <div className="flex flex-col h-full">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mb-2 border-primary/30 text-primary"
+                  onClick={() => setQuickAddDialogOpen(true)}
+                >
+                  <Zap className="h-3.5 w-3.5 mr-1.5" />
+                  Ajout rapide
+                </Button>
                 <h2 className="text-foreground font-bold text-sm mb-4 px-2 flex items-center gap-2">
                   <div className="h-1 w-1 rounded-full bg-primary"></div>
                   CATÉGORIES
@@ -2928,6 +2954,13 @@ const Index = () => {
       <RemoteScanDialog
         open={remoteScanDialogOpen}
         onOpenChange={setRemoteScanDialogOpen}
+      />
+
+      {/* Quick Add Product Dialog */}
+      <QuickAddProductDialog
+        open={quickAddDialogOpen}
+        onOpenChange={setQuickAddDialogOpen}
+        onAdd={handleQuickAddProduct}
       />
     </div>;
 };
