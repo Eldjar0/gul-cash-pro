@@ -684,11 +684,31 @@ const Index = () => {
       toast.error('Veuillez ouvrir la journée avant d\'ajouter des produits');
       return;
     }
-    const totals = calculateItemTotal(product, 1);
+    
+    const isNegative = product.price < 0;
+    const absPrice = Math.abs(product.price);
+    const vatRate = product.vat_rate || 0;
+    const unitPriceHT = absPrice / (1 + vatRate / 100);
+    const vatAmount = unitPriceHT * (vatRate / 100);
+    
+    const quickProduct: Product = {
+      id: product.id,
+      name: product.name,
+      price: absPrice,
+      vat_rate: vatRate,
+      type: (product.type || 'unit') as 'unit' | 'weight',
+      is_active: true,
+      barcode: product.barcode || undefined,
+      stock: product.stock ?? undefined,
+      category_id: product.category_id || undefined,
+    };
+    
     const newItem: CartItem = {
-      product,
+      product: quickProduct,
       quantity: 1,
-      ...totals,
+      subtotal: isNegative ? -unitPriceHT : unitPriceHT,
+      vatAmount: isNegative ? -vatAmount : vatAmount,
+      total: isNegative ? -absPrice : absPrice,
     };
     setCart(prev => [...prev, newItem]);
   }, [isDayOpenEffective]);
