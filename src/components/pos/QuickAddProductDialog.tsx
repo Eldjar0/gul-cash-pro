@@ -13,12 +13,14 @@ interface QuickAddProductDialogProps {
 }
 
 const PRESETS = [
-  { name: 'Légume', vat: 6, icon: '🥬' },
-  { name: 'Fruit', vat: 6, icon: '🍎' },
-  { name: 'Viande', vat: 6, icon: '🥩' },
-  { name: 'Boisson', vat: 21, icon: '🥤' },
-  { name: 'Cigarette', vat: 0, icon: '🚬' },
-  { name: 'Divers', vat: 21, icon: '📦' },
+  { name: 'Légume', vat: 6, icon: '🥬', deduction: false },
+  { name: 'Fruit', vat: 6, icon: '🍎', deduction: false },
+  { name: 'Viande', vat: 6, icon: '🥩', deduction: false },
+  { name: 'Boisson', vat: 21, icon: '🥤', deduction: false },
+  { name: 'Cigarette', vat: 0, icon: '🚬', deduction: false },
+  { name: 'Divers', vat: 21, icon: '📦', deduction: false },
+  { name: 'Vidange', vat: 0, icon: '♻️', deduction: true },
+  { name: 'Déduction', vat: 0, icon: '➖', deduction: true },
 ];
 
 const VAT_OPTIONS = [0, 6, 12, 21];
