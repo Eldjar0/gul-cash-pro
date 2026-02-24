@@ -1123,7 +1123,7 @@ const Index = () => {
       cashier_id: user?.id,
       customer_id: selectedCustomer?.id,
       items: cart.map(item => ({
-        product_id: item.product.id,
+        product_id: item.product.id?.startsWith('quick-') ? null : item.product.id,
         product_name: item.product.name,
         product_barcode: item.product.barcode,
         quantity: item.quantity,
@@ -1373,7 +1373,7 @@ const Index = () => {
       cashier_id: user?.id,
       customer_id: finalIsInvoiceMode ? selectedCustomer?.id : undefined,
       items: cart.map(item => ({
-        product_id: item.product.id,
+        product_id: item.product.id?.startsWith('quick-') ? null : item.product.id,
         product_name: item.product.name,
         product_barcode: item.product.barcode,
         quantity: item.quantity,
