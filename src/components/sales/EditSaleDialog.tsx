@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertTriangle, Trash2, Save, Plus, User, X } from 'lucide-react';
+import { AlertTriangle, Trash2, Save, Plus, User, X, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
@@ -24,6 +24,10 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
   const [items, setItems] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [showProductSearch, setShowProductSearch] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [quickName, setQuickName] = useState('');
+  const [quickPrice, setQuickPrice] = useState('');
+  const [quickVat, setQuickVat] = useState('21');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
   const queryClient = useQueryClient();
@@ -78,6 +82,50 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
     setItems([...items, newItem]);
     setShowProductSearch(false);
     toast.success('Produit ajouté');
+  };
+
+  const QUICK_PRESETS = [
+    { label: 'Légume', name: 'Légume', vat: '6' },
+    { label: 'Viande', name: 'Viande', vat: '6' },
+    { label: 'Cigarette', name: 'Cigarette', vat: '0' },
+    { label: 'Consommable', name: 'Consommable', vat: '21' },
+    { label: 'Positif', name: 'Positif', vat: '21' },
+    { label: 'Positif +', name: 'Positif +', vat: '21' },
+  ];
+
+  const handleQuickAdd = () => {
+    const name = quickName.trim();
+    const price = parseFloat(quickPrice);
+    const vat = parseFloat(quickVat) || 0;
+    if (!name || isNaN(price) || price <= 0) {
+      toast.error('Nom et prix valide requis');
+      return;
+    }
+    const newItem = {
+      product_id: null,
+      product_name: name,
+      product_barcode: null,
+      quantity: 1,
+      unit_price: price,
+      vat_rate: vat,
+      discount_type: null,
+      discount_value: 0,
+      subtotal: price,
+      vat_amount: price * (vat / 100),
+      total: price * (1 + vat / 100),
+      created_at: new Date().toISOString(),
+    };
+    setItems([...items, newItem]);
+    setQuickName('');
+    setQuickPrice('');
+    setQuickVat('21');
+    setShowQuickAdd(false);
+    toast.success(`${name} ajouté`);
+  };
+
+  const applyPreset = (preset: typeof QUICK_PRESETS[0]) => {
+    setQuickName(preset.name);
+    setQuickVat(preset.vat);
   };
 
   const calculateNewTotals = () => {
@@ -272,15 +320,94 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
                   </div>
                   <ProductSearch onProductSelect={handleAddProduct} />
                 </div>
+              ) : showQuickAdd ? (
+                <div className="p-4 border-2 border-primary/30 rounded-lg bg-muted/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-primary" />
+                      Ajout rapide
+                    </h3>
+                    <Button variant="ghost" size="sm" onClick={() => setShowQuickAdd(false)}>
+                      Annuler
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {QUICK_PRESETS.map((p) => (
+                      <Button
+                        key={p.label}
+                        variant={quickName === p.name ? 'default' : 'outline'}
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => applyPreset(p)}
+                      >
+                        {p.label}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-1">
+                      <Label className="text-xs">Nom</Label>
+                      <Input
+                        value={quickName}
+                        onChange={(e) => setQuickName(e.target.value)}
+                        placeholder="Article..."
+                        className="h-9"
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Prix €</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        value={quickPrice}
+                        onChange={(e) => setQuickPrice(e.target.value)}
+                        placeholder="0.00"
+                        className="h-9"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">TVA %</Label>
+                      <div className="flex gap-1">
+                        {['0', '6', '21'].map((rate) => (
+                          <Button
+                            key={rate}
+                            variant={quickVat === rate ? 'default' : 'outline'}
+                            size="sm"
+                            className="h-9 flex-1 text-xs"
+                            onClick={() => setQuickVat(rate)}
+                          >
+                            {rate}%
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <Button onClick={handleQuickAdd} className="w-full" size="sm">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Ajouter
+                  </Button>
+                </div>
               ) : (
-                <Button
-                  onClick={() => setShowProductSearch(true)}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ajouter un produit
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setShowProductSearch(true)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Chercher produit
+                  </Button>
+                  <Button
+                    onClick={() => setShowQuickAdd(true)}
+                    variant="outline"
+                    className="flex-1 border-primary/30 text-primary"
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Ajout rapide
+                  </Button>
+                </div>
               )}
 
               <div className="border rounded-lg p-4 bg-background">
