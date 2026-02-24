@@ -487,7 +487,14 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
 
           {/* Virtual Keyboard mobile */}
           <div className="px-3 pt-2 pb-1">
-            {activeField === 'price' ? (
+            {activeField === 'name' ? (
+              <VirtualKeyboard
+                type="azerty"
+                onInput={handleKeyboardInput}
+                onBackspace={handleKeyboardBackspace}
+                compact
+              />
+            ) : (
               <VirtualKeyboard
                 type="numeric"
                 onInput={handleKeyboardInput}
