@@ -111,6 +111,15 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
       const commaIndex = price.indexOf(',');
       if (commaIndex !== -1 && price.substring(commaIndex + 1).length >= 2 && char !== ',') return;
       setPrice(prev => prev + char);
+    } else if (activeField === 'quantity') {
+      if (char === ',' && quantity.includes(',')) return;
+      const commaIndex = quantity.indexOf(',');
+      if (commaIndex !== -1 && quantity.substring(commaIndex + 1).length >= 3 && char !== ',') return;
+      setQuantity(prev => {
+        // If default "1", replace it on first input
+        if (prev === '1' && char !== ',') return char;
+        return prev + char;
+      });
     }
   };
 
@@ -119,12 +128,21 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
       setName(prev => prev.slice(0, -1));
     } else if (activeField === 'price') {
       setPrice(prev => prev.slice(0, -1));
+    } else if (activeField === 'quantity') {
+      setQuantity(prev => {
+        const newVal = prev.slice(0, -1);
+        return newVal || '0';
+      });
     }
   };
 
-  const canSubmit = name.trim().length > 0 && price.length > 0 && !isNaN(parseFloat(price.replace(',', '.'))) && parseFloat(price.replace(',', '.')) > 0;
+  const parsedQuantity = parseFloat(quantity.replace(',', '.'));
+  const parsedPrice = parseFloat(price.replace(',', '.'));
+  const canSubmit = name.trim().length > 0 && price.length > 0 && !isNaN(parsedPrice) && parsedPrice > 0 && !isNaN(parsedQuantity) && parsedQuantity > 0;
 
   const priceLabel = productType === 'weight' ? 'Prix/kg TTC' : 'Prix TTC';
+  const quantityLabel = productType === 'weight' ? 'Poids (kg)' : 'Quantité';
+  const totalLine = canSubmit ? (parsedPrice * parsedQuantity).toFixed(2) : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
