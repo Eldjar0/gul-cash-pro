@@ -31,6 +31,7 @@ type ActiveField = 'name' | 'price' | 'quantity';
 export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddProductDialogProps) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
+  const [quantity, setQuantity] = useState('1');
   const [vat, setVat] = useState(21);
   const [isDeduction, setIsDeduction] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
@@ -41,6 +42,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
     if (open) {
       setName('');
       setPrice('');
+      setQuantity('1');
       setVat(21);
       setIsDeduction(false);
       setSelectedPreset(null);
