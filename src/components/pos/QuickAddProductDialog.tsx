@@ -90,22 +90,22 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-2xl w-[95vw] p-0 gap-0 overflow-hidden">
-        <DialogHeader className="px-5 pt-5 pb-4">
-          <DialogTitle className="flex items-center gap-2 text-lg">
-            <Zap className="h-5 w-5 text-primary" />
+      <DialogContent className="!max-w-4xl w-[95vw] p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-6 pb-4">
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <Zap className="h-6 w-6 text-primary" />
             Ajout rapide
           </DialogTitle>
         </DialogHeader>
 
         {/* Presets grid — large touch targets */}
-        <div className="px-5 grid grid-cols-4 gap-2">
+        <div className="px-6 grid grid-cols-4 gap-3">
           {PRESETS.map((preset, i) => (
             <button
               key={preset.name}
               onClick={() => selectPreset(i)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 py-4 px-2 rounded-xl border-2 text-xs font-semibold transition-all active:scale-95 min-h-[72px]",
+                "flex flex-col items-center justify-center gap-1.5 py-6 px-3 rounded-xl border-2 text-sm font-semibold transition-all active:scale-95 min-h-[90px]",
                 selectedPreset === i
                   ? preset.deduction
                     ? "border-destructive bg-destructive/10 text-destructive shadow-md"
@@ -115,15 +115,15 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
                     : "border-border bg-card hover:bg-muted/60 text-foreground"
               )}
             >
-              <span className="text-2xl leading-none">{preset.icon}</span>
-              <span className="truncate w-full text-center text-[11px]">{preset.name}</span>
-              <span className="text-[10px] text-muted-foreground font-normal">{preset.vat}%</span>
+              <span className="text-3xl leading-none">{preset.icon}</span>
+              <span className="truncate w-full text-center text-sm">{preset.name}</span>
+              <span className="text-xs text-muted-foreground font-normal">{preset.vat}%</span>
             </button>
           ))}
         </div>
 
         {/* Form */}
-        <div className="px-5 pt-4 space-y-3">
+        <div className="px-6 pt-5 space-y-4">
           {/* Nom */}
           <Input
             value={name}
@@ -132,23 +132,23 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
               setSelectedPreset(null);
             }}
             placeholder="Nom de l'article"
-            className="h-12 text-base"
+            className="h-14 text-lg"
             inputMode="text"
           />
 
           {/* Prix + mode */}
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               onClick={() => setIsDeduction(!isDeduction)}
               className={cn(
-                "shrink-0 w-14 h-12 rounded-lg border-2 flex items-center justify-center transition-colors active:scale-95",
+                "shrink-0 w-16 h-14 rounded-xl border-2 flex items-center justify-center transition-colors active:scale-95",
                 isDeduction
                   ? "bg-destructive text-destructive-foreground border-destructive"
                   : "bg-primary text-primary-foreground border-primary"
               )}
               title={isDeduction ? 'Mode déduction' : 'Mode ajout'}
             >
-              {isDeduction ? <Minus className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+              {isDeduction ? <Minus className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
             </button>
             <div className="relative flex-1">
               <Input
@@ -161,12 +161,12 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
                 placeholder="Prix TTC"
                 inputMode="decimal"
                 className={cn(
-                  "h-12 text-base pr-10",
+                  "h-14 text-lg pr-10",
                   isDeduction && "border-destructive/50"
                 )}
                 onKeyDown={(e) => e.key === 'Enter' && canSubmit && handleSubmit()}
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">€</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-base text-muted-foreground font-medium">€</span>
             </div>
           </div>
 
@@ -178,7 +178,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
                 key={rate}
                 onClick={() => setVat(rate)}
                 className={cn(
-                  "flex-1 h-10 rounded-lg text-sm font-semibold transition-colors active:scale-95",
+                  "flex-1 h-12 rounded-xl text-base font-semibold transition-colors active:scale-95",
                   vat === rate
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -191,14 +191,14 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
         </div>
 
         {/* Submit */}
-        <div className="p-5 pt-4">
+        <div className="p-6 pt-5">
           <Button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="w-full h-14 text-base font-semibold"
+            className="w-full h-16 text-lg font-semibold"
             variant={isDeduction ? 'destructive' : 'default'}
           >
-            <Check className="h-5 w-5 mr-2" />
+            <Check className="h-6 w-6 mr-2" />
             {isDeduction
               ? `Déduire${price ? ` −${parseFloat(price || '0').toFixed(2)}€` : ''}`
               : `Ajouter${price ? ` ${parseFloat(price || '0').toFixed(2)}€` : ''}`
