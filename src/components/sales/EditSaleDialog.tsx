@@ -28,6 +28,7 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
   const [quickName, setQuickName] = useState('');
   const [quickPrice, setQuickPrice] = useState('');
   const [quickVat, setQuickVat] = useState('21');
+  const [quickSign, setQuickSign] = useState<'positive' | 'negative'>('positive');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
   const queryClient = useQueryClient();
@@ -85,12 +86,12 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
   };
 
   const QUICK_PRESETS = [
-    { label: 'Légume', name: 'Légume', vat: '6' },
-    { label: 'Viande', name: 'Viande', vat: '6' },
-    { label: 'Cigarette', name: 'Cigarette', vat: '0' },
-    { label: 'Consommable', name: 'Consommable', vat: '21' },
-    { label: 'Positif', name: 'Positif', vat: '21' },
-    { label: 'Positif +', name: 'Positif +', vat: '21' },
+    { label: 'Légume', name: 'Légume', vat: '6', sign: 'positive' as const },
+    { label: 'Viande', name: 'Viande', vat: '6', sign: 'positive' as const },
+    { label: 'Cigarette', name: 'Cigarette', vat: '0', sign: 'positive' as const },
+    { label: 'Consommable', name: 'Consommable', vat: '21', sign: 'positive' as const },
+    { label: '➕ Positif', name: 'Positif', vat: '21', sign: 'positive' as const },
+    { label: '➖ Négatif', name: 'Négatif', vat: '21', sign: 'negative' as const },
   ];
 
   const handleQuickAdd = () => {
@@ -101,31 +102,36 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
       toast.error('Nom et prix valide requis');
       return;
     }
+    const isNeg = quickSign === 'negative';
+    const finalPrice = isNeg ? -Math.abs(price) : Math.abs(price);
+    const displayName = isNeg ? `${name} (déduction)` : name;
     const newItem = {
       product_id: null,
-      product_name: name,
+      product_name: displayName,
       product_barcode: null,
       quantity: 1,
-      unit_price: price,
+      unit_price: finalPrice,
       vat_rate: vat,
       discount_type: null,
       discount_value: 0,
-      subtotal: price,
-      vat_amount: price * (vat / 100),
-      total: price * (1 + vat / 100),
+      subtotal: finalPrice,
+      vat_amount: finalPrice * (vat / 100),
+      total: finalPrice * (1 + vat / 100),
       created_at: new Date().toISOString(),
     };
     setItems([...items, newItem]);
     setQuickName('');
     setQuickPrice('');
     setQuickVat('21');
+    setQuickSign('positive');
     setShowQuickAdd(false);
-    toast.success(`${name} ajouté`);
+    toast.success(isNeg ? `${name} déduit` : `${name} ajouté`);
   };
 
   const applyPreset = (preset: typeof QUICK_PRESETS[0]) => {
     setQuickName(preset.name);
     setQuickVat(preset.vat);
+    setQuickSign(preset.sign);
   };
 
   const calculateNewTotals = () => {
