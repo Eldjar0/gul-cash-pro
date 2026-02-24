@@ -26,7 +26,7 @@ const PRESETS = [
 
 const VAT_OPTIONS = [0, 6, 12, 21];
 
-type ActiveField = 'name' | 'price';
+type ActiveField = 'name' | 'price' | 'quantity';
 
 export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddProductDialogProps) {
   const [name, setName] = useState('');
