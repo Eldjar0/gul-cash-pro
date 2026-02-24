@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 interface QuickAddProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (product: { id: string; name: string; price: number; vat_rate: number; barcode: string | null; type: string; stock: number | null; category_id: string | null }) => void;
+  onAdd: (product: { id: string; name: string; price: number; vat_rate: number; barcode: string | null; type: string; stock: number | null; category_id: string | null }) => boolean;
 }
 
 const PRESETS = [
@@ -67,7 +67,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
 
     const finalPrice = isDeduction ? -parsedPrice : parsedPrice;
 
-    onAdd({
+    const added = onAdd({
       id: `quick-${Date.now()}`,
       name: isDeduction ? `${trimmedName} (déduction)` : trimmedName,
       price: finalPrice,
@@ -78,11 +78,13 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
       category_id: null,
     });
 
+    if (!added) return;
+
     toast.success(isDeduction ? `−${parsedPrice.toFixed(2)}€ déduit` : `${trimmedName} ajouté`);
     onOpenChange(false);
   };
 
-  const canSubmit = name.trim() && price && !isNaN(parseFloat(price)) && parseFloat(price) > 0;
+  const canSubmit = name.trim().length > 0 && price.length > 0 && !isNaN(parseFloat(price)) && parseFloat(price) > 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

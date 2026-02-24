@@ -679,10 +679,15 @@ const Index = () => {
   }, [quantityInput, isDayOpenEffective, openDay, selectedCustomer]);
 
   // Ajout rapide d'un produit libre au panier
-  const handleQuickAddProduct = useCallback((product: any) => {
+  const handleQuickAddProduct = useCallback((product: any): boolean => {
     if (!isDayOpenEffective) {
       toast.error('Veuillez ouvrir la journée avant d\'ajouter des produits');
-      return;
+      return false;
+    }
+
+    if (!product?.name || typeof product?.price !== 'number' || isNaN(product.price)) {
+      toast.error('Produit rapide invalide');
+      return false;
     }
     
     const isNegative = product.price < 0;
@@ -710,7 +715,9 @@ const Index = () => {
       vatAmount: isNegative ? -vatAmount : vatAmount,
       total: isNegative ? -absPrice : absPrice,
     };
+
     setCart(prev => [...prev, newItem]);
+    return true;
   }, [isDayOpenEffective]);
 
   // Handler pour confirmer le poids
