@@ -84,6 +84,50 @@ export function EditSaleDialog({ open, onOpenChange, sale }: EditSaleDialogProps
     toast.success('Produit ajouté');
   };
 
+  const QUICK_PRESETS = [
+    { label: 'Légume', name: 'Légume', vat: '6' },
+    { label: 'Viande', name: 'Viande', vat: '6' },
+    { label: 'Cigarette', name: 'Cigarette', vat: '0' },
+    { label: 'Consommable', name: 'Consommable', vat: '21' },
+    { label: 'Positif', name: 'Positif', vat: '21' },
+    { label: 'Positif +', name: 'Positif +', vat: '21' },
+  ];
+
+  const handleQuickAdd = () => {
+    const name = quickName.trim();
+    const price = parseFloat(quickPrice);
+    const vat = parseFloat(quickVat) || 0;
+    if (!name || isNaN(price) || price <= 0) {
+      toast.error('Nom et prix valide requis');
+      return;
+    }
+    const newItem = {
+      product_id: null,
+      product_name: name,
+      product_barcode: null,
+      quantity: 1,
+      unit_price: price,
+      vat_rate: vat,
+      discount_type: null,
+      discount_value: 0,
+      subtotal: price,
+      vat_amount: price * (vat / 100),
+      total: price * (1 + vat / 100),
+      created_at: new Date().toISOString(),
+    };
+    setItems([...items, newItem]);
+    setQuickName('');
+    setQuickPrice('');
+    setQuickVat('21');
+    setShowQuickAdd(false);
+    toast.success(`${name} ajouté`);
+  };
+
+  const applyPreset = (preset: typeof QUICK_PRESETS[0]) => {
+    setQuickName(preset.name);
+    setQuickVat(preset.vat);
+  };
+
   const calculateNewTotals = () => {
     const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
     const totalVat = items.reduce((sum, item) => sum + item.vat_amount, 0);
