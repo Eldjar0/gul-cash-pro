@@ -49,7 +49,7 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
     setSelectedPreset(index);
     setName(preset.name);
     setVat(preset.vat);
-    setIsDeduction(false);
+    setIsDeduction(preset.deduction);
     // Focus prix après sélection preset
     setTimeout(() => priceRef.current?.focus(), 50);
   };
@@ -99,16 +99,20 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
         </DialogHeader>
 
         {/* Presets grid */}
-        <div className="px-4 grid grid-cols-3 gap-1.5">
+        <div className="px-4 grid grid-cols-4 gap-1.5">
           {PRESETS.map((preset, i) => (
             <button
               key={preset.name}
               onClick={() => selectPreset(i)}
               className={cn(
-                "flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-lg border text-xs font-medium transition-all",
+                "flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg border text-xs font-medium transition-all",
                 selectedPreset === i
-                  ? "border-primary bg-primary/10 text-primary shadow-sm"
-                  : "border-border bg-card hover:bg-muted/60 text-foreground"
+                  ? preset.deduction
+                    ? "border-destructive bg-destructive/10 text-destructive shadow-sm"
+                    : "border-primary bg-primary/10 text-primary shadow-sm"
+                  : preset.deduction
+                    ? "border-destructive/30 bg-card hover:bg-destructive/5 text-foreground"
+                    : "border-border bg-card hover:bg-muted/60 text-foreground"
               )}
             >
               <span className="text-lg leading-none">{preset.icon}</span>
