@@ -55,6 +55,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useCashDrawer } from '@/hooks/useCashDrawer';
 import { PriceEditDialog } from '@/components/pos/PriceEditDialog';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
+import { QuickAddProductDialog } from '@/components/pos/QuickAddProductDialog';
 
 type DiscountType = 'percentage' | 'amount';
 interface CartItem {
@@ -184,6 +185,7 @@ const Index = () => {
   const [isInvoiceMode, setIsInvoiceMode] = useState(() => loadInvoiceMode());
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(() => loadCustomer());
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
+  const [quickAddDialogOpen, setQuickAddDialogOpen] = useState(false);
 
   // Persistance du panier
   useEffect(() => {
