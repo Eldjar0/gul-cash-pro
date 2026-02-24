@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause, QrCode, Monitor, Tablet } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause, QrCode, Monitor, Tablet, Zap } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import logoMarket from '@/assets/logo-market.png';
 import logoHeader from '@/assets/logo-gul-reyhan-header.png';
