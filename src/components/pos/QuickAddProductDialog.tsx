@@ -326,9 +326,9 @@ export function QuickAddProductDialog({ open, onOpenChange, onAdd }: QuickAddPro
           {/* Right: virtual keyboard */}
           <div className="w-[380px] flex flex-col justify-center p-4 bg-muted/30">
             <div className="text-xs font-medium text-muted-foreground mb-2 text-center">
-              {activeField === 'name' ? '🔤 Clavier — Nom' : '🔢 Clavier — Prix'}
+              {activeField === 'name' ? '🔤 Clavier — Nom' : activeField === 'price' ? '🔢 Clavier — Prix' : `🔢 Clavier — ${quantityLabel}`}
             </div>
-            {activeField === 'price' ? (
+            {activeField === 'name' ? (
               <VirtualKeyboard
                 type="numeric"
                 onInput={handleKeyboardInput}
