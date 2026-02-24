@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Delete, ArrowLeft, Space, CornerDownLeft } from 'lucide-react';
+import { Delete, ArrowUp, Space } from 'lucide-react';
 
 interface VirtualKeyboardProps {
   type: 'azerty' | 'numeric';
@@ -8,6 +8,7 @@ interface VirtualKeyboardProps {
   onBackspace: () => void;
   onClear?: () => void;
   onSubmit?: () => void;
+  compact?: boolean;
   className?: string;
 }
 
@@ -32,12 +33,18 @@ const NUMERIC_KEYS = [
   [',', '0', 'BACKSPACE'],
 ];
 
-export function VirtualKeyboard({ type, onInput, onBackspace, onClear, onSubmit, className }: VirtualKeyboardProps) {
+export function VirtualKeyboard({ type, onInput, onBackspace, compact = false, className }: VirtualKeyboardProps) {
   const [caps, setCaps] = useState(true);
+
+  const keyH = compact ? 'h-10' : 'h-12';
+  const numKeyH = compact ? 'h-11' : 'h-14';
+  const fontSize = compact ? 'text-sm' : 'text-base';
+  const numFontSize = compact ? 'text-lg' : 'text-xl';
+  const gap = compact ? 'gap-1' : 'gap-1.5';
 
   if (type === 'numeric') {
     return (
-      <div className={cn("grid grid-cols-3 gap-1.5", className)}>
+      <div className={cn(`grid grid-cols-3 ${gap}`, className)}>
         {NUMERIC_KEYS.flat().map((key, i) => {
           if (key === 'BACKSPACE') {
             return (
@@ -45,9 +52,9 @@ export function VirtualKeyboard({ type, onInput, onBackspace, onClear, onSubmit,
                 key={i}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={onBackspace}
-                className="h-14 rounded-xl bg-destructive/10 text-destructive font-bold text-lg flex items-center justify-center active:scale-95 transition-transform border border-destructive/20"
+                className={cn(numKeyH, "rounded-xl bg-destructive/10 text-destructive font-bold flex items-center justify-center active:scale-95 transition-transform border border-destructive/20")}
               >
-                <Delete className="h-5 w-5" />
+                <Delete className={compact ? "h-4 w-4" : "h-5 w-5"} />
               </button>
             );
           }
@@ -56,7 +63,7 @@ export function VirtualKeyboard({ type, onInput, onBackspace, onClear, onSubmit,
               key={i}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => onInput(key)}
-              className="h-14 rounded-xl bg-muted hover:bg-muted/80 font-bold text-xl flex items-center justify-center active:scale-95 transition-transform border border-border"
+              className={cn(numKeyH, numFontSize, "rounded-xl bg-muted hover:bg-muted/80 font-bold flex items-center justify-center active:scale-95 transition-transform border border-border")}
             >
               {key}
             </button>
@@ -70,9 +77,9 @@ export function VirtualKeyboard({ type, onInput, onBackspace, onClear, onSubmit,
   const rows = caps ? AZERTY_ROWS_UPPER : AZERTY_ROWS_LOWER;
 
   return (
-    <div className={cn("space-y-1.5", className)}>
+    <div className={cn(`space-y-${compact ? '1' : '1.5'}`, className)}>
       {rows.map((row, rowIndex) => (
-        <div key={rowIndex} className="flex gap-1 justify-center">
+        <div key={rowIndex} className={`flex ${gap} justify-center`}>
           {row.map((key, keyIndex) => {
             if (key === 'SPACE') {
               return (
@@ -80,9 +87,9 @@ export function VirtualKeyboard({ type, onInput, onBackspace, onClear, onSubmit,
                   key={keyIndex}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => onInput(' ')}
-                  className="h-12 flex-1 rounded-xl bg-muted hover:bg-muted/80 font-medium text-sm flex items-center justify-center active:scale-95 transition-transform border border-border gap-2"
+                  className={cn(keyH, "flex-1 rounded-xl bg-muted hover:bg-muted/80 font-medium text-xs flex items-center justify-center active:scale-95 transition-transform border border-border gap-1.5")}
                 >
-                  <Space className="h-4 w-4" />
+                  <Space className={compact ? "h-3 w-3" : "h-4 w-4"} />
                   Espace
                 </button>
               );
@@ -93,9 +100,9 @@ export function VirtualKeyboard({ type, onInput, onBackspace, onClear, onSubmit,
                   key={keyIndex}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={onBackspace}
-                  className="h-12 w-14 rounded-xl bg-destructive/10 text-destructive font-bold flex items-center justify-center active:scale-95 transition-transform border border-destructive/20"
+                  className={cn(keyH, compact ? "w-11" : "w-14", "rounded-xl bg-destructive/10 text-destructive font-bold flex items-center justify-center active:scale-95 transition-transform border border-destructive/20")}
                 >
-                  <Delete className="h-5 w-5" />
+                  <Delete className={compact ? "h-4 w-4" : "h-5 w-5"} />
                 </button>
               );
             }
@@ -106,13 +113,14 @@ export function VirtualKeyboard({ type, onInput, onBackspace, onClear, onSubmit,
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setCaps(!caps)}
                   className={cn(
-                    "h-12 w-14 rounded-xl font-bold flex items-center justify-center active:scale-95 transition-transform border",
+                    keyH, compact ? "w-11" : "w-14",
+                    "rounded-xl font-bold flex items-center justify-center active:scale-95 transition-transform border",
                     caps
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-muted text-muted-foreground border-border"
                   )}
                 >
-                  <ArrowLeft className="h-5 w-5 rotate-90" />
+                  <ArrowUp className={compact ? "h-4 w-4" : "h-5 w-5"} />
                 </button>
               );
             }
@@ -124,7 +132,7 @@ export function VirtualKeyboard({ type, onInput, onBackspace, onClear, onSubmit,
                   onInput(key);
                   if (caps) setCaps(false);
                 }}
-                className="h-12 flex-1 min-w-[32px] max-w-[44px] rounded-xl bg-card hover:bg-muted/60 font-semibold text-base flex items-center justify-center active:scale-95 transition-transform border border-border shadow-sm"
+                className={cn(keyH, fontSize, "flex-1 min-w-[28px] max-w-[44px] rounded-xl bg-card hover:bg-muted/60 font-semibold flex items-center justify-center active:scale-95 transition-transform border border-border shadow-sm")}
               >
                 {key}
               </button>
