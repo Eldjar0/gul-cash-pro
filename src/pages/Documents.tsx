@@ -306,7 +306,7 @@ export default function Documents() {
     try {
       const { error } = await supabase
         .from('sales')
-        .update({ payment_method: method })
+        .update({ payment_method: method as any })
         .eq('id', saleId);
       if (error) throw error;
       toast.success('Mode de paiement mis à jour');
