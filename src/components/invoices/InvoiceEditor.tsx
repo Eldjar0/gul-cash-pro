@@ -673,7 +673,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
             {/* Header */}
             <div className="px-4 sm:px-6 py-2 border-b bg-background shadow-sm">
               <div className="flex items-center justify-between gap-4">
-                <h2 className="text-lg sm:text-xl font-bold text-white">
+                <h2 className="text-lg sm:text-xl font-bold text-foreground">
                   {invoiceId ? 'Modifier la facture' : 'Nouvelle facture'}
                 </h2>
                 <div className="flex items-center gap-3">
