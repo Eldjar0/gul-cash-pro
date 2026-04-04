@@ -1015,7 +1015,7 @@ export default function Documents() {
           total_vat: totalVat,
           total_discount: 0,
           total,
-          payment_method: 'card' as const,
+          payment_method: 'pending' as const,
           is_invoice: true,
           invoice_status: 'brouillon',
           is_cancelled: false,
