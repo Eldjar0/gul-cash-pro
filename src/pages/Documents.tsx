@@ -1943,8 +1943,7 @@ export default function Documents() {
                                invoice.payment_method === 'mobile' ? '📱 Mobile' :
                                invoice.payment_method === 'check' ? '📝 Chèque' :
                                invoice.payment_method === 'voucher' ? '🎫 Bon' :
-                               invoice.payment_method === 'transfer' ? '🏦 Virement' :
-                               invoice.payment_method || '—'}
+                               String(invoice.payment_method) || '—'}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
