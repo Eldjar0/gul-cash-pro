@@ -1197,7 +1197,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                     <div className="h-32" />
                   </div>
                 </ScrollArea>
-              </div>
+              </div>}
             </div>
           </div>
         </div>
