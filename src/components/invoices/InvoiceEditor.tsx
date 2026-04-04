@@ -681,7 +681,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                     variant="ghost" 
                     size="sm" 
                     onClick={() => setShowPreview(!showPreview)} 
-                    className="hidden lg:flex font-semibold text-white/90 hover:text-white hover:bg-white/10 border border-white/20"
+                    className="hidden lg:flex font-semibold"
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     {showPreview ? 'Masquer aperçu' : 'Voir aperçu'}
