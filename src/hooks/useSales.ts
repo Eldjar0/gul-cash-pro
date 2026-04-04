@@ -250,6 +250,7 @@ export const useSales = (startDate?: Date, endDate?: Date) => {
             subtotal,
             vat_amount,
             total,
+            notes,
             created_at
           ),
           customers(
