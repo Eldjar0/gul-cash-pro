@@ -713,7 +713,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
           <div className="flex-1 overflow-hidden">
             <div className={`grid h-full ${showPreview ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
               {/* Left: Form */}
-              <ScrollArea className="h-[calc(95vh-120px)] bg-gray-50">
+              <ScrollArea className="h-[calc(100vh-60px)] bg-muted/30">
                 <div className="p-4 sm:p-6 space-y-4 pb-40">
                   {/* Invoice Info */}
                   <Card className="p-4">
