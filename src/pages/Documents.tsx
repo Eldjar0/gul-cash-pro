@@ -1842,12 +1842,12 @@ export default function Documents() {
             </div>
 
             {/* Vue Desktop: Table */}
-            <Card className="bg-white overflow-hidden hidden sm:block">
+            <Card className="bg-white dark:bg-card overflow-hidden hidden sm:block shadow-sm">
               <div className="overflow-x-auto">
                 <ScrollArea className="min-h-[400px] max-h-[calc(100vh-320px)]" orientation="both">
                   <Table>
                     <TableHeader>
-                      <TableRow>
+                      <TableRow className="bg-muted/50">
                         {invoiceSelectionMode && (
                           <TableHead className="w-[50px]">
                             <Checkbox
@@ -1856,14 +1856,15 @@ export default function Documents() {
                             />
                           </TableHead>
                         )}
-                        <TableHead className="min-w-[120px]">Numéro</TableHead>
-                        <TableHead className="min-w-[100px]">Statut</TableHead>
-                        <TableHead className="min-w-[140px]">Date</TableHead>
-                        <TableHead className="min-w-[150px]">Client</TableHead>
-                        <TableHead className="min-w-[80px]">Articles</TableHead>
-                        <TableHead className="text-right min-w-[100px]">Total HT</TableHead>
-                        <TableHead className="text-right min-w-[100px]">Total TTC</TableHead>
-                        <TableHead className="text-right min-w-[180px]">Actions</TableHead>
+                        <TableHead className="min-w-[130px] font-bold">N° Facture</TableHead>
+                        <TableHead className="min-w-[110px] font-bold">Statut</TableHead>
+                        <TableHead className="min-w-[130px] font-bold">Date</TableHead>
+                        <TableHead className="min-w-[160px] font-bold">Client</TableHead>
+                        <TableHead className="text-center min-w-[80px] font-bold">Articles</TableHead>
+                        <TableHead className="text-right min-w-[100px] font-bold">HT</TableHead>
+                        <TableHead className="text-right min-w-[100px] font-bold">TVA</TableHead>
+                        <TableHead className="text-right min-w-[110px] font-bold">TTC</TableHead>
+                        <TableHead className="text-right min-w-[160px] font-bold">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
