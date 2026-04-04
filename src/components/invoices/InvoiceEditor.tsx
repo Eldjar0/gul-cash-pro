@@ -1019,6 +1019,9 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                                           <span>PU {labelHT}: <span className="font-semibold text-foreground">{item.unitPrice.toFixed(2)}€</span></span>
                                           <span>TVA: <span className="font-semibold text-accent">{item.vatRate}%</span></span>
                                         </div>
+                                        {item.note && (
+                                          <div className="text-[10px] italic text-muted-foreground mt-1">📝 {item.note}</div>
+                                        )}
                                       </div>
                                       <div className="text-right">
                                         <div className="text-xs text-muted-foreground mb-1">Total {labelTTC}</div>
