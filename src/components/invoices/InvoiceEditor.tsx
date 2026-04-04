@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
@@ -352,8 +352,12 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     setCurrentItemIndex(null);
   };
 
+  const addItemButtonRef = useRef<HTMLButtonElement>(null);
   const addItem = () => {
     setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }]);
+    setTimeout(() => {
+      addItemButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   };
 
   const removeItem = (index: number) => {
@@ -889,15 +893,14 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               className="h-7 text-xs text-muted-foreground italic" 
                             />
                     </div>
-                    <Button size="sm" onClick={addItem} className="h-9 w-full mt-3">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Ajouter un article
-                    </Button>
                         </div>
                       ))}
                     </div>
+                    <Button ref={addItemButtonRef} size="sm" onClick={addItem} className="h-9 w-full mt-3">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Ajouter un article
+                    </Button>
                   </Card>
-
                   {/* Notes - Section bien visible */}
                   <Card className="p-4 border-2 border-primary/20 bg-gradient-to-br from-white to-primary/5">
                     <div className="flex items-center gap-2 mb-3">
