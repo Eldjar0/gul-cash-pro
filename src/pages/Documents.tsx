@@ -1015,7 +1015,7 @@ export default function Documents() {
           total_vat: totalVat,
           total_discount: 0,
           total,
-          payment_method: 'card' as const,
+          payment_method: 'pending' as const,
           is_invoice: true,
           invoice_status: 'brouillon',
           is_cancelled: false,
@@ -1388,7 +1388,7 @@ export default function Documents() {
                   <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                     <span>{sale.sale_items?.length || 0} articles</span>
                     <span className="capitalize">
-                      {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : 'Mobile'}
+                      {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : sale.payment_method === 'transfer' ? 'Virement' : sale.payment_method === 'check' ? 'Chèque' : sale.payment_method === 'pending' ? '⏳ En attente' : 'Mobile'}
                     </span>
                   </div>
                   
@@ -1523,7 +1523,7 @@ export default function Documents() {
                           </TableCell>
                           <TableCell>
                             <span className="text-sm capitalize">
-                              {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : 'Mobile'}
+                              {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : sale.payment_method === 'transfer' ? 'Virement' : sale.payment_method === 'check' ? 'Chèque' : sale.payment_method === 'pending' ? '⏳ En attente' : 'Mobile'}
                             </span>
                           </TableCell>
                           <TableCell className="text-right font-bold text-primary">
@@ -1809,6 +1809,7 @@ export default function Documents() {
                         <SelectValue placeholder="⏳ En attente" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="pending">⏳ En attente</SelectItem>
                         <SelectItem value="cash">💵 Espèces</SelectItem>
                         <SelectItem value="card">💳 Carte</SelectItem>
                         <SelectItem value="transfer">🏦 Virement</SelectItem>
@@ -1965,6 +1966,7 @@ export default function Documents() {
                                 <SelectValue placeholder="⏳ En attente" />
                               </SelectTrigger>
                               <SelectContent>
+                                <SelectItem value="pending">⏳ En attente</SelectItem>
                                 <SelectItem value="cash">💵 Espèces</SelectItem>
                                 <SelectItem value="card">💳 Carte</SelectItem>
                                 <SelectItem value="transfer">🏦 Virement</SelectItem>

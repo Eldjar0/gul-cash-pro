@@ -2518,6 +2518,7 @@ export type Database = {
         | "check"
         | "voucher"
         | "transfer"
+        | "pending"
       product_type: "unit" | "weight"
       user_role: "admin" | "cashier" | "manager"
     }
@@ -2664,6 +2665,7 @@ export const Constants = {
         "check",
         "voucher",
         "transfer",
+        "pending",
       ],
       product_type: ["unit", "weight"],
       user_role: ["admin", "cashier", "manager"],
