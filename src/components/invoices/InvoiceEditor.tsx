@@ -893,15 +893,14 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               className="h-7 text-xs text-muted-foreground italic" 
                             />
                     </div>
-                    <Button size="sm" onClick={addItem} className="h-9 w-full mt-3">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Ajouter un article
-                    </Button>
                         </div>
                       ))}
                     </div>
+                    <Button ref={addItemButtonRef} size="sm" onClick={addItem} className="h-9 w-full mt-3">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Ajouter un article
+                    </Button>
                   </Card>
-
                   {/* Notes - Section bien visible */}
                   <Card className="p-4 border-2 border-primary/20 bg-gradient-to-br from-white to-primary/5">
                     <div className="flex items-center gap-2 mb-3">
