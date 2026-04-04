@@ -564,6 +564,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
           subtotal: item.quantity * item.unitPrice,
           vat_amount: (item.quantity * item.unitPrice) * (item.vatRate / 100),
           total: calculateItemTotal(item),
+          notes: item.note || null,
         }));
 
         const { error: itemsError } = await supabase
