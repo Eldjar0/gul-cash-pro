@@ -311,6 +311,7 @@ export const useSale = (id: string) => {
             subtotal,
             vat_amount,
             total,
+            notes,
             created_at
           ),
           fiscal_receipts(
