@@ -54,6 +54,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   // Client search
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [customerSearchOpen, setCustomerSearchOpen] = useState(false);
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('');
   
   // Client info
   const [clientName, setClientName] = useState('');
@@ -65,6 +66,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   // Product search
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [currentItemIndex, setCurrentItemIndex] = useState<number | null>(null);
+  const [productSearchTerm, setProductSearchTerm] = useState('');
   
   // Preview toggle
   const [showPreview, setShowPreview] = useState(false);
@@ -759,7 +761,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                       <User className="h-4 w-4 text-primary" />
                       <Label className="font-bold text-primary">Client</Label>
                     </div>
-                    <Popover open={customerSearchOpen} onOpenChange={setCustomerSearchOpen}>
+                    <Popover open={customerSearchOpen} onOpenChange={(open) => { setCustomerSearchOpen(open); if (!open) setCustomerSearchTerm(''); }}>
                       <PopoverTrigger asChild>
                         <Button variant="outline" className="w-full justify-between h-9">
                           {selectedCustomerId
@@ -769,28 +771,31 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[350px] p-0">
-                        <Command filter={(value, search) => {
-                          if (!search || search.length < 2) return 0;
-                          return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
-                        }}>
-                          <CommandInput placeholder="Tapez pour rechercher un client..." />
+                        <Command shouldFilter={false}>
+                          <CommandInput placeholder="Tapez min. 2 caractères..." value={customerSearchTerm} onValueChange={setCustomerSearchTerm} />
                           <CommandList>
-                            <CommandEmpty>Tapez pour rechercher...</CommandEmpty>
-                            <CommandGroup>
-                              {customers?.map((customer) => (
-                                <CommandItem
-                                  key={customer.id}
-                                  value={customer.name + ' ' + (customer.vat_number || '')}
-                                  onSelect={() => selectCustomer(customer)}
-                                >
-                                  <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === customer.id ? "opacity-100" : "opacity-0")} />
-                                  <div className="flex flex-col">
-                                    <span>{customer.name}</span>
-                                    {customer.vat_number && <span className="text-[10px] text-muted-foreground">{customer.vat_number}</span>}
-                                  </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
+                            {customerSearchTerm.length < 2 ? (
+                              <CommandEmpty>Tapez pour rechercher...</CommandEmpty>
+                            ) : (
+                              <CommandGroup>
+                                {customers?.filter(c => {
+                                  const search = customerSearchTerm.toLowerCase();
+                                  return c.name.toLowerCase().includes(search) || (c.vat_number || '').toLowerCase().includes(search);
+                                }).map((customer) => (
+                                  <CommandItem
+                                    key={customer.id}
+                                    value={customer.name + ' ' + (customer.vat_number || '')}
+                                    onSelect={() => selectCustomer(customer)}
+                                  >
+                                    <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === customer.id ? "opacity-100" : "opacity-0")} />
+                                    <div className="flex flex-col">
+                                      <span>{customer.name}</span>
+                                      {customer.vat_number && <span className="text-[10px] text-muted-foreground">{customer.vat_number}</span>}
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            )}
                           </CommandList>
                         </Command>
                       </PopoverContent>
@@ -824,30 +829,30 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                             )}
                           </div>
                           <div className="flex gap-2 mb-2">
-                            <Popover open={productSearchOpen && currentItemIndex === index} onOpenChange={(open) => { setProductSearchOpen(open); if (open) setCurrentItemIndex(index); else setCurrentItemIndex(null); }}>
+                            <Popover open={productSearchOpen && currentItemIndex === index} onOpenChange={(open) => { setProductSearchOpen(open); if (open) { setCurrentItemIndex(index); setProductSearchTerm(''); } else { setCurrentItemIndex(null); setProductSearchTerm(''); } }}>
                               <PopoverTrigger asChild>
                                 <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
                                   <Search className="h-4 w-4" />
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-[300px] p-0">
-                                <Command filter={(value, search) => {
-                                  if (!search || search.length < 2) return 0;
-                                  return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
-                                }}>
-                                  <CommandInput placeholder="Rechercher produit..." />
+                                <Command shouldFilter={false}>
+                                  <CommandInput placeholder="Tapez min. 2 caractères..." value={productSearchTerm} onValueChange={setProductSearchTerm} />
                                   <CommandList>
-                                    <CommandEmpty>Tapez pour rechercher...</CommandEmpty>
-                                    <CommandGroup>
-                                      {products?.filter(p => p.is_active).map((product) => (
-                                        <CommandItem key={product.id} value={product.name} onSelect={() => selectProduct(product, index)}>
-                                          <div className="flex flex-col">
-                                            <span className="font-medium">{product.name}</span>
-                                            <span className="text-xs text-muted-foreground">{product.price.toFixed(2)}€ - TVA {product.vat_rate}%</span>
-                                          </div>
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
+                                    {productSearchTerm.length < 2 ? (
+                                      <CommandEmpty>Tapez pour rechercher...</CommandEmpty>
+                                    ) : (
+                                      <CommandGroup>
+                                        {products?.filter(p => p.is_active && p.name.toLowerCase().includes(productSearchTerm.toLowerCase())).map((product) => (
+                                          <CommandItem key={product.id} value={product.name} onSelect={() => selectProduct(product, index)}>
+                                            <div className="flex flex-col">
+                                              <span className="font-medium">{product.name}</span>
+                                              <span className="text-xs text-muted-foreground">{product.price.toFixed(2)}€ - TVA {product.vat_rate}%</span>
+                                            </div>
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    )}
                                   </CommandList>
                                 </Command>
                               </PopoverContent>
