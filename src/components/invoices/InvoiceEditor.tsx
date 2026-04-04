@@ -349,7 +349,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   };
 
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21 }]);
+    setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }]);
   };
 
   const removeItem = (index: number) => {
