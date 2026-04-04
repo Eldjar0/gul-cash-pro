@@ -1864,6 +1864,7 @@ export default function Documents() {
                         <TableHead className="text-right min-w-[100px] font-bold">HT</TableHead>
                         <TableHead className="text-right min-w-[100px] font-bold">TVA</TableHead>
                         <TableHead className="text-right min-w-[110px] font-bold">TTC</TableHead>
+                        <TableHead className="min-w-[90px] font-bold">Paiement</TableHead>
                         <TableHead className="text-right min-w-[160px] font-bold">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
