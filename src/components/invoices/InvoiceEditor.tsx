@@ -38,6 +38,7 @@ interface InvoiceItem {
   unitPrice: number;
   unitPriceTVAC: number; // Prix TVAC pour édition directe
   vatRate: number;
+  note?: string; // Note optionnelle par article (affichée uniquement sur le PDF)
 }
 
 export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorProps) {
