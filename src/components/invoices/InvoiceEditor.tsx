@@ -761,7 +761,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                       <User className="h-4 w-4 text-primary" />
                       <Label className="font-bold text-primary">Client</Label>
                     </div>
-                    <Popover open={customerSearchOpen} onOpenChange={setCustomerSearchOpen}>
+                    <Popover open={customerSearchOpen} onOpenChange={(open) => { setCustomerSearchOpen(open); if (!open) setCustomerSearchTerm(''); }}>
                       <PopoverTrigger asChild>
                         <Button variant="outline" className="w-full justify-between h-9">
                           {selectedCustomerId
@@ -771,28 +771,31 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[350px] p-0">
-                        <Command filter={(value, search) => {
-                          if (!search || search.length < 2) return 0;
-                          return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
-                        }}>
-                          <CommandInput placeholder="Tapez pour rechercher un client..." />
+                        <Command shouldFilter={false}>
+                          <CommandInput placeholder="Tapez min. 2 caractères..." value={customerSearchTerm} onValueChange={setCustomerSearchTerm} />
                           <CommandList>
-                            <CommandEmpty>Tapez pour rechercher...</CommandEmpty>
-                            <CommandGroup>
-                              {customers?.map((customer) => (
-                                <CommandItem
-                                  key={customer.id}
-                                  value={customer.name + ' ' + (customer.vat_number || '')}
-                                  onSelect={() => selectCustomer(customer)}
-                                >
-                                  <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === customer.id ? "opacity-100" : "opacity-0")} />
-                                  <div className="flex flex-col">
-                                    <span>{customer.name}</span>
-                                    {customer.vat_number && <span className="text-[10px] text-muted-foreground">{customer.vat_number}</span>}
-                                  </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
+                            {customerSearchTerm.length < 2 ? (
+                              <CommandEmpty>Tapez pour rechercher...</CommandEmpty>
+                            ) : (
+                              <CommandGroup>
+                                {customers?.filter(c => {
+                                  const search = customerSearchTerm.toLowerCase();
+                                  return c.name.toLowerCase().includes(search) || (c.vat_number || '').toLowerCase().includes(search);
+                                }).map((customer) => (
+                                  <CommandItem
+                                    key={customer.id}
+                                    value={customer.name + ' ' + (customer.vat_number || '')}
+                                    onSelect={() => selectCustomer(customer)}
+                                  >
+                                    <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === customer.id ? "opacity-100" : "opacity-0")} />
+                                    <div className="flex flex-col">
+                                      <span>{customer.name}</span>
+                                      {customer.vat_number && <span className="text-[10px] text-muted-foreground">{customer.vat_number}</span>}
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            )}
                           </CommandList>
                         </Command>
                       </PopoverContent>
