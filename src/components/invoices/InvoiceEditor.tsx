@@ -700,7 +700,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                     variant="ghost" 
                     size="icon" 
                     onClick={handleCloseAttempt} 
-                    className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/30"
+                    className="h-9 w-9 rounded-full"
                   >
                     <X className="h-4 w-4" />
                   </Button>
