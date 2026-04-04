@@ -805,17 +805,11 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
                   {/* Items */}
                   <Card className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-3">
                         <ShoppingCart className="h-4 w-4 text-primary" />
                         <Label className="font-bold text-primary">Articles</Label>
                         <Badge variant="secondary" className="text-xs">{items.length}</Badge>
                       </div>
-                      <Button size="sm" onClick={addItem} className="h-8">
-                        <Plus className="h-3 w-3 mr-1" />
-                        Ajouter
-                      </Button>
-                    </div>
 
                     <div className="space-y-3">
                       {items.map((item, index) => (
