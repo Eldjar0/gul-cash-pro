@@ -38,6 +38,7 @@ interface InvoiceItem {
   unitPrice: number;
   unitPriceTVAC: number; // Prix TVAC pour édition directe
   vatRate: number;
+  note?: string; // Note optionnelle par article (affichée uniquement sur le PDF)
 }
 
 export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorProps) {
@@ -67,7 +68,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   
   // Items
   const [items, setItems] = useState<InvoiceItem[]>([
-    { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21 }
+    { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }
   ]);
   
   const [notes, setNotes] = useState('');
@@ -157,6 +158,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
             subtotal: item.quantity * item.unitPrice,
             vat_amount: (item.quantity * item.unitPrice) * (item.vatRate / 100),
             total: item.quantity * item.unitPrice * (1 + item.vatRate / 100),
+            notes: item.note || null,
           }));
 
         await supabase.from('sale_items').insert(saleItems);
@@ -203,7 +205,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       setClientCity('');
       setClientPostalCode('');
       setClientVatNumber('');
-      setItems([{ description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21 }]);
+      setItems([{ description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }]);
       setNotes('');
     } else if (open && invoiceId) {
       loadInvoice(invoiceId);
@@ -300,6 +302,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
             unitPrice,
             unitPriceTVAC: Math.round(unitPriceTVAC * 100) / 100,
             vatRate,
+            note: item.notes || '',
           };
         }));
       }
@@ -347,7 +350,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   };
 
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21 }]);
+    setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }]);
   };
 
   const removeItem = (index: number) => {
@@ -561,6 +564,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
           subtotal: item.quantity * item.unitPrice,
           vat_amount: (item.quantity * item.unitPrice) * (item.vatRate / 100),
           total: calculateItemTotal(item),
+          notes: item.note || null,
         }));
 
         const { error: itemsError } = await supabase
@@ -604,6 +608,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
           subtotal: item.quantity * item.unitPrice,
           vat_amount: (item.quantity * item.unitPrice) * (item.vatRate / 100),
           total: calculateItemTotal(item),
+          notes: item.note || null,
         }));
 
         const { error: itemsError } = await supabase
@@ -866,6 +871,18 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               <div className="h-8 flex items-center justify-end text-sm font-semibold text-primary">{calculateItemTotalForPreview(item).toFixed(2)}€</div>
                             </div>
                           </div>
+                          <div className="mt-2">
+                            <Input 
+                              placeholder="Note article (visible uniquement sur le PDF)..." 
+                              value={item.note || ''} 
+                              onChange={(e) => {
+                                const newItems = [...items];
+                                newItems[index] = { ...newItems[index], note: e.target.value };
+                                setItems(newItems);
+                              }} 
+                              className="h-7 text-xs text-muted-foreground italic" 
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1002,6 +1019,9 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                                           <span>PU {labelHT}: <span className="font-semibold text-foreground">{item.unitPrice.toFixed(2)}€</span></span>
                                           <span>TVA: <span className="font-semibold text-accent">{item.vatRate}%</span></span>
                                         </div>
+                                        {item.note && (
+                                          <div className="text-[10px] italic text-muted-foreground mt-1">📝 {item.note}</div>
+                                        )}
                                       </div>
                                       <div className="text-right">
                                         <div className="text-xs text-muted-foreground mb-1">Total {labelTTC}</div>

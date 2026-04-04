@@ -250,6 +250,7 @@ export const useSales = (startDate?: Date, endDate?: Date) => {
             subtotal,
             vat_amount,
             total,
+            notes,
             created_at
           ),
           customers(
@@ -310,6 +311,7 @@ export const useSale = (id: string) => {
             subtotal,
             vat_amount,
             total,
+            notes,
             created_at
           ),
           fiscal_receipts(
