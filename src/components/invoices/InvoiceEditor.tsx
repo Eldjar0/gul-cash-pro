@@ -919,8 +919,8 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                 </div>
               </ScrollArea>
 
-              {/* Right: Preview - Identique à InvoiceCreate */}
-              <div className="hidden lg:block border-l bg-white">
+              {/* Right: Preview */}
+              {showPreview && <div className="hidden lg:block border-l bg-white">
                 <ScrollArea className="h-[calc(95vh-120px)]">
                   <div className="p-6 pb-40">
                     <Card className="bg-white shadow-2xl border-2 border-primary/20 overflow-hidden">
