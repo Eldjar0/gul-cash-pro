@@ -301,6 +301,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
             unitPrice,
             unitPriceTVAC: Math.round(unitPriceTVAC * 100) / 100,
             vatRate,
+            note: item.notes || '',
           };
         }));
       }
