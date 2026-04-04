@@ -66,6 +66,9 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [currentItemIndex, setCurrentItemIndex] = useState<number | null>(null);
   
+  // Preview toggle
+  const [showPreview, setShowPreview] = useState(false);
+  
   // Items
   const [items, setItems] = useState<InvoiceItem[]>([
     { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }
