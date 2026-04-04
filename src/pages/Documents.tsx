@@ -1752,29 +1752,38 @@ export default function Documents() {
             {/* Vue Mobile: Cards */}
             <div className="sm:hidden space-y-2">
               {paginatedInvoices.map((invoice) => (
-                <Card key={invoice.id} className="p-3">
+              <Card key={invoice.id} className="p-3 hover:shadow-md transition-shadow border-l-4 border-l-primary/50">
                   <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-mono font-semibold text-sm">{invoice.sale_number}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(invoice.date), 'dd/MM/yy HH:mm', { locale: fr })}
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <FileText className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-mono font-bold text-sm text-primary">{invoice.sale_number}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {format(new Date(invoice.date), 'dd/MM/yy HH:mm', { locale: fr })}
+                        </p>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-primary">{invoice.total.toFixed(2)}€</p>
+                      <p className="font-bold text-base text-primary">{invoice.total.toFixed(2)}€</p>
                       {getStatusBadge(invoice.invoice_status || 'paye')}
                     </div>
                   </div>
                   
                   {invoice.customers && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-                      <User className="h-3 w-3" />
-                      <span>{invoice.customers.name}</span>
+                    <div className="flex items-center gap-1.5 text-xs mb-1.5 bg-muted/40 rounded px-2 py-1">
+                      <User className="h-3 w-3 text-muted-foreground" />
+                      <span className="font-medium">{invoice.customers.name}</span>
+                      {invoice.customers.vat_number && (
+                        <span className="text-muted-foreground ml-auto text-[10px]">TVA: {invoice.customers.vat_number}</span>
+                      )}
                     </div>
                   )}
                   
-                  <div className="text-xs text-muted-foreground mb-2">
-                    {invoice.sale_items?.length || 0} article{(invoice.sale_items?.length || 0) > 1 ? 's' : ''} • HT: {invoice.subtotal.toFixed(2)}€
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                    <span>{invoice.sale_items?.length || 0} article{(invoice.sale_items?.length || 0) > 1 ? 's' : ''}</span>
+                    <span>HT: {invoice.subtotal.toFixed(2)}€ • TVA: {invoice.total_vat.toFixed(2)}€</span>
                   </div>
                   
                   <div className="flex gap-1 justify-end border-t pt-2">
