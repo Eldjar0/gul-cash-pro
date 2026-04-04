@@ -1785,6 +1785,16 @@ export default function Documents() {
                     <span>{invoice.sale_items?.length || 0} article{(invoice.sale_items?.length || 0) > 1 ? 's' : ''}</span>
                     <span>HT: {invoice.subtotal.toFixed(2)}€ • TVA: {invoice.total_vat.toFixed(2)}€</span>
                   </div>
+                  <div className="flex items-center gap-2 text-xs mb-2">
+                    <Badge variant="secondary" className="text-[10px]">
+                      {invoice.payment_method === 'cash' ? '💵 Espèces' : 
+                       invoice.payment_method === 'card' ? '💳 Carte' : 
+                       invoice.payment_method === 'mobile' ? '📱 Mobile' :
+                       invoice.payment_method === 'check' ? '📝 Chèque' :
+                       invoice.payment_method === 'voucher' ? '🎫 Bon' :
+                       String(invoice.payment_method) || '—'}
+                    </Badge>
+                  </div>
                   
                   <div className="flex gap-1 justify-end border-t pt-2">
                     {invoiceSelectionMode ? (
@@ -1864,6 +1874,7 @@ export default function Documents() {
                         <TableHead className="text-right min-w-[100px] font-bold">HT</TableHead>
                         <TableHead className="text-right min-w-[100px] font-bold">TVA</TableHead>
                         <TableHead className="text-right min-w-[110px] font-bold">TTC</TableHead>
+                        <TableHead className="min-w-[90px] font-bold">Paiement</TableHead>
                         <TableHead className="text-right min-w-[160px] font-bold">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -1886,7 +1897,7 @@ export default function Documents() {
                               value={invoice.invoice_status || 'paye'}
                               onValueChange={(value) => handleStatusChange(invoice, value)}
                             >
-                              <SelectTrigger className="h-7 text-xs w-[110px] border-0 bg-transparent p-0 shadow-none">
+                              <SelectTrigger className="h-7 text-xs w-[110px] border-0 bg-transparent p-0 shadow-none [&>svg]:hidden">
                                 {getStatusBadge(invoice.invoice_status || 'paye')}
                               </SelectTrigger>
                               <SelectContent>
@@ -1924,6 +1935,16 @@ export default function Documents() {
                           </TableCell>
                           <TableCell className="text-right">
                             <span className="font-bold text-primary">{invoice.total.toFixed(2)}€</span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="text-xs font-normal">
+                              {invoice.payment_method === 'cash' ? '💵 Espèces' : 
+                               invoice.payment_method === 'card' ? '💳 Carte' : 
+                               invoice.payment_method === 'mobile' ? '📱 Mobile' :
+                               invoice.payment_method === 'check' ? '📝 Chèque' :
+                               invoice.payment_method === 'voucher' ? '🎫 Bon' :
+                               String(invoice.payment_method) || '—'}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex gap-1 justify-end">
@@ -2009,7 +2030,7 @@ export default function Documents() {
                       ))}
                       {paginatedInvoices.length === 0 && (
                         <TableRow>
-                          <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                             Aucune facture trouvée
                           </TableCell>
                         </TableRow>
