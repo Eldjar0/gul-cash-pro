@@ -1887,7 +1887,7 @@ export default function Documents() {
                               value={invoice.invoice_status || 'paye'}
                               onValueChange={(value) => handleStatusChange(invoice, value)}
                             >
-                              <SelectTrigger className="h-7 text-xs w-[110px] border-0 bg-transparent p-0 shadow-none">
+                              <SelectTrigger className="h-7 text-xs w-[110px] border-0 bg-transparent p-0 shadow-none [&>svg]:hidden">
                                 {getStatusBadge(invoice.invoice_status || 'paye')}
                               </SelectTrigger>
                               <SelectContent>
