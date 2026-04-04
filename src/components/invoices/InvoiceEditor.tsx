@@ -352,8 +352,12 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     setCurrentItemIndex(null);
   };
 
+  const addItemButtonRef = React.useRef<HTMLButtonElement>(null);
   const addItem = () => {
     setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }]);
+    setTimeout(() => {
+      addItemButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   };
 
   const removeItem = (index: number) => {
