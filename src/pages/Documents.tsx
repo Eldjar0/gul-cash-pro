@@ -1388,7 +1388,7 @@ export default function Documents() {
                   <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                     <span>{sale.sale_items?.length || 0} articles</span>
                     <span className="capitalize">
-                      {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : 'Mobile'}
+                      {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : sale.payment_method === 'transfer' ? 'Virement' : sale.payment_method === 'check' ? 'Chèque' : sale.payment_method === 'pending' ? '⏳ En attente' : 'Mobile'}
                     </span>
                   </div>
                   
