@@ -891,7 +891,11 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               }} 
                               className="h-7 text-xs text-muted-foreground italic" 
                             />
-                          </div>
+                    </div>
+                    <Button size="sm" onClick={addItem} className="h-9 w-full mt-3">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Ajouter un article
+                    </Button>
                         </div>
                       ))}
                     </div>
