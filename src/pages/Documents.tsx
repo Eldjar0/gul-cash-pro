@@ -1768,9 +1768,9 @@ export default function Documents() {
             </Card>
 
             {/* Vue Mobile: Cards */}
-            <div className="sm:hidden space-y-2">
+            <div className="sm:hidden space-y-3 pb-8">
               {paginatedInvoices.map((invoice) => (
-              <Card key={invoice.id} className="p-3 hover:shadow-md transition-shadow border-l-4 border-l-primary/50">
+              <Card key={invoice.id} className="p-3 hover:shadow-md transition-shadow border border-border shadow-sm rounded-xl">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
