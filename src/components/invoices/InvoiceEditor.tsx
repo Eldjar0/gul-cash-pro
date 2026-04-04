@@ -655,7 +655,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       }}>
         <DialogContent 
           preventClose
-          className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden"
+          className="max-w-[100vw] w-screen h-screen max-h-screen p-0 overflow-hidden rounded-none border-0"
           onPointerDownOutside={(e) => {
             e.preventDefault();
             handleCloseAttempt();
@@ -669,11 +669,11 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
             handleCloseAttempt();
           }}
         >
-          <div className="flex flex-col h-full max-h-[95vh]">
+          <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="px-4 sm:px-6 py-4 border-b bg-gradient-to-r from-primary to-primary-glow shadow-lg">
+            <div className="px-4 sm:px-6 py-2 border-b bg-background shadow-sm">
               <div className="flex items-center justify-between gap-4">
-                <h2 className="text-lg sm:text-xl font-bold text-white">
+                <h2 className="text-lg sm:text-xl font-bold text-foreground">
                   {invoiceId ? 'Modifier la facture' : 'Nouvelle facture'}
                 </h2>
                 <div className="flex items-center gap-3">
@@ -681,7 +681,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                     variant="ghost" 
                     size="sm" 
                     onClick={() => setShowPreview(!showPreview)} 
-                    className="hidden lg:flex font-semibold text-white/90 hover:text-white hover:bg-white/10 border border-white/20"
+                    className="hidden lg:flex font-semibold"
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     {showPreview ? 'Masquer aperçu' : 'Voir aperçu'}
@@ -700,7 +700,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                     variant="ghost" 
                     size="icon" 
                     onClick={handleCloseAttempt} 
-                    className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/30"
+                    className="h-9 w-9 rounded-full"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -713,7 +713,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
           <div className="flex-1 overflow-hidden">
             <div className={`grid h-full ${showPreview ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
               {/* Left: Form */}
-              <ScrollArea className="h-[calc(95vh-120px)] bg-gray-50">
+              <ScrollArea className="h-[calc(100vh-60px)] bg-muted/30">
                 <div className="p-4 sm:p-6 space-y-4 pb-40">
                   {/* Invoice Info */}
                   <Card className="p-4">
@@ -922,7 +922,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
               {/* Right: Preview */}
               {showPreview && <div className="hidden lg:block border-l bg-white">
-                <ScrollArea className="h-[calc(95vh-120px)]">
+                <ScrollArea className="h-[calc(100vh-60px)]">
                   <div className="p-6 pb-40">
                     <Card className="bg-white shadow-2xl border-2 border-primary/20 overflow-hidden">
                       {/* Preview Header */}
