@@ -122,15 +122,24 @@ export const generateInvoicePDF = async (invoice: InvoiceData): Promise<jsPDF> =
   }
 
   // ============ TABLEAU DES ARTICLES (compact) ============
-  const tableData = invoice.items.map(item => [
-    item.description,
-    item.quantity.toString(),
-    `${item.unitPrice.toFixed(2)} €`,
-    item.vatRate === 0 ? 'Exempté' : `${item.vatRate}%`,
-    `${item.subtotal.toFixed(2)} €`,
-    `${item.vatAmount.toFixed(2)} €`,
-    `${item.total.toFixed(2)} €`
-  ]);
+  const tableData: any[][] = [];
+  invoice.items.forEach(item => {
+    tableData.push([
+      item.description,
+      item.quantity.toString(),
+      `${item.unitPrice.toFixed(2)} €`,
+      item.vatRate === 0 ? 'Exempté' : `${item.vatRate}%`,
+      `${item.subtotal.toFixed(2)} €`,
+      `${item.vatAmount.toFixed(2)} €`,
+      `${item.total.toFixed(2)} €`
+    ]);
+    // Ajouter la note en sous-ligne si elle existe
+    if (item.note && item.note.trim()) {
+      tableData.push([
+        { content: `  → ${item.note}`, colSpan: 7, styles: { fontSize: 6, fontStyle: 'italic', textColor: [120, 120, 120], cellPadding: { top: 0, bottom: 1, left: 4, right: 2 } } }
+      ]);
+    }
+  });
 
   // Tableau pleine largeur avec marges réduites
   const tableMargin = 5;
