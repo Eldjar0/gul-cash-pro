@@ -829,30 +829,30 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                             )}
                           </div>
                           <div className="flex gap-2 mb-2">
-                            <Popover open={productSearchOpen && currentItemIndex === index} onOpenChange={(open) => { setProductSearchOpen(open); if (open) setCurrentItemIndex(index); else setCurrentItemIndex(null); }}>
+                            <Popover open={productSearchOpen && currentItemIndex === index} onOpenChange={(open) => { setProductSearchOpen(open); if (open) { setCurrentItemIndex(index); setProductSearchTerm(''); } else { setCurrentItemIndex(null); setProductSearchTerm(''); } }}>
                               <PopoverTrigger asChild>
                                 <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
                                   <Search className="h-4 w-4" />
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-[300px] p-0">
-                                <Command filter={(value, search) => {
-                                  if (!search || search.length < 2) return 0;
-                                  return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
-                                }}>
-                                  <CommandInput placeholder="Rechercher produit..." />
+                                <Command shouldFilter={false}>
+                                  <CommandInput placeholder="Tapez min. 2 caractères..." value={productSearchTerm} onValueChange={setProductSearchTerm} />
                                   <CommandList>
-                                    <CommandEmpty>Tapez pour rechercher...</CommandEmpty>
-                                    <CommandGroup>
-                                      {products?.filter(p => p.is_active).map((product) => (
-                                        <CommandItem key={product.id} value={product.name} onSelect={() => selectProduct(product, index)}>
-                                          <div className="flex flex-col">
-                                            <span className="font-medium">{product.name}</span>
-                                            <span className="text-xs text-muted-foreground">{product.price.toFixed(2)}€ - TVA {product.vat_rate}%</span>
-                                          </div>
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
+                                    {productSearchTerm.length < 2 ? (
+                                      <CommandEmpty>Tapez pour rechercher...</CommandEmpty>
+                                    ) : (
+                                      <CommandGroup>
+                                        {products?.filter(p => p.is_active && p.name.toLowerCase().includes(productSearchTerm.toLowerCase())).map((product) => (
+                                          <CommandItem key={product.id} value={product.name} onSelect={() => selectProduct(product, index)}>
+                                            <div className="flex flex-col">
+                                              <span className="font-medium">{product.name}</span>
+                                              <span className="text-xs text-muted-foreground">{product.price.toFixed(2)}€ - TVA {product.vat_rate}%</span>
+                                            </div>
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    )}
                                   </CommandList>
                                 </Command>
                               </PopoverContent>
