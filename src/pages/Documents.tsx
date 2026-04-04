@@ -388,7 +388,14 @@ export default function Documents() {
         format(new Date(invoice.date), 'dd/MM/yyyy').includes(searchLower)
       );
     });
-    return filterByDate(filtered);
+    filtered = filterByDate(filtered);
+    // Trier par numéro de facture croissant (ancien → récent)
+    filtered.sort((a, b) => {
+      const numA = a.sale_number?.replace(/\D/g, '') || '0';
+      const numB = b.sale_number?.replace(/\D/g, '') || '0';
+      return parseInt(numA) - parseInt(numB);
+    });
+    return filtered;
   }, [invoices, invoiceSearchTerm, dateFilter, customStartDate, customEndDate]);
 
   const todayRefunds = useMemo(() => {
