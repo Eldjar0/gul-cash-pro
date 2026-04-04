@@ -41,6 +41,7 @@ interface InvoiceData {
     subtotal: number;
     vatAmount: number;
     total: number;
+    note?: string;
   }>;
   subtotal: number;
   totalVat: number;
