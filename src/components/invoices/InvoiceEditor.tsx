@@ -868,6 +868,18 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               <div className="h-8 flex items-center justify-end text-sm font-semibold text-primary">{calculateItemTotalForPreview(item).toFixed(2)}€</div>
                             </div>
                           </div>
+                          <div className="mt-2">
+                            <Input 
+                              placeholder="Note article (visible uniquement sur le PDF)..." 
+                              value={item.note || ''} 
+                              onChange={(e) => {
+                                const newItems = [...items];
+                                newItems[index] = { ...newItems[index], note: e.target.value };
+                                setItems(newItems);
+                              }} 
+                              className="h-7 text-xs text-muted-foreground italic" 
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
