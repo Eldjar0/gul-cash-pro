@@ -1926,6 +1926,17 @@ export default function Documents() {
                           <TableCell className="text-right">
                             <span className="font-bold text-primary">{invoice.total.toFixed(2)}€</span>
                           </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="text-xs font-normal">
+                              {invoice.payment_method === 'cash' ? '💵 Espèces' : 
+                               invoice.payment_method === 'card' ? '💳 Carte' : 
+                               invoice.payment_method === 'mobile' ? '📱 Mobile' :
+                               invoice.payment_method === 'check' ? '📝 Chèque' :
+                               invoice.payment_method === 'voucher' ? '🎫 Bon' :
+                               invoice.payment_method === 'transfer' ? '🏦 Virement' :
+                               invoice.payment_method || '—'}
+                            </Badge>
+                          </TableCell>
                           <TableCell className="text-right">
                             <div className="flex gap-1 justify-end">
                               <Button 
