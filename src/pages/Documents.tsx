@@ -1619,20 +1619,33 @@ export default function Documents() {
 
           {/* Onglet Factures */}
           <TabsContent value="invoices" className="space-y-4">
-            <Alert className="bg-blue-50 border-blue-200">
-              <AlertCircle className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                <strong>Note importante :</strong> Les factures sont gérées séparément des ventes de caisse pour éviter les doublons dans les déclarations fiscales.
-              </AlertDescription>
-            </Alert>
+            {/* Stats factures */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+                <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Nb. Factures</p>
+                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{totalCount}</p>
+              </Card>
+              <Card className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-800">
+                <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Total TTC</p>
+                <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{totalAmount.toFixed(2)}€</p>
+              </Card>
+              <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
+                <p className="text-xs font-medium text-purple-600 dark:text-purple-400">Total HT</p>
+                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{totalHT.toFixed(2)}€</p>
+              </Card>
+              <Card className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/20 border-amber-200 dark:border-amber-800">
+                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Clients</p>
+                <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{uniqueClients}</p>
+              </Card>
+            </div>
 
             {/* Filtres et Export */}
-            <Card className="p-4 bg-white">
+            <Card className="p-4 bg-white dark:bg-card">
               <div className="flex flex-col md:flex-row gap-3">
-                <div className="flex-1 flex gap-2">
+                <div className="flex-1 flex flex-wrap gap-2 items-center">
                   <Select value={dateFilter} onValueChange={(value) => { setDateFilter(value); setInvoicesPage(1); }}>
-                    <SelectTrigger className="w-[200px]">
-                      <Filter className="h-4 w-4 mr-2" />
+                    <SelectTrigger className="w-full sm:w-[180px] h-9 text-xs sm:text-sm">
+                      <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       <SelectValue placeholder="Période" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1650,9 +1663,9 @@ export default function Documents() {
                     <>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="justify-start text-left font-normal">
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {customStartDate ? format(customStartDate, 'dd/MM/yyyy') : 'Date début'}
+                          <Button variant="outline" size="sm" className="justify-start text-left font-normal text-xs">
+                            <CalendarIcon className="mr-1 h-3 w-3" />
+                            {customStartDate ? format(customStartDate, 'dd/MM/yy') : 'Début'}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
@@ -1661,9 +1674,9 @@ export default function Documents() {
                       </Popover>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="justify-start text-left font-normal">
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {customEndDate ? format(customEndDate, 'dd/MM/yyyy') : 'Date fin'}
+                          <Button variant="outline" size="sm" className="justify-start text-left font-normal text-xs">
+                            <CalendarIcon className="mr-1 h-3 w-3" />
+                            {customEndDate ? format(customEndDate, 'dd/MM/yy') : 'Fin'}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
@@ -1672,93 +1685,66 @@ export default function Documents() {
                       </Popover>
                     </>
                   )}
+
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Rechercher facture, client..."
+                      value={invoiceSearchTerm}
+                      onChange={(e) => setInvoiceSearchTerm(e.target.value)}
+                      className="pl-10 h-9 text-sm"
+                    />
+                  </div>
                 </div>
                 
-                {!invoiceSelectionMode ? (
-                  <Button 
-                    variant="outline" 
-                    className="gap-2"
-                    onClick={() => setInvoiceSelectionMode(true)}
-                  >
-                    <FileDown className="h-4 w-4" />
-                    Exporter (sélection)
-                  </Button>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      {selectedInvoices.length} sélectionnée(s)
-                    </span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="default" 
-                          className="gap-2"
-                          disabled={selectedInvoices.length === 0 || isExporting}
-                        >
-                          <FileDown className="h-4 w-4" />
-                          {isExporting ? 'Export...' : 'Exporter'}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 bg-background z-50">
-                        <DropdownMenuLabel>Format d'export</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleExportSelectedInvoices('pdf')}>
-                          <FileDown className="h-4 w-4 mr-2" />
-                          PDF (ZIP)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExportSelectedInvoices('xml')}>
-                          <FileDown className="h-4 w-4 mr-2" />
-                          XML Standard
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExportSelectedInvoices('ubl')}>
-                          <FileDown className="h-4 w-4 mr-2" />
-                          UBL (Format belge)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExportSelectedInvoices('csv')}>
-                          <FileDown className="h-4 w-4 mr-2" />
-                          CSV (Excel)
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={handleCancelInvoiceSelection}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            <Card className="p-4 bg-white">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher par numéro de facture, client ou date..."
-                  value={invoiceSearchTerm}
-                  onChange={(e) => setInvoiceSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </Card>
-
-            {/* Header + Button nouvelle facture */}
-            <Card className="bg-white overflow-hidden">
-              <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-muted/30 to-muted/10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                    <div>
-                      <h2 className="text-lg sm:text-xl font-bold text-foreground">Factures</h2>
-                      <p className="text-xs sm:text-sm text-muted-foreground">{filteredInvoices.length} facture{filteredInvoices.length > 1 ? 's' : ''}</p>
-                    </div>
-                  </div>
-                  <Button onClick={() => { setEditingInvoiceId(undefined); setInvoiceEditorOpen(true); }} size="sm" className="text-xs sm:text-sm">
-                    <Plus className="h-4 w-4 sm:mr-2" />
+                <div className="flex gap-2">
+                  <Button onClick={() => { setEditingInvoiceId(undefined); setInvoiceEditorOpen(true); }} size="sm" className="gap-1 text-xs sm:text-sm">
+                    <Plus className="h-4 w-4" />
                     <span className="hidden sm:inline">Nouvelle Facture</span>
+                    <span className="sm:hidden">Nouvelle</span>
                   </Button>
+
+                  {!invoiceSelectionMode ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="gap-1 text-xs"
+                      onClick={() => setInvoiceSelectionMode(true)}
+                    >
+                      <FileDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Exporter</span>
+                    </Button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        {selectedInvoices.length} sél.
+                      </span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="default" 
+                            size="sm"
+                            className="gap-1 text-xs"
+                            disabled={selectedInvoices.length === 0 || isExporting}
+                          >
+                            <FileDown className="h-4 w-4" />
+                            {isExporting ? 'Export...' : 'Exporter'}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56 bg-background z-50">
+                          <DropdownMenuLabel>Format d'export</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleExportSelectedInvoices('pdf')}>PDF (ZIP)</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleExportSelectedInvoices('xml')}>XML Standard</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleExportSelectedInvoices('ubl')}>UBL (Format belge)</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleExportSelectedInvoices('csv')}>CSV (Excel)</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <Button variant="ghost" size="sm" onClick={handleCancelInvoiceSelection} className="h-8 w-8 p-0">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
