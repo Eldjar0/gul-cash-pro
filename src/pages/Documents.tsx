@@ -404,11 +404,11 @@ export default function Documents() {
       );
     });
     filtered = filterByDate(filtered);
-    // Trier par numéro de facture croissant (ancien → récent)
+    // Trier par numéro de facture décroissant (récent → ancien)
     filtered.sort((a, b) => {
       const numA = a.sale_number?.replace(/\D/g, '') || '0';
       const numB = b.sale_number?.replace(/\D/g, '') || '0';
-      return parseInt(numA) - parseInt(numB);
+      return parseInt(numB) - parseInt(numA);
     });
     return filtered;
   }, [invoices, invoiceSearchTerm, dateFilter, customStartDate, customEndDate]);
