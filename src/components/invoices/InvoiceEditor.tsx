@@ -54,6 +54,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   // Client search
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [customerSearchOpen, setCustomerSearchOpen] = useState(false);
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('');
   
   // Client info
   const [clientName, setClientName] = useState('');
@@ -65,6 +66,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   // Product search
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [currentItemIndex, setCurrentItemIndex] = useState<number | null>(null);
+  const [productSearchTerm, setProductSearchTerm] = useState('');
   
   // Preview toggle
   const [showPreview, setShowPreview] = useState(false);
