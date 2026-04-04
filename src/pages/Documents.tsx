@@ -1878,7 +1878,7 @@ export default function Documents() {
             {/* Vue Desktop: Table */}
             <Card className="bg-white dark:bg-card overflow-hidden hidden sm:block shadow-sm">
               <div className="overflow-x-auto">
-                <ScrollArea className="min-h-[400px] max-h-[calc(100vh-320px)]" orientation="both">
+                <ScrollArea className="min-h-[400px] max-h-[calc(100vh-280px)]" orientation="both">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/50">
