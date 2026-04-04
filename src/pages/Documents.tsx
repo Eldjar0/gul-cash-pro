@@ -1785,6 +1785,16 @@ export default function Documents() {
                     <span>{invoice.sale_items?.length || 0} article{(invoice.sale_items?.length || 0) > 1 ? 's' : ''}</span>
                     <span>HT: {invoice.subtotal.toFixed(2)}€ • TVA: {invoice.total_vat.toFixed(2)}€</span>
                   </div>
+                  <div className="flex items-center gap-2 text-xs mb-2">
+                    <Badge variant="secondary" className="text-[10px]">
+                      {invoice.payment_method === 'cash' ? '💵 Espèces' : 
+                       invoice.payment_method === 'card' ? '💳 Carte' : 
+                       invoice.payment_method === 'mobile' ? '📱 Mobile' :
+                       invoice.payment_method === 'check' ? '📝 Chèque' :
+                       invoice.payment_method === 'transfer' ? '🏦 Virement' :
+                       invoice.payment_method || '—'}
+                    </Badge>
+                  </div>
                   
                   <div className="flex gap-1 justify-end border-t pt-2">
                     {invoiceSelectionMode ? (
