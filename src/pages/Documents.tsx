@@ -2327,7 +2327,7 @@ export default function Documents() {
             </div>
 
             {/* Vue Desktop: Cards */}
-            <ScrollArea className="min-h-[300px] max-h-[calc(100vh-280px)] hidden sm:block">
+            <ScrollArea className="min-h-[300px] hidden sm:block">
               <div className="space-y-3">
                 {paginatedRefunds.map((refund) => (
                   <Card key={refund.id} className="p-4 bg-white hover:shadow-lg transition-shadow">
