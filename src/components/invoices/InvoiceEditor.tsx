@@ -770,7 +770,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                       </PopoverTrigger>
                       <PopoverContent className="w-[350px] p-0">
                         <Command filter={(value, search) => {
-                          if (!search) return 0;
+                          if (!search || search.length < 2) return 0;
                           return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
                         }}>
                           <CommandInput placeholder="Tapez pour rechercher un client..." />
@@ -832,7 +832,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                               </PopoverTrigger>
                               <PopoverContent className="w-[300px] p-0">
                                 <Command filter={(value, search) => {
-                                  if (!search) return 0;
+                                  if (!search || search.length < 2) return 0;
                                   return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
                                 }}>
                                   <CommandInput placeholder="Rechercher produit..." />
