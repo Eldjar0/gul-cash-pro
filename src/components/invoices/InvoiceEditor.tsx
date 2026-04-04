@@ -655,7 +655,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       }}>
         <DialogContent 
           preventClose
-          className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden"
+          className="max-w-[100vw] w-screen h-screen max-h-screen p-0 overflow-hidden rounded-none border-0"
           onPointerDownOutside={(e) => {
             e.preventDefault();
             handleCloseAttempt();
