@@ -158,6 +158,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
             subtotal: item.quantity * item.unitPrice,
             vat_amount: (item.quantity * item.unitPrice) * (item.vatRate / 100),
             total: item.quantity * item.unitPrice * (1 + item.vatRate / 100),
+            notes: item.note || null,
           }));
 
         await supabase.from('sale_items').insert(saleItems);
