@@ -2511,7 +2511,13 @@ export type Database = {
         | "withdrawal"
         | "sale"
         | "refund"
-      payment_method: "cash" | "card" | "mobile" | "check" | "voucher"
+      payment_method:
+        | "cash"
+        | "card"
+        | "mobile"
+        | "check"
+        | "voucher"
+        | "transfer"
       product_type: "unit" | "weight"
       user_role: "admin" | "cashier" | "manager"
     }
@@ -2651,7 +2657,14 @@ export const Constants = {
         "sale",
         "refund",
       ],
-      payment_method: ["cash", "card", "mobile", "check", "voucher"],
+      payment_method: [
+        "cash",
+        "card",
+        "mobile",
+        "check",
+        "voucher",
+        "transfer",
+      ],
       product_type: ["unit", "weight"],
       user_role: ["admin", "cashier", "manager"],
     },
