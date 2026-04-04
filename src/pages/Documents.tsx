@@ -1789,14 +1789,19 @@ export default function Documents() {
                     <span>HT: {invoice.subtotal.toFixed(2)}€ • TVA: {invoice.total_vat.toFixed(2)}€</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs mb-2">
-                    <Badge variant="secondary" className="text-[10px]">
-                      {invoice.payment_method === 'cash' ? '💵 Espèces' : 
-                       invoice.payment_method === 'card' ? '💳 Carte' : 
-                       invoice.payment_method === 'mobile' ? '📱 Mobile' :
-                       invoice.payment_method === 'check' ? '📝 Chèque' :
-                       invoice.payment_method === 'voucher' ? '🎫 Bon' :
-                       String(invoice.payment_method) || '—'}
-                    </Badge>
+                    <Select value={invoice.payment_method || ''} onValueChange={(v) => handlePaymentMethodChange(invoice.id, v)}>
+                      <SelectTrigger className="h-7 text-[10px] w-auto min-w-[110px] [&>svg]:hidden">
+                        <SelectValue placeholder="⏳ En attente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cash">💵 Espèces</SelectItem>
+                        <SelectItem value="card">💳 Carte</SelectItem>
+                        <SelectItem value="transfer">🏦 Virement</SelectItem>
+                        <SelectItem value="mobile">📱 Mobile</SelectItem>
+                        <SelectItem value="check">📝 Chèque</SelectItem>
+                        <SelectItem value="voucher">🎫 Bon</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="flex gap-1 justify-end border-t pt-2">
