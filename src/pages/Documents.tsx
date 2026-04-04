@@ -302,6 +302,21 @@ export default function Documents() {
     }
   };
 
+  const handlePaymentMethodChange = async (saleId: string, method: string) => {
+    try {
+      const { error } = await supabase
+        .from('sales')
+        .update({ payment_method: method })
+        .eq('id', saleId);
+      if (error) throw error;
+      toast.success('Mode de paiement mis à jour');
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+    } catch (error) {
+      console.error('Error updating payment method:', error);
+      toast.error('Erreur lors de la mise à jour');
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'brouillon':
