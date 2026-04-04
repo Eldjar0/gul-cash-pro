@@ -769,10 +769,13 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[350px] p-0">
-                        <Command shouldFilter={true}>
+                        <Command filter={(value, search) => {
+                          if (!search) return 0;
+                          return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
+                        }}>
                           <CommandInput placeholder="Tapez pour rechercher un client..." />
                           <CommandList>
-                            <CommandEmpty>Aucun client trouvé.</CommandEmpty>
+                            <CommandEmpty>Tapez pour rechercher...</CommandEmpty>
                             <CommandGroup>
                               {customers?.map((customer) => (
                                 <CommandItem
