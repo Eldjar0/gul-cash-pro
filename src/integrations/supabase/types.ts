@@ -2007,6 +2007,7 @@ export type Database = {
           discount_type: string | null
           discount_value: number | null
           id: string
+          notes: string | null
           original_price: number | null
           product_barcode: string | null
           product_id: string | null
@@ -2024,6 +2025,7 @@ export type Database = {
           discount_type?: string | null
           discount_value?: number | null
           id?: string
+          notes?: string | null
           original_price?: number | null
           product_barcode?: string | null
           product_id?: string | null
@@ -2041,6 +2043,7 @@ export type Database = {
           discount_type?: string | null
           discount_value?: number | null
           id?: string
+          notes?: string | null
           original_price?: number | null
           product_barcode?: string | null
           product_id?: string | null
