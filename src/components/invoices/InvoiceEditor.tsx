@@ -68,7 +68,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   
   // Items
   const [items, setItems] = useState<InvoiceItem[]>([
-    { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21 }
+    { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }
   ]);
   
   const [notes, setNotes] = useState('');
