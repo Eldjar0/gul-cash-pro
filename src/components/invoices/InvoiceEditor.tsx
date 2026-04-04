@@ -922,7 +922,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
               {/* Right: Preview */}
               {showPreview && <div className="hidden lg:block border-l bg-white">
-                <ScrollArea className="h-[calc(95vh-120px)]">
+                <ScrollArea className="h-[calc(100vh-60px)]">
                   <div className="p-6 pb-40">
                     <Card className="bg-white shadow-2xl border-2 border-primary/20 overflow-hidden">
                       {/* Preview Header */}
