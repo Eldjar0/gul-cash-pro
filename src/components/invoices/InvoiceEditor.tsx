@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Save, X, Plus, Trash2, Search, Check, FileText, User, Calendar, Euro, ShoppingCart } from 'lucide-react';
+import { Save, X, Plus, Trash2, Search, Check, FileText, User, Calendar, Euro, ShoppingCart, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useCustomers } from '@/hooks/useCustomers';
@@ -65,6 +65,9 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   // Product search
   const [productSearchOpen, setProductSearchOpen] = useState(false);
   const [currentItemIndex, setCurrentItemIndex] = useState<number | null>(null);
+  
+  // Preview toggle
+  const [showPreview, setShowPreview] = useState(false);
   
   // Items
   const [items, setItems] = useState<InvoiceItem[]>([
@@ -671,6 +674,15 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                 </h2>
                 <div className="flex items-center gap-3">
                   <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowPreview(!showPreview)} 
+                    className="hidden lg:flex font-semibold text-white/90 hover:text-white hover:bg-white/10 border border-white/20"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    {showPreview ? 'Masquer aperçu' : 'Voir aperçu'}
+                  </Button>
+                  <Button 
                     variant="secondary" 
                     size="sm" 
                     onClick={handleSave} 
@@ -701,7 +713,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
           {/* Main Content - Two Columns */}
           <div className="flex-1 overflow-hidden">
-            <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+            <div className={`grid h-full ${showPreview ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
               {/* Left: Form */}
               <ScrollArea className="h-[calc(95vh-120px)] bg-gray-50">
                 <div className="p-4 sm:p-6 space-y-4 pb-40">
@@ -907,8 +919,8 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                 </div>
               </ScrollArea>
 
-              {/* Right: Preview - Identique à InvoiceCreate */}
-              <div className="hidden lg:block border-l bg-white">
+              {/* Right: Preview */}
+              {showPreview && <div className="hidden lg:block border-l bg-white">
                 <ScrollArea className="h-[calc(95vh-120px)]">
                   <div className="p-6 pb-40">
                     <Card className="bg-white shadow-2xl border-2 border-primary/20 overflow-hidden">
@@ -1185,7 +1197,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                     <div className="h-32" />
                   </div>
                 </ScrollArea>
-              </div>
+              </div>}
             </div>
           </div>
         </div>
