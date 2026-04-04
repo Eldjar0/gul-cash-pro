@@ -771,19 +771,22 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[350px] p-0">
-                        <Command>
-                          <CommandInput placeholder="Rechercher..." />
+                        <Command shouldFilter={true}>
+                          <CommandInput placeholder="Tapez pour rechercher un client..." />
                           <CommandList>
                             <CommandEmpty>Aucun client trouvé.</CommandEmpty>
                             <CommandGroup>
                               {customers?.map((customer) => (
                                 <CommandItem
                                   key={customer.id}
-                                  value={customer.name}
+                                  value={customer.name + ' ' + (customer.vat_number || '')}
                                   onSelect={() => selectCustomer(customer)}
                                 >
                                   <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === customer.id ? "opacity-100" : "opacity-0")} />
-                                  {customer.name}
+                                  <div className="flex flex-col">
+                                    <span>{customer.name}</span>
+                                    {customer.vat_number && <span className="text-[10px] text-muted-foreground">{customer.vat_number}</span>}
+                                  </div>
                                 </CommandItem>
                               ))}
                             </CommandGroup>
