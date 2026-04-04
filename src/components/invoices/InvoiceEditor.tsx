@@ -824,10 +824,13 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-[300px] p-0">
-                                <Command>
+                                <Command filter={(value, search) => {
+                                  if (!search) return 0;
+                                  return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
+                                }}>
                                   <CommandInput placeholder="Rechercher produit..." />
                                   <CommandList>
-                                    <CommandEmpty>Aucun produit.</CommandEmpty>
+                                    <CommandEmpty>Tapez pour rechercher...</CommandEmpty>
                                     <CommandGroup>
                                       {products?.filter(p => p.is_active).map((product) => (
                                         <CommandItem key={product.id} value={product.name} onSelect={() => selectProduct(product, index)}>
