@@ -1869,7 +1869,7 @@ export default function Documents() {
                     </TableHeader>
                     <TableBody>
                       {paginatedInvoices.map((invoice) => (
-                        <TableRow key={invoice.id}>
+                      <TableRow key={invoice.id} className="hover:bg-muted/30 even:bg-muted/10">
                           {invoiceSelectionMode && (
                             <TableCell>
                               <Checkbox
@@ -1878,57 +1878,52 @@ export default function Documents() {
                               />
                             </TableCell>
                           )}
-                          <TableCell className="font-mono font-semibold">
-                            {invoice.sale_number}
+                          <TableCell>
+                            <span className="font-mono font-bold text-primary text-sm">{invoice.sale_number}</span>
                           </TableCell>
                           <TableCell>
-                            <div className="flex flex-col gap-2">
-                              {getStatusBadge(invoice.invoice_status || 'paye')}
-                              <Select
-                                value={invoice.invoice_status || 'paye'}
-                                onValueChange={(value) => handleStatusChange(invoice, value)}
-                              >
-                                <SelectTrigger className="h-8 text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="brouillon">Brouillon</SelectItem>
-                                  <SelectItem value="en_attente">En attente</SelectItem>
-                                  <SelectItem value="paye">Payé</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
+                            <Select
+                              value={invoice.invoice_status || 'paye'}
+                              onValueChange={(value) => handleStatusChange(invoice, value)}
+                            >
+                              <SelectTrigger className="h-7 text-xs w-[110px] border-0 bg-transparent p-0 shadow-none">
+                                {getStatusBadge(invoice.invoice_status || 'paye')}
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="brouillon">Brouillon</SelectItem>
+                                <SelectItem value="en_attente">En attente</SelectItem>
+                                <SelectItem value="paye">Payé</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">
-                                {format(new Date(invoice.date), 'dd/MM/yyyy HH:mm', { locale: fr })}
-                              </span>
-                            </div>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {format(new Date(invoice.date), 'dd/MM/yyyy', { locale: fr })}
                           </TableCell>
                           <TableCell>
                             {invoice.customers ? (
                               <div>
-                                <p className="font-medium">{invoice.customers.name}</p>
+                                <p className="font-medium text-sm">{invoice.customers.name}</p>
                                 {invoice.customers.vat_number && (
-                                  <p className="text-xs text-muted-foreground">TVA: {invoice.customers.vat_number}</p>
+                                  <p className="text-[10px] text-muted-foreground">{invoice.customers.vat_number}</p>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-muted-foreground">-</span>
+                              <span className="text-muted-foreground text-sm">—</span>
                             )}
                           </TableCell>
-                          <TableCell>
-                            <span className="text-sm text-muted-foreground">
-                              {invoice.sale_items?.length || 0} article{(invoice.sale_items?.length || 0) > 1 ? 's' : ''}
-                            </span>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="text-xs font-normal">
+                              {invoice.sale_items?.length || 0}
+                            </Badge>
                           </TableCell>
-                          <TableCell className="text-right font-semibold">
+                          <TableCell className="text-right text-sm">
                             {invoice.subtotal.toFixed(2)}€
                           </TableCell>
-                          <TableCell className="text-right font-bold text-primary">
-                            {invoice.total.toFixed(2)}€
+                          <TableCell className="text-right text-sm text-muted-foreground">
+                            {invoice.total_vat.toFixed(2)}€
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <span className="font-bold text-primary">{invoice.total.toFixed(2)}€</span>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex gap-1 justify-end">
