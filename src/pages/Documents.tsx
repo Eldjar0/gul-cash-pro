@@ -1523,7 +1523,7 @@ export default function Documents() {
                           </TableCell>
                           <TableCell>
                             <span className="text-sm capitalize">
-                              {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : 'Mobile'}
+                              {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : sale.payment_method === 'transfer' ? 'Virement' : sale.payment_method === 'check' ? 'Chèque' : sale.payment_method === 'pending' ? '⏳ En attente' : 'Mobile'}
                             </span>
                           </TableCell>
                           <TableCell className="text-right font-bold text-primary">
