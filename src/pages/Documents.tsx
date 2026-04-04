@@ -856,6 +856,7 @@ export default function Documents() {
         subtotal: item.subtotal,
         vatAmount: item.vat_amount,
         total: item.total,
+        note: item.notes || undefined,
       })) || [],
       subtotal: sale.subtotal,
       totalVat: sale.total_vat,
