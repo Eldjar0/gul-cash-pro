@@ -204,7 +204,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       setClientCity('');
       setClientPostalCode('');
       setClientVatNumber('');
-      setItems([{ description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21 }]);
+      setItems([{ description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }]);
       setNotes('');
     } else if (open && invoiceId) {
       loadInvoice(invoiceId);
