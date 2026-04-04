@@ -1966,6 +1966,7 @@ export default function Documents() {
                                 <SelectValue placeholder="⏳ En attente" />
                               </SelectTrigger>
                               <SelectContent>
+                                <SelectItem value="pending">⏳ En attente</SelectItem>
                                 <SelectItem value="cash">💵 Espèces</SelectItem>
                                 <SelectItem value="card">💳 Carte</SelectItem>
                                 <SelectItem value="transfer">🏦 Virement</SelectItem>
