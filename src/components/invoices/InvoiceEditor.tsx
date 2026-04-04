@@ -704,12 +704,6 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
               </div>
             </div>
 
-          {/* UBL Warning */}
-          {(ublValidation.errors.length > 0 || ublValidation.warnings.length > 0) && (
-            <div className="px-4 py-2 bg-gray-100">
-              <UBLWarningAlert validation={ublValidation} />
-            </div>
-          )}
 
           {/* Main Content - Two Columns */}
           <div className="flex-1 overflow-hidden">
