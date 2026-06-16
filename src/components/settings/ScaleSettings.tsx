@@ -12,7 +12,7 @@ import { getDibalConfig, saveDibalConfig, isWebSerialSupported, DibalConfig, Dib
 import { useDibalScale, subscribeDibalRaw, getDibalRawLog } from '@/hooks/useDibalScale';
 
 export function ScaleSettings() {
-  const { connected, weight, connect, disconnect, forgetPort, readOnce, supported } = useDibalScale({ autoPoll: true, intervalMs: 400 });
+  const { connected, weight, connect, disconnect, forgetPort, readOnce, readOnceDetailed, supported } = useDibalScale({ autoPoll: true, intervalMs: 400 });
   const [config, setConfig] = useState<DibalConfig>(getDibalConfig());
   const [testWeight, setTestWeight] = useState<number | null>(null);
   const [rawLog, setRawLog] = useState<{ hex: string; ascii: string; t: number }[]>(getDibalRawLog());
