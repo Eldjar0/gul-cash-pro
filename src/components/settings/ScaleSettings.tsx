@@ -17,6 +17,11 @@ export function ScaleSettings() {
   const [testWeight, setTestWeight] = useState<number | null>(null);
   const [rawLog, setRawLog] = useState<{ hex: string; ascii: string; t: number }[]>(getDibalRawLog());
 
+  // Test de lecture en direct
+  const [liveTestActive, setLiveTestActive] = useState(false);
+  const [liveReadings, setLiveReadings] = useState<{ t: string; weight: number | null; hex: string; ascii: string }[]>([]);
+  const liveIntervalRef = useRef<number | null>(null);
+
   useEffect(() => {
     setConfig(getDibalConfig());
   }, []);
@@ -49,6 +54,47 @@ export function ScaleSettings() {
       toast.error('Impossible de lire la balance');
     }
   };
+
+  const startLiveTest = useCallback(() => {
+    if (!connected) {
+      toast.error('Connectez d\'abord la balance');
+      return;
+    }
+    setLiveReadings([]);
+    setLiveTestActive(true);
+    const tick = async () => {
+      const w = await readOnce();
+      const lastRaw = getDibalRawLog().slice(-1)[0];
+      setLiveReadings((prev) => {
+        const next = [
+          {
+            t: new Date().toLocaleTimeString('fr-BE', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 2 }),
+            weight: w,
+            hex: lastRaw?.hex ?? '-',
+            ascii: lastRaw?.ascii ?? '-',
+          },
+          ...prev,
+        ];
+        return next.slice(0, 30);
+      });
+    };
+    tick();
+    liveIntervalRef.current = window.setInterval(tick, 500);
+  }, [connected, readOnce]);
+
+  const stopLiveTest = useCallback(() => {
+    setLiveTestActive(false);
+    if (liveIntervalRef.current) {
+      window.clearInterval(liveIntervalRef.current);
+      liveIntervalRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (liveIntervalRef.current) window.clearInterval(liveIntervalRef.current);
+    };
+  }, []);
 
   if (!supported) {
     return (
