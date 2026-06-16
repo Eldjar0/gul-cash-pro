@@ -141,6 +141,17 @@ export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: numbe
     toast.info('Balance déconnectée');
   }, []);
 
+  const forgetPort = useCallback(async () => {
+    try { await sharedScale?.forget(); } catch {}
+    sharedScale = null;
+    autoConnectAttempted = false;
+    setConnected(false);
+    setWeight(null);
+    sharedLastRaw = null;
+    toast.success('Port réinitialisé. Cliquez à nouveau sur Connecter.');
+  }, []);
+
+
   const readOnce = useCallback(async () => {
     if (!sharedScale || !sharedConnected) return null;
     try {
@@ -184,6 +195,7 @@ export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: numbe
     error,
     connect,
     disconnect,
+    forgetPort,
     readOnce,
     readRawOnce,
     supported: isWebSerialSupported(),
