@@ -338,6 +338,18 @@ export class DibalScale {
     while (Date.now() - start < timeoutMs) {
       await new Promise((r) => setTimeout(r, 40));
       const entries = this.rawLog.filter((entry) => entry.seq > startSeq);
+      const parsedWeight = entries
+        .map((entry) => parseFrame(entry.text, this.config.weightInGrams, this.config.decimals))
+        .find((kg): kg is number => kg !== null);
+      if (parsedWeight !== undefined) {
+        return {
+          weight: applyCalibration(parsedWeight),
+          error: null,
+          hex: entries.map((entry) => entry.hex).join(' | ') || '-',
+          ascii: entries.map((entry) => entry.ascii).join(' | ') || '-',
+          command,
+        };
+      }
       if (this.lastWeight !== null && this.lastWeight !== prevWeight) {
         return {
           weight: applyCalibration(this.lastWeight),
