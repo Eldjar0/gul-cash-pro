@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Scale, Wifi, WifiOff, RefreshCw, Info } from 'lucide-react';
 import { toast } from 'sonner';
-import { getDibalConfig, saveDibalConfig, isWebSerialSupported, DibalConfig } from '@/lib/dibalScale';
+import { getDibalConfig, saveDibalConfig, isWebSerialSupported, DibalConfig, DibalMode } from '@/lib/dibalScale';
 import { useDibalScale } from '@/hooks/useDibalScale';
 
 export function ScaleSettings() {
