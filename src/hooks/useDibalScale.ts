@@ -211,6 +211,7 @@ export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: numbe
     disconnect,
     forgetPort,
     readOnce,
+    readOnceDetailed,
     readRawOnce,
     supported: isWebSerialSupported(),
   };
