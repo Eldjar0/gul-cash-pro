@@ -110,6 +110,14 @@ export function ScaleSettings() {
               Tester lecture
             </Button>
           )}
+          <Button
+            variant="outline"
+            onClick={forgetPort}
+            className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50"
+            title="À utiliser si vous avez l'erreur 'Failed to open serial port'"
+          >
+            🔄 Réinitialiser le port
+          </Button>
         </div>
 
         {(weight !== null || testWeight !== null) && (
