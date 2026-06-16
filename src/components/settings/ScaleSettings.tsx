@@ -237,7 +237,9 @@ export function ScaleSettings() {
                           {r.weight !== null ? `${r.weight.toFixed(3)} kg` : <span className="text-red-400" title={r.error ?? ''}>Erreur</span>}
                         </td>
                         <td className="px-3 py-2 text-cyan-400 break-all">{r.hex}</td>
-                        <td className="px-3 py-2 text-gray-300 break-all">{r.ascii || '(vide)'}</td>
+                        <td className="px-3 py-2 text-gray-300 break-all">
+                          {r.error ? <span className="text-red-400">⚠ {r.error}</span> : (r.ascii || '(vide)')}
+                        </td>
                       </tr>
                     ))
                   )}
