@@ -151,10 +151,23 @@ export function ScaleSettings() {
             {connected ? 'Déconnecter' : 'Connecter la balance'}
           </Button>
           {connected && (
-            <Button variant="outline" onClick={handleTestRead} className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Tester lecture
-            </Button>
+            <>
+              <Button variant="outline" onClick={handleTestRead} className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Tester lecture
+              </Button>
+              {!liveTestActive ? (
+                <Button variant="outline" onClick={startLiveTest} className="gap-2 text-green-600 border-green-300 hover:bg-green-50">
+                  <Play className="h-4 w-4" />
+                  Test en direct
+                </Button>
+              ) : (
+                <Button variant="outline" onClick={stopLiveTest} className="gap-2 text-red-600 border-red-300 hover:bg-red-50">
+                  <Square className="h-4 w-4" />
+                  Arrêter le test
+                </Button>
+              )}
+            </>
           )}
           <Button
             variant="outline"
@@ -162,7 +175,8 @@ export function ScaleSettings() {
             className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50"
             title="À utiliser si vous avez l'erreur 'Failed to open serial port'"
           >
-            🔄 Réinitialiser le port
+            <RefreshCw className="h-4 w-4" />
+            Réinitialiser le port
           </Button>
         </div>
 
