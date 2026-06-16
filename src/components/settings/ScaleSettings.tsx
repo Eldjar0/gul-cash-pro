@@ -19,7 +19,7 @@ export function ScaleSettings() {
 
   // Test de lecture en direct
   const [liveTestActive, setLiveTestActive] = useState(false);
-  const [liveReadings, setLiveReadings] = useState<{ t: string; weight: number | null; hex: string; ascii: string }[]>([]);
+  const [liveReadings, setLiveReadings] = useState<{ t: string; weight: number | null; hex: string; ascii: string; error: string | null }[]>([]);
   const liveIntervalRef = useRef<number | null>(null);
 
   useEffect(() => {
