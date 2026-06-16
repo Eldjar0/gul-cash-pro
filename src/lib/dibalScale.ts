@@ -140,19 +140,44 @@ export class DibalScale {
     const granted: any[] = await nav.serial.getPorts();
     this.port = granted[0] ?? (await nav.serial.requestPort());
 
-    // Si déjà ouvert (rare), on ne réouvre pas
+    // IMPORTANT : si le port a déjà été ouvert (rechargement de page, HMR),
+    // Chrome le considère "verrouillé" tant qu'on ne l'a pas explicitement
+    // refermé. On force la fermeture avant de réouvrir.
     try {
-      await this.port.open({
-        baudRate: this.config.baudRate,
-        dataBits: 8,
-        stopBits: 1,
-        parity: 'none',
-        flowControl: 'none',
-        bufferSize: 1024,
-      });
+      if (this.port.readable || this.port.writable) {
+        await this.port.close();
+        await new Promise((r) => setTimeout(r, 150));
+      }
+    } catch {
+      // ignore : le port n'était pas ouvert
+    }
+
+    const openOpts = {
+      baudRate: this.config.baudRate,
+      dataBits: 8 as const,
+      stopBits: 1 as const,
+      parity: 'none' as const,
+      flowControl: 'none' as const,
+      bufferSize: 1024,
+    };
+
+    // Tentative avec un retry après 300ms (le pilote PL2303 met parfois du temps à libérer)
+    try {
+      await this.port.open(openOpts);
     } catch (e: any) {
-      // "The port is already open" -> on continue, sinon on rejette
-      if (!String(e?.message ?? '').toLowerCase().includes('already open')) throw e;
+      const msg = String(e?.message ?? '').toLowerCase();
+      if (msg.includes('already open')) {
+        // déjà ouvert, on continue
+      } else {
+        await new Promise((r) => setTimeout(r, 300));
+        try {
+          await this.port.open(openOpts);
+        } catch (e2: any) {
+          throw new Error(
+            "Impossible d'ouvrir le port COM. Causes probables : un autre programme l'utilise (logiciel Dibal, autre onglet Chrome, PuTTY), ou le pilote est bloqué. Fermez les autres apps, débranchez/rebranchez le câble USB, puis réessayez."
+          );
+        }
+      }
     }
 
     this.reader = this.port.readable.getReader();
@@ -161,6 +186,19 @@ export class DibalScale {
     this.buffer = '';
     this.readLoop();
   }
+
+  /** Oublie le port (révoque l'autorisation Chrome). Utile pour réinitialiser. */
+  async forget(): Promise<void> {
+    try { await this.disconnect(); } catch {}
+    try {
+      const nav: any = navigator;
+      const ports: any[] = await nav.serial.getPorts();
+      for (const p of ports) {
+        try { await p.forget?.(); } catch {}
+      }
+    } catch {}
+  }
+
 
   private notify(kg: number) {
     this.lastWeight = kg;
