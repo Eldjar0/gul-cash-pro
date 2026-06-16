@@ -77,15 +77,21 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
                     {connected ? 'connectée' : 'non connectée'}
                   </span>
                 </div>
-                {connected ? (
-                  <Button size="sm" variant="ghost" onClick={() => readOnce()}>
-                    <RefreshCw className="h-4 w-4" />
+                <div className="flex items-center gap-1">
+                  {connected && (
+                    <Button size="sm" variant="ghost" onClick={() => readOnce()} title="Relire">
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button size="sm" variant="ghost" onClick={() => setCalibOpen(true)} title="Calibration">
+                    <Settings2 className="h-4 w-4" />
                   </Button>
-                ) : (
-                  <Button size="sm" variant="outline" onClick={() => connect()}>
-                    Connecter
-                  </Button>
-                )}
+                  {!connected && (
+                    <Button size="sm" variant="outline" onClick={() => connect()}>
+                      Connecter
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
 
