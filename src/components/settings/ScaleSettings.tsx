@@ -131,6 +131,25 @@ export function ScaleSettings() {
         </div>
 
         <div className="space-y-5">
+          <div className="space-y-2">
+            <Label className="text-base font-medium">Mode de communication</Label>
+            <Select
+              value={config.mode ?? 'continuous'}
+              onValueChange={(v) => updateConfig({ mode: v as DibalMode })}
+            >
+              <SelectTrigger className="h-12">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="continuous">Continu (la balance envoie en permanence)</SelectItem>
+                <SelectItem value="request">Requête (l'app demande, la balance répond)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              La plupart des Dibal D-900 fonctionnent en <strong>Continu</strong>. Si rien ne s'affiche, essayez Requête.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="baudRate" className="text-base font-medium">Vitesse (baud rate)</Label>
@@ -157,7 +176,7 @@ export function ScaleSettings() {
                 placeholder="3"
                 className="h-12"
               />
-              <p className="text-xs text-muted-foreground">Nombre de décimales affichées (ex: 3 = 1.234 kg)</p>
+              <p className="text-xs text-muted-foreground">Nombre de décimales (ex: 3 = 1.234 kg)</p>
             </div>
           </div>
 
