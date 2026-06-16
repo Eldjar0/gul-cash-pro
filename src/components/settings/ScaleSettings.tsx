@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Scale, Wifi, WifiOff, RefreshCw, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { getDibalConfig, saveDibalConfig, isWebSerialSupported, DibalConfig, DibalMode } from '@/lib/dibalScale';
-import { useDibalScale } from '@/hooks/useDibalScale';
+import { useDibalScale, subscribeDibalRaw, getDibalRawLog } from '@/hooks/useDibalScale';
 
 export function ScaleSettings() {
   const { connected, weight, connect, disconnect, readOnce, supported } = useDibalScale({ autoPoll: true, intervalMs: 400 });
