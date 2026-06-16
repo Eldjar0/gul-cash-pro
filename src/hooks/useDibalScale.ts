@@ -62,6 +62,18 @@ export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: numbe
     }
   }, []);
 
+  const readRawOnce = useCallback(async () => {
+    if (!sharedScale || !sharedConnected) return null;
+    try {
+      const w = await sharedScale.readWeightRaw();
+      setError(null);
+      return w;
+    } catch (e: any) {
+      setError(e?.message ?? String(e));
+      return null;
+    }
+  }, []);
+
   useEffect(() => {
     if (!autoPoll || !connected) return;
     const tick = async () => { await readOnce(); };
@@ -73,5 +85,5 @@ export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: numbe
     };
   }, [autoPoll, connected, intervalMs, readOnce]);
 
-  return { connected, weight, error, connect, disconnect, readOnce, supported: isWebSerialSupported() };
+  return { connected, weight, error, connect, disconnect, readOnce, readRawOnce, supported: isWebSerialSupported() };
 }
