@@ -38,7 +38,7 @@ export function getDibalConfig(): Required<DibalConfig> {
     return {
       baudRate: c.baudRate ?? 9600,
       mode: (c.mode as DibalMode) ?? 'continuous',
-        requestProtocol: c.requestProtocol ?? 'dibal9800',
+      requestProtocol: c.requestProtocol ?? 'dibal9800',
       weightInGrams: c.weightInGrams ?? false,
       decimals: c.decimals ?? 3,
       offsetKg: c.offsetKg ?? 0,
@@ -138,6 +138,10 @@ export class DibalScale {
 
   getLastWeight(): number | null {
     return this.lastWeight;
+  }
+
+  updateConfig(config?: DibalConfig): void {
+    this.config = { ...getDibalConfig(), ...config };
   }
 
 
@@ -263,6 +267,7 @@ export class DibalScale {
   /** Force une lecture immédiate (mode request). En mode continu, renvoie le dernier poids reçu. */
   async readWeightRaw(timeoutMs = 1500): Promise<number> {
     if (!this.port) throw new Error('Balance non connectée');
+    this.updateConfig();
 
     // Mode continu : on attend qu'une trame arrive (lastWeight est mis à jour par readLoop)
     if (this.config.mode === 'continuous') {

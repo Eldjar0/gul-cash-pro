@@ -30,6 +30,10 @@ function ensureScale(): DibalScale {
   return sharedScale;
 }
 
+export function refreshDibalConfig() {
+  sharedScale?.updateConfig();
+}
+
 export function getDibalRawLog() {
   return sharedScale?.getRawLog() ?? [];
 }

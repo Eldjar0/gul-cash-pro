@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Scale, Wifi, WifiOff, RefreshCw, Info, Play, Square } from 'lucide-react';
 import { toast } from 'sonner';
 import { getDibalConfig, saveDibalConfig, isWebSerialSupported, DibalConfig, DibalMode } from '@/lib/dibalScale';
-import { useDibalScale, subscribeDibalRaw, getDibalRawLog } from '@/hooks/useDibalScale';
+import { useDibalScale, subscribeDibalRaw, getDibalRawLog, refreshDibalConfig } from '@/hooks/useDibalScale';
 
 export function ScaleSettings() {
   const { connected, weight, connect, disconnect, forgetPort, readOnce, readOnceDetailed, supported } = useDibalScale({ autoPoll: true, intervalMs: 400 });
@@ -35,6 +35,7 @@ export function ScaleSettings() {
     const next = { ...config, ...patch };
     setConfig(next);
     saveDibalConfig(next);
+    refreshDibalConfig();
   };
 
   const handleConnect = async () => {
@@ -60,6 +61,7 @@ export function ScaleSettings() {
       toast.error('Connectez d\'abord la balance');
       return;
     }
+    refreshDibalConfig();
     setLiveReadings([]);
     setLiveTestActive(true);
     const tick = async () => {
