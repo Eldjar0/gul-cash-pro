@@ -51,18 +51,23 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
       autoFiredRef.current = false;
       stableRef.current = { value: null, count: 0 };
       setCountdown(null);
+      // Tente une lecture immédiate pour pré-remplir
+      if (connected) {
+        readOnce().catch(() => {});
+      }
     } else {
       if (timerRef.current) clearTimeout(timerRef.current);
       setWeight('');
       setCountdown(null);
     }
-  }, [open]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, connected]);
 
   // Synchronise le poids live de la balance dans l'input + détection de stabilité
   useEffect(() => {
     if (!open || !connected || liveWeight === null) return;
-    if (!userEditedRef.current && liveWeight > 0) {
-      setWeight(liveWeight.toFixed(3));
+    if (!userEditedRef.current && liveWeight >= 0) {
+      setWeight(liveWeight > 0 ? liveWeight.toFixed(3) : '');
     }
 
     // Détection de stabilité (3 lectures identiques à 1g près)
