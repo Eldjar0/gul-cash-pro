@@ -177,6 +177,36 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
               </div>
             )}
 
+            {supported && connected && (
+              <label className="flex items-center justify-between gap-2 text-sm cursor-pointer select-none px-1">
+                <span className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-amber-500" />
+                  Validation automatique dès poids stable
+                </span>
+                <input
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={autoConfirm}
+                  onChange={(e) => {
+                    setAutoConfirm(e.target.checked);
+                    if (!e.target.checked) cancelAuto();
+                  }}
+                />
+              </label>
+            )}
+
+            {countdown !== null && (
+              <div className="flex items-center justify-between gap-2 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2 text-sm">
+                <span className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                  <Zap className="h-4 w-4 animate-pulse" />
+                  Ajout automatique dans {countdown}…
+                </span>
+                <Button size="sm" variant="ghost" onClick={cancelAuto}>
+                  Annuler
+                </Button>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-sm font-medium">
                 Poids (kg)
@@ -186,7 +216,11 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
                 step="0.001"
                 min="0.001"
                 value={weight}
-                onChange={(e) => setWeight(e.target.value)}
+                onChange={(e) => {
+                  userEditedRef.current = true;
+                  cancelAuto();
+                  setWeight(e.target.value);
+                }}
                 onKeyPress={handleKeyPress}
                 placeholder="0.000"
                 autoFocus
