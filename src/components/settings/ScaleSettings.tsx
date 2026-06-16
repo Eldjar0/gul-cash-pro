@@ -106,10 +106,14 @@ export function ScaleSettings() {
           )}
         </div>
 
-        {testWeight !== null && (
+        {(weight !== null || testWeight !== null) && (
           <div className="mt-4 p-3 bg-primary/10 rounded-lg">
-            <div className="text-sm text-muted-foreground">Dernier poids lu</div>
-            <div className="text-2xl font-bold text-primary">{testWeight.toFixed(3)} kg</div>
+            <div className="text-sm text-muted-foreground">
+              {weight !== null ? 'Poids en direct' : 'Dernier poids lu'}
+            </div>
+            <div className="text-2xl font-bold text-primary">
+              {(weight ?? testWeight)?.toFixed(3)} kg
+            </div>
           </div>
         )}
       </Card>
