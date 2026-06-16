@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Scale, Wifi, WifiOff, RefreshCw, Settings2, Zap } from 'lucide-react';
+import { Scale, Wifi, WifiOff, RefreshCw, Settings2, Zap, Weight } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { useDibalScale } from '@/hooks/useDibalScale';
 import { DibalCalibrationDialog } from './DibalCalibrationDialog';
+import { toast } from 'sonner';
 
 interface WeightInputDialogProps {
   open: boolean;
@@ -27,6 +28,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
     return v === null ? true : v === '1';
   });
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [weighing, setWeighing] = useState(false);
   const stableRef = useRef<{ value: number | null; count: number }>({ value: null, count: 0 });
   const userEditedRef = useRef(false);
   const autoFiredRef = useRef(false);
@@ -36,6 +38,29 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
     autoPoll: open && !calibOpen,
     intervalMs: 500,
   });
+
+  const handleWeighNow = async () => {
+    if (!connected) {
+      toast.error('Balance non connectée');
+      return;
+    }
+    setWeighing(true);
+    cancelAuto();
+    userEditedRef.current = false;
+    try {
+      const w = await readOnce();
+      if (w !== null && w >= 0) {
+        setWeight(w > 0 ? w.toFixed(3) : '');
+        toast.success(`Poids lu : ${w.toFixed(3)} kg`);
+      } else {
+        toast.warning('Aucun poids reçu de la balance');
+      }
+    } catch (e) {
+      toast.error('Erreur lors de la lecture du poids');
+    } finally {
+      setWeighing(false);
+    }
+  };
 
   // Persiste la préférence
   useEffect(() => {
@@ -51,6 +76,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
       autoFiredRef.current = false;
       stableRef.current = { value: null, count: 0 };
       setCountdown(null);
+      setWeighing(false);
       // Tente une lecture immédiate pour pré-remplir
       if (connected) {
         readOnce().catch(() => {});
@@ -59,6 +85,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
       if (timerRef.current) clearTimeout(timerRef.current);
       setWeight('');
       setCountdown(null);
+      setWeighing(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, connected]);
@@ -216,21 +243,32 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
               <label className="text-sm font-medium">
                 Poids (kg)
               </label>
-              <Input
-                type="number"
-                step="0.001"
-                min="0.001"
-                value={weight}
-                onChange={(e) => {
-                  userEditedRef.current = true;
-                  cancelAuto();
-                  setWeight(e.target.value);
-                }}
-                onKeyPress={handleKeyPress}
-                placeholder="0.000"
-                autoFocus
-                className="text-lg font-bold text-center"
-              />
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  step="0.001"
+                  min="0.001"
+                  value={weight}
+                  onChange={(e) => {
+                    userEditedRef.current = true;
+                    cancelAuto();
+                    setWeight(e.target.value);
+                  }}
+                  onKeyPress={handleKeyPress}
+                  placeholder="0.000"
+                  autoFocus
+                  className="text-lg font-bold text-center"
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleWeighNow}
+                  disabled={!connected || weighing}
+                  className="shrink-0"
+                >
+                  <Weight className="h-4 w-4 mr-1" />
+                  Peser maintenant
+                </Button>
+              </div>
             </div>
 
             {weight && parseFloat(weight) > 0 && (
