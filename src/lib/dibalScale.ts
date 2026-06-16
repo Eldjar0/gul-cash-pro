@@ -17,6 +17,7 @@ export type DibalMode = 'continuous' | 'request';
 export interface DibalConfig {
   baudRate?: number;
   mode?: DibalMode;
+  requestProtocol?: 'dibal9800' | 'enq';
   weightInGrams?: boolean;
   decimals?: number;
   offsetKg?: number;
@@ -27,6 +28,8 @@ const STORAGE_KEY = 'dibal_scale_config';
 
 // ENQ classique pour demander un poids en mode requête
 const ENQ_REQUEST = new Uint8Array([0x05]);
+// Protocole Dibal POS courant : demander le poids avec 98000001 + CRLF
+const DIBAL_POS_WEIGHT_REQUEST = new TextEncoder().encode('98000001\r\n');
 
 export function getDibalConfig(): Required<DibalConfig> {
   try {
@@ -35,13 +38,14 @@ export function getDibalConfig(): Required<DibalConfig> {
     return {
       baudRate: c.baudRate ?? 9600,
       mode: (c.mode as DibalMode) ?? 'continuous',
+        requestProtocol: c.requestProtocol ?? 'dibal9800',
       weightInGrams: c.weightInGrams ?? false,
       decimals: c.decimals ?? 3,
       offsetKg: c.offsetKg ?? 0,
       factor: c.factor ?? 1,
     };
   } catch {
-    return { baudRate: 9600, mode: 'continuous', weightInGrams: false, decimals: 3, offsetKg: 0, factor: 1 };
+    return { baudRate: 9600, mode: 'continuous', requestProtocol: 'dibal9800', weightInGrams: false, decimals: 3, offsetKg: 0, factor: 1 };
   }
 }
 
@@ -66,6 +70,13 @@ function parseFrame(frame: string, weightInGrams: boolean, decimals: number): nu
   // Nettoyage : retire STX/ETX et caractères non imprimables
   const clean = frame.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim();
   if (!clean) return null;
+
+  // 0) Réponse Dibal POS : "9900031600000004" => 316 g => 0.316 kg
+  const dibalPos = clean.match(/99[0-9]([0-9]{5})[0-9]{7,}/);
+  if (dibalPos) {
+    const grams = parseInt(dibalPos[1], 10);
+    if (!Number.isNaN(grams)) return grams / 1000;
+  }
 
   // 1) Format Dibal/CAS : "ST,GS,+00.123kg" ou "US,GS,+00.000kg"
   //    On accepte aussi sans préfixe ST/US
