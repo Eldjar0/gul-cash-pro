@@ -39,6 +39,49 @@ export function subscribeDibalRaw(cb: (hex: string, ascii: string) => void) {
   return () => { rawListeners.delete(cb); };
 }
 
+// Tente de réutiliser un port déjà autorisé, sans interaction utilisateur
+let autoConnectAttempted = false;
+export async function tryAutoConnectDibal(): Promise<boolean> {
+  if (autoConnectAttempted || sharedConnected) return sharedConnected;
+  autoConnectAttempted = true;
+  if (!isWebSerialSupported()) return false;
+  try {
+    const nav: any = navigator;
+    const ports: any[] = await nav.serial.getPorts();
+    if (!ports.length) {
+      console.info('[Dibal] Aucun port pré-autorisé, connexion auto ignorée');
+      return false;
+    }
+    const sc = ensureScale();
+    await sc.connect();
+    setConnected(true);
+    console.info('[Dibal] Connexion automatique réussie');
+    return true;
+  } catch (e) {
+    console.warn('[Dibal] Connexion auto échouée:', e);
+    return false;
+  }
+}
+
+// Écoute les évènements de branchement/débranchement USB
+if (typeof navigator !== 'undefined' && 'serial' in (navigator as any)) {
+  const nav: any = navigator;
+  nav.serial.addEventListener?.('connect', () => {
+    if (!sharedConnected) {
+      autoConnectAttempted = false;
+      tryAutoConnectDibal();
+    }
+  });
+  nav.serial.addEventListener?.('disconnect', () => {
+    if (sharedConnected) {
+      setConnected(false);
+      sharedLastRaw = null;
+    }
+  });
+}
+
+
+
 
 export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: number }) {
   const { autoPoll = false, intervalMs = 300 } = options ?? {};
