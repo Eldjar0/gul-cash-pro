@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { FiscalSettings } from '@/components/settings/FiscalSettings';
 import { BackupSettings } from '@/components/settings/BackupSettings';
+import { ScaleSettings } from '@/components/settings/ScaleSettings';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 import UserManagement from './UserManagement';
 import ContactInfo from './ContactInfo';
