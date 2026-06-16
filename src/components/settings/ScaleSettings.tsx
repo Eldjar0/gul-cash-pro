@@ -9,15 +9,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Scale, Wifi, WifiOff, RefreshCw, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { getDibalConfig, saveDibalConfig, isWebSerialSupported, DibalConfig, DibalMode } from '@/lib/dibalScale';
-import { useDibalScale } from '@/hooks/useDibalScale';
+import { useDibalScale, subscribeDibalRaw, getDibalRawLog } from '@/hooks/useDibalScale';
 
 export function ScaleSettings() {
   const { connected, weight, connect, disconnect, readOnce, supported } = useDibalScale({ autoPoll: true, intervalMs: 400 });
   const [config, setConfig] = useState<DibalConfig>(getDibalConfig());
   const [testWeight, setTestWeight] = useState<number | null>(null);
+  const [rawLog, setRawLog] = useState<{ hex: string; ascii: string; t: number }[]>(getDibalRawLog());
 
   useEffect(() => {
     setConfig(getDibalConfig());
+  }, []);
+
+  useEffect(() => {
+    const unsub = subscribeDibalRaw(() => setRawLog(getDibalRawLog()));
+    return unsub;
   }, []);
 
   const updateConfig = (patch: Partial<DibalConfig>) => {
@@ -234,6 +240,35 @@ export function ScaleSettings() {
           </div>
         </div>
       </Card>
+
+      {/* Debug Console */}
+      {connected && (
+        <Card className="p-6 bg-gray-900 text-green-400 border-0 shadow-lg font-mono">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-base font-bold text-white">🔬 Console de debug — trames brutes</h3>
+              <p className="text-xs text-gray-400">Affiche tout ce que la balance envoie. Posez/retirez un poids pour tester.</p>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setRawLog([])} className="text-black">
+              Vider
+            </Button>
+          </div>
+          <div className="bg-black/60 rounded p-3 max-h-64 overflow-auto text-xs space-y-1">
+            {rawLog.length === 0 ? (
+              <div className="text-gray-500">En attente de données... Si rien n'apparaît après 5s, la balance n'envoie pas (vérifiez câble, mode de la balance, baud rate).</div>
+            ) : (
+              rawLog.map((r, i) => (
+                <div key={i} className="border-b border-gray-800 pb-1">
+                  <div className="text-yellow-400">ASCII: {r.ascii || '(vide)'}</div>
+                  <div className="text-cyan-400">HEX:   {r.hex}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
+      )}
+
+
 
       {/* Instructions Card */}
       <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">

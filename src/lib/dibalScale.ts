@@ -95,6 +95,7 @@ function parseFrame(frame: string, weightInGrams: boolean, decimals: number): nu
 }
 
 export type WeightListener = (kg: number) => void;
+export type RawListener = (hex: string, ascii: string) => void;
 
 export class DibalScale {
   private port: any = null;
@@ -104,7 +105,9 @@ export class DibalScale {
   private config: Required<DibalConfig>;
   private closed = false;
   private listeners = new Set<WeightListener>();
+  private rawListeners = new Set<RawListener>();
   private lastWeight: number | null = null;
+  private rawLog: { hex: string; ascii: string; t: number }[] = [];
 
   constructor(config?: DibalConfig) {
     this.config = { ...getDibalConfig(), ...config };
@@ -115,9 +118,17 @@ export class DibalScale {
     return () => this.listeners.delete(cb);
   }
 
+  onRaw(cb: RawListener): () => void {
+    this.rawListeners.add(cb);
+    return () => this.rawListeners.delete(cb);
+  }
+
+  getRawLog() { return this.rawLog.slice(-20); }
+
   getLastWeight(): number | null {
     return this.lastWeight;
   }
+
 
   async connect(): Promise<void> {
     if (!isWebSerialSupported()) {
@@ -182,6 +193,14 @@ export class DibalScale {
         const { value, done } = await this.reader.read();
         if (done) break;
         if (value && value.length) {
+          // Log brut pour debug
+          const hex = Array.from(value).map((b) => b.toString(16).padStart(2, '0')).join(' ');
+          const ascii = decoder.decode(value).replace(/[\x00-\x1F\x7F]/g, '·');
+          const entry = { hex, ascii, t: Date.now() };
+          this.rawLog.push(entry);
+          if (this.rawLog.length > 50) this.rawLog.shift();
+          this.rawListeners.forEach((l) => { try { l(hex, ascii); } catch {} });
+
           this.buffer += decoder.decode(value);
           this.flushFrames();
         }
@@ -190,6 +209,7 @@ export class DibalScale {
       // port fermé / déconnecté
     }
   }
+
 
   /** Force une lecture immédiate (mode request). En mode continu, renvoie le dernier poids reçu. */
   async readWeightRaw(timeoutMs = 1500): Promise<number> {
