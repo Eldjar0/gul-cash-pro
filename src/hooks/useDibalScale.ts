@@ -165,6 +165,20 @@ export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: numbe
     }
   }, []);
 
+  const readOnceDetailed = useCallback(async (): Promise<{ weight: number | null; error: string | null }> => {
+    if (!sharedScale || !sharedConnected) return { weight: null, error: 'Balance non connectée' };
+    try {
+      const w = await sharedScale.readWeight();
+      setWeight(w);
+      setError(null);
+      return { weight: w, error: null };
+    } catch (e: any) {
+      const msg = e?.message ?? String(e);
+      setError(msg);
+      return { weight: null, error: msg };
+    }
+  }, []);
+
   const readRawOnce = useCallback(async () => {
     if (!sharedScale || !sharedConnected) return null;
     try {
