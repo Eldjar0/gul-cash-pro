@@ -12,15 +12,16 @@ import { getDibalConfig, saveDibalConfig, isWebSerialSupported, DibalConfig, Dib
 import { useDibalScale, subscribeDibalRaw, getDibalRawLog, refreshDibalConfig } from '@/hooks/useDibalScale';
 
 export function ScaleSettings() {
-  const { connected, weight, connect, disconnect, forgetPort, readOnce, readOnceDetailed, supported } = useDibalScale({ autoPoll: true, intervalMs: 400 });
+  const { connected, weight, connect, disconnect, forgetPort, readOnce, readDiagnostic, supported } = useDibalScale({ autoPoll: true, intervalMs: 400 });
   const [config, setConfig] = useState<DibalConfig>(getDibalConfig());
   const [testWeight, setTestWeight] = useState<number | null>(null);
   const [rawLog, setRawLog] = useState<{ hex: string; ascii: string; t: number }[]>(getDibalRawLog());
 
   // Test de lecture en direct
   const [liveTestActive, setLiveTestActive] = useState(false);
-  const [liveReadings, setLiveReadings] = useState<{ t: string; weight: number | null; hex: string; ascii: string; error: string | null }[]>([]);
+  const [liveReadings, setLiveReadings] = useState<{ t: string; weight: number | null; hex: string; ascii: string; error: string | null; command: string }[]>([]);
   const liveIntervalRef = useRef<number | null>(null);
+  const liveConfigRef = useRef<DibalConfig>(config);
 
   useEffect(() => {
     setConfig(getDibalConfig());
@@ -56,25 +57,28 @@ export function ScaleSettings() {
     }
   };
 
-  const startLiveTest = useCallback(() => {
+  const startLiveTest = useCallback((overrideConfig?: DibalConfig) => {
     if (!connected) {
       toast.error('Connectez d\'abord la balance');
       return;
     }
+    const activeConfig = overrideConfig ?? config;
+    liveConfigRef.current = activeConfig;
+    saveDibalConfig(activeConfig);
     refreshDibalConfig();
     setLiveReadings([]);
     setLiveTestActive(true);
     const tick = async () => {
-      const { weight: w, error: err } = await readOnceDetailed();
-      const lastRaw = getDibalRawLog().slice(-1)[0];
+      const result = await readDiagnostic(liveConfigRef.current);
       setLiveReadings((prev) => {
         const next = [
           {
             t: new Date().toLocaleTimeString('fr-BE', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + '.' + String(new Date().getMilliseconds()).padStart(3, '0'),
-            weight: w,
-            hex: lastRaw?.hex ?? '-',
-            ascii: lastRaw?.ascii ?? '-',
-            error: err,
+            weight: result.weight,
+            hex: result.hex,
+            ascii: result.ascii,
+            error: result.error,
+            command: result.command,
           },
           ...prev,
         ];
@@ -83,7 +87,7 @@ export function ScaleSettings() {
     };
     tick();
     liveIntervalRef.current = window.setInterval(tick, 500);
-  }, [connected, readOnceDetailed]);
+  }, [config, connected, readDiagnostic]);
 
   const stopLiveTest = useCallback(() => {
     setLiveTestActive(false);
