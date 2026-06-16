@@ -9,6 +9,7 @@ let sharedLastRaw: number | null = null;
 
 const connectionListeners = new Set<(connected: boolean) => void>();
 const weightListeners = new Set<(rawKg: number) => void>();
+const rawListeners = new Set<(hex: string, ascii: string) => void>();
 
 function setConnected(v: boolean) {
   sharedConnected = v;
@@ -22,9 +23,22 @@ function ensureScale(): DibalScale {
       sharedLastRaw = kg;
       weightListeners.forEach((l) => l(kg));
     });
+    sharedScale.onRaw((hex, ascii) => {
+      rawListeners.forEach((l) => l(hex, ascii));
+    });
   }
   return sharedScale;
 }
+
+export function getDibalRawLog() {
+  return sharedScale?.getRawLog() ?? [];
+}
+
+export function subscribeDibalRaw(cb: (hex: string, ascii: string) => void) {
+  rawListeners.add(cb);
+  return () => { rawListeners.delete(cb); };
+}
+
 
 export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: number }) {
   const { autoPoll = false, intervalMs = 300 } = options ?? {};
