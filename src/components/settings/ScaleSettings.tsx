@@ -5,13 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Scale, Wifi, WifiOff, RefreshCw, Info } from 'lucide-react';
 import { toast } from 'sonner';
-import { getDibalConfig, saveDibalConfig, isWebSerialSupported, DibalConfig } from '@/lib/dibalScale';
+import { getDibalConfig, saveDibalConfig, isWebSerialSupported, DibalConfig, DibalMode } from '@/lib/dibalScale';
 import { useDibalScale } from '@/hooks/useDibalScale';
 
 export function ScaleSettings() {
-  const { connected, connect, disconnect, readOnce, supported } = useDibalScale();
+  const { connected, weight, connect, disconnect, readOnce, supported } = useDibalScale({ autoPoll: true, intervalMs: 400 });
   const [config, setConfig] = useState<DibalConfig>(getDibalConfig());
   const [testWeight, setTestWeight] = useState<number | null>(null);
 
@@ -105,10 +106,14 @@ export function ScaleSettings() {
           )}
         </div>
 
-        {testWeight !== null && (
+        {(weight !== null || testWeight !== null) && (
           <div className="mt-4 p-3 bg-primary/10 rounded-lg">
-            <div className="text-sm text-muted-foreground">Dernier poids lu</div>
-            <div className="text-2xl font-bold text-primary">{testWeight.toFixed(3)} kg</div>
+            <div className="text-sm text-muted-foreground">
+              {weight !== null ? 'Poids en direct' : 'Dernier poids lu'}
+            </div>
+            <div className="text-2xl font-bold text-primary">
+              {(weight ?? testWeight)?.toFixed(3)} kg
+            </div>
           </div>
         )}
       </Card>
@@ -126,6 +131,25 @@ export function ScaleSettings() {
         </div>
 
         <div className="space-y-5">
+          <div className="space-y-2">
+            <Label className="text-base font-medium">Mode de communication</Label>
+            <Select
+              value={config.mode ?? 'continuous'}
+              onValueChange={(v) => updateConfig({ mode: v as DibalMode })}
+            >
+              <SelectTrigger className="h-12">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="continuous">Continu (la balance envoie en permanence)</SelectItem>
+                <SelectItem value="request">Requête (l'app demande, la balance répond)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              La plupart des Dibal D-900 fonctionnent en <strong>Continu</strong>. Si rien ne s'affiche, essayez Requête.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="baudRate" className="text-base font-medium">Vitesse (baud rate)</Label>
@@ -152,7 +176,7 @@ export function ScaleSettings() {
                 placeholder="3"
                 className="h-12"
               />
-              <p className="text-xs text-muted-foreground">Nombre de décimales affichées (ex: 3 = 1.234 kg)</p>
+              <p className="text-xs text-muted-foreground">Nombre de décimales (ex: 3 = 1.234 kg)</p>
             </div>
           </div>
 

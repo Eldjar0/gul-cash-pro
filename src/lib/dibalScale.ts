@@ -1,20 +1,32 @@
-// Dibal D-900 Web Serial driver
-// Protocole: requête ASCII "98000001\r\n" (hex 39 38 30 30 30 30 30 31 0D 0A)
-// Réponse: trame ASCII contenant le poids. On extrait le premier nombre
-// et on l'interprète selon la config (grammes par défaut, converti en kg).
-// Paramètres série Dibal: 9600 bauds, 8 bits, pas de parité, 1 stop bit.
+// Driver balance Dibal (D-900, 500, K-235, etc.) via Web Serial API
+//
+// Deux modes supportés :
+//  - "continuous" : la balance envoie en permanence des trames poids
+//     -> on lit en boucle, on parse à la volée, on notifie via callback
+//  - "request"    : on envoie une commande ENQ et la balance répond
+//
+// Format de trame Dibal couramment rencontré :
+//   STX P|S sign DDDD.DDD UU ETX           (binaire)
+//   "ST,GS,+00.123kg\r\n"                  (ASCII, CAS-like)
+//   "00123\r\n"                            (poids brut en grammes)
+//
+// Paramètres série Dibal par défaut : 9600 bauds, 8N1, pas de flow control.
+
+export type DibalMode = 'continuous' | 'request';
 
 export interface DibalConfig {
   baudRate?: number;
+  mode?: DibalMode;
   weightInGrams?: boolean;
   decimals?: number;
-  // Calibration: poids_corrigé = (poids_brut - offsetKg) * factor
   offsetKg?: number;
   factor?: number;
 }
 
-const REQUEST = new Uint8Array([0x39, 0x38, 0x30, 0x30, 0x30, 0x30, 0x30, 0x31, 0x0d, 0x0a]);
 const STORAGE_KEY = 'dibal_scale_config';
+
+// ENQ classique pour demander un poids en mode requête
+const ENQ_REQUEST = new Uint8Array([0x05]);
 
 export function getDibalConfig(): Required<DibalConfig> {
   try {
@@ -22,13 +34,14 @@ export function getDibalConfig(): Required<DibalConfig> {
     const c = raw ? JSON.parse(raw) : {};
     return {
       baudRate: c.baudRate ?? 9600,
-      weightInGrams: c.weightInGrams ?? true,
+      mode: (c.mode as DibalMode) ?? 'continuous',
+      weightInGrams: c.weightInGrams ?? false,
       decimals: c.decimals ?? 3,
       offsetKg: c.offsetKg ?? 0,
       factor: c.factor ?? 1,
     };
   } catch {
-    return { baudRate: 9600, weightInGrams: true, decimals: 3, offsetKg: 0, factor: 1 };
+    return { baudRate: 9600, mode: 'continuous', weightInGrams: false, decimals: 3, offsetKg: 0, factor: 1 };
   }
 }
 
@@ -43,8 +56,45 @@ export function applyCalibration(rawKg: number): number {
 }
 
 export function isWebSerialSupported(): boolean {
-  return typeof navigator !== 'undefined' && 'serial' in navigator;
+  return typeof navigator !== 'undefined' && 'serial' in (navigator as any);
 }
+
+// Parse une trame texte et renvoie un poids en kg, ou null.
+function parseFrame(frame: string, weightInGrams: boolean, decimals: number): number | null {
+  if (!frame) return null;
+
+  // Nettoyage : retire STX/ETX et caractères non imprimables
+  const clean = frame.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim();
+  if (!clean) return null;
+
+  // 1) Format Dibal/CAS : "ST,GS,+00.123kg" ou "US,GS,+00.000kg"
+  //    On accepte aussi sans préfixe ST/US
+  const named = clean.match(/([+-]?\d+\.\d+)\s*(kg|g)/i);
+  if (named) {
+    const v = parseFloat(named[1]);
+    if (!Number.isNaN(v)) return named[2].toLowerCase() === 'g' ? v / 1000 : v;
+  }
+
+  // 2) Décimal sans unité : on suppose kg
+  const dec = clean.match(/([+-]?\d+\.\d+)/);
+  if (dec) {
+    const v = parseFloat(dec[1]);
+    if (!Number.isNaN(v)) return v;
+  }
+
+  // 3) Entier seul : grammes ou unité brute selon config
+  const ints = clean.match(/([+-]?\d{2,7})/);
+  if (ints) {
+    const raw = parseInt(ints[1], 10);
+    if (!Number.isNaN(raw)) {
+      return weightInGrams ? raw / 1000 : raw / Math.pow(10, decimals);
+    }
+  }
+
+  return null;
+}
+
+export type WeightListener = (kg: number) => void;
 
 export class DibalScale {
   private port: any = null;
@@ -53,76 +103,123 @@ export class DibalScale {
   private buffer = '';
   private config: Required<DibalConfig>;
   private closed = false;
+  private listeners = new Set<WeightListener>();
+  private lastWeight: number | null = null;
 
   constructor(config?: DibalConfig) {
     this.config = { ...getDibalConfig(), ...config };
   }
 
+  onWeight(cb: WeightListener): () => void {
+    this.listeners.add(cb);
+    return () => this.listeners.delete(cb);
+  }
+
+  getLastWeight(): number | null {
+    return this.lastWeight;
+  }
+
   async connect(): Promise<void> {
     if (!isWebSerialSupported()) {
-      throw new Error("Web Serial non supporté. Utilisez Chrome ou Edge en HTTPS.");
+      throw new Error("Web Serial non supporté. Utilisez Chrome ou Edge (HTTPS ou app desktop).");
     }
     const nav: any = navigator;
-    // Réutilise un port déjà autorisé si disponible
+
+    // Réutilise un port déjà autorisé s'il y en a un, sinon prompt utilisateur
     const granted: any[] = await nav.serial.getPorts();
     this.port = granted[0] ?? (await nav.serial.requestPort());
-    await this.port.open({
-      baudRate: this.config.baudRate,
-      dataBits: 8,
-      stopBits: 1,
-      parity: 'none',
-      flowControl: 'none',
-    });
+
+    // Si déjà ouvert (rare), on ne réouvre pas
+    try {
+      await this.port.open({
+        baudRate: this.config.baudRate,
+        dataBits: 8,
+        stopBits: 1,
+        parity: 'none',
+        flowControl: 'none',
+        bufferSize: 1024,
+      });
+    } catch (e: any) {
+      // "The port is already open" -> on continue, sinon on rejette
+      if (!String(e?.message ?? '').toLowerCase().includes('already open')) throw e;
+    }
+
     this.reader = this.port.readable.getReader();
     this.writer = this.port.writable.getWriter();
     this.closed = false;
+    this.buffer = '';
     this.readLoop();
   }
 
+  private notify(kg: number) {
+    this.lastWeight = kg;
+    this.listeners.forEach((l) => {
+      try { l(kg); } catch {}
+    });
+  }
+
+  private flushFrames() {
+    // Découpe le buffer sur \r, \n ou ETX (0x03)
+    const parts = this.buffer.split(/[\r\n\x03]+/);
+    // On garde le dernier morceau potentiellement incomplet
+    this.buffer = parts.pop() ?? '';
+    for (const p of parts) {
+      const kg = parseFrame(p, this.config.weightInGrams, this.config.decimals);
+      if (kg !== null) this.notify(kg);
+    }
+    // Sécurité : si jamais le buffer enfle sans séparateur, on tente quand même
+    if (this.buffer.length > 64) {
+      const kg = parseFrame(this.buffer, this.config.weightInGrams, this.config.decimals);
+      if (kg !== null) this.notify(kg);
+      this.buffer = '';
+    }
+  }
+
   private async readLoop() {
-    const decoder = new TextDecoder();
+    const decoder = new TextDecoder('latin1');
     try {
       while (this.reader && !this.closed) {
         const { value, done } = await this.reader.read();
         if (done) break;
-        if (value) this.buffer += decoder.decode(value);
-        // garde un buffer raisonnable
-        if (this.buffer.length > 4096) this.buffer = this.buffer.slice(-1024);
+        if (value && value.length) {
+          this.buffer += decoder.decode(value);
+          this.flushFrames();
+        }
       }
     } catch {
-      // port fermé
+      // port fermé / déconnecté
     }
   }
 
-  private parseWeight(frame: string): number | null {
-    // Cherche un nombre décimal, sinon premier groupe d'entiers
-    const dec = frame.match(/(\d+\.\d+)/);
-    if (dec) return parseFloat(dec[1]);
-    const ints = frame.match(/(\d{3,7})/);
-    if (!ints) return null;
-    const raw = parseInt(ints[1], 10);
-    if (this.config.weightInGrams) return raw / 1000;
-    return raw / Math.pow(10, this.config.decimals);
-  }
+  /** Force une lecture immédiate (mode request). En mode continu, renvoie le dernier poids reçu. */
+  async readWeightRaw(timeoutMs = 1500): Promise<number> {
+    if (!this.port) throw new Error('Balance non connectée');
 
-  async readWeightRaw(timeoutMs = 800): Promise<number> {
-    if (!this.writer) throw new Error('Balance non connectée');
-    this.buffer = '';
-    await this.writer.write(REQUEST);
+    // Mode continu : on attend qu'une trame arrive (lastWeight est mis à jour par readLoop)
+    if (this.config.mode === 'continuous') {
+      const start = Date.now();
+      const prev = this.lastWeight;
+      while (Date.now() - start < timeoutMs) {
+        if (this.lastWeight !== null && this.lastWeight !== prev) return this.lastWeight;
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      if (this.lastWeight !== null) return this.lastWeight;
+      throw new Error("Aucune trame reçue. Vérifiez que la balance est en mode 'Continu' et bien branchée.");
+    }
+
+    // Mode requête : on envoie ENQ et on attend la prochaine notification
+    if (!this.writer) throw new Error('Balance non connectée (writer)');
+    const prev = this.lastWeight;
+    await this.writer.write(ENQ_REQUEST);
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
       await new Promise((r) => setTimeout(r, 40));
-      if (this.buffer.includes('\n') || this.buffer.includes('\r') || this.buffer.length > 8) {
-        const w = this.parseWeight(this.buffer);
-        if (w !== null && !Number.isNaN(w)) return w;
-      }
+      if (this.lastWeight !== null && this.lastWeight !== prev) return this.lastWeight;
     }
-    const w = this.parseWeight(this.buffer);
-    if (w !== null) return w;
-    throw new Error('Pas de réponse de la balance');
+    throw new Error('Pas de réponse de la balance (mode requête).');
   }
 
-  async readWeight(timeoutMs = 800): Promise<number> {
+  async readWeight(timeoutMs = 1500): Promise<number> {
     const raw = await this.readWeightRaw(timeoutMs);
     return applyCalibration(raw);
   }
@@ -136,5 +233,7 @@ export class DibalScale {
     this.reader = null;
     this.writer = null;
     this.port = null;
+    this.lastWeight = null;
+    this.buffer = '';
   }
 }

@@ -1,44 +1,77 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DibalScale, isWebSerialSupported } from '@/lib/dibalScale';
+import { DibalScale, isWebSerialSupported, applyCalibration } from '@/lib/dibalScale';
 import { toast } from 'sonner';
 
-// Singleton: une seule connexion balance pour toute l'app
+// Singleton : une seule connexion balance pour toute l'app
 let sharedScale: DibalScale | null = null;
 let sharedConnected = false;
-const listeners = new Set<(connected: boolean) => void>();
+let sharedLastRaw: number | null = null;
+
+const connectionListeners = new Set<(connected: boolean) => void>();
+const weightListeners = new Set<(rawKg: number) => void>();
 
 function setConnected(v: boolean) {
   sharedConnected = v;
-  listeners.forEach((l) => l(v));
+  connectionListeners.forEach((l) => l(v));
+}
+
+function ensureScale(): DibalScale {
+  if (!sharedScale) {
+    sharedScale = new DibalScale();
+    sharedScale.onWeight((kg) => {
+      sharedLastRaw = kg;
+      weightListeners.forEach((l) => l(kg));
+    });
+  }
+  return sharedScale;
 }
 
 export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: number }) {
-  const { autoPoll = false, intervalMs = 400 } = options ?? {};
+  const { autoPoll = false, intervalMs = 300 } = options ?? {};
   const [connected, setConnectedState] = useState(sharedConnected);
-  const [weight, setWeight] = useState<number | null>(null);
+  const [weight, setWeight] = useState<number | null>(
+    sharedLastRaw !== null ? applyCalibration(sharedLastRaw) : null,
+  );
   const [error, setError] = useState<string | null>(null);
   const pollRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const l = (v: boolean) => setConnectedState(v);
-    listeners.add(l);
-    return () => { listeners.delete(l); };
+    const cl = (v: boolean) => setConnectedState(v);
+    connectionListeners.add(cl);
+    return () => { connectionListeners.delete(cl); };
   }, []);
+
+  // Souscription live aux trames poids (mode continu)
+  useEffect(() => {
+    if (!autoPoll) return;
+    const wl = (raw: number) => setWeight(applyCalibration(raw));
+    weightListeners.add(wl);
+    if (sharedLastRaw !== null) setWeight(applyCalibration(sharedLastRaw));
+    return () => { weightListeners.delete(wl); };
+  }, [autoPoll]);
 
   const connect = useCallback(async () => {
     if (!isWebSerialSupported()) {
-      toast.error("Web Serial non supporté", { description: "Utilisez Chrome ou Edge." });
+      toast.error('Web Serial non supporté', {
+        description: 'Ouvrez l\'app dans Chrome ou Edge (ou la version desktop).',
+      });
       return false;
     }
     try {
-      if (!sharedScale) sharedScale = new DibalScale();
-      await sharedScale.connect();
+      const sc = ensureScale();
+      await sc.connect();
       setConnected(true);
-      toast.success("Balance Dibal connectée");
+      toast.success('Balance connectée');
       return true;
     } catch (e: any) {
-      setError(e?.message ?? String(e));
-      toast.error("Connexion balance échouée", { description: e?.message });
+      const msg = e?.message ?? String(e);
+      setError(msg);
+      // Annulation par l'utilisateur : pas une vraie erreur
+      if (msg.toLowerCase().includes('no port selected') || msg.toLowerCase().includes('cancelled')) {
+        toast.info('Connexion annulée');
+      } else {
+        toast.error('Connexion balance échouée', { description: msg });
+      }
       return false;
     }
   }, []);
@@ -47,6 +80,8 @@ export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: numbe
     try { await sharedScale?.disconnect(); } catch {}
     setConnected(false);
     setWeight(null);
+    sharedLastRaw = null;
+    toast.info('Balance déconnectée');
   }, []);
 
   const readOnce = useCallback(async () => {
@@ -74,6 +109,7 @@ export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: numbe
     }
   }, []);
 
+  // Polling actif (mode requête principalement)
   useEffect(() => {
     if (!autoPoll || !connected) return;
     const tick = async () => { await readOnce(); };
@@ -85,5 +121,14 @@ export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: numbe
     };
   }, [autoPoll, connected, intervalMs, readOnce]);
 
-  return { connected, weight, error, connect, disconnect, readOnce, readRawOnce, supported: isWebSerialSupported() };
+  return {
+    connected,
+    weight,
+    error,
+    connect,
+    disconnect,
+    readOnce,
+    readRawOnce,
+    supported: isWebSerialSupported(),
+  };
 }
