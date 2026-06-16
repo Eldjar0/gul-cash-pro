@@ -81,7 +81,7 @@ export function ScaleSettings() {
     };
     tick();
     liveIntervalRef.current = window.setInterval(tick, 500);
-  }, [connected, readOnce]);
+  }, [connected, readOnceDetailed]);
 
   const stopLiveTest = useCallback(() => {
     setLiveTestActive(false);
