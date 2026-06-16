@@ -6,10 +6,11 @@
 
 export interface DibalConfig {
   baudRate?: number;
-  // Si true, la balance renvoie le poids en grammes entiers (ex: "01234" = 1.234 kg)
   weightInGrams?: boolean;
-  // Nombre de décimales si weightInGrams=false
   decimals?: number;
+  // Calibration: poids_corrigé = (poids_brut - offsetKg) * factor
+  offsetKg?: number;
+  factor?: number;
 }
 
 const REQUEST = new Uint8Array([0x39, 0x38, 0x30, 0x30, 0x30, 0x30, 0x30, 0x31, 0x0d, 0x0a]);
@@ -23,14 +24,22 @@ export function getDibalConfig(): Required<DibalConfig> {
       baudRate: c.baudRate ?? 9600,
       weightInGrams: c.weightInGrams ?? true,
       decimals: c.decimals ?? 3,
+      offsetKg: c.offsetKg ?? 0,
+      factor: c.factor ?? 1,
     };
   } catch {
-    return { baudRate: 9600, weightInGrams: true, decimals: 3 };
+    return { baudRate: 9600, weightInGrams: true, decimals: 3, offsetKg: 0, factor: 1 };
   }
 }
 
 export function saveDibalConfig(c: DibalConfig) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...getDibalConfig(), ...c }));
+}
+
+export function applyCalibration(rawKg: number): number {
+  const c = getDibalConfig();
+  const v = (rawKg - c.offsetKg) * c.factor;
+  return Math.max(0, Math.round(v * 1000) / 1000);
 }
 
 export function isWebSerialSupported(): boolean {
@@ -96,7 +105,7 @@ export class DibalScale {
     return raw / Math.pow(10, this.config.decimals);
   }
 
-  async readWeight(timeoutMs = 800): Promise<number> {
+  async readWeightRaw(timeoutMs = 800): Promise<number> {
     if (!this.writer) throw new Error('Balance non connectée');
     this.buffer = '';
     await this.writer.write(REQUEST);
@@ -111,6 +120,11 @@ export class DibalScale {
     const w = this.parseWeight(this.buffer);
     if (w !== null) return w;
     throw new Error('Pas de réponse de la balance');
+  }
+
+  async readWeight(timeoutMs = 800): Promise<number> {
+    const raw = await this.readWeightRaw(timeoutMs);
+    return applyCalibration(raw);
   }
 
   async disconnect(): Promise<void> {
