@@ -234,7 +234,7 @@ export function ScaleSettings() {
                       <tr key={i} className="border-b border-gray-800 hover:bg-white/5">
                         <td className="px-3 py-2 text-yellow-400 whitespace-nowrap">{r.t}</td>
                         <td className="px-3 py-2 font-bold text-white whitespace-nowrap">
-                          {r.weight !== null ? `${r.weight.toFixed(3)} kg` : <span className="text-red-400">Erreur</span>}
+                          {r.weight !== null ? `${r.weight.toFixed(3)} kg` : <span className="text-red-400" title={r.error ?? ''}>Erreur</span>}
                         </td>
                         <td className="px-3 py-2 text-cyan-400 break-all">{r.hex}</td>
                         <td className="px-3 py-2 text-gray-300 break-all">{r.ascii || '(vide)'}</td>
