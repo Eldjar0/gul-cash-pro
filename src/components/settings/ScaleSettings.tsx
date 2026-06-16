@@ -160,9 +160,30 @@ export function ScaleSettings() {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              La plupart des Dibal D-900 fonctionnent en <strong>Continu</strong>. Si rien ne s'affiche, essayez Requête.
+              Si rien ne s'écrit en continu, passez en <strong>Requête</strong> : l'app demandera le poids à la balance.
             </p>
           </div>
+
+          {config.mode === 'request' && (
+            <div className="space-y-2">
+              <Label className="text-base font-medium">Commande de requête</Label>
+              <Select
+                value={config.requestProtocol ?? 'dibal9800'}
+                onValueChange={(v) => updateConfig({ requestProtocol: v as DibalConfig['requestProtocol'] })}
+              >
+                <SelectTrigger className="h-12">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dibal9800">Dibal POS 98000001</SelectItem>
+                  <SelectItem value="enq">ENQ standard</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Pour beaucoup de balances Dibal, choisissez <strong>Dibal POS 98000001</strong>.
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
