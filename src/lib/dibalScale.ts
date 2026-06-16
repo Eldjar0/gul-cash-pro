@@ -13,11 +13,28 @@
 // Paramètres série Dibal par défaut : 9600 bauds, 8N1, pas de flow control.
 
 export type DibalMode = 'continuous' | 'request';
+export type DibalRequestProtocol = 'dibal9800' | 'enq';
+
+export interface DibalRawLogEntry {
+  hex: string;
+  ascii: string;
+  text: string;
+  t: number;
+  seq: number;
+}
+
+export interface DibalReadDiagnosticResult {
+  weight: number | null;
+  error: string | null;
+  hex: string;
+  ascii: string;
+  command: string;
+}
 
 export interface DibalConfig {
   baudRate?: number;
   mode?: DibalMode;
-  requestProtocol?: 'dibal9800' | 'enq';
+  requestProtocol?: DibalRequestProtocol;
   weightInGrams?: boolean;
   decimals?: number;
   offsetKg?: number;
@@ -30,6 +47,12 @@ const STORAGE_KEY = 'dibal_scale_config';
 const ENQ_REQUEST = new Uint8Array([0x05]);
 // Protocole Dibal POS courant : demander le poids avec 98000001 + CRLF
 const DIBAL_POS_WEIGHT_REQUEST = new TextEncoder().encode('98000001\r\n');
+
+function getRequestPayload(protocol: DibalRequestProtocol): { bytes: Uint8Array; label: string } {
+  return protocol === 'enq'
+    ? { bytes: ENQ_REQUEST, label: 'ENQ' }
+    : { bytes: DIBAL_POS_WEIGHT_REQUEST, label: 'Dibal POS 98000001' };
+}
 
 export function getDibalConfig(): Required<DibalConfig> {
   try {
@@ -118,7 +141,8 @@ export class DibalScale {
   private listeners = new Set<WeightListener>();
   private rawListeners = new Set<RawListener>();
   private lastWeight: number | null = null;
-  private rawLog: { hex: string; ascii: string; t: number }[] = [];
+  private rawLog: DibalRawLogEntry[] = [];
+  private rawSequence = 0;
 
   constructor(config?: DibalConfig) {
     this.config = { ...getDibalConfig(), ...config };
