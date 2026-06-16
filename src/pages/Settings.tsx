@@ -980,6 +980,10 @@ export default function Settings() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="scale">
+            <ScaleSettings />
+          </TabsContent>
+
           <RemoteScanDialog open={remoteScanOpen} onOpenChange={setRemoteScanOpen} />
         </Tabs>
       </div>
