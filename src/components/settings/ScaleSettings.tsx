@@ -192,6 +192,61 @@ export function ScaleSettings() {
         )}
       </Card>
 
+      {/* Live Test Readings */}
+      {liveTestActive && (
+        <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">
+          <div className="flex items-start gap-4 mb-4">
+            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl text-white">
+              <Play className="h-6 w-6" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold">Test de lecture en direct</h3>
+              <p className="text-sm text-muted-foreground">
+                {liveReadings.length} trame{liveReadings.length > 1 ? 's' : ''} reçue{liveReadings.length > 1 ? 's' : ''} — rafraîchissement toutes les 500 ms
+              </p>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setLiveReadings([])} className="text-black">
+              Vider
+            </Button>
+          </div>
+
+          <div className="bg-black/70 rounded-lg overflow-hidden">
+            <div className="max-h-80 overflow-auto">
+              <table className="w-full text-xs font-mono">
+                <thead className="sticky top-0 bg-black/90 text-gray-300">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Heure</th>
+                    <th className="px-3 py-2 text-left">Poids</th>
+                    <th className="px-3 py-2 text-left">Données brutes (HEX)</th>
+                    <th className="px-3 py-2 text-left">ASCII</th>
+                  </tr>
+                </thead>
+                <tbody className="text-green-400">
+                  {liveReadings.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-3 py-6 text-center text-gray-500">
+                        En attente de données de la balance...
+                      </td>
+                    </tr>
+                  ) : (
+                    liveReadings.map((r, i) => (
+                      <tr key={i} className="border-b border-gray-800 hover:bg-white/5">
+                        <td className="px-3 py-2 text-yellow-400 whitespace-nowrap">{r.t}</td>
+                        <td className="px-3 py-2 font-bold text-white whitespace-nowrap">
+                          {r.weight !== null ? `${r.weight.toFixed(3)} kg` : <span className="text-red-400">Erreur</span>}
+                        </td>
+                        <td className="px-3 py-2 text-cyan-400 break-all">{r.hex}</td>
+                        <td className="px-3 py-2 text-gray-300 break-all">{r.ascii || '(vide)'}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Parameters Card */}
       <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
         <div className="flex items-start gap-4 mb-6">
