@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Scale, Wifi, WifiOff, RefreshCw, Settings2 } from 'lucide-react';
+import { Scale, Wifi, WifiOff, RefreshCw, Settings2, Zap } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { useDibalScale } from '@/hooks/useDibalScale';
 import { DibalCalibrationDialog } from './DibalCalibrationDialog';
@@ -14,28 +14,110 @@ interface WeightInputDialogProps {
   onConfirm: (weight: number) => void;
 }
 
+const AUTO_KEY = 'pos.scale.autoConfirm';
+const STABLE_READINGS = 3;
+const AUTO_CONFIRM_DELAY_MS = 1200;
+
 export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: WeightInputDialogProps) {
   const [weight, setWeight] = useState('');
   const [calibOpen, setCalibOpen] = useState(false);
+  const [autoConfirm, setAutoConfirm] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    const v = window.localStorage.getItem(AUTO_KEY);
+    return v === null ? true : v === '1';
+  });
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const stableRef = useRef<{ value: number | null; count: number }>({ value: null, count: 0 });
+  const userEditedRef = useRef(false);
+  const autoFiredRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const { connected, weight: liveWeight, connect, readOnce, supported } = useDibalScale({
     autoPoll: open && !calibOpen,
     intervalMs: 500,
   });
 
-  // Synchronise le poids live de la balance dans l'input
+  // Persiste la préférence
   useEffect(() => {
-    if (open && connected && liveWeight !== null && liveWeight > 0) {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(AUTO_KEY, autoConfirm ? '1' : '0');
+    }
+  }, [autoConfirm]);
+
+  // Reset quand on ouvre/ferme
+  useEffect(() => {
+    if (open) {
+      userEditedRef.current = false;
+      autoFiredRef.current = false;
+      stableRef.current = { value: null, count: 0 };
+      setCountdown(null);
+    } else {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setWeight('');
+      setCountdown(null);
+    }
+  }, [open]);
+
+  // Synchronise le poids live de la balance dans l'input + détection de stabilité
+  useEffect(() => {
+    if (!open || !connected || liveWeight === null) return;
+    if (!userEditedRef.current && liveWeight > 0) {
       setWeight(liveWeight.toFixed(3));
     }
-  }, [liveWeight, connected, open]);
 
-  const handleConfirm = () => {
-    const weightValue = parseFloat(weight);
-    if (weightValue && weightValue > 0) {
-      onConfirm(weightValue);
+    // Détection de stabilité (3 lectures identiques à 1g près)
+    const rounded = Math.round(liveWeight * 1000);
+    const s = stableRef.current;
+    if (s.value !== null && Math.abs((s.value ?? 0) - rounded) <= 1) {
+      s.count += 1;
+    } else {
+      s.value = rounded;
+      s.count = 1;
+    }
+
+    if (
+      autoConfirm &&
+      !autoFiredRef.current &&
+      !userEditedRef.current &&
+      liveWeight > 0 &&
+      s.count >= STABLE_READINGS
+    ) {
+      autoFiredRef.current = true;
+      // Compte à rebours visible
+      let remaining = Math.ceil(AUTO_CONFIRM_DELAY_MS / 400);
+      setCountdown(remaining);
+      const tick = () => {
+        remaining -= 1;
+        if (remaining <= 0) {
+          confirmWeight(liveWeight);
+        } else {
+          setCountdown(remaining);
+          timerRef.current = setTimeout(tick, 400);
+        }
+      };
+      timerRef.current = setTimeout(tick, 400);
+    }
+  }, [liveWeight, connected, open, autoConfirm]);
+
+  const confirmWeight = (value: number) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setCountdown(null);
+    if (value && value > 0) {
+      onConfirm(value);
       setWeight('');
       onOpenChange(false);
     }
+  };
+
+  const handleConfirm = () => {
+    confirmWeight(parseFloat(weight));
+  };
+
+  const cancelAuto = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setCountdown(null);
+    autoFiredRef.current = false;
+    userEditedRef.current = true;
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
