@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DibalScale, isWebSerialSupported, applyCalibration } from '@/lib/dibalScale';
+import { DibalConfig, DibalScale, isWebSerialSupported, applyCalibration } from '@/lib/dibalScale';
 import { toast } from 'sonner';
 
 // Singleton : une seule connexion balance pour toute l'app
@@ -183,6 +183,20 @@ export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: numbe
     }
   }, []);
 
+  const readDiagnostic = useCallback(async (config?: DibalConfig) => {
+    if (!sharedScale || !sharedConnected) {
+      return { weight: null, error: 'Balance non connectée', hex: '-', ascii: '-', command: '-' };
+    }
+    const result = await sharedScale.readDiagnostic(config);
+    if (result.weight !== null) {
+      setWeight(result.weight);
+      setError(null);
+    } else {
+      setError(result.error);
+    }
+    return result;
+  }, []);
+
   const readRawOnce = useCallback(async () => {
     if (!sharedScale || !sharedConnected) return null;
     try {
@@ -216,6 +230,7 @@ export function useDibalScale(options?: { autoPoll?: boolean; intervalMs?: numbe
     forgetPort,
     readOnce,
     readOnceDetailed,
+    readDiagnostic,
     readRawOnce,
     supported: isWebSerialSupported(),
   };
