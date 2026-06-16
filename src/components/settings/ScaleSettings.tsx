@@ -12,14 +12,14 @@ import { getDibalConfig, saveDibalConfig, isWebSerialSupported, DibalConfig, Dib
 import { useDibalScale, subscribeDibalRaw, getDibalRawLog } from '@/hooks/useDibalScale';
 
 export function ScaleSettings() {
-  const { connected, weight, connect, disconnect, forgetPort, readOnce, supported } = useDibalScale({ autoPoll: true, intervalMs: 400 });
+  const { connected, weight, connect, disconnect, forgetPort, readOnce, readOnceDetailed, supported } = useDibalScale({ autoPoll: true, intervalMs: 400 });
   const [config, setConfig] = useState<DibalConfig>(getDibalConfig());
   const [testWeight, setTestWeight] = useState<number | null>(null);
   const [rawLog, setRawLog] = useState<{ hex: string; ascii: string; t: number }[]>(getDibalRawLog());
 
   // Test de lecture en direct
   const [liveTestActive, setLiveTestActive] = useState(false);
-  const [liveReadings, setLiveReadings] = useState<{ t: string; weight: number | null; hex: string; ascii: string }[]>([]);
+  const [liveReadings, setLiveReadings] = useState<{ t: string; weight: number | null; hex: string; ascii: string; error: string | null }[]>([]);
   const liveIntervalRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function ScaleSettings() {
     setLiveReadings([]);
     setLiveTestActive(true);
     const tick = async () => {
-      const w = await readOnce();
+      const { weight: w, error: err } = await readOnceDetailed();
       const lastRaw = getDibalRawLog().slice(-1)[0];
       setLiveReadings((prev) => {
         const next = [
@@ -72,6 +72,7 @@ export function ScaleSettings() {
             weight: w,
             hex: lastRaw?.hex ?? '-',
             ascii: lastRaw?.ascii ?? '-',
+            error: err,
           },
           ...prev,
         ];
@@ -80,7 +81,7 @@ export function ScaleSettings() {
     };
     tick();
     liveIntervalRef.current = window.setInterval(tick, 500);
-  }, [connected, readOnce]);
+  }, [connected, readOnceDetailed]);
 
   const stopLiveTest = useCallback(() => {
     setLiveTestActive(false);
@@ -233,10 +234,12 @@ export function ScaleSettings() {
                       <tr key={i} className="border-b border-gray-800 hover:bg-white/5">
                         <td className="px-3 py-2 text-yellow-400 whitespace-nowrap">{r.t}</td>
                         <td className="px-3 py-2 font-bold text-white whitespace-nowrap">
-                          {r.weight !== null ? `${r.weight.toFixed(3)} kg` : <span className="text-red-400">Erreur</span>}
+                          {r.weight !== null ? `${r.weight.toFixed(3)} kg` : <span className="text-red-400" title={r.error ?? ''}>Erreur</span>}
                         </td>
                         <td className="px-3 py-2 text-cyan-400 break-all">{r.hex}</td>
-                        <td className="px-3 py-2 text-gray-300 break-all">{r.ascii || '(vide)'}</td>
+                        <td className="px-3 py-2 text-gray-300 break-all">
+                          {r.error ? <span className="text-red-400">⚠ {r.error}</span> : (r.ascii || '(vide)')}
+                        </td>
                       </tr>
                     ))
                   )}
