@@ -276,10 +276,12 @@ export class DibalScale {
       throw new Error("Aucune trame reçue. Vérifiez que la balance est en mode 'Continu' et bien branchée.");
     }
 
-    // Mode requête : on envoie ENQ et on attend la prochaine notification
+    // Mode requête : on envoie la commande configurée et on attend la prochaine notification
     if (!this.writer) throw new Error('Balance non connectée (writer)');
     const prev = this.lastWeight;
-    await this.writer.write(ENQ_REQUEST);
+    await this.writer.write(
+      this.config.requestProtocol === 'enq' ? ENQ_REQUEST : DIBAL_POS_WEIGHT_REQUEST,
+    );
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
       await new Promise((r) => setTimeout(r, 40));
