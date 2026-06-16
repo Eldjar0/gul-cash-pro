@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Scale, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { Scale, Wifi, WifiOff, RefreshCw, Settings2 } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { useDibalScale } from '@/hooks/useDibalScale';
+import { DibalCalibrationDialog } from './DibalCalibrationDialog';
 
 interface WeightInputDialogProps {
   open: boolean;
@@ -15,8 +16,9 @@ interface WeightInputDialogProps {
 
 export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: WeightInputDialogProps) {
   const [weight, setWeight] = useState('');
+  const [calibOpen, setCalibOpen] = useState(false);
   const { connected, weight: liveWeight, connect, readOnce, supported } = useDibalScale({
-    autoPoll: open && true,
+    autoPoll: open && !calibOpen,
     intervalMs: 500,
   });
 
