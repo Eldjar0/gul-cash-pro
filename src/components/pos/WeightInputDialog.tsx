@@ -135,6 +135,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
           </Button>
         </DialogFooter>
       </DialogContent>
+      <DibalCalibrationDialog open={calibOpen} onOpenChange={setCalibOpen} />
     </Dialog>
   );
 }
