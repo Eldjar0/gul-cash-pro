@@ -63,7 +63,7 @@ export function ScaleSettings() {
     setLiveReadings([]);
     setLiveTestActive(true);
     const tick = async () => {
-      const w = await readOnce();
+      const { weight: w, error: err } = await readOnceDetailed();
       const lastRaw = getDibalRawLog().slice(-1)[0];
       setLiveReadings((prev) => {
         const next = [
@@ -72,6 +72,7 @@ export function ScaleSettings() {
             weight: w,
             hex: lastRaw?.hex ?? '-',
             ascii: lastRaw?.ascii ?? '-',
+            error: err,
           },
           ...prev,
         ];
