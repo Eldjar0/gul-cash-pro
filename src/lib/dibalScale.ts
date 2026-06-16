@@ -95,6 +95,7 @@ function parseFrame(frame: string, weightInGrams: boolean, decimals: number): nu
 }
 
 export type WeightListener = (kg: number) => void;
+export type RawListener = (hex: string, ascii: string) => void;
 
 export class DibalScale {
   private port: any = null;
@@ -104,7 +105,9 @@ export class DibalScale {
   private config: Required<DibalConfig>;
   private closed = false;
   private listeners = new Set<WeightListener>();
+  private rawListeners = new Set<RawListener>();
   private lastWeight: number | null = null;
+  private rawLog: { hex: string; ascii: string; t: number }[] = [];
 
   constructor(config?: DibalConfig) {
     this.config = { ...getDibalConfig(), ...config };
@@ -115,9 +118,17 @@ export class DibalScale {
     return () => this.listeners.delete(cb);
   }
 
+  onRaw(cb: RawListener): () => void {
+    this.rawListeners.add(cb);
+    return () => this.rawListeners.delete(cb);
+  }
+
+  getRawLog() { return this.rawLog.slice(-20); }
+
   getLastWeight(): number | null {
     return this.lastWeight;
   }
+
 
   async connect(): Promise<void> {
     if (!isWebSerialSupported()) {
