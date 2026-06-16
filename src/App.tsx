@@ -61,7 +61,12 @@ const LoadingFallback = () => (
   </div>
 );
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    // Reconnexion auto à la balance si déjà autorisée
+    tryAutoConnectDibal();
+  }, []);
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
