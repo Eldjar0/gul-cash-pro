@@ -105,7 +105,7 @@ export class DibalScale {
     return raw / Math.pow(10, this.config.decimals);
   }
 
-  async readWeight(timeoutMs = 800): Promise<number> {
+  async readWeightRaw(timeoutMs = 800): Promise<number> {
     if (!this.writer) throw new Error('Balance non connectée');
     this.buffer = '';
     await this.writer.write(REQUEST);
@@ -120,6 +120,11 @@ export class DibalScale {
     const w = this.parseWeight(this.buffer);
     if (w !== null) return w;
     throw new Error('Pas de réponse de la balance');
+  }
+
+  async readWeight(timeoutMs = 800): Promise<number> {
+    const raw = await this.readWeightRaw(timeoutMs);
+    return applyCalibration(raw);
   }
 
   async disconnect(): Promise<void> {
