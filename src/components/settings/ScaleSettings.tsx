@@ -68,7 +68,7 @@ export function ScaleSettings() {
       setLiveReadings((prev) => {
         const next = [
           {
-            t: new Date().toLocaleTimeString('fr-BE', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 2 }),
+            t: new Date().toLocaleTimeString('fr-BE', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + '.' + String(new Date().getMilliseconds()).padStart(3, '0'),
             weight: w,
             hex: lastRaw?.hex ?? '-',
             ascii: lastRaw?.ascii ?? '-',
