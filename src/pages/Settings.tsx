@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database, AlertTriangle, Printer, RotateCcw, Smartphone } from 'lucide-react';
+import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database, AlertTriangle, Printer, RotateCcw, Smartphone, Scale } from 'lucide-react';
 import { PrinterSettings } from '@/components/settings/PrinterSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
