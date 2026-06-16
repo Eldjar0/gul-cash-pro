@@ -164,10 +164,20 @@ export function ScaleSettings() {
                 Tester lecture
               </Button>
               {!liveTestActive ? (
-                <Button variant="outline" onClick={startLiveTest} className="gap-2 text-green-600 border-green-300 hover:bg-green-50">
-                  <Play className="h-4 w-4" />
-                  Test en direct
-                </Button>
+                <>
+                  <Button variant="outline" onClick={() => startLiveTest()} className="gap-2 text-green-600 border-green-300 hover:bg-green-50">
+                    <Play className="h-4 w-4" />
+                    Test en direct
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => startLiveTest({ ...config, mode: 'request', requestProtocol: 'dibal9800' })}
+                    className="gap-2 text-blue-600 border-blue-300 hover:bg-blue-50"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Test requête forcée
+                  </Button>
+                </>
               ) : (
                 <Button variant="outline" onClick={stopLiveTest} className="gap-2 text-red-600 border-red-300 hover:bg-red-50">
                   <Square className="h-4 w-4" />
@@ -223,6 +233,7 @@ export function ScaleSettings() {
                 <thead className="sticky top-0 bg-black/90 text-gray-300">
                   <tr>
                     <th className="px-3 py-2 text-left">Heure</th>
+                    <th className="px-3 py-2 text-left">Commande</th>
                     <th className="px-3 py-2 text-left">Poids</th>
                     <th className="px-3 py-2 text-left">Données brutes (HEX)</th>
                     <th className="px-3 py-2 text-left">ASCII</th>
@@ -231,7 +242,7 @@ export function ScaleSettings() {
                 <tbody className="text-green-400">
                   {liveReadings.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-3 py-6 text-center text-gray-500">
+                      <td colSpan={5} className="px-3 py-6 text-center text-gray-500">
                         En attente de données de la balance...
                       </td>
                     </tr>
@@ -239,6 +250,7 @@ export function ScaleSettings() {
                     liveReadings.map((r, i) => (
                       <tr key={i} className="border-b border-gray-800 hover:bg-white/5">
                         <td className="px-3 py-2 text-yellow-400 whitespace-nowrap">{r.t}</td>
+                        <td className="px-3 py-2 text-blue-300 whitespace-nowrap">{r.command}</td>
                         <td className="px-3 py-2 font-bold text-white whitespace-nowrap">
                           {r.weight !== null ? `${r.weight.toFixed(3)} kg` : <span className="text-red-400" title={r.error ?? ''}>Erreur</span>}
                         </td>
