@@ -13,11 +13,28 @@
 // Paramètres série Dibal par défaut : 9600 bauds, 8N1, pas de flow control.
 
 export type DibalMode = 'continuous' | 'request';
+export type DibalRequestProtocol = 'dibal9800' | 'enq';
+
+export interface DibalRawLogEntry {
+  hex: string;
+  ascii: string;
+  text: string;
+  t: number;
+  seq: number;
+}
+
+export interface DibalReadDiagnosticResult {
+  weight: number | null;
+  error: string | null;
+  hex: string;
+  ascii: string;
+  command: string;
+}
 
 export interface DibalConfig {
   baudRate?: number;
   mode?: DibalMode;
-  requestProtocol?: 'dibal9800' | 'enq';
+  requestProtocol?: DibalRequestProtocol;
   weightInGrams?: boolean;
   decimals?: number;
   offsetKg?: number;
@@ -30,6 +47,12 @@ const STORAGE_KEY = 'dibal_scale_config';
 const ENQ_REQUEST = new Uint8Array([0x05]);
 // Protocole Dibal POS courant : demander le poids avec 98000001 + CRLF
 const DIBAL_POS_WEIGHT_REQUEST = new TextEncoder().encode('98000001\r\n');
+
+function getRequestPayload(protocol: DibalRequestProtocol): { bytes: Uint8Array; label: string } {
+  return protocol === 'enq'
+    ? { bytes: ENQ_REQUEST, label: 'ENQ' }
+    : { bytes: DIBAL_POS_WEIGHT_REQUEST, label: 'Dibal POS 98000001' };
+}
 
 export function getDibalConfig(): Required<DibalConfig> {
   try {
@@ -118,7 +141,8 @@ export class DibalScale {
   private listeners = new Set<WeightListener>();
   private rawListeners = new Set<RawListener>();
   private lastWeight: number | null = null;
-  private rawLog: { hex: string; ascii: string; t: number }[] = [];
+  private rawLog: DibalRawLogEntry[] = [];
+  private rawSequence = 0;
 
   constructor(config?: DibalConfig) {
     this.config = { ...getDibalConfig(), ...config };
@@ -248,13 +272,14 @@ export class DibalScale {
         if (value && value.length) {
           // Log brut pour debug
           const hex = Array.from(value).map((b) => b.toString(16).padStart(2, '0')).join(' ');
-          const ascii = decoder.decode(value).replace(/[\x00-\x1F\x7F]/g, '·');
-          const entry = { hex, ascii, t: Date.now() };
+          const text = decoder.decode(value);
+          const ascii = text.replace(/[\x00-\x1F\x7F]/g, '·');
+          const entry = { hex, ascii, text, t: Date.now(), seq: ++this.rawSequence };
           this.rawLog.push(entry);
           if (this.rawLog.length > 50) this.rawLog.shift();
           this.rawListeners.forEach((l) => { try { l(hex, ascii); } catch {} });
 
-          this.buffer += decoder.decode(value);
+          this.buffer += text;
           this.flushFrames();
         }
       }
@@ -284,15 +309,67 @@ export class DibalScale {
     // Mode requête : on envoie la commande configurée et on attend la prochaine notification
     if (!this.writer) throw new Error('Balance non connectée (writer)');
     const prev = this.lastWeight;
-    await this.writer.write(
-      this.config.requestProtocol === 'enq' ? ENQ_REQUEST : DIBAL_POS_WEIGHT_REQUEST,
-    );
+    await this.writer.write(getRequestPayload(this.config.requestProtocol).bytes);
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
       await new Promise((r) => setTimeout(r, 40));
       if (this.lastWeight !== null && this.lastWeight !== prev) return this.lastWeight;
     }
     throw new Error('Pas de réponse de la balance (mode requête).');
+  }
+
+  async readDiagnostic(config?: DibalConfig, timeoutMs = 1500): Promise<DibalReadDiagnosticResult> {
+    if (!this.port) return { weight: null, error: 'Balance non connectée', hex: '-', ascii: '-', command: '-' };
+    this.updateConfig(config);
+
+    const mode = config?.mode ?? this.config.mode;
+    const protocol = config?.requestProtocol ?? this.config.requestProtocol;
+    const startSeq = this.rawSequence;
+    const prevWeight = this.lastWeight;
+    const request = getRequestPayload(protocol);
+    const command = mode === 'request' ? request.label : 'Écoute continu';
+
+    if (mode === 'request') {
+      if (!this.writer) return { weight: null, error: 'Balance non connectée (writer)', hex: '-', ascii: '-', command };
+      await this.writer.write(request.bytes);
+    }
+
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      await new Promise((r) => setTimeout(r, 40));
+      const entries = this.rawLog.filter((entry) => entry.seq > startSeq);
+      const parsedWeight = entries
+        .map((entry) => parseFrame(entry.text, this.config.weightInGrams, this.config.decimals))
+        .find((kg): kg is number => kg !== null);
+      if (parsedWeight !== undefined) {
+        return {
+          weight: applyCalibration(parsedWeight),
+          error: null,
+          hex: entries.map((entry) => entry.hex).join(' | ') || '-',
+          ascii: entries.map((entry) => entry.ascii).join(' | ') || '-',
+          command,
+        };
+      }
+      if (this.lastWeight !== null && this.lastWeight !== prevWeight) {
+        return {
+          weight: applyCalibration(this.lastWeight),
+          error: null,
+          hex: entries.map((entry) => entry.hex).join(' | ') || '-',
+          ascii: entries.map((entry) => entry.ascii).join(' | ') || '-',
+          command,
+        };
+      }
+      if (entries.length && mode === 'request') break;
+    }
+
+    const entries = this.rawLog.filter((entry) => entry.seq > startSeq);
+    return {
+      weight: null,
+      error: entries.length ? 'Trame reçue mais poids non reconnu' : mode === 'request' ? 'Aucune réponse brute reçue après commande' : "Aucune trame reçue en écoute continu",
+      hex: entries.map((entry) => entry.hex).join(' | ') || '-',
+      ascii: entries.map((entry) => entry.ascii).join(' | ') || '-',
+      command,
+    };
   }
 
   async readWeight(timeoutMs = 1500): Promise<number> {
