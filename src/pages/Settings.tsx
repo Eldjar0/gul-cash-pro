@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database, AlertTriangle, Printer, RotateCcw, Smartphone } from 'lucide-react';
+import { ArrowLeft, Building, Save, Plus, Trash2, Users, Info, MapPin, Phone, Mail, CreditCard, Image, Building2, User, FileText, Calculator, Database, AlertTriangle, Printer, RotateCcw, Smartphone, Scale } from 'lucide-react';
 import { PrinterSettings } from '@/components/settings/PrinterSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { FiscalSettings } from '@/components/settings/FiscalSettings';
 import { BackupSettings } from '@/components/settings/BackupSettings';
+import { ScaleSettings } from '@/components/settings/ScaleSettings';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 import UserManagement from './UserManagement';
 import ContactInfo from './ContactInfo';
@@ -284,6 +285,10 @@ export default function Settings() {
             <TabsTrigger value="mobile" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Smartphone className="h-4 w-4" />
               <span className="hidden sm:inline">Scan Mobile</span>
+            </TabsTrigger>
+            <TabsTrigger value="scale" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-600 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+              <Scale className="h-4 w-4" />
+              <span className="hidden sm:inline">Balance</span>
             </TabsTrigger>
           </TabsList>
 
@@ -973,6 +978,10 @@ export default function Settings() {
                 </Button>
               </div>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="scale">
+            <ScaleSettings />
           </TabsContent>
 
           <RemoteScanDialog open={remoteScanOpen} onOpenChange={setRemoteScanOpen} />
