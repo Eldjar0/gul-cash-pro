@@ -15,9 +15,15 @@ export function ScaleSettings() {
   const { connected, weight, connect, disconnect, readOnce, supported } = useDibalScale({ autoPoll: true, intervalMs: 400 });
   const [config, setConfig] = useState<DibalConfig>(getDibalConfig());
   const [testWeight, setTestWeight] = useState<number | null>(null);
+  const [rawLog, setRawLog] = useState<{ hex: string; ascii: string; t: number }[]>(getDibalRawLog());
 
   useEffect(() => {
     setConfig(getDibalConfig());
+  }, []);
+
+  useEffect(() => {
+    const unsub = subscribeDibalRaw(() => setRawLog(getDibalRawLog()));
+    return unsub;
   }, []);
 
   const updateConfig = (patch: Partial<DibalConfig>) => {
