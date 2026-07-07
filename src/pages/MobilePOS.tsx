@@ -428,7 +428,7 @@ export default function MobilePOS() {
     toast.info('Panier vidé');
   };
 
-  const handleWeightConfirm = (weight: number) => {
+  const handleWeightConfirm = (weight: number, customPricePerKg?: number) => {
     if (!weightProduct) return;
     
     setCart(prevCart => {
@@ -437,12 +437,13 @@ export default function MobilePOS() {
         const newCart = [...prevCart];
         const existing = newCart[existingIndex];
         const newQuantity = existing.quantity + weight;
-        const totals = calculateItemTotal(weightProduct, newQuantity, existing.discount, existing.custom_price);
-        newCart[existingIndex] = { ...existing, quantity: newQuantity, ...totals };
+        const effectivePrice = customPricePerKg ?? existing.custom_price;
+        const totals = calculateItemTotal(weightProduct, newQuantity, existing.discount, effectivePrice);
+        newCart[existingIndex] = { ...existing, quantity: newQuantity, custom_price: effectivePrice, ...totals };
         return newCart;
       } else {
-        const totals = calculateItemTotal(weightProduct, weight);
-        return [...prevCart, { product: weightProduct, quantity: weight, ...totals }];
+        const totals = calculateItemTotal(weightProduct, weight, undefined, customPricePerKg);
+        return [...prevCart, { product: weightProduct, quantity: weight, custom_price: customPricePerKg, ...totals }];
       }
     });
     
