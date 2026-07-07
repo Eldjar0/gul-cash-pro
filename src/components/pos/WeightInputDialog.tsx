@@ -292,11 +292,68 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
               </div>
             </div>
 
+            <div className="space-y-2 border-t pt-3">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Euro className="h-4 w-4 text-primary" />
+                Prix / kg
+                {priceEdited && (
+                  <span className="text-xs text-amber-600 dark:text-amber-400 font-normal">
+                    (modifié — original {product.price.toFixed(2)}€)
+                  </span>
+                )}
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={priceInput}
+                  onChange={(e) => {
+                    setPriceInput(e.target.value);
+                    setPriceEdited(true);
+                  }}
+                  placeholder="0.00"
+                  className="text-lg font-bold text-center"
+                />
+                {priceEdited && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => {
+                      setPriceInput(product.price.toFixed(2));
+                      setPriceEdited(false);
+                      setSavePrice(false);
+                    }}
+                  >
+                    Réinit.
+                  </Button>
+                )}
+              </div>
+              {priceEdited && (
+                <label className="flex items-center gap-2 text-sm cursor-pointer select-none pt-1">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4"
+                    checked={savePrice}
+                    onChange={(e) => setSavePrice(e.target.checked)}
+                  />
+                  <Save className="h-3.5 w-3.5 text-primary" />
+                  Enregistrer ce nouveau prix pour le produit
+                </label>
+              )}
+              {priceEdited && !savePrice && (
+                <p className="text-xs text-muted-foreground pl-1">
+                  Prix exceptionnel utilisé uniquement pour cette vente.
+                </p>
+              )}
+            </div>
+
             {weight && parseFloat(weight) > 0 && (
               <div className="bg-primary/10 p-3 rounded-lg">
                 <div className="text-sm text-muted-foreground">Total</div>
                 <div className="text-2xl font-bold text-primary">
-                  {(parseFloat(weight) * product.price).toFixed(2)}€
+                  {(parseFloat(weight) * (parseFloat(priceInput) || product.price)).toFixed(2)}€
                 </div>
               </div>
             )}
