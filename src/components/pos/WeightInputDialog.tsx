@@ -141,7 +141,22 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
     if (timerRef.current) clearTimeout(timerRef.current);
     setCountdown(null);
     if (value && value > 0) {
-      onConfirm(value);
+      const parsedPrice = parseFloat(priceInput);
+      const priceOverride =
+        priceEdited && !isNaN(parsedPrice) && parsedPrice >= 0 && product && parsedPrice !== product.price
+          ? parsedPrice
+          : undefined;
+
+      if (savePrice && priceOverride !== undefined && product) {
+        updateProduct.mutate(
+          { id: product.id, price: priceOverride },
+          {
+            onSuccess: () => toast.success(`Nouveau prix enregistré : ${priceOverride.toFixed(2)}€/kg`),
+          }
+        );
+      }
+
+      onConfirm(value, priceOverride);
       setWeight('');
       onOpenChange(false);
     }
