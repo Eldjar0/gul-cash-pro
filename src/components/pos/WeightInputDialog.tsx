@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Scale, Wifi, WifiOff, RefreshCw, Settings2, Zap, Weight } from 'lucide-react';
-import { Product } from '@/hooks/useProducts';
+import { Scale, Wifi, WifiOff, RefreshCw, Settings2, Zap, Weight, Euro, Save } from 'lucide-react';
+import { Product, useUpdateProduct } from '@/hooks/useProducts';
 import { useDibalScale } from '@/hooks/useDibalScale';
 import { DibalCalibrationDialog } from './DibalCalibrationDialog';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ interface WeightInputDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product: Product | null;
-  onConfirm: (weight: number) => void;
+  onConfirm: (weight: number, customPricePerKg?: number) => void;
 }
 
 const AUTO_KEY = 'pos.scale.autoConfirm';
@@ -20,6 +20,10 @@ const STABLE_READINGS = 3;
 const AUTO_CONFIRM_DELAY_MS = 1200;
 
 export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: WeightInputDialogProps) {
+  const updateProduct = useUpdateProduct();
+  const [priceInput, setPriceInput] = useState('');
+  const [priceEdited, setPriceEdited] = useState(false);
+  const [savePrice, setSavePrice] = useState(false);
   const [weight, setWeight] = useState('');
   const [calibOpen, setCalibOpen] = useState(false);
   const [autoConfirm, setAutoConfirm] = useState<boolean>(() => {
