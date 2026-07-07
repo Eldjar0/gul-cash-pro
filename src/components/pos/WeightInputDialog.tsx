@@ -81,7 +81,9 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
       stableRef.current = { value: null, count: 0 };
       setCountdown(null);
       setWeighing(false);
-      // Tente une lecture immédiate pour pré-remplir
+      setPriceEdited(false);
+      setSavePrice(false);
+      setPriceInput(product ? product.price.toFixed(2) : '');
       if (connected) {
         readOnce().catch(() => {});
       }
@@ -92,7 +94,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
       setWeighing(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, connected]);
+  }, [open, connected, product]);
 
   // Synchronise le poids live de la balance dans l'input + détection de stabilité
   useEffect(() => {
