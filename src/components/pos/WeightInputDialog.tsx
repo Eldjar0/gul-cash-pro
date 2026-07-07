@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Scale, Wifi, WifiOff, RefreshCw, Settings2, Zap, Weight } from 'lucide-react';
-import { Product } from '@/hooks/useProducts';
+import { Scale, Wifi, WifiOff, RefreshCw, Settings2, Zap, Weight, Euro, Save } from 'lucide-react';
+import { Product, useUpdateProduct } from '@/hooks/useProducts';
 import { useDibalScale } from '@/hooks/useDibalScale';
 import { DibalCalibrationDialog } from './DibalCalibrationDialog';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ interface WeightInputDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product: Product | null;
-  onConfirm: (weight: number) => void;
+  onConfirm: (weight: number, customPricePerKg?: number) => void;
 }
 
 const AUTO_KEY = 'pos.scale.autoConfirm';
@@ -20,6 +20,10 @@ const STABLE_READINGS = 3;
 const AUTO_CONFIRM_DELAY_MS = 1200;
 
 export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: WeightInputDialogProps) {
+  const updateProduct = useUpdateProduct();
+  const [priceInput, setPriceInput] = useState('');
+  const [priceEdited, setPriceEdited] = useState(false);
+  const [savePrice, setSavePrice] = useState(false);
   const [weight, setWeight] = useState('');
   const [calibOpen, setCalibOpen] = useState(false);
   const [autoConfirm, setAutoConfirm] = useState<boolean>(() => {
@@ -77,7 +81,9 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
       stableRef.current = { value: null, count: 0 };
       setCountdown(null);
       setWeighing(false);
-      // Tente une lecture immédiate pour pré-remplir
+      setPriceEdited(false);
+      setSavePrice(false);
+      setPriceInput(product ? product.price.toFixed(2) : '');
       if (connected) {
         readOnce().catch(() => {});
       }
@@ -88,7 +94,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
       setWeighing(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, connected]);
+  }, [open, connected, product]);
 
   // Synchronise le poids live de la balance dans l'input + détection de stabilité
   useEffect(() => {
@@ -135,7 +141,22 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
     if (timerRef.current) clearTimeout(timerRef.current);
     setCountdown(null);
     if (value && value > 0) {
-      onConfirm(value);
+      const parsedPrice = parseFloat(priceInput);
+      const priceOverride =
+        priceEdited && !isNaN(parsedPrice) && parsedPrice >= 0 && product && parsedPrice !== product.price
+          ? parsedPrice
+          : undefined;
+
+      if (savePrice && priceOverride !== undefined && product) {
+        updateProduct.mutate(
+          { id: product.id, price: priceOverride },
+          {
+            onSuccess: () => toast.success(`Nouveau prix enregistré : ${priceOverride.toFixed(2)}€/kg`),
+          }
+        );
+      }
+
+      onConfirm(value, priceOverride);
       setWeight('');
       onOpenChange(false);
     }
@@ -271,11 +292,68 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
               </div>
             </div>
 
+            <div className="space-y-2 border-t pt-3">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Euro className="h-4 w-4 text-primary" />
+                Prix / kg
+                {priceEdited && (
+                  <span className="text-xs text-amber-600 dark:text-amber-400 font-normal">
+                    (modifié — original {product.price.toFixed(2)}€)
+                  </span>
+                )}
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={priceInput}
+                  onChange={(e) => {
+                    setPriceInput(e.target.value);
+                    setPriceEdited(true);
+                  }}
+                  placeholder="0.00"
+                  className="text-lg font-bold text-center"
+                />
+                {priceEdited && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => {
+                      setPriceInput(product.price.toFixed(2));
+                      setPriceEdited(false);
+                      setSavePrice(false);
+                    }}
+                  >
+                    Réinit.
+                  </Button>
+                )}
+              </div>
+              {priceEdited && (
+                <label className="flex items-center gap-2 text-sm cursor-pointer select-none pt-1">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4"
+                    checked={savePrice}
+                    onChange={(e) => setSavePrice(e.target.checked)}
+                  />
+                  <Save className="h-3.5 w-3.5 text-primary" />
+                  Enregistrer ce nouveau prix pour le produit
+                </label>
+              )}
+              {priceEdited && !savePrice && (
+                <p className="text-xs text-muted-foreground pl-1">
+                  Prix exceptionnel utilisé uniquement pour cette vente.
+                </p>
+              )}
+            </div>
+
             {weight && parseFloat(weight) > 0 && (
               <div className="bg-primary/10 p-3 rounded-lg">
                 <div className="text-sm text-muted-foreground">Total</div>
                 <div className="text-2xl font-bold text-primary">
-                  {(parseFloat(weight) * product.price).toFixed(2)}€
+                  {(parseFloat(weight) * (parseFloat(priceInput) || product.price)).toFixed(2)}€
                 </div>
               </div>
             )}

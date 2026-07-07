@@ -723,7 +723,7 @@ const Index = () => {
   }, [isDayOpenEffective]);
 
   // Handler pour confirmer le poids
-  const handleWeightConfirm = (weight: number) => {
+  const handleWeightConfirm = (weight: number, customPricePerKg?: number) => {
     if (!weightProduct) return;
     
     const maxQuantity = 10000;
@@ -735,18 +735,21 @@ const Index = () => {
         const newCart = [...prevCart];
         const existingItem = newCart[existingItemIndex];
         const newQuantity = existingItem.quantity + validWeight;
-        const totals = calculateItemTotal(weightProduct, newQuantity, existingItem.discount, existingItem.custom_price);
+        const effectivePrice = customPricePerKg ?? existingItem.custom_price;
+        const totals = calculateItemTotal(weightProduct, newQuantity, existingItem.discount, effectivePrice);
         newCart[existingItemIndex] = {
           ...existingItem,
           quantity: newQuantity,
+          custom_price: effectivePrice,
           ...totals
         };
         return newCart;
       } else {
-        const totals = calculateItemTotal(weightProduct, validWeight);
+        const totals = calculateItemTotal(weightProduct, validWeight, undefined, customPricePerKg);
         const newItem: CartItem = {
           product: weightProduct,
           quantity: validWeight,
+          custom_price: customPricePerKg,
           ...totals
         };
         return [...prevCart, newItem];
