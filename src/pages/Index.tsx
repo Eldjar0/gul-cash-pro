@@ -2593,6 +2593,7 @@ const Index = () => {
         open={paymentDialogOpen} 
         onOpenChange={setPaymentDialogOpen} 
         total={totals.total} 
+        mealVoucherEligibleTotal={totals.mealVoucherEligibleTotal}
         onConfirmPayment={handleConfirmPayment} 
         onMixedPayment={() => {
           setPaymentDialogOpen(false);
