@@ -142,6 +142,9 @@ export function Receipt({ sale }: ReceiptProps) {
               <div className="flex justify-between leading-tight">
                 <span className="flex-1 uppercase text-xs font-black tracking-wide">
                   {item.product.name}
+                  {item.product.meal_voucher_eligible !== false && (
+                    <span className="ml-1 border border-black rounded px-0.5 text-[8px] font-black">CR</span>
+                  )}
                   {item.is_gift && <span className="ml-1 text-pink-600">🎁</span>}
                 </span>
               </div>

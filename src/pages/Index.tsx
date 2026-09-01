@@ -1996,6 +1996,7 @@ const Index = () => {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1">
                             <h4 className="text-foreground font-bold text-xs truncate">{item.product.name}</h4>
+                            {item.product.meal_voucher_eligible !== false && <span className="text-[7px] bg-orange-500/15 text-orange-600 border border-orange-400 px-1 py-0.5 rounded font-bold" title="Payable en chèques-repas">CR</span>}
                             {item.is_gift && <span className="text-[7px] bg-gradient-to-r from-pink-500 to-red-500 text-white px-1 py-0.5 rounded-full font-bold">🎁</span>}
                             {item.discount && (
                               <span className="text-[8px] text-accent font-semibold">
