@@ -17,7 +17,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const { user, signIn } = useAuth();
+  const { user, signIn, signInWithPin } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
     if (user) {
