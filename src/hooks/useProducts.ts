@@ -18,6 +18,7 @@ export interface Product {
   supplier?: string;
   image?: string;
   is_active: boolean;
+  meal_voucher_eligible?: boolean;
 }
 
 export const useProducts = () => {
