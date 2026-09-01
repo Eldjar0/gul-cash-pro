@@ -380,6 +380,13 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
                 </div>
               </div>
             )}
+
+            <div className="border rounded-lg p-3 space-y-2">
+              <div className="text-xs text-muted-foreground text-center">
+                Clavier numérique — {activeField === 'weight' ? 'poids' : 'prix / kg'}
+              </div>
+              <VirtualNumericKeypad onKey={handleVirtualKey} />
+            </div>
           </div>
         )}
 
