@@ -356,10 +356,10 @@ export function PaymentDialog({
                   })}
                 </div>
 
-                <Card className="p-3 space-y-2 border-2">
+                <Card className="p-2 sm:p-3 space-y-2 border-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">Montant à ajouter</span>
-                    <span className="text-2xl font-black text-menu-600">
+                    <span className="text-xs sm:text-sm font-semibold">Montant à ajouter</span>
+                    <span className="text-xl sm:text-2xl font-black text-menu-600">
                       {splitAmount ? parseFloat(splitAmount).toFixed(2) : '0.00'}€
                     </span>
                   </div>
@@ -369,7 +369,7 @@ export function PaymentDialog({
                         key={key}
                         onClick={() => handleSplitNumberClick(key)}
                         variant="outline"
-                        className="h-12 text-lg font-bold"
+                        className="h-10 sm:h-12 text-base sm:text-lg font-bold"
                       >
                         {key}
                       </Button>
@@ -378,7 +378,7 @@ export function PaymentDialog({
                   <Button
                     onClick={addSplit}
                     disabled={!splitAmount || parseFloat(splitAmount) <= 0}
-                    className="w-full h-12 font-bold text-base"
+                    className="w-full h-10 sm:h-12 font-bold text-sm sm:text-base"
                   >
                     Ajouter
                   </Button>
@@ -390,7 +390,7 @@ export function PaymentDialog({
               <Button 
                 onClick={handleBack} 
                 variant="outline"
-                className="flex-1 h-12"
+                className="flex-1 h-10 sm:h-12 text-sm sm:text-base"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Retour
@@ -398,7 +398,7 @@ export function PaymentDialog({
               <Button
                 onClick={handleConfirmMixed}
                 disabled={getRemaining() > 0}
-                className="flex-1 h-12 font-bold text-lg"
+                className="flex-1 h-10 sm:h-12 font-bold text-base sm:text-lg"
               >
                 Valider
               </Button>
@@ -488,7 +488,7 @@ export function PaymentDialog({
                       key={key}
                       onClick={() => handleNumberClick(key)}
                       variant="outline"
-                      className="h-11 text-lg font-bold"
+                      className="h-10 sm:h-11 text-base sm:text-lg font-bold"
                     >
                       {key}
                     </Button>
@@ -499,7 +499,7 @@ export function PaymentDialog({
                   <Button 
                     onClick={handleBack} 
                     variant="outline"
-                    className="flex-1 h-10"
+                    className="flex-1 h-10 text-sm sm:text-base"
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Retour
@@ -507,7 +507,7 @@ export function PaymentDialog({
                   <Button
                     onClick={handleConfirm}
                     disabled={!amountPaid || parseFloat(amountPaid) < roundedTotal}
-                    className="flex-1 h-10 font-bold text-base"
+                    className="flex-1 h-10 font-bold text-sm sm:text-base"
                   >
                     Valider
                   </Button>
