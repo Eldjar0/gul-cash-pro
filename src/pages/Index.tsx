@@ -11,6 +11,7 @@ import logoHeader from '@/assets/logo-gul-reyhan-header.png';
 import { CategoryGrid } from '@/components/pos/CategoryGrid';
 import { PaymentDialog } from '@/components/pos/PaymentDialog';
 import { MixedPaymentDialog } from '@/components/pos/MixedPaymentDialog';
+import { QuickProductEditDialog } from '@/components/pos/QuickProductEditDialog';
 import { DiscountDialog } from '@/components/pos/DiscountDialog';
 import { PromoCodeDialog } from '@/components/pos/PromoCodeDialog';
 import { CustomerDialog } from '@/components/pos/CustomerDialog';
@@ -250,6 +251,8 @@ const Index = () => {
   const [heldTicketsSheetOpen, setHeldTicketsSheetOpen] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [mixedPaymentDialogOpen, setMixedPaymentDialogOpen] = useState(false);
+  const [quickEditOpen, setQuickEditOpen] = useState(false);
+  const [quickEditProduct, setQuickEditProduct] = useState<any>(null);
   const [customerCreditDialogOpen, setCustomerCreditDialogOpen] = useState(false);
   const [cancelCartDialogOpen, setCancelCartDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -399,12 +402,26 @@ const Index = () => {
     }
     
     const totalDiscount = itemDiscounts + globalDiscountAmount + promoCodeAmount + autoPromotionAmount;
+    const finalTotal = Math.max(0, total);
+
+    // Montant payable en chèques-repas (produits alimentaires éligibles)
+    const rawItemsTotal = cart.reduce((sum, item) => sum + item.total, 0);
+    const eligibleItemsTotal = cart.reduce(
+      (sum, item) => sum + (item.product?.meal_voucher_eligible !== false ? item.total : 0),
+      0
+    );
+    // Proportionnel après remises globales
+    const ratio = rawItemsTotal > 0 ? finalTotal / rawItemsTotal : 0;
+    const mealVoucherEligibleTotal = Math.min(finalTotal, Math.round(eligibleItemsTotal * ratio * 100) / 100);
+
     return {
       subtotal,
       totalVat,
       totalDiscount,
-      total: Math.max(0, total),
-      autoPromotionAmount
+      total: finalTotal,
+      autoPromotionAmount,
+      mealVoucherEligibleTotal,
+      mealVoucherNonEligibleTotal: Math.max(0, Math.round((finalTotal - mealVoucherEligibleTotal) * 100) / 100)
     };
   }, [cart, globalDiscount, appliedPromoCode, appliedAutoPromotion, selectedCustomer]);
 
@@ -1087,7 +1104,7 @@ const Index = () => {
     });
     toast.success(newIsGift ? 'Article offert' : 'Cadeau annulé');
   };
-  const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check', amountPaid?: number, metadata?: any) => {
+  const handleConfirmPayment = async (method: 'cash' | 'card' | 'mobile' | 'gift_card' | 'customer_credit' | 'check' | 'meal_voucher', amountPaid?: number, metadata?: any) => {
     // 1. Vérification panier uniquement
     if (cart.length === 0) {
       toast.error('Panier vide');
@@ -1110,7 +1127,7 @@ const Index = () => {
     
     // Map payment methods to DB enum types
     let dbPaymentMethod: 'cash' | 'card' | 'mobile' | 'check' | 'voucher' = 'cash';
-    if (method === 'customer_credit' || method === 'gift_card') {
+    if (method === 'customer_credit' || method === 'gift_card' || method === 'meal_voucher') {
       dbPaymentMethod = 'voucher';
     } else {
       dbPaymentMethod = method as 'cash' | 'card' | 'mobile' | 'check';
@@ -2507,7 +2524,7 @@ const Index = () => {
                 </h2>
                 <div className="flex-1 overflow-hidden flex flex-col gap-2">
                   <div className="flex-1 overflow-hidden">
-                    <CategoryGrid onProductSelect={handleProductSelect} onCategorySelect={setSelectedCategory} selectedCategory={selectedCategory} />
+                    <CategoryGrid onProductSelect={handleProductSelect} onProductLongPress={(p) => { setQuickEditProduct(p); setQuickEditOpen(true); }} onCategorySelect={setSelectedCategory} selectedCategory={selectedCategory} />
                   </div>
                   
                   {/* Historique des scans */}
@@ -2585,7 +2602,9 @@ const Index = () => {
         customerId={selectedCustomer?.id}
       />
 
-      <MixedPaymentDialog open={mixedPaymentDialogOpen} onOpenChange={setMixedPaymentDialogOpen} total={totals.total} onConfirmPayment={handleMixedPayment} customerId={selectedCustomer?.id} />
+      <QuickProductEditDialog open={quickEditOpen} onOpenChange={setQuickEditOpen} product={quickEditProduct} />
+
+      <MixedPaymentDialog open={mixedPaymentDialogOpen} onOpenChange={setMixedPaymentDialogOpen} total={totals.total} mealVoucherEligibleTotal={totals.mealVoucherEligibleTotal} onConfirmPayment={handleMixedPayment} customerId={selectedCustomer?.id} />
 
       <SavedCartsDialog open={savedCartsDialogOpen} onOpenChange={setSavedCartsDialogOpen} currentCart={cart} onLoadCart={handleLoadCart} />
 
