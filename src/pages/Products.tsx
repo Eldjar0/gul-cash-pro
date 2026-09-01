@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { ProductBarcodesManager } from '@/components/products/ProductBarcodesManager';
 import { Label } from '@/components/ui/label';
 import {
   Dialog,
@@ -683,6 +684,11 @@ export default function Products() {
                   placeholder="Ex: 3760123456789"
                 />
               </div>
+              {editingProduct && (
+                <div className="col-span-2 rounded-lg border p-3 bg-muted/20">
+                  <ProductBarcodesManager productId={editingProduct.id} />
+                </div>
+              )}
               <div className="col-span-2 md:col-span-1">
                 <Label htmlFor="name">Nom *</Label>
                 <Input
