@@ -182,6 +182,30 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
     }
   };
 
+  const handleVirtualKey = (key: string) => {
+    const updateDecimal = (prev: string, maxDecimals: number) => {
+      if (key === 'C') return '';
+      if (key === '←') return prev.slice(0, -1);
+      if (key === ',' || key === '.') {
+        if (prev.includes('.')) return prev;
+        return prev === '' ? '0.' : prev + '.';
+      }
+      // Limite les décimales
+      const parts = prev.split('.');
+      if (parts.length === 2 && parts[1].length >= maxDecimals) return prev;
+      return prev + key;
+    };
+
+    if (activeField === 'weight') {
+      setWeight((prev) => updateDecimal(prev, 3));
+      userEditedRef.current = true;
+      cancelAuto();
+    } else {
+      setPriceInput((prev) => updateDecimal(prev, 2));
+      setPriceEdited(true);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
