@@ -17,36 +17,8 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const { user, signIn } = useAuth();
+  const { user, signIn, signInWithPin } = useAuth();
   const navigate = useNavigate();
-  const [isSettingUp, setIsSettingUp] = useState(false);
-
-  const handleSetupAdmin = async () => {
-    setIsSettingUp(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('setup-admin');
-      if (error) throw error;
-      
-      const responseData = data as { password: string };
-      toast.success('Compte admin créé', {
-        description: `⚠️ CHANGEZ CE MOT DE PASSE IMMÉDIATEMENT !`,
-        duration: 10000
-      });
-      
-      // Show password in a separate alert that user must acknowledge
-      alert(`COMPTE ADMIN CRÉÉ\n\nIdentifiant: admin@system.local\nMot de passe: ${responseData.password}\n\n⚠️ IMPORTANT: Notez ce mot de passe et changez-le immédiatement après connexion !`);
-      
-      setEmail('admin');
-      setPassword(responseData.password);
-    } catch (err) {
-      toast.error('Échec de la configuration', {
-        description: err instanceof Error ? err.message : 'Une erreur est survenue'
-      });
-    } finally {
-      setIsSettingUp(false);
-    }
-  };
-
   useEffect(() => {
     if (user) {
       if (Capacitor.isNativePlatform()) {
@@ -60,11 +32,23 @@ export default function Auth() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Convertir l'identifiant en email pour Supabase
-    const loginEmail = email.toLowerCase() === 'admin' 
-      ? 'admin@system.local' 
-      : email;
-    await signIn(loginEmail, password);
+    const identifier = email.toLowerCase().trim();
+
+    // Si l'identifiant n'est pas un email et que le code est court (PIN), utiliser la connexion par code PIN
+    const isEmail = identifier.includes('@');
+    const isPin = /^\d{4,6}$/.test(password.trim());
+    if (!isEmail && isPin) {
+      await signInWithPin(identifier, password.trim());
+    } else {
+      // Convertir l'identifiant en email pour Supabase
+      let loginEmail = email;
+      if (identifier === 'admin') {
+        loginEmail = 'admin@system.local';
+      } else if (identifier === 'jlprod') {
+        loginEmail = 'jlprod@system.local';
+      }
+      await signIn(loginEmail, password);
+    }
     setIsLoading(false);
   };
 
@@ -142,22 +126,6 @@ export default function Auth() {
                 className="w-full text-sm text-muted-foreground hover:text-primary"
               >
                 Mot de passe ou identifiant oublié ?
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSetupAdmin}
-                className="w-full"
-                disabled={isSettingUp}
-              >
-                {isSettingUp ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Configuration en cours...
-                  </>
-                ) : (
-                  'Créer/Restaurer le compte admin'
-                )}
               </Button>
             </form>
           )}

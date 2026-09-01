@@ -8,6 +8,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithPin: (username: string, pin: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -54,6 +55,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null };
   };
 
+  const signInWithPin = async (username: string, pin: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('pin-login', {
+        body: { username, pin },
+      });
+
+      if (error) throw error;
+      if (!data?.success || !data?.otp || !data?.email) {
+        throw new Error(data?.error || 'Échec de la connexion par code PIN');
+      }
+
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: data.email,
+        token: data.otp,
+        type: 'email',
+      });
+
+      if (verifyError) {
+        toast({
+          title: 'Erreur de connexion',
+          description: verifyError.message,
+          variant: 'destructive',
+        });
+        return { error: verifyError };
+      }
+
+      return { error: null };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erreur lors de la connexion';
+      toast({
+        title: 'Erreur de connexion',
+        description: message,
+        variant: 'destructive',
+      });
+      return { error: err };
+    }
+  };
+
   const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
@@ -97,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signInWithPin, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
