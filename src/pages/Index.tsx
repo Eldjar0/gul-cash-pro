@@ -2421,7 +2421,8 @@ const Index = () => {
                           totalVat: sale.total_vat,
                           totalDiscount: sale.total_discount,
                           total: sale.total,
-                          paymentMethod: sale.payment_method,
+                          paymentMethod: sale.payment_split && Object.keys(sale.payment_split).length > 1 ? 'mixed' : sale.payment_method,
+                          payment_split: sale.payment_split || undefined,
                           amountPaid: sale.amount_paid,
                           change: sale.change_amount,
                           customer: sale.customers ? {
