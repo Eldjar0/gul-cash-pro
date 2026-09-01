@@ -274,23 +274,61 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
               Entrez le code PIN pour accéder à cette section
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <Input
-              type="password"
-              inputMode="numeric"
-              placeholder="Entrez le code (4 chiffres)"
-              value={pinCode}
-              onChange={(e) => setPinCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && pinCode.length === 4) {
-                  handlePinSubmit();
-                }
-              }}
-              className="text-center text-2xl tracking-widest"
-              maxLength={4}
-              autoFocus
-            />
+          <div className="space-y-4 py-2">
+            {/* Affichage du code */}
+            <div className="flex justify-center gap-2">
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className={`w-12 h-14 rounded-lg border-2 flex items-center justify-center text-2xl font-bold ${
+                    pinCode.length > i ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted border-border'
+                  }`}
+                >
+                  {pinCode.length > i ? '●' : ''}
+                </div>
+              ))}
+            </div>
+
+            {/* Pavé numérique intégré */}
+            <div className="grid grid-cols-3 gap-2">
+              {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
+                <Button
+                  key={num}
+                  type="button"
+                  variant="outline"
+                  className="h-14 text-2xl font-bold"
+                  onClick={() => setPinCode((p) => (p.length < 4 ? p + num : p))}
+                >
+                  {num}
+                </Button>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                className="h-14 text-base font-semibold"
+                onClick={() => setPinCode('')}
+              >
+                Effacer
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-14 text-2xl font-bold"
+                onClick={() => setPinCode((p) => (p.length < 4 ? p + '0' : p))}
+              >
+                0
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-14 text-base font-semibold"
+                onClick={() => setPinCode((p) => p.slice(0, -1))}
+              >
+                ←
+              </Button>
+            </div>
           </div>
+
           <DialogFooter className="flex gap-2">
             <Button
               variant="outline"
