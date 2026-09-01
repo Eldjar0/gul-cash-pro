@@ -247,7 +247,7 @@ const CustomerDisplay = () => {
             
             <div className="mt-6 relative">
               <div className="absolute inset-0 bg-primary blur-2xl opacity-40 animate-pulse-soft"></div>
-              <h1 className="relative text-8xl font-black tracking-tight animate-scale-in drop-shadow-2xl bg-primary bg-[length:200%_auto] animate-gradient-slide text-transparent bg-clip-text" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
+              <h1 className="relative text-8xl font-black tracking-tight animate-scale-in drop-shadow-2xl text-primary" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
                 Bienvenue
               </h1>
             </div>
@@ -258,7 +258,7 @@ const CustomerDisplay = () => {
             <p className="text-3xl font-black text-primary drop-shadow-lg">
               Veuillez patienter
             </p>
-            <p className="text-2xl font-bold bg-accent text-transparent bg-clip-text">
+            <p className="text-2xl font-bold text-accent">
               Un collaborateur va prendre votre commande
             </p>
           </div>

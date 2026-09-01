@@ -88,7 +88,7 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl bg-[#0a0a0a] border-2 border-pos-success/30">
+      <DialogContent className="max-w-4xl border-2 border-pos-success/30">
         <DialogHeader>
           <DialogTitle className="text-pos-success font-mono text-2xl">PAIEMENT MIXTE</DialogTitle>
           <p className="text-white text-3xl font-bold font-mono mt-2">TOTAL: {total.toFixed(2)}€</p>
@@ -112,7 +112,7 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
                     const info = getMethodInfo(split.method);
                     const Icon = info?.icon;
                     return (
-                      <div key={index} className="flex items-center justify-between bg-[#2a2a2a] p-3 rounded">
+                      <div key={index} className="flex items-center justify-between p-3 rounded">
                         <div className="flex items-center gap-2">
                           {Icon && <Icon className={`h-5 w-5 ${info?.color}`} />}
                           <span className="text-white font-mono">{info?.label}</span>
@@ -250,7 +250,7 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
               setAmount('');
               onOpenChange(false);
             }}
-            className="flex-1 h-14 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono"
+            className="flex-1 h-14 hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono"
           >
             ANNULER
           </Button>
