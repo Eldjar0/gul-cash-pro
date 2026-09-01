@@ -167,7 +167,7 @@ export default function Products() {
         type: 'unit',
         unit: 'pièce',
         category_id: '',
-        vat_rate: '21',
+        vat_rate: '6',
         stock: '',
         min_stock: '',
         supplier: '',
