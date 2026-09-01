@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     }
 
     // Créer le compte jlprod
-    const password = '1234';
+    const password = '123456';
     const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: 'jlprod@system.local',
       password,
