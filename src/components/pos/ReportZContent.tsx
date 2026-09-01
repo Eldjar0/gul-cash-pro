@@ -106,6 +106,12 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
           <span>Paiement mobile:</span>
           <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalMobile.toFixed(2)}€</span>
         </div>
+        {reportData.otherPayments?.map(p => (
+          <div key={p.method} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginTop: '2px' }}>
+            <span>{p.label}:</span>
+            <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{p.amount.toFixed(2)}€</span>
+          </div>
+        ))}
       </div>
 
       <div style={{ borderTop: '2px solid #000', margin: '8px 0' }}></div>
@@ -238,6 +244,9 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
             <div style={{ marginBottom: '1px' }}>Espèces: <strong>{reportData.totalCash.toFixed(2)}€</strong></div>
             <div style={{ marginBottom: '1px' }}>Carte: <strong>{reportData.totalCard.toFixed(2)}€</strong></div>
             <div style={{ marginBottom: '1px' }}>Mobile: <strong>{reportData.totalMobile.toFixed(2)}€</strong></div>
+            {reportData.otherPayments?.map(p => (
+              <div key={p.method} style={{ marginBottom: '1px' }}>{p.label}: <strong>{p.amount.toFixed(2)}€</strong></div>
+            ))}
           </div>
           <div style={{ borderTop: '1px dashed #ccc', paddingTop: '2px', marginTop: '2px' }}>
             {Object.entries(reportData.vatByRate)
@@ -285,6 +294,7 @@ export function ReportZContent({ reportData, todayReport, closingAmount, differe
             reportData.totalCash.toFixed(2),
             reportData.totalCard.toFixed(2),
             reportData.totalMobile.toFixed(2),
+            (reportData.otherPayments || []).map(p => `${p.label}:${p.amount.toFixed(2)}`).join('|'),
             Object.entries(reportData.vatByRate).map(([rate, amounts]) => 
               `${rate}:${amounts.totalHT.toFixed(2)}:${amounts.totalVAT.toFixed(2)}`
             ).join('|')
