@@ -293,19 +293,16 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
               </label>
               <div className="flex gap-2">
                 <Input
-                  type="number"
-                  step="0.001"
-                  min="0.001"
+                  type="text"
+                  inputMode="none"
+                  readOnly
                   value={weight}
-                  onChange={(e) => {
-                    userEditedRef.current = true;
-                    cancelAuto();
-                    setWeight(e.target.value);
-                  }}
-                  onKeyPress={handleKeyPress}
+                  onFocus={() => setActiveField('weight')}
                   placeholder="0.000"
                   autoFocus
-                  className="text-lg font-bold text-center"
+                  className={`text-lg font-bold text-center cursor-pointer ${
+                    activeField === 'weight' ? 'ring-2 ring-primary' : ''
+                  }`}
                 />
                 <Button
                   variant="outline"
