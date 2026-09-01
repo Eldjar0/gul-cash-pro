@@ -147,7 +147,7 @@ export function PaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl bg-background border-2 !mt-0 !top-32 translate-y-0 max-h-[85vh] overflow-x-hidden overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl bg-background border-2 !left-1/2 !top-32 !-translate-x-1/2 !translate-y-0 max-h-[calc(100vh-9rem)] overflow-x-hidden overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Mode de Paiement</DialogTitle>
           <DialogDescription className="sr-only">
