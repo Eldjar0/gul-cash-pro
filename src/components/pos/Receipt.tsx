@@ -244,10 +244,18 @@ export function Receipt({ sale }: ReceiptProps) {
             // Paiement simple
             <div className="flex justify-between">
               <span className="font-black">
-                {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
-                 (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE BANCAIRE' : 
-                 (sale.paymentMethod || sale.payment_method) === 'customer_credit' ? 'CRÉDIT' :
-                 'PAIEMENT MOBILE'}
+                {(() => {
+                  const m = sale.paymentMethod || sale.payment_method;
+                  return m === 'cash' ? 'ESPECES' :
+                   m === 'card' ? 'CARTE BANCAIRE' :
+                   m === 'customer_credit' ? 'CRÉDIT CLIENT' :
+                   m === 'mobile' ? 'PAIEMENT MOBILE' :
+                   m === 'check' ? 'CHÈQUE' :
+                   m === 'meal_voucher' ? 'CHÈQUES-REPAS' :
+                   m === 'voucher' ? 'CHÈQUES-REPAS' :
+                   m === 'gift_card' ? 'CARTE CADEAU' :
+                   'PAIEMENT';
+                })()}
               </span>
               <span className="font-black">{sale.total.toFixed(2)}€</span>
             </div>
