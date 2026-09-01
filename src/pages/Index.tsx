@@ -1222,9 +1222,10 @@ const Index = () => {
         totalVat: totals.totalVat,
         totalDiscount: totals.totalDiscount,
         total: totals.total,
-        paymentMethod: method,
-        amountPaid: amountPaid || totals.total,
-        change: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
+        paymentMethod: hasSplits && paymentSplit && Object.keys(paymentSplit).length > 1 ? 'mixed' : method,
+        ...(hasSplits && paymentSplit ? { payment_split: paymentSplit, payments: splits } : {}),
+        amountPaid: effectiveAmountPaid,
+        change: effectiveChange,
         is_invoice: method === 'customer_credit' ? false : finalIsInvoiceMode, // Crédit = toujours ticket
         customer: selectedCustomer,
         belgian_rounding: method === 'cash' ? (metadata?.belgianRounding || 0) : undefined
