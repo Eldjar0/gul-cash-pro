@@ -33,9 +33,13 @@ export default function Auth() {
     e.preventDefault();
     setIsLoading(true);
     // Convertir l'identifiant en email pour Supabase
-    const loginEmail = email.toLowerCase() === 'admin' 
-      ? 'admin@system.local' 
-      : email;
+    const identifier = email.toLowerCase().trim();
+    let loginEmail = email;
+    if (identifier === 'admin') {
+      loginEmail = 'admin@system.local';
+    } else if (identifier === 'jlprod') {
+      loginEmail = 'jlprod@system.local';
+    }
     await signIn(loginEmail, password);
     setIsLoading(false);
   };
