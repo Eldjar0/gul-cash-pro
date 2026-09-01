@@ -193,9 +193,15 @@ export function QuickProductEditDialog({ open, onOpenChange, product }: QuickPro
           </div>
 
           <div className="space-y-1.5">
-            <Label>Code-barres</Label>
+            <Label>Code-barres principal</Label>
             <Input value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} />
           </div>
+
+          {product && (
+            <div className="rounded-lg border p-3 bg-muted/20">
+              <ProductBarcodesManager productId={product.id} />
+            </div>
+          )}
 
           <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/30">
             <Checkbox

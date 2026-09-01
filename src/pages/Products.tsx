@@ -683,6 +683,11 @@ export default function Products() {
                   placeholder="Ex: 3760123456789"
                 />
               </div>
+              {editingProduct && (
+                <div className="col-span-2 rounded-lg border p-3 bg-muted/20">
+                  <ProductBarcodesManager productId={editingProduct.id} />
+                </div>
+              )}
               <div className="col-span-2 md:col-span-1">
                 <Label htmlFor="name">Nom *</Label>
                 <Input
