@@ -154,6 +154,7 @@ const Index = () => {
   
   const { loadCart, saveCart, loadCustomer, saveCustomer, loadInvoiceMode, saveInvoiceMode } = useCartPersistence();
   const [cart, setCart] = useState<CartItem[]>(() => loadCart());
+  const [lastAddedProductId, setLastAddedProductId] = useState<string | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
