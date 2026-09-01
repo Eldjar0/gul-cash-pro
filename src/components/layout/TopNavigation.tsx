@@ -20,7 +20,6 @@ import logoHeader from '@/assets/logo-gul-reyhan-header.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { RemoteScanDialog } from '@/components/pos/RemoteScanDialog';
 import { useState } from 'react';
-import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
