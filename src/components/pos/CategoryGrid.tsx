@@ -117,7 +117,6 @@ export function CategoryGrid({ onProductSelect, onProductLongPress, onCategorySe
                       onProductLongPress?.(product);
                     }}
                     className="min-h-[6rem] h-auto flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10 relative overflow-hidden"
-                    disabled={product.stock <= 0}
                   >
                     {product.image ? (
                       <div className="w-full h-16 relative mb-1">
