@@ -405,6 +405,9 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                    method === 'card' ? 'Carte' : 
                    method === 'customer_credit' ? 'Crédit' :
                    method === 'mobile' ? 'Mobile' :
+                   method === 'meal_voucher' ? 'Chèques-repas' :
+                   method === 'voucher' ? 'Chèques-repas' :
+                   method === 'gift_card' ? 'Carte cadeau' :
                    method === 'check' ? 'Chèque' : method}
                 </span>
                 <span style={{ whiteSpace: 'nowrap' }}>{amount.toFixed(2)}€</span>

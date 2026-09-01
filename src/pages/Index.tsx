@@ -1426,7 +1426,14 @@ const Index = () => {
         totalDiscount: totals.totalDiscount,
         total: totals.total,
         paymentMethod: 'mixed',
-        payments: payments
+        payments: payments,
+        payment_split: payments.reduce((acc, p) => ({
+          ...acc,
+          [p.method]: (acc[p.method] || 0) + p.amount
+        }), {} as Record<string, number>),
+        amountPaid: totalPaid,
+        change: changeAmount,
+        belgian_rounding: payments.some(p => p.method === 'cash') ? (payments.find(p => p.method === 'cash') as any)?.belgianRounding : undefined
       };
       setCurrentSale(saleForReceipt);
       
@@ -2414,7 +2421,8 @@ const Index = () => {
                           totalVat: sale.total_vat,
                           totalDiscount: sale.total_discount,
                           total: sale.total,
-                          paymentMethod: sale.payment_method,
+                          paymentMethod: sale.payment_split && Object.keys(sale.payment_split).length > 1 ? 'mixed' : sale.payment_method,
+                          payment_split: sale.payment_split || undefined,
                           amountPaid: sale.amount_paid,
                           change: sale.change_amount,
                           customer: sale.customers ? {
