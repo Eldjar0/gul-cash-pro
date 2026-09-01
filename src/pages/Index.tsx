@@ -154,6 +154,7 @@ const Index = () => {
   
   const { loadCart, saveCart, loadCustomer, saveCustomer, loadInvoiceMode, saveInvoiceMode } = useCartPersistence();
   const [cart, setCart] = useState<CartItem[]>(() => loadCart());
+  const [lastAddedProductId, setLastAddedProductId] = useState<string | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [printConfirmDialogOpen, setPrintConfirmDialogOpen] = useState(false);
@@ -697,6 +698,7 @@ const Index = () => {
     if (product.stock !== undefined && product.stock <= 0) {
       toast.warning(`Stock épuisé pour ${product.name} — pensez à mettre à jour le stock.`);
     }
+    setLastAddedProductId(product.id);
   }, [quantityInput, isDayOpenEffective, openDay, selectedCustomer]);
 
   // Ajout rapide d'un produit libre au panier
@@ -740,6 +742,7 @@ const Index = () => {
     };
 
     setCart(prev => [newItem, ...prev]);
+    setLastAddedProductId(quickProduct.id);
     return true;
   }, [isDayOpenEffective]);
 
@@ -785,6 +788,7 @@ const Index = () => {
     if (weightProduct.stock !== undefined && weightProduct.stock <= 0) {
       toast.warning(`Stock épuisé pour ${weightProduct.name} — pensez à mettre à jour le stock.`);
     }
+    setLastAddedProductId(weightProduct.id);
   };
 
   // Handler pour confirmer un prix saisi (produit sans prix)
@@ -840,6 +844,7 @@ const Index = () => {
     if (updatedProduct.stock !== undefined && updatedProduct.stock <= 0) {
       toast.warning(`Stock épuisé pour ${updatedProduct.name} — pensez à mettre à jour le stock.`);
     }
+    setLastAddedProductId(updatedProduct.id);
   };
 
   const handlePhysicalScan = (raw: string) => {
@@ -1991,7 +1996,7 @@ const Index = () => {
                 </div>
                 <p className="text-muted-foreground font-medium text-[10px]">Panier vide</p>
               </div> : <div className="space-y-1">
-                {cart.map((item, index) => <div key={index} className="bg-white border border-border p-1.5 rounded-lg transition-all">
+                {cart.map((item, index) => <div key={index} className={`p-1.5 rounded-lg transition-all ${item.product.id === lastAddedProductId ? 'bg-primary/5 border border-primary/20' : 'bg-white border border-border'}`}>
                     {/* Ligne 1: Nom + Prix */}
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <div className="flex items-center gap-1.5 flex-1 min-w-0">
