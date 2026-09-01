@@ -28,6 +28,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import JSZip from 'jszip';
 import { COMPANY_INFO } from '@/data/company';
+import { getSalePaymentAmounts, formatSalePayments, PAYMENT_METHOD_TICKET_LABELS } from '@/lib/paymentUtils';
 import logoMarket from '@/assets/logo-market.png';
 
 interface CloseDayDialogProps {
@@ -92,7 +93,27 @@ function generateTicketHTML(sale: any): string {
     <div style="border-top: 1.4px dashed #000; margin: 6px 0;"></div>
   ` : '';
 
-  const paymentHTML = sale.payment_method === 'cash' && sale.amount_paid ? `
+  // Répartition exacte des paiements (payment_split, repli sur payment_method)
+  const paymentAmounts = getSalePaymentAmounts(sale as any);
+  const paymentEntries = Object.entries(paymentAmounts);
+  const hasCash = 'cash' in paymentAmounts;
+  const isMixed = paymentEntries.length > 1;
+
+  const paymentsDetailHTML = isMixed
+    ? paymentEntries.map(([m, a]) => `
+    <div style="display: flex; justify-content: space-between; font-weight: 900; margin-bottom: 2px; gap: 3px;">
+      <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">${PAYMENT_METHOD_TICKET_LABELS[m] || 'PAIEMENT'}</span>
+      <span style="white-space: nowrap;">${a.toFixed(2)}€</span>
+    </div>`).join('')
+    : `
+    <div style="display: flex; justify-content: space-between; font-weight: 900; margin-bottom: 2px; gap: 3px;">
+      <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">
+        ${PAYMENT_METHOD_TICKET_LABELS[paymentEntries[0]?.[0] || 'unknown'] || 'PAIEMENT'}
+      </span>
+      <span style="white-space: nowrap;">${parseFloat(sale.total).toFixed(2)}€</span>
+    </div>`;
+
+  const paymentHTML = hasCash && sale.amount_paid ? `
     <div style="display: flex; justify-content: space-between; font-size: 12.3px; gap: 3px;">
       <span>Reçu</span>
       <span style="white-space: nowrap;">${parseFloat(sale.amount_paid).toFixed(2)}€</span>
@@ -190,12 +211,10 @@ function generateTicketHTML(sale: any): string {
         </div>
 
         <div style="font-size: 13.7px; margin-top: 6px; margin-bottom: 6px; font-weight: 900; padding-right: 24px;">
-          <div style="display: flex; justify-content: space-between; font-weight: 900; margin-bottom: 2px; gap: 3px;">
-            <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">
-              ${sale.payment_method === 'cash' ? 'ESPECES' : sale.payment_method === 'card' ? 'CARTE' : 'PAIEMENT'}
-            </span>
-            <span style="white-space: nowrap;">${parseFloat(sale.total).toFixed(2)}€</span>
-          </div>
+          ${isMixed ? `
+          <div style="font-weight: 900; margin-bottom: 2px;">PAIEMENT MIXTE</div>
+          ` : ''}
+          ${paymentsDetailHTML}
           ${paymentHTML}
         </div>
 
@@ -281,7 +300,7 @@ async function exportAndArchiveSales() {
       const status = sale.is_cancelled ? 'ANNULÉE' : 'Valide';
       
       csvRows.push(
-        `${sale.sale_number};${new Date(sale.date).toLocaleString('fr-BE')};${type};${customer};${items};${sale.subtotal.toFixed(2)};${sale.total_vat.toFixed(2)};${sale.total.toFixed(2)};${sale.payment_method};${status}`
+        `${sale.sale_number};${new Date(sale.date).toLocaleString('fr-BE')};${type};${customer};${items};${sale.subtotal.toFixed(2)};${sale.total_vat.toFixed(2)};${sale.total.toFixed(2)};${formatSalePayments(sale as any)};${status}`
       );
     });
 
