@@ -113,6 +113,8 @@ export const useCreateSale = () => {
           total_discount: saleData.total_discount,
           total: saleData.total,
           payment_method: saleData.payment_method,
+          payment_methods: (saleData as any).payment_methods ?? null,
+          payment_split: (saleData as any).payment_split ?? null,
           amount_paid: saleData.amount_paid,
           change_amount: saleData.change_amount,
           is_invoice: saleData.is_invoice,
