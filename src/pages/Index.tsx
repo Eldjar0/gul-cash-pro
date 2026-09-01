@@ -2159,15 +2159,15 @@ const Index = () => {
                 type: 'global'
               });
               setDiscountDialogOpen(true);
-            }} disabled={cart.length === 0} className="h-6 text-[9px] border-accent text-accent hover:bg-accent/10">
+            }} disabled={cart.length === 0} className="h-6 text-[9px] bg-accent text-accent-foreground border-accent hover:bg-accent/80">
                 <Percent className="mr-0.5 h-2.5 w-2.5" />
                 Remise
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setPromoDialogOpen(true)} disabled={cart.length === 0} className="h-6 text-[9px] border-primary text-primary hover:bg-primary/10">
+              <Button variant="outline" size="sm" onClick={() => setPromoDialogOpen(true)} disabled={cart.length === 0} className="h-6 text-[9px] bg-primary text-primary-foreground border-primary hover:bg-primary/80">
                 <Ticket className="mr-0.5 h-2.5 w-2.5" />
                 Code
               </Button>
-              <Button variant="outline" size="sm" onClick={handlePreviewReceipt} disabled={cart.length === 0} className="h-6 text-[9px] border-muted-foreground text-muted-foreground hover:bg-muted/50">
+              <Button variant="outline" size="sm" onClick={handlePreviewReceipt} disabled={cart.length === 0} className="h-6 text-[9px] bg-secondary text-secondary-foreground border-border hover:bg-secondary/80">
                 <Eye className="mr-0.5 h-2.5 w-2.5" />
                 Aperçu
               </Button>
