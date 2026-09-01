@@ -6,6 +6,18 @@ import { Product } from '@/hooks/useProducts';
 import { Package, ArrowLeft, ImageIcon } from 'lucide-react';
 import { useRef } from 'react';
 
+// Convertit une couleur hex en version pastel (mélangée au blanc)
+function toPastel(hex: string, amount = 0.62): string {
+  const clean = hex.replace('#', '');
+  if (clean.length !== 6) return hex;
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * amount);
+  const toHex = (c: number) => c.toString(16).padStart(2, '0');
+  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
+}
+
 interface CategoryGridProps {
   onProductSelect: (product: Product) => void;
   onProductLongPress?: (product: Product) => void;
@@ -51,9 +63,9 @@ export function CategoryGrid({ onProductSelect, onProductLongPress, onCategorySe
               <Button
                 key={category.id}
                 onClick={() => onCategorySelect(category.id)}
-                className="min-h-[5rem] h-auto flex flex-col items-center justify-center gap-2 p-3 text-white font-semibold transition-all hover:brightness-110"
+                className="min-h-[5rem] h-auto flex flex-col items-center justify-center gap-2 p-3 text-slate-700 font-semibold transition-all hover:brightness-95"
                 style={{ 
-                  backgroundColor: category.color,
+                  backgroundColor: toPastel(category.color),
                   borderColor: category.color,
                   borderWidth: '2px'
                 }}
@@ -80,8 +92,8 @@ export function CategoryGrid({ onProductSelect, onProductLongPress, onCategorySe
           
           {selectedCategoryData && (
             <div 
-              className="p-3 rounded-lg text-white font-semibold"
-              style={{ backgroundColor: selectedCategoryData.color }}
+              className="p-3 rounded-lg text-slate-700 font-semibold border-2"
+              style={{ backgroundColor: toPastel(selectedCategoryData.color), borderColor: selectedCategoryData.color }}
             >
               <div className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
