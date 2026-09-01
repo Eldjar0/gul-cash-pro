@@ -266,12 +266,9 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
   
-  /* Gradient text */
+  /* Solid primary text */
   .gradient-text {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: hsl(var(--primary));
   }
   
   /* Smooth transitions */
