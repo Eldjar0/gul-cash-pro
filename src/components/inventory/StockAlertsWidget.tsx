@@ -50,10 +50,10 @@ export function StockAlertsWidget() {
   }
 
   return (
-    <Card className="border-orange-500/50">
+    <Card className="border-menu-500/50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-orange-500" />
+          <AlertTriangle className="h-5 w-5 text-menu-500" />
           Alertes Stock
           <Badge variant="destructive" className="ml-auto">{totalAlerts}</Badge>
         </CardTitle>
@@ -84,7 +84,7 @@ export function StockAlertsWidget() {
 
         {lowStockProducts.length > 0 && (
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-orange-600 font-medium">
+            <div className="flex items-center gap-2 text-menu-600 font-medium">
               <AlertTriangle className="h-4 w-4" />
               Stock faible ({lowStockProducts.length})
             </div>

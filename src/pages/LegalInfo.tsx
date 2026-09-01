@@ -243,7 +243,7 @@ export default function LegalInfo() {
 
                   <div className="space-y-2">
                     <h4 className="font-semibold flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-orange-600" />
+                      <AlertTriangle className="h-4 w-4 text-menu-600" />
                       Module FDM pour HORECA
                     </h4>
                     <p className="text-sm text-muted-foreground ml-6">
@@ -1044,7 +1044,7 @@ export default function LegalInfo() {
 
               <div className="space-y-2">
                 <h4 className="font-semibold flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+                  <AlertTriangle className="h-4 w-4 text-menu-600" />
                   Module FDM pour HORECA
                 </h4>
                 <p className="text-sm text-muted-foreground ml-6">

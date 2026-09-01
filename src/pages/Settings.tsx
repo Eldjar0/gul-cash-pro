@@ -270,7 +270,7 @@ export default function Settings() {
               <Database className="h-4 w-4" />
               <span className="hidden sm:inline">Sauvegarde</span>
             </TabsTrigger>
-            <TabsTrigger value="cleanup" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+            <TabsTrigger value="cleanup" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-menu-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Trash2 className="h-4 w-4" />
               <span className="hidden sm:inline">Nettoyage</span>
             </TabsTrigger>
@@ -461,7 +461,7 @@ export default function Settings() {
             {/* Informations légales et contact Card */}
             <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
               <div className="flex items-start gap-4 mb-6">
-                <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl text-white">
+                <div className="p-3 bg-gradient-to-br from-menu-500 to-red-500 rounded-xl text-white">
                   <FileText className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
@@ -686,16 +686,16 @@ export default function Settings() {
 
           <TabsContent value="cleanup" className="space-y-6">
             {/* Réinitialiser l'historique des ventes */}
-            <Card className="p-8 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-gray-800 dark:to-orange-900/20 border-2 border-orange-200 dark:border-orange-800 shadow-xl">
+            <Card className="p-8 bg-gradient-to-br from-menu-50 to-menu-50 dark:from-gray-800 dark:to-menu-900/20 border-2 border-menu-200 dark:border-menu-800 shadow-xl">
               <div className="flex items-start gap-6 mb-8">
-                <div className="p-4 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl text-white">
+                <div className="p-4 bg-gradient-to-br from-menu-500 to-menu-500 rounded-xl text-white">
                   <RotateCcw className="h-8 w-8" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-2xl font-bold mb-2 text-orange-900 dark:text-orange-100">
+                  <h2 className="text-2xl font-bold mb-2 text-menu-900 dark:text-menu-100">
                     Réinitialiser l'historique des ventes
                   </h2>
-                  <p className="text-base text-orange-700 dark:text-orange-300 mb-6">
+                  <p className="text-base text-menu-700 dark:text-menu-300 mb-6">
                     Supprime tous les tickets, factures, rapports et réinitialise la numérotation.
                     <strong> Les produits, clients et catégories seront conservés.</strong>
                   </p>
@@ -773,7 +773,7 @@ export default function Settings() {
                       <Button 
                         variant="outline"
                         size="lg"
-                        className="w-full h-14 text-lg border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                        className="w-full h-14 text-lg border-2 border-menu-500 text-menu-600 hover:bg-menu-50 dark:hover:bg-menu-900/20"
                         disabled={isResetting}
                       >
                         <RotateCcw className="h-5 w-5 mr-2" />
@@ -782,7 +782,7 @@ export default function Settings() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle className="flex items-center gap-2 text-orange-600">
+                        <AlertDialogTitle className="flex items-center gap-2 text-menu-600">
                           <RotateCcw className="h-6 w-6" />
                           Réinitialiser l'historique ?
                         </AlertDialogTitle>
@@ -797,7 +797,7 @@ export default function Settings() {
                           <p className="mt-4 text-green-600 font-medium">
                             ✓ Vos produits, clients et catégories seront conservés.
                           </p>
-                          <p className="text-orange-600 font-medium">
+                          <p className="text-menu-600 font-medium">
                             La numérotation des tickets et factures recommencera à zéro.
                           </p>
                         </AlertDialogDescription>
@@ -806,7 +806,7 @@ export default function Settings() {
                         <AlertDialogCancel>Annuler</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={resetSalesHistory}
-                          className="bg-orange-600 hover:bg-orange-700"
+                          className="bg-menu-600 hover:bg-menu-700"
                         >
                           Oui, réinitialiser
                         </AlertDialogAction>
@@ -818,9 +818,9 @@ export default function Settings() {
             </Card>
 
             {/* Supprimer toutes les données */}
-            <Card className="p-8 bg-gradient-to-br from-red-50 to-orange-50 dark:from-gray-800 dark:to-red-900/20 border-2 border-red-200 dark:border-red-800 shadow-xl">
+            <Card className="p-8 bg-gradient-to-br from-red-50 to-menu-50 dark:from-gray-800 dark:to-red-900/20 border-2 border-red-200 dark:border-red-800 shadow-xl">
               <div className="flex items-start gap-6 mb-8">
-                <div className="p-4 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl text-white">
+                <div className="p-4 bg-gradient-to-br from-red-500 to-menu-500 rounded-xl text-white">
                   <AlertTriangle className="h-8 w-8" />
                 </div>
                 <div className="flex-1">
@@ -901,7 +901,7 @@ export default function Settings() {
                       <Button 
                         variant="destructive"
                         size="lg"
-                        className="w-full h-14 text-lg bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
+                        className="w-full h-14 text-lg bg-gradient-to-r from-red-600 to-menu-600 hover:from-red-700 hover:to-menu-700"
                         disabled={isDeleting}
                       >
                         <Trash2 className="h-5 w-5 mr-2" />

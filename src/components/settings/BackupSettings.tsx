@@ -309,12 +309,12 @@ export function BackupSettings() {
       </Card>
 
       {/* Avertissement */}
-      <Card className="border-orange-500/50 bg-orange-500/5">
+      <Card className="border-menu-500/50 bg-menu-500/5">
         <CardContent className="pt-6">
           <div className="flex gap-3">
-            <AlertCircle className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="h-5 w-5 text-menu-500 flex-shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-orange-500 mb-1">Important</p>
+              <p className="font-semibold text-menu-500 mb-1">Important</p>
               <p className="text-muted-foreground">
                 Les sauvegardes sont essentielles pour protéger vos données. Conservez toujours
                 une copie en lieu sûr (disque externe, cloud). L'import d'une sauvegarde remplace

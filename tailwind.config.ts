@@ -69,6 +69,20 @@ export default {
           error: "hsl(var(--pos-error))",
           info: "hsl(var(--pos-info))",
         },
+        menu: {
+          DEFAULT: "hsl(var(--menu-500))",
+          50: "hsl(var(--menu-50))",
+          100: "hsl(var(--menu-100))",
+          200: "hsl(var(--menu-200))",
+          300: "hsl(var(--menu-300))",
+          400: "hsl(var(--menu-400))",
+          500: "hsl(var(--menu-500))",
+          600: "hsl(var(--menu-600))",
+          700: "hsl(var(--menu-700))",
+          800: "hsl(var(--menu-800))",
+          900: "hsl(var(--menu-900))",
+          950: "hsl(var(--menu-950))",
+        },
         category: {
           blue: "hsl(var(--category-blue))",
           green: "hsl(var(--category-green))",
@@ -134,8 +148,8 @@ export default {
           "50%": { opacity: "0.8" },
         },
         "glow": {
-          "0%, 100%": { boxShadow: "0 0 20px hsl(38 92% 50% / 0.3)" },
-          "50%": { boxShadow: "0 0 40px hsl(38 92% 50% / 0.6)" },
+          "0%, 100%": { boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" },
+          "50%": { boxShadow: "0 0 40px hsl(var(--primary) / 0.6)" },
         },
         "float": {
           "0%, 100%": { 
@@ -296,9 +310,9 @@ export default {
         "dvd-bounce-3": "dvd-bounce-3 18s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite",
       },
       boxShadow: {
-        "glow-sm": "0 0 10px hsl(38 92% 50% / 0.3)",
-        "glow": "0 0 20px hsl(38 92% 50% / 0.4)",
-        "glow-lg": "0 0 40px hsl(38 92% 50% / 0.5)",
+        "glow-sm": "0 0 10px hsl(var(--primary) / 0.3)",
+        "glow": "0 0 20px hsl(var(--primary) / 0.4)",
+        "glow-lg": "0 0 40px hsl(var(--primary) / 0.5)",
       },
       fontFamily: {
         sans: ["'DM Sans'", "system-ui", "sans-serif"],

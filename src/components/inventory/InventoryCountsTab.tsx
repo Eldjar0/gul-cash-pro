@@ -73,7 +73,7 @@ export const InventoryCountsTab = () => {
                       {format(new Date(count.count_date), 'dd/MM/yyyy', { locale: fr })}
                     </TableCell>
                     <TableCell>{count.counted_by || 'Non assigné'}</TableCell>
-                    <TableCell className={count.total_variance_value !== 0 ? 'font-semibold text-orange-600' : ''}>
+                    <TableCell className={count.total_variance_value !== 0 ? 'font-semibold text-menu-600' : ''}>
                       {count.total_variance_value.toFixed(2)} €
                     </TableCell>
                     <TableCell>{getStatusBadge(count.status)}</TableCell>

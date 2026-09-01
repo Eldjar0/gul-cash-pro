@@ -33,9 +33,9 @@ const paymentMethods = [
   { value: 'card' as const, label: 'Carte', icon: CreditCard, color: 'text-category-blue' },
   { value: 'mobile' as const, label: 'Sans contact', icon: Smartphone, color: 'text-category-purple' },
   { value: 'gift_card' as const, label: 'Carte cadeau', icon: Gift, color: 'text-pink-500' },
-  { value: 'check' as const, label: 'Chèque', icon: ReceiptIcon, color: 'text-orange-500' },
+  { value: 'check' as const, label: 'Chèque', icon: ReceiptIcon, color: 'text-menu-500' },
   { value: 'customer_credit' as const, label: 'Crédit client', icon: Wallet, color: 'text-cyan-500' },
-  { value: 'meal_voucher' as const, label: 'Chèques-repas', icon: Ticket, color: 'text-orange-500' },
+  { value: 'meal_voucher' as const, label: 'Chèques-repas', icon: Ticket, color: 'text-menu-500' },
 ];
 
 export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment, customerId, mealVoucherEligibleTotal = 0 }: MixedPaymentDialogProps) {
@@ -93,7 +93,7 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
           <DialogTitle className="text-pos-success font-mono text-2xl">PAIEMENT MIXTE</DialogTitle>
           <p className="text-white text-3xl font-bold font-mono mt-2">TOTAL: {total.toFixed(2)}€</p>
           {mealVoucherEligibleTotal > 0 && (
-            <p className="text-orange-400 font-mono text-sm">
+            <p className="text-menu-400 font-mono text-sm">
               Chèques-repas possibles: {mealVoucherEligibleTotal.toFixed(2)}€ · Autre paiement: {Math.max(0, total - mealVoucherEligibleTotal).toFixed(2)}€
             </p>
           )}

@@ -59,16 +59,16 @@ export default function InventoryManagement() {
           </Card>
 
           <Card 
-            className="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 cursor-pointer hover:shadow-lg transition-all"
+            className="p-6 bg-gradient-to-br from-menu-500 to-menu-600 text-white border-0 cursor-pointer hover:shadow-lg transition-all"
             onClick={() => setActiveTab('products')}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-100 text-sm font-medium">Alertes Stock</p>
+                <p className="text-menu-100 text-sm font-medium">Alertes Stock</p>
                 <p className="text-3xl font-bold mt-1">{lowStockCount + outOfStockCount}</p>
-                <p className="text-xs text-orange-200 mt-2">{outOfStockCount} ruptures</p>
+                <p className="text-xs text-menu-200 mt-2">{outOfStockCount} ruptures</p>
               </div>
-              <BarChart3 className="w-10 h-10 text-orange-200" />
+              <BarChart3 className="w-10 h-10 text-menu-200" />
             </div>
           </Card>
 

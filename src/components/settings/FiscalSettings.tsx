@@ -164,7 +164,7 @@ export function FiscalSettings() {
       <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
         <CardHeader>
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl text-white">
+            <div className="p-3 bg-gradient-to-br from-menu-500 to-red-500 rounded-xl text-white">
               <Coins className="h-6 w-6" />
             </div>
             <div className="flex-1">

@@ -318,7 +318,7 @@ export const SuppliersManagement = () => {
                         <span className="text-destructive font-medium">{outOfStockCount} en rupture</span>
                       )}
                       {lowStockCount > 0 && (
-                        <span className="text-orange-600 font-medium">{lowStockCount} stock faible</span>
+                        <span className="text-menu-600 font-medium">{lowStockCount} stock faible</span>
                       )}
                     </div>
                   )}

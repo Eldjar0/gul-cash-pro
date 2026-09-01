@@ -136,7 +136,7 @@ export function PaymentDialog({
       card: { label: 'CB', icon: CreditCard, color: 'text-blue-500' },
       mobile: { label: 'Virement', icon: Smartphone, color: 'text-purple-500' },
       customer_credit: { label: 'Crédit', icon: Wallet, color: 'text-cyan-500' },
-      meal_voucher: { label: 'Chèques-repas', icon: Ticket, color: 'text-orange-500' },
+      meal_voucher: { label: 'Chèques-repas', icon: Ticket, color: 'text-menu-500' },
     };
     return methods[methodType];
   };
@@ -155,14 +155,14 @@ export function PaymentDialog({
         {!method && !isMixedMode ? (
           <div className="space-y-4">
             {mealVoucherEligibleTotal > 0 && (
-              <Card className="p-3 border-2 border-orange-500/40 bg-orange-500/5">
+              <Card className="p-3 border-2 border-menu-500/40 bg-menu-500/5">
                 <div className="flex items-center gap-2 mb-1">
-                  <Ticket className="h-4 w-4 text-orange-500" />
+                  <Ticket className="h-4 w-4 text-menu-500" />
                   <span className="text-sm font-bold">Chèques-repas</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Payable en chèques-repas</span>
-                  <span className="font-bold text-orange-600">{mealVoucherEligibleTotal.toFixed(2)}€</span>
+                  <span className="font-bold text-menu-600">{mealVoucherEligibleTotal.toFixed(2)}€</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Autre moyen de paiement</span>
@@ -242,7 +242,7 @@ export function PaymentDialog({
                 }`}
               >
                 <div className="h-full flex flex-col items-center justify-center gap-1">
-                  <Ticket className="h-8 w-8 text-orange-500" />
+                  <Ticket className="h-8 w-8 text-menu-500" />
                   <span className="font-bold text-sm text-center">Chèques-repas</span>
                   <span className="text-xs text-muted-foreground">
                     {mealVoucherEligibleTotal > 0 ? `max ${mealVoucherEligibleTotal.toFixed(2)}€` : 'Aucun produit éligible'}
@@ -277,11 +277,11 @@ export function PaymentDialog({
                 <p className="text-sm font-semibold mb-1">Total à payer</p>
                 <p className="text-3xl font-black">{total.toFixed(2)}€</p>
               </Card>
-              <Card className={`border-2 p-4 ${getRemaining() > 0 ? 'bg-orange-500/10 border-orange-500' : 'bg-green-500/10 border-green-500'}`}>
+              <Card className={`border-2 p-4 ${getRemaining() > 0 ? 'bg-menu-500/10 border-menu-500' : 'bg-green-500/10 border-green-500'}`}>
                 <p className="text-sm font-semibold mb-1">
                   {getRemaining() > 0 ? 'Reste à payer' : getChange() > 0 ? 'À rendre' : 'Payé'}
                 </p>
-                <p className={`text-3xl font-black ${getRemaining() > 0 ? 'text-orange-500' : 'text-green-500'}`}>
+                <p className={`text-3xl font-black ${getRemaining() > 0 ? 'text-menu-500' : 'text-green-500'}`}>
                   {getRemaining() > 0 ? getRemaining().toFixed(2) : getChange().toFixed(2)}€
                 </p>
               </Card>

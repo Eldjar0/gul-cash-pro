@@ -671,17 +671,17 @@ export function CloseDayDialog({ open, onOpenChange, onConfirm, reportData, toda
                   </div>
 
                   {archiveAndDelete && (
-                    <div className="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="mt-3 p-4 bg-menu-50 border border-menu-200 rounded-lg">
                       <div className="flex items-start gap-2">
-                        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                        <AlertTriangle className="h-5 w-5 text-menu-600 shrink-0 mt-0.5" />
                         <div className="space-y-2">
-                          <p className="text-sm font-bold text-amber-900">
+                          <p className="text-sm font-bold text-menu-900">
                             ⚖️ OBLIGATION LÉGALE BELGE
                           </p>
-                          <p className="text-xs text-amber-800">
+                          <p className="text-xs text-menu-800">
                             Vous devez <strong>conserver ce fichier pendant 7 ans minimum</strong> conformément à la législation fiscale belge. En cas de contrôle du SPF Finances, vous devrez présenter ces archives.
                           </p>
-                          <p className="text-xs text-amber-800 font-semibold">
+                          <p className="text-xs text-menu-800 font-semibold">
                             📥 Le fichier sera téléchargé sur votre ordinateur. Conservez-le en lieu sûr !
                           </p>
                         </div>

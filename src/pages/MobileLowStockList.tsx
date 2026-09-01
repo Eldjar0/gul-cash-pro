@@ -81,10 +81,10 @@ export default function MobileLowStockList() {
                   >
                     <div className="flex items-start gap-3">
                       <div className={`shrink-0 p-2 rounded-lg ${
-                        isOutOfStock ? 'bg-destructive/10' : 'bg-orange-500/10'
+                        isOutOfStock ? 'bg-destructive/10' : 'bg-menu-500/10'
                       }`}>
                         <Package className={`h-4 w-4 ${
-                          isOutOfStock ? 'text-destructive' : 'text-orange-500'
+                          isOutOfStock ? 'text-destructive' : 'text-menu-500'
                         }`} />
                       </div>
 
@@ -96,7 +96,7 @@ export default function MobileLowStockList() {
                           <Badge 
                             variant={isOutOfStock ? 'destructive' : 'outline'} 
                             className={`text-xs shrink-0 ${
-                              !isOutOfStock ? 'border-orange-500 text-orange-500' : ''
+                              !isOutOfStock ? 'border-menu-500 text-menu-500' : ''
                             }`}
                           >
                             {isOutOfStock ? 'RUPTURE' : 'CRITIQUE'}
@@ -107,7 +107,7 @@ export default function MobileLowStockList() {
                           <span>{product.barcode || 'Sans code-barres'}</span>
                           <span>•</span>
                           <span className="font-medium">
-                            Stock: <span className={isOutOfStock ? 'text-destructive' : 'text-orange-500'}>
+                            Stock: <span className={isOutOfStock ? 'text-destructive' : 'text-menu-500'}>
                               {stock}
                             </span>
                           </span>

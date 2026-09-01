@@ -2040,7 +2040,7 @@ const Index = () => {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1">
                             <h4 className="text-foreground font-bold text-xs truncate">{item.product.name}</h4>
-                            {item.product.meal_voucher_eligible !== false && <span className="text-[7px] bg-orange-500/15 text-orange-600 border border-orange-400 px-1 py-0.5 rounded font-bold" title="Payable en chèques-repas">CR</span>}
+                            {item.product.meal_voucher_eligible !== false && <span className="text-[7px] bg-menu-500/15 text-menu-600 border border-menu-400 px-1 py-0.5 rounded font-bold" title="Payable en chèques-repas">CR</span>}
                             {item.is_gift && <span className="text-[7px] bg-gradient-to-r from-pink-500 to-red-500 text-white px-1 py-0.5 rounded-full font-bold">🎁</span>}
                             {item.discount && (
                               <span className="text-[8px] text-accent font-semibold">
@@ -2204,15 +2204,15 @@ const Index = () => {
                 }}
                 className={`h-7 text-[9px] relative ${
                   heldTickets && heldTickets.length > 0 
-                    ? 'border-amber-500 text-amber-600 bg-amber-500/10' 
-                    : 'border-amber-500 text-amber-500'
-                } hover:bg-amber-500/10`} 
+                    ? 'border-menu-500 text-menu-600 bg-menu-500/10' 
+                    : 'border-menu-500 text-menu-500'
+                } hover:bg-menu-500/10`} 
                 title={cart.length > 0 ? "Mettre le ticket en attente" : "Voir les tickets en attente"}
               >
                 <Pause className="h-3 w-3 mr-0.5" />
                 Attente
                 {heldTickets && heldTickets.length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-menu-500 text-white text-[8px] font-bold flex items-center justify-center">
                     {heldTickets.length}
                   </span>
                 )}
@@ -2225,7 +2225,7 @@ const Index = () => {
                 <Save className="h-3 w-3 mr-0.5" />
                 Sauver
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setRefundDialogOpen(true)} className="h-7 text-[9px] border-orange-500 text-orange-500 hover:bg-orange-500/10" title="Créer un remboursement">
+              <Button variant="outline" size="sm" onClick={() => setRefundDialogOpen(true)} className="h-7 text-[9px] border-menu-500 text-menu-500 hover:bg-menu-500/10" title="Créer un remboursement">
                 <Undo2 className="h-3 w-3 mr-0.5" />
                 Rembour.
               </Button>
@@ -2354,7 +2354,7 @@ const Index = () => {
                     key === 'C' 
                       ? 'bg-gradient-to-b from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-2 border-red-700' 
                       : key === '.' 
-                      ? 'bg-gradient-to-b from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white border-2 border-orange-600'
+                      ? 'bg-gradient-to-b from-menu-400 to-menu-500 hover:from-menu-500 hover:to-menu-600 text-white border-2 border-menu-600'
                       : 'bg-gradient-to-b from-white to-gray-100 hover:from-gray-100 hover:to-gray-200 text-slate-800 border-2 border-slate-300'
                   }`}
                 >
@@ -2766,7 +2766,7 @@ const Index = () => {
                               </div>
                               <div className="text-sm">
                                 <span className="text-muted-foreground">Solde dû: </span>
-                                <span className={`font-semibold ${currentBalance > 0 ? 'text-orange-500' : 'text-green-500'}`}>
+                                <span className={`font-semibold ${currentBalance > 0 ? 'text-menu-500' : 'text-green-500'}`}>
                                   {currentBalance.toFixed(2)}€
                                 </span>
                               </div>

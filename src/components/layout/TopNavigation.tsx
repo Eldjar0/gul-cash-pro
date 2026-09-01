@@ -75,7 +75,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
     { label: 'Statistiques', icon: BarChart3, route: '/stats', color: 'bg-green-500', protected: true },
     { label: 'Produits', icon: Package, route: '/inventory-management', color: 'bg-indigo-500', protected: false },
     { label: 'Entrée', icon: PackagePlus, route: '/supplier-entry', color: 'bg-teal-500', protected: false },
-    { label: 'Clients', icon: Users, route: '/customers', color: 'bg-orange-500', protected: false },
+    { label: 'Clients', icon: Users, route: '/customers', color: 'bg-menu-500', protected: false },
     { label: 'Promotions', icon: Tags, route: '/promotions', color: 'bg-pink-500', protected: false },
     { label: 'Pertes', icon: Trash2, route: '/losses', color: 'bg-red-600', protected: false },
     { label: 'Réglages', icon: Settings, route: '/settings', color: 'bg-slate-500', protected: true },
@@ -141,7 +141,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
 
           <Button
             onClick={() => navigate("/customers")}
-            className="h-10 px-2 flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs whitespace-nowrap"
+            className="h-10 px-2 flex items-center gap-1.5 bg-menu-500 hover:bg-menu-600 text-white font-semibold text-xs whitespace-nowrap"
           >
             <Users className="h-4 w-4" />
             <span>Clients</span>

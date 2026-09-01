@@ -173,7 +173,7 @@ export default function MobileStockAdjust() {
               <p className="text-sm text-muted-foreground">Nouveau stock</p>
               <p className={`text-xl font-bold ${
                 newStock === 0 ? 'text-destructive' : 
-                newStock < (product.min_stock || 10) ? 'text-orange-500' : 
+                newStock < (product.min_stock || 10) ? 'text-menu-500' : 
                 'text-primary'
               }`}>
                 {newStock}
@@ -186,7 +186,7 @@ export default function MobileStockAdjust() {
             </Badge>
           )}
           {newStock > 0 && newStock < (product.min_stock || 10) && (
-            <Badge variant="outline" className="w-full mt-3 justify-center border-orange-500 text-orange-500">
+            <Badge variant="outline" className="w-full mt-3 justify-center border-menu-500 text-menu-500">
               Stock faible
             </Badge>
           )}

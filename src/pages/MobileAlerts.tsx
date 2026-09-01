@@ -33,7 +33,7 @@ export default function MobileAlerts() {
       case 'critical':
         return <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />;
       case 'warning':
-        return <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />;
+        return <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-menu-500" />;
       default:
         return <Info className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />;
     }
@@ -144,7 +144,7 @@ export default function MobileAlerts() {
                     onClick={() => navigate(`/mobile/product/${product.id}`)}
                   >
                     <div className="flex items-center gap-3">
-                      <Package className="h-4 w-4 text-orange-500 shrink-0" />
+                      <Package className="h-4 w-4 text-menu-500 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">
                           {product.name}
@@ -153,7 +153,7 @@ export default function MobileAlerts() {
                           {product.barcode || 'Sans code-barres'}
                         </p>
                       </div>
-                      <Badge variant="outline" className="text-xs shrink-0 border-orange-500 text-orange-500">
+                      <Badge variant="outline" className="text-xs shrink-0 border-menu-500 text-menu-500">
                         {product.stock} restant{product.stock > 1 ? 's' : ''}
                       </Badge>
                     </div>

@@ -100,7 +100,7 @@ export function StockManagement() {
       return <Badge variant="destructive">Rupture</Badge>;
     }
     if (product.stock <= (product.min_stock || 0)) {
-      return <Badge className="bg-orange-500">Stock faible</Badge>;
+      return <Badge className="bg-menu-500">Stock faible</Badge>;
     }
     return <Badge className="bg-green-500">OK</Badge>;
   };
@@ -284,18 +284,18 @@ export function StockManagement() {
       </Card>
 
       {products.filter(p => p.stock <= (p.min_stock || 0)).length > 0 && (
-        <Card className="border-orange-500 bg-orange-50">
+        <Card className="border-menu-500 bg-menu-50">
           <CardHeader>
-            <CardTitle className="text-orange-800 flex items-center gap-2">
+            <CardTitle className="text-menu-800 flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />
               Produits à commander
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-orange-700">
+            <p className="text-sm text-menu-700">
               {products.filter(p => p.stock === 0).length} produit(s) en rupture de stock
             </p>
-            <p className="text-sm text-orange-700">
+            <p className="text-sm text-menu-700">
               {products.filter(p => p.stock > 0 && p.stock <= (p.min_stock || 0)).length} produit(s) en stock faible
             </p>
           </CardContent>

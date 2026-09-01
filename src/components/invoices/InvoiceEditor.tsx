@@ -1154,12 +1154,12 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         </div>
 
                         {/* Conditions de paiement */}
-                        <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                        <div className="bg-menu-50 rounded-xl p-4 border border-menu-200">
                           <div className="flex items-center gap-2 mb-2">
-                            <Calendar className="h-4 w-4 text-amber-600" />
-                            <h4 className="text-sm font-bold text-amber-800">Conditions de paiement</h4>
+                            <Calendar className="h-4 w-4 text-menu-600" />
+                            <h4 className="text-sm font-bold text-menu-800">Conditions de paiement</h4>
                           </div>
-                          <p className="text-sm text-amber-700">{getPaymentConditions()}</p>
+                          <p className="text-sm text-menu-700">{getPaymentConditions()}</p>
                         </div>
 
                         {/* Coordonnées bancaires */}

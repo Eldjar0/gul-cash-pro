@@ -57,7 +57,7 @@ export default function MobileManagement() {
     { title: 'Encaisser', icon: CreditCard, color: 'from-emerald-500 to-emerald-600', action: () => navigate('/mobile/pos') },
     { title: 'Produits', icon: Package, color: 'from-blue-500 to-blue-600', action: () => navigate('/mobile/products') },
     { title: 'Catégories', icon: FolderKanban, color: 'from-purple-500 to-purple-600', action: () => navigate('/mobile/categories') },
-    { title: 'Scanner', icon: Scan, color: 'from-orange-500 to-orange-600', action: () => setMobileScannerOpen(true) },
+    { title: 'Scanner', icon: Scan, color: 'from-menu-500 to-menu-600', action: () => setMobileScannerOpen(true) },
     { title: 'Clients', icon: Users, color: 'from-indigo-500 to-indigo-600', action: () => navigate('/mobile/customers') },
     { title: 'Alertes', icon: AlertTriangle, color: 'from-red-500 to-red-600', action: () => navigate('/mobile/alerts'), badge: stats?.lowStockCount },
   ];
