@@ -384,6 +384,24 @@ export const ProductFormDialog = ({
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div className="flex items-start gap-3 rounded-lg border p-3 bg-muted/30">
+                    <Checkbox
+                      id="meal-voucher"
+                      checked={formData.meal_voucher_eligible}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, meal_voucher_eligible: checked === true })
+                      }
+                    />
+                    <div className="space-y-0.5">
+                      <Label htmlFor="meal-voucher" className="cursor-pointer">
+                        Accepté en chèques-repas
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Coché par défaut pour les produits alimentaires (TVA 6% / 12%).
+                      </p>
+                    </div>
+                  </div>
                 </Card>
 
                 {/* Type et unité */}
