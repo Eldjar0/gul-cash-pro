@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -146,9 +147,12 @@ export function PaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-background border-2 !mt-0 !top-32 translate-y-0 max-h-[85vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl bg-background border-2 !mt-0 !top-32 translate-y-0 max-h-[85vh] overflow-x-hidden overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Mode de Paiement</DialogTitle>
+          <DialogDescription className="sr-only">
+            Sélectionnez un moyen de paiement et saisissez le montant à régler.
+          </DialogDescription>
           <p className="text-3xl font-bold mt-2">Total: {total.toFixed(2)}€</p>
         </DialogHeader>
 
@@ -322,7 +326,7 @@ export function PaymentDialog({
               <Card className="p-4 space-y-3">
                 <p className="font-bold">Ajouter un paiement</p>
                 
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                   {(['cash', 'card', 'mobile', 'customer_credit', 'meal_voucher'] as PaymentMethod[]).map((m) => {
                     const methodInfo = getMethodInfo(m);
                     const Icon = methodInfo.icon;
@@ -331,16 +335,16 @@ export function PaymentDialog({
                         key={m}
                         variant={selectedMethod === m ? 'default' : 'outline'}
                         onClick={() => setSelectedMethod(m)}
-                        className="h-20 flex-col gap-1"
+                        className="h-20 min-w-0 flex-col gap-1 px-2"
                       >
                         <Icon className="h-6 w-6" />
-                        <span className="text-xs">{methodInfo.label}</span>
+                         <span className="w-full truncate text-xs">{methodInfo.label}</span>
                       </Button>
                     );
                   })}
                 </div>
 
-                <div className="flex gap-2">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
                   <Input
                     type="number"
                     placeholder="Montant"
