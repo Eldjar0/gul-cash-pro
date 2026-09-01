@@ -303,9 +303,9 @@ export default function InvoiceCreate() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
+    <div className="min-h-screen bg-background">
       {/* Header Ultra Pro */}
-      <div className="bg-gradient-to-r from-primary via-primary-glow to-primary border-b-4 border-primary-glow shadow-lg">
+      <div className="bg-primary border-b-4 border-primary-glow shadow-lg">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -410,7 +410,7 @@ export default function InvoiceCreate() {
                   {lines.map((line, index) => {
                     const calc = calculateLine(line);
                     return (
-                      <div key={line.id} className="border-2 border-border rounded-xl p-4 bg-gradient-to-br from-white to-primary/5 hover:border-primary/30 transition-smooth shadow-sm">
+                      <div key={line.id} className="border-2 border-border rounded-xl p-4 bg-white hover:border-primary/30 transition-smooth shadow-sm">
                         <div className="flex items-center justify-between mb-3">
                           <Badge variant="outline" className="font-semibold">
                             Article {index + 1}
@@ -549,7 +549,7 @@ export default function InvoiceCreate() {
           <div className="lg:sticky lg:top-6 h-fit">
             <Card className="bg-white shadow-2xl border-2 border-primary/20 overflow-hidden">
               {/* Preview Header */}
-              <div className="bg-gradient-to-r from-primary via-primary-glow to-primary p-6 text-white">
+              <div className="bg-primary p-6 text-white">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -566,7 +566,7 @@ export default function InvoiceCreate() {
               <ScrollArea className="h-[calc(100vh-240px)]">
                 <div className="p-6 space-y-6">
                   {/* Company Header */}
-                  <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-5 border-2 border-primary/20">
+                  <div className="bg-primary/5 rounded-xl p-5 border-2 border-primary/20">
                     <div className="text-xl font-bold text-primary mb-2">{companySettings.name}</div>
                     <div className="space-y-1 text-sm text-muted-foreground">
                       <div>{companySettings.address}</div>
@@ -638,7 +638,7 @@ export default function InvoiceCreate() {
                         {lines.map((line, index) => {
                           const calc = calculateLine(line);
                           return (
-                            <div key={line.id} className="border-2 rounded-xl p-4 bg-gradient-to-br from-white to-gray-50 hover:border-primary/30 transition-smooth">
+                            <div key={line.id} className="border-2 rounded-xl p-4 bg-white hover:border-primary/30 transition-smooth">
                               <div className="flex items-start justify-between mb-2">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
@@ -672,7 +672,7 @@ export default function InvoiceCreate() {
                   <Separator />
 
                   {/* Totals Section */}
-                  <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-5 border-2 border-primary/20">
+                  <div className="bg-primary/5 rounded-xl p-5 border-2 border-primary/20">
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-medium text-muted-foreground">Total HT:</span>

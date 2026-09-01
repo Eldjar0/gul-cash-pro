@@ -170,7 +170,7 @@ export function CreditNotesTab() {
     <div className="space-y-4">
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+        <Card className="p-4 bg-blue-500 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-blue-100 text-sm">Total Notes</p>
@@ -179,7 +179,7 @@ export function CreditNotesTab() {
             <FileCheck className="h-8 w-8 opacity-50" />
           </div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
+        <Card className="p-4 bg-yellow-500 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-yellow-100 text-sm">Brouillons</p>
@@ -188,7 +188,7 @@ export function CreditNotesTab() {
             <Clock className="h-8 w-8 opacity-50" />
           </div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-green-500 to-green-600 text-white">
+        <Card className="p-4 bg-green-500 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-green-100 text-sm">Validées</p>
@@ -197,7 +197,7 @@ export function CreditNotesTab() {
             <CheckCircle className="h-8 w-8 opacity-50" />
           </div>
         </Card>
-        <Card className="p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+        <Card className="p-4 bg-purple-500 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-100 text-sm">Montant Total</p>

@@ -238,7 +238,7 @@ export const SuppliersManagement = () => {
           <FileText className="h-4 w-4 mr-2" />
           Exporter PDF
         </Button>
-        <Button onClick={() => handleOpenDialog()} className="bg-gradient-to-r from-teal-600 to-cyan-600">
+        <Button onClick={() => handleOpenDialog()} className="bg-teal-600">
           <Plus className="h-4 w-4 mr-2" />
           Nouveau Fournisseur
         </Button>

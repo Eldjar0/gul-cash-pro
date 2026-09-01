@@ -66,7 +66,7 @@ export default function DownloadDesktopApp() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900">
+    <div className="min-h-screen bg-purple-50 dark:bg-gray-900">
       {/* Header */}
       <div className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-6 py-4">
@@ -75,7 +75,7 @@ export default function DownloadDesktopApp() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-purple-600">
                 Application Desktop
               </h1>
               <p className="text-sm text-muted-foreground">
@@ -126,7 +126,7 @@ export default function DownloadDesktopApp() {
             <Card key={index} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
-                  <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl text-white">
+                  <div className="p-3 bg-purple-500 rounded-xl text-white">
                     <feature.icon className="h-6 w-6" />
                   </div>
                   <div>
@@ -142,9 +142,9 @@ export default function DownloadDesktopApp() {
         {/* Download Cards */}
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
           {/* Windows */}
-          <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-2 border-blue-200 dark:border-blue-800 shadow-xl hover:shadow-2xl transition-all">
+          <Card className="bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-800 shadow-xl hover:shadow-2xl transition-all">
             <CardHeader className="text-center">
-              <div className="mx-auto p-4 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl text-white mb-4 w-fit">
+              <div className="mx-auto p-4 bg-blue-500 rounded-2xl text-white mb-4 w-fit">
                 <Monitor className="h-12 w-12" />
               </div>
               <CardTitle className="text-2xl">Windows</CardTitle>
@@ -153,7 +153,7 @@ export default function DownloadDesktopApp() {
             <CardContent className="text-center">
               <Button 
                 size="lg" 
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                className="w-full bg-blue-600 hover:bg-blue-700"
                 onClick={() => handleDownload('windows')}
                 disabled={downloading === 'windows'}
               >
@@ -173,9 +173,9 @@ export default function DownloadDesktopApp() {
           </Card>
 
           {/* Mac */}
-          <Card className="bg-gradient-to-br from-gray-50 to-slate-100 dark:from-gray-800/50 dark:to-slate-900/50 border-2 border-gray-200 dark:border-gray-700 shadow-xl hover:shadow-2xl transition-all">
+          <Card className="bg-gray-50 dark:bg-gray-800/50 border-2 border-gray-200 dark:border-gray-700 shadow-xl hover:shadow-2xl transition-all">
             <CardHeader className="text-center">
-              <div className="mx-auto p-4 bg-gradient-to-br from-gray-700 to-gray-900 rounded-2xl text-white mb-4 w-fit">
+              <div className="mx-auto p-4 bg-gray-700 rounded-2xl text-white mb-4 w-fit">
                 <Apple className="h-12 w-12" />
               </div>
               <CardTitle className="text-2xl">macOS</CardTitle>
@@ -184,7 +184,7 @@ export default function DownloadDesktopApp() {
             <CardContent className="text-center">
               <Button 
                 size="lg" 
-                className="w-full bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-black"
+                className="w-full bg-gray-700 hover:bg-gray-800"
                 onClick={() => handleDownload('mac')}
                 disabled={downloading === 'mac'}
               >

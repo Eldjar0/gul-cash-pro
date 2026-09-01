@@ -814,7 +814,7 @@ export default function Stats() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900">
+    <div className="min-h-screen bg-violet-50 dark:bg-gray-900">
       {/* Header */}
       <div className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-6 py-4">
@@ -824,7 +824,7 @@ export default function Stats() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold text-violet-600">
                   Statistiques & Analyses
                 </h1>
                 <p className="text-sm text-muted-foreground">Rapports détaillés et analyses de ventes</p>
@@ -982,7 +982,7 @@ export default function Stats() {
 
         {/* KPIs principaux */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-          <Card className="bg-gradient-to-br from-violet-500 to-violet-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+          <Card className="bg-violet-500 text-white border-0 shadow-lg hover:shadow-xl transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-violet-100">CA Net</CardTitle>
               <div className="p-2 bg-white/20 rounded-lg">
@@ -1006,7 +1006,7 @@ export default function Stats() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+          <Card className="bg-red-500 text-white border-0 shadow-lg hover:shadow-xl transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-red-100">Remboursements</CardTitle>
               <div className="p-2 bg-white/20 rounded-lg">
@@ -1021,7 +1021,7 @@ export default function Stats() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+          <Card className="bg-purple-500 text-white border-0 shadow-lg hover:shadow-xl transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-purple-100">Nombre de ventes</CardTitle>
               <div className="p-2 bg-white/20 rounded-lg">
@@ -1036,7 +1036,7 @@ export default function Stats() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+          <Card className="bg-fuchsia-500 text-white border-0 shadow-lg hover:shadow-xl transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-fuchsia-100">Panier moyen</CardTitle>
               <div className="p-2 bg-white/20 rounded-lg">
@@ -1051,7 +1051,7 @@ export default function Stats() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-pink-500 to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all">
+          <Card className="bg-pink-500 text-white border-0 shadow-lg hover:shadow-xl transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-pink-100">TVA nette</CardTitle>
               <div className="p-2 bg-white/20 rounded-lg">

@@ -25,7 +25,7 @@ export default function DownloadApp() {
   }, [apkUrl]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 p-4">
+    <div className="min-h-screen bg-blue-600 p-4">
       <div className="max-w-4xl mx-auto space-y-6 py-8">
         
         {/* Header */}
@@ -41,7 +41,7 @@ export default function DownloadApp() {
 
         {/* QR Code Card */}
         <Card className="border-4 border-white/30 shadow-2xl bg-white">
-          <CardHeader className="text-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
+          <CardHeader className="text-center bg-blue-600 text-white rounded-t-lg">
             <CardTitle className="text-2xl font-black flex items-center justify-center gap-2">
               <Smartphone className="h-8 w-8" />
               Scanner avec votre téléphone
@@ -58,7 +58,7 @@ export default function DownloadApp() {
             <Button
               onClick={() => window.open(apkUrl, '_blank')}
               size="lg"
-              className="h-16 px-8 text-xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+              className="h-16 px-8 text-xl font-bold bg-green-500 hover:bg-green-600"
             >
               <Download className="h-6 w-6 mr-2" />
               Télécharger l'APK directement
@@ -68,7 +68,7 @@ export default function DownloadApp() {
 
         {/* Instructions */}
         <Card className="border-4 border-white/30 shadow-2xl bg-white/95 backdrop-blur">
-          <CardHeader className="bg-gradient-to-r from-menu-500 to-red-500 text-white rounded-t-lg">
+          <CardHeader className="bg-menu-500 text-white rounded-t-lg">
             <CardTitle className="text-xl font-black">
               📱 Instructions d'installation
             </CardTitle>

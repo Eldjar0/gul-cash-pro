@@ -136,7 +136,7 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
             </Card>
 
             {/* Summary */}
-            <Card className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] border-2 border-white/20 p-4">
+            <Card className="bg-[#1a1a1a] border-2 border-white/20 p-4">
               <div className="space-y-2 text-white font-mono">
                 <div className="flex justify-between">
                   <span>Total à payer:</span>
@@ -156,7 +156,7 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
             </Card>
 
             {isComplete && (
-              <Card className="bg-gradient-to-br from-pos-success/30 to-pos-success/10 border-2 border-pos-success p-4 animate-scale-in">
+              <Card className="bg-pos-success/30 border-2 border-pos-success p-4 animate-scale-in">
                 <div className="flex items-center gap-3">
                   <CheckCircle className="h-10 w-10 text-pos-success animate-pulse" />
                   <div>

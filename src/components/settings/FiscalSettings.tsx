@@ -77,10 +77,10 @@ export function FiscalSettings() {
   return (
     <div className="space-y-6">
       {/* Paramètres TVA */}
-      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">
+      <Card className="bg-green-50 dark:bg-gray-800 border-0 shadow-lg">
         <CardHeader>
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl text-white">
+            <div className="p-3 bg-green-500 rounded-xl text-white">
               <Calculator className="h-6 w-6" />
             </div>
             <div className="flex-1">
@@ -119,7 +119,7 @@ export function FiscalSettings() {
       <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
         <CardHeader>
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl text-white">
+            <div className="p-3 bg-blue-500 rounded-xl text-white">
               <FileBarChart className="h-6 w-6" />
             </div>
             <div className="flex-1">
@@ -164,7 +164,7 @@ export function FiscalSettings() {
       <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
         <CardHeader>
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-gradient-to-br from-menu-500 to-red-500 rounded-xl text-white">
+            <div className="p-3 bg-menu-500 rounded-xl text-white">
               <Coins className="h-6 w-6" />
             </div>
             <div className="flex-1">
@@ -174,7 +174,7 @@ export function FiscalSettings() {
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-700 dark:to-gray-800 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-purple-50 dark:bg-gray-700 rounded-lg">
             <div>
               <p className="font-medium">Numérotation automatique</p>
               <p className="text-sm text-muted-foreground">Génération automatique des numéros de journaux</p>
@@ -184,7 +184,7 @@ export function FiscalSettings() {
               onCheckedChange={(checked) => setConfig({ ...config, auto_numbering: checked as boolean })}
             />
           </div>
-          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-700 dark:to-gray-800 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-purple-50 dark:bg-gray-700 rounded-lg">
             <div>
               <p className="font-medium">Export automatique</p>
               <p className="text-sm text-muted-foreground">Export mensuel des journaux comptables</p>
@@ -198,7 +198,7 @@ export function FiscalSettings() {
       </Card>
 
       {/* Bouton de sauvegarde */}
-      <Card className="p-6 bg-gradient-to-r from-green-500 to-emerald-500 border-0 shadow-lg">
+      <Card className="p-6 bg-green-500 border-0 shadow-lg">
         <Button 
           onClick={handleSave} 
           disabled={isLoading} 

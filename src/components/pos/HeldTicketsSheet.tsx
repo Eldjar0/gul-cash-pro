@@ -56,7 +56,7 @@ export const HeldTicketsSheet = ({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-[350px] sm:w-[400px] p-0">
-        <SheetHeader className="p-4 border-b bg-gradient-to-r from-menu-500/10 to-menu-500/10">
+        <SheetHeader className="p-4 border-b bg-menu-500/10">
           <SheetTitle className="flex items-center gap-2 text-menu-700">
             <Ticket className="h-5 w-5" />
             Tickets en attente
@@ -88,7 +88,7 @@ export const HeldTicketsSheet = ({
               heldTickets.map((ticket) => (
                 <div
                   key={ticket.id}
-                  className="bg-gradient-to-br from-menu-50 to-menu-50 border-2 border-menu-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-menu-50 border-2 border-menu-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -147,7 +147,7 @@ export const HeldTicketsSheet = ({
                   <Button
                     onClick={() => handleResume(ticket.id)}
                     disabled={resumeTicket.isPending}
-                    className="w-full h-9 bg-gradient-to-r from-menu-500 to-menu-500 hover:from-menu-600 hover:to-menu-600 text-white font-semibold shadow-md"
+                    className="w-full h-9 bg-menu-500 hover:bg-menu-600 text-white font-semibold shadow-md"
                   >
                     <Play className="h-4 w-4 mr-2" />
                     Reprendre

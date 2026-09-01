@@ -1810,9 +1810,9 @@ const Index = () => {
   // Afficher un message pour les mobiles (navigateur web)
   if (isMobile && !Capacitor.isNativePlatform()) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-primary/5 flex items-center justify-center p-4">
         <Card className="max-w-md w-full p-8 text-center space-y-6 shadow-2xl border-2">
-          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary to-primary-glow rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="w-20 h-20 mx-auto bg-primary rounded-2xl flex items-center justify-center shadow-lg">
             <Monitor className="h-10 w-10 text-white" />
           </div>
           
@@ -1848,7 +1848,7 @@ const Index = () => {
           <div className="space-y-3">
             <Button 
               onClick={() => navigate('/mobile/pos')} 
-              className="w-full h-12 text-base bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+              className="w-full h-12 text-base bg-emerald-500 hover:bg-emerald-600"
             >
               <Smartphone className="h-5 w-5 mr-2" />
               Ouvrir la caisse mobile
@@ -1876,7 +1876,7 @@ const Index = () => {
       <PinLockDialog open={isLocked} onUnlock={() => setIsLocked(false)} />
       
       {/* Info bar avec date, météo, recherche et boutons */}
-      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border px-2 py-1 flex items-center justify-between gap-1.5 flex-shrink-0">
+      <div className="bg-primary/10 border-b border-border px-2 py-1 flex items-center justify-between gap-1.5 flex-shrink-0">
         {/* Gauche: Date/Heure + Météo */}
         <div className="flex items-center gap-1">
           <div className="flex items-center gap-1 px-1.5 py-1 bg-background rounded-md border border-border">
@@ -1958,31 +1958,31 @@ const Index = () => {
         {/* Droite: Boutons Affichage et Gestion */}
         <div className="flex items-center gap-0.5">
           {!isDayOpenEffective ? (
-            <Button onClick={() => setOpenDayDialogOpen(true)} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md whitespace-nowrap">
+            <Button onClick={() => setOpenDayDialogOpen(true)} size="sm" className="h-6 px-2 text-xs bg-green-500 hover:bg-green-600 text-white shadow-md whitespace-nowrap">
               <Calendar className="h-3 w-3 mr-1" />
               <span>Ouvrir</span>
             </Button>
           ) : (
             <>
-              <Button onClick={handleSyncData} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-md whitespace-nowrap">
+              <Button onClick={handleSyncData} size="sm" className="h-6 px-2 text-xs bg-cyan-500 hover:bg-cyan-600 text-white shadow-md whitespace-nowrap">
                 <RefreshCw className="h-3 w-3 mr-1" />
                 <span>Synchroniser</span>
               </Button>
-              <Button onClick={handleReportX} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md whitespace-nowrap">
+              <Button onClick={handleReportX} size="sm" className="h-6 px-2 text-xs bg-blue-500 hover:bg-blue-600 text-white shadow-md whitespace-nowrap">
                 <FileText className="h-3 w-3 mr-1" />
                 <span>Rapport X</span>
               </Button>
-              <Button onClick={() => setRemoteScanDialogOpen(true)} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md whitespace-nowrap" title="Scanner avec mobile">
+              <Button onClick={() => setRemoteScanDialogOpen(true)} size="sm" className="h-6 px-2 text-xs bg-purple-500 hover:bg-purple-600 text-white shadow-md whitespace-nowrap" title="Scanner avec mobile">
                 <QrCode className="h-3 w-3 mr-1" />
                 <span>Scan Mobile</span>
               </Button>
-              <Button onClick={() => setCloseDayDialogOpen(true)} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md whitespace-nowrap">
+              <Button onClick={() => setCloseDayDialogOpen(true)} size="sm" className="h-6 px-2 text-xs bg-red-500 hover:bg-red-600 text-white shadow-md whitespace-nowrap">
                 <CalendarX className="h-3 w-3 mr-1" />
                 <span>Fermer</span>
               </Button>
             </>
           )}
-          <Button onClick={openCustomerDisplay} size="sm" className="h-6 px-2 text-xs bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-md whitespace-nowrap">
+          <Button onClick={openCustomerDisplay} size="sm" className="h-6 px-2 text-xs bg-purple-500 hover:bg-purple-600 text-white shadow-md whitespace-nowrap">
             <Eye className="h-3 w-3 mr-1" />
             <span>Affichage</span>
           </Button>
@@ -2003,7 +2003,7 @@ const Index = () => {
         {/* LEFT PANEL - Ticket (col-span adapté: 6 sur mobile, 5 sur desktop) */}
         <div className="col-span-6 md:col-span-5 bg-white border-r-2 border-border flex flex-col overflow-hidden shadow-xl">
           {/* Ticket header - Clean gradient */}
-          <div className="bg-gradient-to-r from-primary to-primary-glow p-2 flex-shrink-0 shadow-lg">
+          <div className="bg-primary p-2 flex-shrink-0 shadow-lg">
             <div className="flex items-center justify-between text-white">
               <div className="flex items-center gap-1">
                 <ShoppingBag className="h-4 w-4" />
@@ -2041,7 +2041,7 @@ const Index = () => {
                           <div className="flex items-center gap-1">
                             <h4 className="text-foreground font-bold text-xs truncate">{item.product.name}</h4>
                             {item.product.meal_voucher_eligible !== false && <span className="text-[7px] bg-menu-500/15 text-menu-600 border border-menu-400 px-1 py-0.5 rounded font-bold" title="Payable en chèques-repas">CR</span>}
-                            {item.is_gift && <span className="text-[7px] bg-gradient-to-r from-pink-500 to-red-500 text-white px-1 py-0.5 rounded-full font-bold">🎁</span>}
+                            {item.is_gift && <span className="text-[7px] bg-pink-500 text-white px-1 py-0.5 rounded-full font-bold">🎁</span>}
                             {item.discount && (
                               <span className="text-[8px] text-accent font-semibold">
                                 -{item.discount.type === 'percentage' ? `${item.discount.value}%` : `${item.discount.value}€`}
@@ -2231,12 +2231,12 @@ const Index = () => {
               </Button>
             </div>
             
-            <Button onClick={() => setPaymentDialogOpen(true)} disabled={cart.length === 0} className="w-full h-10 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+            <Button onClick={() => setPaymentDialogOpen(true)} disabled={cart.length === 0} className="w-full h-10 bg-primary hover:bg-primary/90 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
               <Euro className="mr-1.5 h-4 w-4" />
               PAYER {cart.length > 0 && `${totals.total.toFixed(2)}€`}
             </Button>
             
-            <Button onClick={() => setCancelCartDialogOpen(true)} disabled={cart.length === 0} className="w-full h-10 bg-gradient-to-r from-destructive to-destructive/90 hover:from-destructive/90 hover:to-destructive/80 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+            <Button onClick={() => setCancelCartDialogOpen(true)} disabled={cart.length === 0} className="w-full h-10 bg-destructive hover:bg-destructive/90 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
               <Trash2 className="mr-1.5 h-4 w-4" />
               ANNULER LE TICKET
             </Button>
@@ -2247,8 +2247,8 @@ const Index = () => {
         <div className="col-span-4 bg-background p-1 flex flex-col gap-1 overflow-hidden h-full">
 
           {/* Statistiques rapides - Améliorées */}
-          <Card className="bg-gradient-to-br from-primary/15 via-primary/5 to-secondary/10 border-2 border-primary/30 p-2.5 flex-shrink-0 shadow-lg relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none" />
+          <Card className="bg-primary/15 border-2 border-primary/30 p-2.5 flex-shrink-0 shadow-lg relative overflow-hidden">
+            
             
             <h3 className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2 relative z-10 flex items-center gap-1.5">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
@@ -2256,7 +2256,7 @@ const Index = () => {
             </h3>
             
             <div className="grid grid-cols-2 gap-2 relative z-10 mb-2">
-              <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-lg p-2 border border-green-500/30 shadow-md">
+              <div className="bg-green-500/20 rounded-lg p-2 border border-green-500/30 shadow-md">
                 <div className="text-[8px] text-green-700 font-semibold uppercase mb-0.5">Total Ventes</div>
                 <div className="text-2xl font-bold text-green-700">
                   {todayTotal.toFixed(2)}€
@@ -2265,7 +2265,7 @@ const Index = () => {
                   {totalPercentChange >= 0 ? '↗' : '↘'} {totalPercentChange.toFixed(1)}% vs hier
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-2 border border-blue-500/30 shadow-md">
+              <div className="bg-blue-500/20 rounded-lg p-2 border border-blue-500/30 shadow-md">
                 <div className="text-[8px] text-blue-700 font-semibold uppercase mb-0.5">Nb Tickets</div>
                 <div className="text-2xl font-bold text-blue-700">
                   {todayCount}
@@ -2306,7 +2306,7 @@ const Index = () => {
           </Card>
 
           {/* Calculatrice moderne et visible */}
-          <Card className="bg-gradient-to-br from-slate-100 to-slate-50 border-2 border-slate-300 p-3 flex-shrink-0 shadow-xl">
+          <Card className="bg-slate-100 border-2 border-slate-300 p-3 flex-shrink-0 shadow-xl">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">
                 <Calculator className="h-4 w-4 text-slate-700" />
@@ -2337,7 +2337,7 @@ const Index = () => {
             </div>
             
             {/* Affichage LCD style */}
-            <div className="bg-gradient-to-b from-green-900 to-green-950 p-3 rounded-lg mb-2 border-4 border-slate-400 shadow-inner">
+            <div className="bg-green-900 p-3 rounded-lg mb-2 border-4 border-slate-400 shadow-inner">
               <div className="text-green-400 text-3xl font-bold text-right font-mono tracking-wider drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]">
                 {quantityInput}
               </div>
@@ -2352,10 +2352,10 @@ const Index = () => {
                   onClick={() => key === 'C' ? handleClearQuantity() : handleNumberClick(key)} 
                   className={`h-10 text-lg font-bold shadow-md transition-all active:scale-95 ${
                     key === 'C' 
-                      ? 'bg-gradient-to-b from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-2 border-red-700' 
+                      ? 'bg-red-500 hover:bg-red-600 text-white border-2 border-red-700' 
                       : key === '.' 
-                      ? 'bg-gradient-to-b from-menu-400 to-menu-500 hover:from-menu-500 hover:to-menu-600 text-white border-2 border-menu-600'
-                      : 'bg-gradient-to-b from-white to-gray-100 hover:from-gray-100 hover:to-gray-200 text-slate-800 border-2 border-slate-300'
+                      ? 'bg-menu-400 hover:bg-menu-500 text-white border-2 border-menu-600'
+                      : 'bg-white hover:bg-gray-100 text-slate-800 border-2 border-slate-300'
                   }`}
                 >
                   {key}
@@ -2371,7 +2371,7 @@ const Index = () => {
                       key={op}
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => handleOperation(['+', '-', '*', '/'][idx])} 
-                      className="h-9 text-base font-bold bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-2 border-blue-700 shadow-md"
+                      className="h-9 text-base font-bold bg-blue-500 hover:bg-blue-600 text-white border-2 border-blue-700 shadow-md"
                     >
                       {op}
                     </Button>
@@ -2381,7 +2381,7 @@ const Index = () => {
                   <Button 
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleOperation('%')} 
-                    className="h-9 text-sm font-bold bg-gradient-to-b from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-2 border-purple-700 shadow-md"
+                    className="h-9 text-sm font-bold bg-purple-500 hover:bg-purple-600 text-white border-2 border-purple-700 shadow-md"
                   >
                     %
                   </Button>
@@ -2389,7 +2389,7 @@ const Index = () => {
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={handleEqualsCalc} 
                     disabled={!quantityInput} 
-                    className="h-9 text-base font-bold bg-gradient-to-b from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-2 border-green-700 shadow-md disabled:opacity-50"
+                    className="h-9 text-base font-bold bg-green-500 hover:bg-green-600 text-white border-2 border-green-700 shadow-md disabled:opacity-50"
                   >
                     =
                   </Button>

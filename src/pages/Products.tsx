@@ -273,7 +273,7 @@ export default function Products() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Page Title & Actions */}
         <div className="flex items-center justify-between gap-4">
@@ -331,7 +331,7 @@ export default function Products() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-6 bg-gradient-to-br from-primary to-primary-glow text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
+          <Card className="p-6 bg-primary text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
             <div className="flex items-start justify-between">
               <div className="space-y-2">
                 <p className="text-white/80 text-sm font-medium">Valeur Stock</p>
@@ -347,7 +347,7 @@ export default function Products() {
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-accent to-accent/80 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
+          <Card className="p-6 bg-accent text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
             <div className="flex items-start justify-between">
               <div className="space-y-2">
                 <p className="text-white/80 text-sm font-medium">Marge Potentielle</p>
@@ -364,7 +364,7 @@ export default function Products() {
           </Card>
 
           <Card 
-            className="p-6 bg-gradient-to-br from-category-orange to-category-orange/80 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100 cursor-pointer"
+            className="p-6 bg-category-orange text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100 cursor-pointer"
             onClick={() => setStockFilter(stockFilter === 'low' ? 'all' : 'low')}
           >
             <div className="flex items-start justify-between">
@@ -380,7 +380,7 @@ export default function Products() {
           </Card>
 
           <Card 
-            className="p-6 bg-gradient-to-br from-destructive to-destructive/80 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100 cursor-pointer"
+            className="p-6 bg-destructive text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100 cursor-pointer"
             onClick={() => setStockFilter(stockFilter === 'out' ? 'all' : 'out')}
           >
             <div className="flex items-start justify-between">
@@ -398,7 +398,7 @@ export default function Products() {
 
         {/* Alert Banners */}
         {lowStock > 0 && (
-          <Card className="p-5 bg-gradient-to-r from-category-orange/10 to-category-orange/5 border-2 border-category-orange/20">
+          <Card className="p-5 bg-category-orange/10 border-2 border-category-orange/20">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-category-orange/20 rounded-lg shrink-0">
                 <AlertTriangle className="h-6 w-6 text-category-orange" />
@@ -414,7 +414,7 @@ export default function Products() {
         )}
 
         {outOfStock > 0 && (
-          <Card className="p-5 bg-gradient-to-r from-destructive/10 to-destructive/5 border-2 border-destructive/20">
+          <Card className="p-5 bg-destructive/10 border-2 border-destructive/20">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-destructive/20 rounded-lg shrink-0">
                 <AlertCircle className="h-6 w-6 text-destructive" />

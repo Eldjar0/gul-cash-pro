@@ -104,7 +104,7 @@ export default function MobileStats() {
           </div>
 
           {/* Total semaine */}
-          <Card className="p-4 sm:p-5 bg-gradient-to-br from-primary/10 to-primary/5">
+          <Card className="p-4 sm:p-5 bg-primary/10">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs sm:text-sm text-muted-foreground mb-1">Total 7 jours</p>

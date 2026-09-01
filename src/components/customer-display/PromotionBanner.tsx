@@ -59,7 +59,7 @@ export const PromotionBanner = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 text-white py-6 px-8 rounded-lg shadow-2xl animate-fade-in">
+    <div className="bg-pink-600 text-white py-6 px-8 rounded-lg shadow-2xl animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 flex-1">
           <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">

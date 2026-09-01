@@ -20,7 +20,7 @@ export default function InventoryManagement() {
   const outOfStockCount = products.filter(p => p.stock === 0).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-teal-900/20 dark:to-gray-900">
+    <div className="min-h-screen bg-emerald-50 dark:bg-gray-900">
       {/* Header */}
       <div className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-6 py-4">
@@ -30,7 +30,7 @@ export default function InventoryManagement() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold text-emerald-600">
                   Gestion Inventaire
                 </h1>
                 <p className="text-sm text-muted-foreground">Produits, Stock & Fournisseurs</p>
@@ -45,7 +45,7 @@ export default function InventoryManagement() {
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card 
-            className="p-6 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 cursor-pointer hover:shadow-lg transition-all" 
+            className="p-6 bg-emerald-500 text-white border-0 cursor-pointer hover:shadow-lg transition-all" 
             onClick={() => setActiveTab('products')}
           >
             <div className="flex items-center justify-between">
@@ -59,7 +59,7 @@ export default function InventoryManagement() {
           </Card>
 
           <Card 
-            className="p-6 bg-gradient-to-br from-menu-500 to-menu-600 text-white border-0 cursor-pointer hover:shadow-lg transition-all"
+            className="p-6 bg-menu-500 text-white border-0 cursor-pointer hover:shadow-lg transition-all"
             onClick={() => setActiveTab('products')}
           >
             <div className="flex items-center justify-between">
@@ -73,7 +73,7 @@ export default function InventoryManagement() {
           </Card>
 
           <Card 
-            className="p-6 bg-gradient-to-br from-cyan-500 to-cyan-600 text-white border-0 cursor-pointer hover:shadow-lg transition-all" 
+            className="p-6 bg-cyan-500 text-white border-0 cursor-pointer hover:shadow-lg transition-all" 
             onClick={() => setActiveTab('stock')}
           >
             <div className="flex items-center justify-between">
@@ -87,7 +87,7 @@ export default function InventoryManagement() {
           </Card>
 
           <Card 
-            className="p-6 bg-gradient-to-br from-teal-500 to-teal-600 text-white border-0 cursor-pointer hover:shadow-lg transition-all" 
+            className="p-6 bg-teal-500 text-white border-0 cursor-pointer hover:shadow-lg transition-all" 
             onClick={() => setActiveTab('suppliers')}
           >
             <div className="flex items-center justify-between">
@@ -104,7 +104,7 @@ export default function InventoryManagement() {
         {/* Tabs */}
         <Card className="overflow-hidden shadow-xl">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="border-b bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-gray-800 dark:to-gray-700">
+            <div className="border-b bg-emerald-50 dark:bg-gray-800">
               <TabsList className="w-full justify-start h-auto p-0 bg-transparent">
                 <TabsTrigger 
                   value="products" 
