@@ -452,6 +452,11 @@ export default function MobilePOS() {
     });
     
     toast.success(`${weightProduct.name} ajouté (${weight} kg)`);
+
+    if (weightProduct.stock !== undefined && weightProduct.stock <= 0) {
+      toast.warning(`Stock épuisé pour ${weightProduct.name} — pensez à mettre à jour le stock.`);
+    }
+
     setWeightDialogOpen(false);
   };
 
