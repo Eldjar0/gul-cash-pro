@@ -698,6 +698,7 @@ const Index = () => {
     if (product.stock !== undefined && product.stock <= 0) {
       toast.warning(`Stock épuisé pour ${product.name} — pensez à mettre à jour le stock.`);
     }
+    setLastAddedProductId(product.id);
   }, [quantityInput, isDayOpenEffective, openDay, selectedCustomer]);
 
   // Ajout rapide d'un produit libre au panier
