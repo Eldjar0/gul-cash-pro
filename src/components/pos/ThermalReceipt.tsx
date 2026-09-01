@@ -271,6 +271,17 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
                   maxWidth: '180px'
                 }}>
                   {item.product.name}
+                  {item.product.meal_voucher_eligible !== false && (
+                    <span style={{ 
+                      marginLeft: '4px', 
+                      border: '1.5px solid #000', 
+                      borderRadius: '3px', 
+                      padding: '0 3px', 
+                      fontSize: '9px', 
+                      fontWeight: '900',
+                      letterSpacing: '0.5px'
+                    }}>CR</span>
+                  )}
                   {item.is_gift && <span style={{ marginLeft: '4px' }}>🎁</span>}
                 </span>
                 <span style={{ 
