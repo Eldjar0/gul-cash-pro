@@ -693,6 +693,10 @@ const Index = () => {
     } else {
       toast.success(`${product.name} ajouté au panier`);
     }
+
+    if (product.stock !== undefined && product.stock <= 0) {
+      toast.warning(`Stock épuisé pour ${product.name} — pensez à mettre à jour le stock.`);
+    }
   }, [quantityInput, isDayOpenEffective, openDay, selectedCustomer]);
 
   // Ajout rapide d'un produit libre au panier
