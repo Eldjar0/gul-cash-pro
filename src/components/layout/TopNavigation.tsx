@@ -210,7 +210,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
       {/* Menu Burger Sheet - uniquement mobile */}
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetContent side="right" className="w-80 p-0">
-          <SheetHeader className="p-4 border-b bg-gradient-to-r from-primary to-primary-glow">
+          <SheetHeader className="p-4 border-b bg-primary">
             <SheetTitle className="text-white flex items-center gap-2">
               <img src={logoHeader} alt="Logo" className="h-8 w-auto" />
               Menu

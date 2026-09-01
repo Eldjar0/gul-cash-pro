@@ -228,10 +228,10 @@ export function BackupSettings() {
   return (
     <div className="space-y-6">
       {/* Sauvegarde complète */}
-      <Card className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">
+      <Card className="bg-purple-50 dark:bg-gray-800 border-0 shadow-lg">
         <CardHeader>
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl text-white">
+            <div className="p-3 bg-purple-500 rounded-xl text-white">
               <Database className="h-6 w-6" />
             </div>
             <div className="flex-1">
@@ -244,7 +244,7 @@ export function BackupSettings() {
           <div className="grid gap-4 mb-6">
             <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border-2 border-purple-200 dark:border-purple-800">
               <div className="flex items-center gap-3 mb-2">
-                <Badge className="bg-gradient-to-r from-purple-500 to-blue-500">Inclus</Badge>
+                <Badge className="bg-purple-500">Inclus</Badge>
                 <span className="font-semibold">Données de vente</span>
               </div>
               <p className="text-sm text-muted-foreground ml-16">Tickets, factures, remboursements, historique complet</p>
@@ -252,7 +252,7 @@ export function BackupSettings() {
             
             <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border-2 border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-3 mb-2">
-                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500">Inclus</Badge>
+                <Badge className="bg-blue-500">Inclus</Badge>
                 <span className="font-semibold">Inventaire & Stock</span>
               </div>
               <p className="text-sm text-muted-foreground ml-16">Produits, catégories, mouvements de stock, lots</p>
@@ -260,7 +260,7 @@ export function BackupSettings() {
             
             <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg border-2 border-green-200 dark:border-green-800">
               <div className="flex items-center gap-3 mb-2">
-                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500">Inclus</Badge>
+                <Badge className="bg-green-500">Inclus</Badge>
                 <span className="font-semibold">Clients & Commandes</span>
               </div>
               <p className="text-sm text-muted-foreground ml-16">Base clients, commandes, devis, crédits</p>
@@ -271,7 +271,7 @@ export function BackupSettings() {
             <Button
               onClick={handleCreateBackup}
               disabled={isExporting}
-              className="w-full h-14 text-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              className="w-full h-14 text-lg bg-purple-600 hover:bg-purple-700"
               size="lg"
             >
               <Download className="h-5 w-5 mr-2" />

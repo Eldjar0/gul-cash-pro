@@ -40,7 +40,7 @@ export function MobileBottomNav({ currentPath }: MobileBottomNavProps) {
                 className={`flex-col h-auto py-2 sm:py-2.5 px-4 sm:px-5 gap-0.5 sm:gap-1 min-w-0 relative -mt-4 rounded-full shadow-lg ${
                   isActive 
                     ? 'bg-primary hover:bg-primary/90' 
-                    : 'bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700'
+                    : 'bg-emerald-500 hover:bg-emerald-600'
                 }`}
               >
                 <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />

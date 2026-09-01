@@ -69,13 +69,13 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-secondary to-accent p-4">
+    <div className="min-h-screen flex items-center justify-center bg-primary p-4">
       <Card className="w-full max-w-md shadow-2xl border-2 border-white/20">
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center">
             <img src={logoJLProd} alt="JLProd" className="h-24 w-auto" />
           </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <CardTitle className="text-3xl font-bold text-primary">
             Gül Reyhan
           </CardTitle>
           <CardDescription className="text-base">
@@ -130,7 +130,7 @@ export default function Auth() {
               </div>
               <Button 
                 type="submit" 
-                className="w-full h-12 text-lg font-bold bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity" 
+                className="w-full h-12 text-lg font-bold bg-primary hover:opacity-90 transition-opacity" 
                 disabled={isLoading}
               >
                 {isLoading ? 'Connexion...' : 'Se connecter'}

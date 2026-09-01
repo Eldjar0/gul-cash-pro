@@ -100,13 +100,13 @@ export default function MobileCalculator() {
     const base = 'h-20 text-2xl font-normal rounded-full transition-all active:scale-95';
     switch (type) {
       case 'number':
-        return `${base} bg-[#505050] hover:bg-[#606060] text-white`;
+        return `${base} hover:bg-[#606060] text-white`;
       case 'operator':
         return `${base} ${operation ? 'bg-white text-[#ff9f0a]' : 'bg-[#ff9f0a] text-white'} hover:bg-white hover:text-[#ff9f0a]`;
       case 'special':
-        return `${base} bg-[#a5a5a5] hover:bg-[#b5b5b5] text-black`;
+        return `${base} hover:bg-[#b5b5b5] text-black`;
       case 'equals':
-        return `${base} bg-[#ff9f0a] hover:bg-[#ffb340] text-white`;
+        return `${base} hover:bg-[#ffb340] text-white`;
     }
   };
 
@@ -209,7 +209,7 @@ export default function MobileCalculator() {
           <div className="px-4 pb-4">
             <Button
               onClick={handleBackspace}
-              className="w-full h-14 bg-[#d4d4d2] hover:bg-[#e4e4e2] text-black rounded-full"
+              className="w-full h-14 hover:bg-[#e4e4e2] text-black rounded-full"
             >
               <Delete className="h-5 w-5" />
             </Button>

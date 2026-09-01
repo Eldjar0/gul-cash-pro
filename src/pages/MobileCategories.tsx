@@ -95,7 +95,7 @@ export default function MobileCategories() {
 
   if (view === 'list') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-4">
+      <div className="min-h-screen bg-background p-4">
         <div className="max-w-md mx-auto space-y-6 pb-20">
           <div className="flex items-center gap-3 pt-4">
             <Button
@@ -188,7 +188,7 @@ export default function MobileCategories() {
 
   // Form view
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto pb-20">
         <div className="flex items-center gap-3 pt-4 mb-6">
           <Button

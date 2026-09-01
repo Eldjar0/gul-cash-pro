@@ -88,7 +88,7 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl bg-[#0a0a0a] border-2 border-pos-success/30">
+      <DialogContent className="max-w-4xl border-2 border-pos-success/30">
         <DialogHeader>
           <DialogTitle className="text-pos-success font-mono text-2xl">PAIEMENT MIXTE</DialogTitle>
           <p className="text-white text-3xl font-bold font-mono mt-2">TOTAL: {total.toFixed(2)}€</p>
@@ -112,7 +112,7 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
                     const info = getMethodInfo(split.method);
                     const Icon = info?.icon;
                     return (
-                      <div key={index} className="flex items-center justify-between bg-[#2a2a2a] p-3 rounded">
+                      <div key={index} className="flex items-center justify-between p-3 rounded">
                         <div className="flex items-center gap-2">
                           {Icon && <Icon className={`h-5 w-5 ${info?.color}`} />}
                           <span className="text-white font-mono">{info?.label}</span>
@@ -136,7 +136,7 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
             </Card>
 
             {/* Summary */}
-            <Card className="bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] border-2 border-white/20 p-4">
+            <Card className="bg-[#1a1a1a] border-2 border-white/20 p-4">
               <div className="space-y-2 text-white font-mono">
                 <div className="flex justify-between">
                   <span>Total à payer:</span>
@@ -156,7 +156,7 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
             </Card>
 
             {isComplete && (
-              <Card className="bg-gradient-to-br from-pos-success/30 to-pos-success/10 border-2 border-pos-success p-4 animate-scale-in">
+              <Card className="bg-pos-success/30 border-2 border-pos-success p-4 animate-scale-in">
                 <div className="flex items-center gap-3">
                   <CheckCircle className="h-10 w-10 text-pos-success animate-pulse" />
                   <div>
@@ -250,7 +250,7 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
               setAmount('');
               onOpenChange(false);
             }}
-            className="flex-1 h-14 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono"
+            className="flex-1 h-14 hover:bg-[#3a3a3a] text-white border-2 border-[#444] font-mono"
           >
             ANNULER
           </Button>

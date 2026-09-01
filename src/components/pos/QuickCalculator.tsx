@@ -158,7 +158,7 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
         </div>
       )}
 
-      <div className="bg-gradient-to-br from-pos-display to-secondary p-4 rounded-xl mb-3 shadow-inner">
+      <div className="bg-pos-display p-4 rounded-xl mb-3 shadow-inner">
         <div className="text-xs text-white/70 mb-1 font-medium">
           {getModeLabel()}
         </div>
@@ -209,7 +209,7 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
           <Button
             onClick={handleEquals}
             disabled={!display}
-            className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100 text-xl col-span-2"
+            className="h-12 bg-primary text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100 text-xl col-span-2"
           >
             =
           </Button>
@@ -221,7 +221,7 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
           <Button
             onClick={handleSearch}
             disabled={!display}
-            className="h-12 w-full bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100"
+            className="h-12 w-full bg-primary text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100"
           >
             <Search className="h-4 w-4 mr-2" />
             Valider {calcMode === 'weight' ? 'le poids' : calcMode === 'quantity' ? 'la quantité' : 'le prix'}
@@ -234,14 +234,14 @@ export function QuickCalculator({ onProductCode, onCreateProduct }: QuickCalcula
           <Button
             onClick={handleSearch}
             disabled={!display}
-            className="h-12 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100 text-sm"
+            className="h-12 bg-primary text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100 text-sm"
           >
             <Search className="h-4 w-4 mr-1" />
             Chercher
           </Button>
           <Button
             onClick={onCreateProduct}
-            className="h-12 bg-gradient-to-br from-primary to-primary-glow text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100 text-sm"
+            className="h-12 bg-primary text-white font-bold shadow-lg hover:brightness-110 active:brightness-90 transition-all duration-100 text-sm"
           >
             <Plus className="h-4 w-4 mr-1" />
             Nouveau

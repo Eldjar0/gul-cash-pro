@@ -227,7 +227,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900">
+    <div className="min-h-screen bg-purple-50 dark:bg-gray-900">
       {/* Header */}
       <div className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-6 py-4">
@@ -237,7 +237,7 @@ export default function Settings() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold text-purple-600">
                   Paramètres
                 </h1>
                 <p className="text-sm text-muted-foreground">Configuration et gestion des utilisateurs</p>
@@ -249,44 +249,44 @@ export default function Settings() {
 
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Tabs defaultValue="billing" className="w-full space-y-6">
-          <TabsList className="flex flex-wrap gap-2 mb-8 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm shadow-lg border-2 border-primary/20 rounded-xl p-2 h-auto">
-            <TabsTrigger value="billing" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+          <TabsList className="flex flex-wrap gap-2 mb-8 bg-card backdrop-blur-sm shadow-lg border-2 border-primary/20 rounded-xl p-2 h-auto">
+            <TabsTrigger value="billing" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Building className="h-4 w-4" />
               <span className="hidden sm:inline">Facturation</span>
             </TabsTrigger>
-            <TabsTrigger value="legal" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+            <TabsTrigger value="legal" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Légal</span>
             </TabsTrigger>
-            <TabsTrigger value="fiscal" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+            <TabsTrigger value="fiscal" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Calculator className="h-4 w-4" />
               <span className="hidden sm:inline">Fiscalité</span>
             </TabsTrigger>
-            <TabsTrigger value="printer" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+            <TabsTrigger value="printer" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Printer className="h-4 w-4" />
               <span className="hidden sm:inline">Impression</span>
             </TabsTrigger>
-            <TabsTrigger value="backup" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+            <TabsTrigger value="backup" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Database className="h-4 w-4" />
               <span className="hidden sm:inline">Sauvegarde</span>
             </TabsTrigger>
-            <TabsTrigger value="cleanup" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-menu-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+            <TabsTrigger value="cleanup" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Trash2 className="h-4 w-4" />
               <span className="hidden sm:inline">Nettoyage</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+            <TabsTrigger value="users" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Utilisateurs</span>
             </TabsTrigger>
-            <TabsTrigger value="contact" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+            <TabsTrigger value="contact" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Info className="h-4 w-4" />
               <span className="hidden sm:inline">Contact</span>
             </TabsTrigger>
-            <TabsTrigger value="mobile" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+            <TabsTrigger value="mobile" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Smartphone className="h-4 w-4" />
               <span className="hidden sm:inline">Scan Mobile</span>
             </TabsTrigger>
-            <TabsTrigger value="scale" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-600 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
+            <TabsTrigger value="scale" className="flex items-center gap-2 rounded-lg transition-all duration-300 data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg font-medium px-3 py-2">
               <Scale className="h-4 w-4" />
               <span className="hidden sm:inline">Balance</span>
             </TabsTrigger>
@@ -294,9 +294,9 @@ export default function Settings() {
 
           <TabsContent value="billing" className="space-y-6">
             {/* Type d'entité Card */}
-            <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">
+            <Card className="p-6 bg-purple-50 dark:bg-gray-800 border-0 shadow-lg">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl text-white">
+                <div className="p-3 bg-purple-500 rounded-xl text-white">
                   <Building2 className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
@@ -319,7 +319,7 @@ export default function Settings() {
             {/* Identité Card */}
             <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
               <div className="flex items-start gap-4 mb-6">
-                <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl text-white">
+                <div className="p-3 bg-indigo-500 rounded-xl text-white">
                   <User className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
@@ -367,7 +367,7 @@ export default function Settings() {
             {/* Adresse siège social Card */}
             <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
               <div className="flex items-start gap-4 mb-6">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl text-white">
+                <div className="p-3 bg-blue-500 rounded-xl text-white">
                   <MapPin className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
@@ -414,7 +414,7 @@ export default function Settings() {
             {/* Adresse du commerce Card */}
             <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
               <div className="flex items-start gap-4 mb-6">
-                <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl text-white">
+                <div className="p-3 bg-green-500 rounded-xl text-white">
                   <Building className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
@@ -461,7 +461,7 @@ export default function Settings() {
             {/* Informations légales et contact Card */}
             <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
               <div className="flex items-start gap-4 mb-6">
-                <div className="p-3 bg-gradient-to-br from-menu-500 to-red-500 rounded-xl text-white">
+                <div className="p-3 bg-menu-500 rounded-xl text-white">
                   <FileText className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
@@ -514,9 +514,9 @@ export default function Settings() {
             </Card>
 
             {/* Logo de facturation Card */}
-            <Card className="p-6 bg-gradient-to-br from-pink-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">
+            <Card className="p-6 bg-pink-50 dark:bg-gray-800 border-0 shadow-lg">
               <div className="flex items-start gap-4 mb-6">
-                <div className="p-3 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl text-white">
+                <div className="p-3 bg-pink-500 rounded-xl text-white">
                   <Image className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
@@ -543,7 +543,7 @@ export default function Settings() {
             {/* Comptes bancaires Card */}
             <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
               <div className="flex items-start gap-4 mb-6">
-                <div className="p-3 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-xl text-white">
+                <div className="p-3 bg-teal-500 rounded-xl text-white">
                   <CreditCard className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
@@ -556,7 +556,7 @@ export default function Settings() {
                       type="button"
                       onClick={addBankAccount}
                       size="sm"
-                      className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600"
+                      className="bg-teal-500 hover:bg-teal-600"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Ajouter
@@ -575,7 +575,7 @@ export default function Settings() {
               ) : (
                 <div className="space-y-4">
                   {settings.bank_accounts.map((account, index) => (
-                    <Card key={account.id} className="p-4 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-gray-900 dark:to-gray-800 border-2 border-teal-200 dark:border-teal-800">
+                    <Card key={account.id} className="p-4 bg-teal-50 dark:bg-gray-900 border-2 border-teal-200 dark:border-teal-800">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <Badge variant="secondary" className="bg-teal-100 text-teal-700">
@@ -639,7 +639,7 @@ export default function Settings() {
             </Card>
 
             {/* Bouton sauvegarder */}
-            <Card className="p-6 bg-gradient-to-r from-purple-500 to-blue-500 border-0 shadow-lg">
+            <Card className="p-6 bg-purple-500 border-0 shadow-lg">
               <Button 
                 onClick={saveSettings} 
                 disabled={saving} 
@@ -659,7 +659,7 @@ export default function Settings() {
             />
             
             {/* Bouton sauvegarder */}
-            <Card className="p-6 bg-gradient-to-r from-blue-500 to-cyan-500 border-0 shadow-lg">
+            <Card className="p-6 bg-blue-500 border-0 shadow-lg">
               <Button 
                 onClick={saveSettings} 
                 disabled={saving} 
@@ -686,9 +686,9 @@ export default function Settings() {
 
           <TabsContent value="cleanup" className="space-y-6">
             {/* Réinitialiser l'historique des ventes */}
-            <Card className="p-8 bg-gradient-to-br from-menu-50 to-menu-50 dark:from-gray-800 dark:to-menu-900/20 border-2 border-menu-200 dark:border-menu-800 shadow-xl">
+            <Card className="p-8 bg-menu-50 dark:bg-gray-800 border-2 border-menu-200 dark:border-menu-800 shadow-xl">
               <div className="flex items-start gap-6 mb-8">
-                <div className="p-4 bg-gradient-to-br from-menu-500 to-menu-500 rounded-xl text-white">
+                <div className="p-4 bg-menu-500 rounded-xl text-white">
                   <RotateCcw className="h-8 w-8" />
                 </div>
                 <div className="flex-1">
@@ -818,9 +818,9 @@ export default function Settings() {
             </Card>
 
             {/* Supprimer toutes les données */}
-            <Card className="p-8 bg-gradient-to-br from-red-50 to-menu-50 dark:from-gray-800 dark:to-red-900/20 border-2 border-red-200 dark:border-red-800 shadow-xl">
+            <Card className="p-8 bg-red-50 dark:bg-gray-800 border-2 border-red-200 dark:border-red-800 shadow-xl">
               <div className="flex items-start gap-6 mb-8">
-                <div className="p-4 bg-gradient-to-br from-red-500 to-menu-500 rounded-xl text-white">
+                <div className="p-4 bg-red-500 rounded-xl text-white">
                   <AlertTriangle className="h-8 w-8" />
                 </div>
                 <div className="flex-1">
@@ -901,7 +901,7 @@ export default function Settings() {
                       <Button 
                         variant="destructive"
                         size="lg"
-                        className="w-full h-14 text-lg bg-gradient-to-r from-red-600 to-menu-600 hover:from-red-700 hover:to-menu-700"
+                        className="w-full h-14 text-lg bg-red-600 hover:bg-red-700"
                         disabled={isDeleting}
                       >
                         <Trash2 className="h-5 w-5 mr-2" />
@@ -956,7 +956,7 @@ export default function Settings() {
           <TabsContent value="mobile">
             <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
               <div className="flex items-start gap-4 mb-6">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl text-white">
+                <div className="p-3 bg-blue-500 rounded-xl text-white">
                   <Smartphone className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
@@ -971,7 +971,7 @@ export default function Settings() {
                 </p>
                 <Button 
                   onClick={() => setRemoteScanOpen(true)}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold px-6 py-3"
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3"
                 >
                   <Smartphone className="h-5 w-5 mr-2" />
                   Afficher le QR Code

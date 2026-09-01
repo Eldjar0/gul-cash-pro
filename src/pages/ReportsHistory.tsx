@@ -87,7 +87,7 @@ export default function ReportsHistory() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-destructive/5 to-background p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Page Title */}
         <div className="space-y-2">
@@ -104,7 +104,7 @@ export default function ReportsHistory() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-6 bg-gradient-to-br from-destructive to-destructive/80 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
+          <Card className="p-6 bg-destructive text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
             <div className="flex items-start justify-between">
               <div className="space-y-2">
                 <p className="text-white/80 text-sm font-medium">Total Général</p>
@@ -120,7 +120,7 @@ export default function ReportsHistory() {
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-accent to-accent/80 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
+          <Card className="p-6 bg-accent text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
             <div className="flex items-start justify-between">
               <div className="space-y-2">
                 <p className="text-white/80 text-sm font-medium">Espèces</p>
@@ -133,7 +133,7 @@ export default function ReportsHistory() {
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-category-blue to-category-blue/80 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
+          <Card className="p-6 bg-category-blue text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
             <div className="flex items-start justify-between">
               <div className="space-y-2">
                 <p className="text-white/80 text-sm font-medium">Carte Bancaire</p>
@@ -146,7 +146,7 @@ export default function ReportsHistory() {
             </div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-category-purple to-category-purple/80 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
+          <Card className="p-6 bg-category-purple text-white border-0 shadow-lg hover:shadow-xl transition-all duration-100">
             <div className="flex items-start justify-between">
               <div className="space-y-2">
                 <p className="text-white/80 text-sm font-medium">Paiement Mobile</p>
@@ -162,7 +162,7 @@ export default function ReportsHistory() {
 
         {/* Reports List */}
         <Card className="bg-white border-0 shadow-xl overflow-hidden">
-          <div className="p-6 border-b bg-gradient-to-r from-muted/30 to-muted/10">
+          <div className="p-6 border-b bg-muted/30">
             <div className="flex items-center gap-3">
               <BarChart3 className="h-6 w-6 text-destructive" />
               <div>
@@ -177,7 +177,7 @@ export default function ReportsHistory() {
               {reports.map((report) => (
                 <Card
                   key={report.id}
-                  className="p-5 border-2 hover:border-destructive/30 hover:shadow-lg transition-all duration-100 cursor-pointer bg-gradient-to-r from-white to-muted/20"
+                  className="p-5 border-2 hover:border-destructive/30 hover:shadow-lg transition-all duration-100 cursor-pointer bg-white"
                   onClick={() => handleViewReport(report)}
                 >
                   <div className="flex items-center justify-between gap-4">

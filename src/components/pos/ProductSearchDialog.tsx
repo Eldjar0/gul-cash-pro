@@ -104,7 +104,7 @@ export function ProductSearchDialog({
               )}
 
               {filteredProducts.map((product) => (
-                <Card key={product.id} className="p-4 bg-gradient-to-br from-primary/5 to-secondary/5 space-y-3">
+                <Card key={product.id} className="p-4 bg-primary/5 space-y-3">
                   <div>
                     <h3 className="text-lg font-bold">{product.name}</h3>
                     {product.description && (

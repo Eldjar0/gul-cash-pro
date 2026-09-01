@@ -125,9 +125,9 @@ export function ScaleSettings() {
   return (
     <div className="space-y-6">
       {/* Status Card */}
-      <Card className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">
+      <Card className="p-6 bg-blue-50 dark:bg-gray-800 border-0 shadow-lg">
         <div className="flex items-start gap-4 mb-6">
-          <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl text-white">
+          <div className="p-3 bg-blue-500 rounded-xl text-white">
             <Scale className="h-6 w-6" />
           </div>
           <div className="flex-1">
@@ -152,7 +152,7 @@ export function ScaleSettings() {
             onClick={handleConnect}
             className={connected
               ? 'bg-red-500 hover:bg-red-600 text-white'
-              : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
+              : 'bg-blue-500 hover:bg-blue-600 text-white'
             }
           >
             {connected ? 'Déconnecter' : 'Connecter la balance'}
@@ -211,9 +211,9 @@ export function ScaleSettings() {
 
       {/* Live Test Readings */}
       {liveTestActive && (
-        <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">
+        <Card className="p-6 bg-green-50 dark:bg-gray-800 border-0 shadow-lg">
           <div className="flex items-start gap-4 mb-4">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl text-white">
+            <div className="p-3 bg-green-500 rounded-xl text-white">
               <Play className="h-6 w-6" />
             </div>
             <div className="flex-1">
@@ -271,7 +271,7 @@ export function ScaleSettings() {
       {/* Parameters Card */}
       <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
         <div className="flex items-start gap-4 mb-6">
-          <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl text-white">
+          <div className="p-3 bg-indigo-500 rounded-xl text-white">
             <RefreshCw className="h-6 w-6" />
           </div>
           <div className="flex-1">
@@ -436,9 +436,9 @@ export function ScaleSettings() {
 
 
       {/* Instructions Card */}
-      <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-900 border-0 shadow-lg">
+      <Card className="p-6 bg-green-50 dark:bg-gray-800 border-0 shadow-lg">
         <div className="flex items-start gap-4 mb-4">
-          <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl text-white">
+          <div className="p-3 bg-green-500 rounded-xl text-white">
             <Info className="h-6 w-6" />
           </div>
           <div>

@@ -34,7 +34,7 @@ export default function ContactInfo() {
         </div>
 
         {/* Certificat de propriété */}
-        <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/30">
+        <Card className="p-6 bg-primary/5 border-primary/30">
           <div className="space-y-4">
             <div className="flex items-center gap-3 justify-center">
               <Award className="h-8 w-8 text-primary" />

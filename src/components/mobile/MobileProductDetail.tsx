@@ -111,7 +111,7 @@ export const MobileProductDetail = () => {
           
           {/* Image et prix principal */}
           <Card className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
+            <div className="absolute inset-0 bg-primary/10" />
             <div className="relative p-4 sm:p-6">
               <div className="flex gap-4">
                 {product.image ? (

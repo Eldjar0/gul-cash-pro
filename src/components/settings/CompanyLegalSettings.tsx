@@ -20,7 +20,7 @@ export function CompanyLegalSettings({ settings, onChange }: CompanyLegalSetting
       {/* Informations légales */}
       <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
         <div className="flex items-start gap-4 mb-6">
-          <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl text-white">
+          <div className="p-3 bg-blue-500 rounded-xl text-white">
             <Scale className="h-6 w-6" />
           </div>
           <div className="flex-1">
@@ -68,7 +68,7 @@ export function CompanyLegalSettings({ settings, onChange }: CompanyLegalSetting
       {/* Conditions de paiement */}
       <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border-0">
         <div className="flex items-start gap-4 mb-6">
-          <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl text-white">
+          <div className="p-3 bg-purple-500 rounded-xl text-white">
             <Clock className="h-6 w-6" />
           </div>
           <div className="flex-1">

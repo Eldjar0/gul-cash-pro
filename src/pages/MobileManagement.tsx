@@ -54,12 +54,12 @@ export default function MobileManagement() {
   });
 
   const menuItems = [
-    { title: 'Encaisser', icon: CreditCard, color: 'from-emerald-500 to-emerald-600', action: () => navigate('/mobile/pos') },
-    { title: 'Produits', icon: Package, color: 'from-blue-500 to-blue-600', action: () => navigate('/mobile/products') },
-    { title: 'Catégories', icon: FolderKanban, color: 'from-purple-500 to-purple-600', action: () => navigate('/mobile/categories') },
-    { title: 'Scanner', icon: Scan, color: 'from-menu-500 to-menu-600', action: () => setMobileScannerOpen(true) },
-    { title: 'Clients', icon: Users, color: 'from-indigo-500 to-indigo-600', action: () => navigate('/mobile/customers') },
-    { title: 'Alertes', icon: AlertTriangle, color: 'from-red-500 to-red-600', action: () => navigate('/mobile/alerts'), badge: stats?.lowStockCount },
+    { title: 'Encaisser', icon: CreditCard, color: 'bg-emerald-500', action: () => navigate('/mobile/pos') },
+    { title: 'Produits', icon: Package, color: 'bg-blue-500', action: () => navigate('/mobile/products') },
+    { title: 'Catégories', icon: FolderKanban, color: 'bg-purple-500', action: () => navigate('/mobile/categories') },
+    { title: 'Scanner', icon: Scan, color: 'bg-menu-500', action: () => setMobileScannerOpen(true) },
+    { title: 'Clients', icon: Users, color: 'bg-indigo-500', action: () => navigate('/mobile/customers') },
+    { title: 'Alertes', icon: AlertTriangle, color: 'bg-red-500', action: () => navigate('/mobile/alerts'), badge: stats?.lowStockCount },
   ];
 
   return (
@@ -182,7 +182,7 @@ export default function MobileManagement() {
                         {item.badge > 99 ? '99+' : item.badge}
                       </Badge>
                     )}
-                    <div className={`bg-gradient-to-br ${item.color} p-4 sm:p-5 md:p-6 aspect-square flex flex-col items-center justify-center relative`}>
+                    <div className={`${item.color} p-4 sm:p-5 md:p-6 aspect-square flex flex-col items-center justify-center relative`}>
                       {/* Pattern de fond */}
                       <div className="absolute inset-0 opacity-10">
                         <div 

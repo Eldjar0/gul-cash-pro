@@ -910,7 +910,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                     </Button>
                   </Card>
                   {/* Notes - Section bien visible */}
-                  <Card className="p-4 border-2 border-primary/20 bg-gradient-to-br from-white to-primary/5">
+                  <Card className="p-4 border-2 border-primary/20 bg-white">
                     <div className="flex items-center gap-2 mb-3">
                       <FileText className="h-4 w-4 text-primary" />
                       <Label className="font-bold text-primary">Notes & Remarques</Label>
@@ -934,7 +934,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                   <div className="p-6 pb-40">
                     <Card className="bg-white shadow-2xl border-2 border-primary/20 overflow-hidden">
                       {/* Preview Header */}
-                      <div className="bg-gradient-to-r from-primary via-primary-glow to-primary p-6 text-white">
+                      <div className="bg-primary p-6 text-white">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-3">
                             <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -950,7 +950,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
                       <div className="p-6 space-y-6">
                         {/* Company Header */}
-                        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-5 border-2 border-primary/20">
+                        <div className="bg-primary/5 rounded-xl p-5 border-2 border-primary/20">
                           <div className="text-xl font-bold text-primary mb-2">{settings.name}</div>
                           <div className="space-y-1 text-sm text-muted-foreground">
                             <div>{settings.address}</div>
@@ -1027,7 +1027,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                                 const itemVat = itemSubtotal * (item.vatRate / 100);
                                 const itemTotal = itemSubtotal + itemVat;
                                 return (
-                                  <div key={index} className="border-2 rounded-xl p-4 bg-gradient-to-br from-white to-gray-50 hover:border-primary/30 transition-smooth">
+                                  <div key={index} className="border-2 rounded-xl p-4 bg-white hover:border-primary/30 transition-smooth">
                                     <div className="flex items-start justify-between mb-2">
                                       <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
@@ -1081,7 +1081,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         <Separator className="my-6" />
 
                         {/* Récapitulatif TVA par taux - Tableau détaillé */}
-                        <div className="bg-gradient-to-br from-muted/30 to-muted/50 rounded-xl p-5 border border-muted-foreground/20">
+                        <div className="bg-muted/30 rounded-xl p-5 border border-muted-foreground/20">
                           <h4 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
                             <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs">RÉCAPITULATIF TVA</span>
                           </h4>
@@ -1110,7 +1110,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                         </div>
 
                         {/* Totals Section - Plus détaillé */}
-                        <div className="bg-gradient-to-br from-primary/5 to-primary/15 rounded-xl p-6 border-2 border-primary/30 shadow-lg">
+                        <div className="bg-primary/5 rounded-xl p-6 border-2 border-primary/30 shadow-lg">
                           <div className="space-y-4">
                             {/* Sous-total HT */}
                             <div className="flex justify-between items-center pb-3 border-b border-primary/20">
@@ -1183,7 +1183,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
                         {/* Communication structurée */}
                         {structuredCommunication && (
-                          <div className="bg-gradient-to-r from-primary/10 via-primary/20 to-primary/10 rounded-xl p-5 border-2 border-primary/30 text-center">
+                          <div className="bg-primary/10 rounded-xl p-5 border-2 border-primary/30 text-center">
                             <div className="text-xs font-semibold text-primary mb-2 uppercase tracking-wide">Communication structurée</div>
                             <div className="text-2xl font-mono font-black text-primary tracking-wider">{structuredCommunication}</div>
                             <div className="text-xs text-muted-foreground mt-2">À mentionner lors du paiement</div>

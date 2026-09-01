@@ -171,7 +171,7 @@ export function CreditNoteViewer({ open, onOpenChange, creditNoteId }: CreditNot
           <ScrollArea className="flex-1 pr-4">
             <div className="space-y-6 print:space-y-4">
               {/* Header avec numéro et statut */}
-              <div className="flex items-start justify-between bg-gradient-to-r from-red-50 to-menu-50 dark:from-red-900/20 dark:to-menu-900/20 rounded-lg p-4">
+              <div className="flex items-start justify-between bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Numéro</p>
                   <h2 className="text-2xl font-bold text-red-600">{creditNote.credit_note_number}</h2>
@@ -277,7 +277,7 @@ export function CreditNoteViewer({ open, onOpenChange, creditNoteId }: CreditNot
 
               {/* Totaux */}
               <div className="flex justify-end">
-                <Card className="p-4 w-72 bg-gradient-to-br from-red-50 to-menu-50 dark:from-red-900/20 dark:to-menu-900/20">
+                <Card className="p-4 w-72 bg-red-50 dark:bg-red-900/20">
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Sous-total HT</span>

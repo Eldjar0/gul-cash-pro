@@ -154,7 +154,7 @@ export default function DirectCameraScanner() {
   }, [sessionCode]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-primary/5 p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
