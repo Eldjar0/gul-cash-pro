@@ -231,6 +231,9 @@ export function Receipt({ sale }: ReceiptProps) {
                      method === 'card' ? 'Carte bancaire' : 
                      method === 'customer_credit' ? 'Crédit' :
                      method === 'mobile' ? 'Paiement mobile' :
+                     method === 'meal_voucher' ? 'Chèques-repas' :
+                     method === 'voucher' ? 'Chèques-repas' :
+                     method === 'gift_card' ? 'Carte cadeau' :
                      method === 'check' ? 'Chèque' : method}
                   </span>
                   <span className="font-bold">{amount.toFixed(2)}€</span>
