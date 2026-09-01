@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, subWeeks } from 'date-fns';
+import { getSalePaymentAmounts } from '@/lib/paymentUtils';
 
 interface SalesAnalytics {
   totalSales: number;
@@ -104,14 +105,17 @@ export const useAnalytics = (period: 'today' | 'week' | 'month' | 'custom', star
         ...data,
       }));
 
-      // Sales by payment method
+      // Sales by payment method — répartition exacte via payment_split
       const paymentMap = new Map<string, { count: number; amount: number }>();
       sales?.forEach(sale => {
-        const method = sale.payment_method;
-        const existing = paymentMap.get(method) || { count: 0, amount: 0 };
-        existing.count += 1;
-        existing.amount += sale.total;
-        paymentMap.set(method, existing);
+        const amounts = getSalePaymentAmounts(sale as any);
+        const entries = Object.entries(amounts).sort((a, b) => b[1] - a[1]);
+        entries.forEach(([method, amount], idx) => {
+          const existing = paymentMap.get(method) || { count: 0, amount: 0 };
+          if (idx === 0) existing.count += 1; // la vente compte une fois, sur sa méthode principale
+          existing.amount += amount;
+          paymentMap.set(method, existing);
+        });
       });
       const salesByPaymentMethod = Array.from(paymentMap.entries()).map(([method, data]) => ({
         method,

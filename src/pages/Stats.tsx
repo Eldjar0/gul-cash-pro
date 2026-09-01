@@ -15,6 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ExportDataButton } from '@/components/dashboard/ExportDataButton';
 import { useSales } from '@/hooks/useSales';
+import { getSalePaymentAmounts, getPaymentMethodLabel, formatSalePayments } from '@/lib/paymentUtils';
 import { useRefunds } from '@/hooks/useRefunds';
 import { useDailyRevenue, usePaymentMethodStats } from '@/hooks/useRevenueAnalytics';
 import { useDailyReports } from '@/hooks/useDailyReports';
@@ -179,24 +180,21 @@ export default function Stats() {
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 20);
 
-  // Stats par méthode de paiement
+  // Stats par méthode de paiement — répartition exacte via payment_split
   const paymentMethodStats = new Map<string, { count: number; total: number }>();
   activeSales.forEach(sale => {
-    const method = sale.payment_method || 'unknown';
-    const existing = paymentMethodStats.get(method);
-    if (existing) {
-      existing.count += 1;
-      existing.total += Number(sale.total);
-    } else {
-      paymentMethodStats.set(method, { count: 1, total: Number(sale.total) });
-    }
+    const amounts = getSalePaymentAmounts(sale as any);
+    const entries = Object.entries(amounts).sort((a, b) => b[1] - a[1]);
+    entries.forEach(([method, amount], idx) => {
+      const existing = paymentMethodStats.get(method) || { count: 0, total: 0 };
+      if (idx === 0) existing.count += 1; // la vente compte une fois, sur sa méthode principale
+      existing.total += amount;
+      paymentMethodStats.set(method, existing);
+    });
   });
 
   const paymentData = Array.from(paymentMethodStats.entries()).map(([method, data]) => ({
-    method: method === 'cash' ? 'Espèces' : 
-            method === 'card' ? 'Carte' : 
-            method === 'mobile' ? 'Mobile' : 
-            method === 'check' ? 'Chèque' : method,
+    method: getPaymentMethodLabel(method),
     count: data.count,
     total: data.total,
     percentage: totalRevenue > 0 ? (data.total / totalRevenue) * 100 : 0
@@ -247,7 +245,7 @@ export default function Stats() {
     const salesData = activeSales.map(sale => [
       sale.sale_number,
       format(new Date(sale.date || sale.created_at), 'dd/MM/yyyy HH:mm'),
-      sale.payment_method,
+      formatSalePayments(sale as any),
       sale.subtotal.toFixed(2) + '€',
       sale.total_vat.toFixed(2) + '€',
       sale.total.toFixed(2) + '€'
@@ -285,7 +283,7 @@ export default function Stats() {
       xml += `    <vente>\n`;
       xml += `      <numero>${sale.sale_number}</numero>\n`;
       xml += `      <date>${format(new Date(sale.date || sale.created_at), 'yyyy-MM-dd HH:mm:ss')}</date>\n`;
-      xml += `      <methode_paiement>${sale.payment_method}</methode_paiement>\n`;
+      xml += `      <methode_paiement>${formatSalePayments(sale as any)}</methode_paiement>\n`;
       xml += `      <montant_ht>${sale.subtotal.toFixed(2)}</montant_ht>\n`;
       xml += `      <montant_tva>${sale.total_vat.toFixed(2)}</montant_tva>\n`;
       xml += `      <montant_ttc>${sale.total.toFixed(2)}</montant_ttc>\n`;
