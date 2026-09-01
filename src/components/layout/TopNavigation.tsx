@@ -82,7 +82,7 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-primary to-primary-glow shadow-lg">
+    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-pos-display shadow-lg shadow-black/20">
       <div className="flex h-12 items-center gap-1 px-2">
         {/* Logo */}
         <button
@@ -97,11 +97,11 @@ export function TopNavigation({ onLockScreen }: TopNavigationProps) {
           {/* Bouton Caisse avec badge */}
           <Button
             onClick={() => navigate("/")}
-            className="h-10 px-2 flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-semibold text-xs whitespace-nowrap border border-white/40"
+            className="h-10 px-2 flex items-center gap-1.5 bg-primary hover:bg-primary-glow text-primary-foreground font-semibold text-xs whitespace-nowrap shadow-glow-sm"
           >
             <ShoppingCart className="h-4 w-4" />
             <span>Caisse</span>
-            <Badge variant="secondary" className="ml-0.5 h-4 px-1 text-[8px] bg-white/30 text-white border-0">
+            <Badge variant="secondary" className="ml-0.5 h-4 px-1 text-[8px] bg-black/20 text-primary-foreground border-0">
               <Monitor className="h-2.5 w-2.5 mr-0.5" />
               PC
             </Badge>
