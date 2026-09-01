@@ -9,6 +9,7 @@ import { Save, Ticket } from 'lucide-react';
 import { useUpdateProduct, type Product } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { PRODUCT_UNITS } from '@/data/units';
+import { ProductBarcodesManager } from '@/components/products/ProductBarcodesManager';
 import { toast } from 'sonner';
 
 interface QuickProductEditDialogProps {
