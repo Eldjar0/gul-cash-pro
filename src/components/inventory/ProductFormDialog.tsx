@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -49,6 +50,7 @@ export const ProductFormDialog = ({
     stock: '',
     min_stock: '',
     supplier_id: '',
+    meal_voucher_eligible: true,
   });
 
   const margin = useMemo(() => {
@@ -85,6 +87,7 @@ export const ProductFormDialog = ({
         stock: product.stock?.toString() || '',
         min_stock: product.min_stock?.toString() || '',
         supplier_id: '',
+        meal_voucher_eligible: product.meal_voucher_eligible ?? (Number(product.vat_rate) < 21),
       });
       
       if (product.image) {
@@ -104,6 +107,7 @@ export const ProductFormDialog = ({
         stock: '',
         min_stock: '',
         supplier_id: '',
+        meal_voucher_eligible: true,
       });
       setImageUrl(null);
       setImageFile(null);
@@ -202,6 +206,7 @@ export const ProductFormDialog = ({
       unit: formData.unit,
       supplier: selectedSupplier?.name || null,
       is_active: true,
+      meal_voucher_eligible: formData.meal_voucher_eligible,
       image: uploadedImageUrl,
     };
 
@@ -383,6 +388,24 @@ export const ProductFormDialog = ({
                         <SelectItem value="21">21%</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-lg border p-3 bg-muted/30">
+                    <Checkbox
+                      id="meal-voucher"
+                      checked={formData.meal_voucher_eligible}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, meal_voucher_eligible: checked === true })
+                      }
+                    />
+                    <div className="space-y-0.5">
+                      <Label htmlFor="meal-voucher" className="cursor-pointer">
+                        Accepté en chèques-repas
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Coché par défaut pour les produits alimentaires (TVA 6% / 12%).
+                      </p>
+                    </div>
                   </div>
                 </Card>
 

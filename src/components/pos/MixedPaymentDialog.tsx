@@ -8,11 +8,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Smartphone, Banknote, Gift, Receipt as ReceiptIcon, Wallet, Trash2, Plus, CheckCircle } from 'lucide-react';
+import { CreditCard, Smartphone, Banknote, Gift, Receipt as ReceiptIcon, Wallet, Trash2, Plus, CheckCircle, Ticket } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-type PaymentMethodType = 'cash' | 'card' | 'mobile' | 'gift_card' | 'check' | 'customer_credit';
+type PaymentMethodType = 'cash' | 'card' | 'mobile' | 'gift_card' | 'check' | 'customer_credit' | 'meal_voucher';
 
 interface PaymentSplit {
   method: PaymentMethodType;
@@ -25,6 +25,7 @@ interface MixedPaymentDialogProps {
   total: number;
   onConfirmPayment: (splits: PaymentSplit[]) => void;
   customerId?: string;
+  mealVoucherEligibleTotal?: number;
 }
 
 const paymentMethods = [
@@ -34,9 +35,10 @@ const paymentMethods = [
   { value: 'gift_card' as const, label: 'Carte cadeau', icon: Gift, color: 'text-pink-500' },
   { value: 'check' as const, label: 'Chèque', icon: ReceiptIcon, color: 'text-orange-500' },
   { value: 'customer_credit' as const, label: 'Crédit client', icon: Wallet, color: 'text-cyan-500' },
+  { value: 'meal_voucher' as const, label: 'Chèques-repas', icon: Ticket, color: 'text-orange-500' },
 ];
 
-export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment, customerId }: MixedPaymentDialogProps) {
+export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment, customerId, mealVoucherEligibleTotal = 0 }: MixedPaymentDialogProps) {
   const [splits, setSplits] = useState<PaymentSplit[]>([]);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodType>('cash');
   const [amount, setAmount] = useState('');
@@ -45,11 +47,20 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
   const remaining = Math.max(0, total - totalPaid);
   const isComplete = remaining === 0;
 
+  const voucherUsed = splits
+    .filter(sp => sp.method === 'meal_voucher')
+    .reduce((sum, sp) => sum + sp.amount, 0);
+  const voucherAvailable = Math.max(0, mealVoucherEligibleTotal - voucherUsed);
+
   const addSplit = () => {
     const amountNum = parseFloat(amount);
     if (!amountNum || amountNum <= 0) return;
     
     if (totalPaid + amountNum > total) {
+      return;
+    }
+
+    if (selectedMethod === 'meal_voucher' && amountNum > voucherAvailable) {
       return;
     }
 
@@ -81,6 +92,11 @@ export function MixedPaymentDialog({ open, onOpenChange, total, onConfirmPayment
         <DialogHeader>
           <DialogTitle className="text-pos-success font-mono text-2xl">PAIEMENT MIXTE</DialogTitle>
           <p className="text-white text-3xl font-bold font-mono mt-2">TOTAL: {total.toFixed(2)}€</p>
+          {mealVoucherEligibleTotal > 0 && (
+            <p className="text-orange-400 font-mono text-sm">
+              Chèques-repas possibles: {mealVoucherEligibleTotal.toFixed(2)}€ · Autre paiement: {Math.max(0, total - mealVoucherEligibleTotal).toFixed(2)}€
+            </p>
+          )}
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-6">

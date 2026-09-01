@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split, X, Info } from 'lucide-react';
+import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split, X, Info, Ticket } from 'lucide-react';
 import { calculateBelgianRounding, formatRoundingDifference } from '@/utils/belgianRounding';
 
-type PaymentMethod = 'cash' | 'card' | 'mobile' | 'customer_credit';
+type PaymentMethod = 'cash' | 'card' | 'mobile' | 'customer_credit' | 'meal_voucher';
 
 interface PaymentSplit {
   method: PaymentMethod;
@@ -27,6 +27,7 @@ interface PaymentDialogProps {
   onMixedPayment?: () => void;
   onOpenCustomerCreditDialog?: () => void;
   customerId?: string;
+  mealVoucherEligibleTotal?: number;
 }
 
 export function PaymentDialog({ 
@@ -36,7 +37,8 @@ export function PaymentDialog({
   onConfirmPayment, 
   onMixedPayment,
   onOpenCustomerCreditDialog,
-  customerId
+  customerId,
+  mealVoucherEligibleTotal = 0
 }: PaymentDialogProps) {
   const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [amountPaid, setAmountPaid] = useState('');
@@ -102,7 +104,14 @@ export function PaymentDialog({
     if (!amount || amount <= 0) return;
     
     const remaining = getRemaining();
-    const finalAmount = Math.min(amount, remaining);
+    let finalAmount = Math.min(amount, remaining);
+
+    if (selectedMethod === 'meal_voucher') {
+      const alreadyVoucher = splits
+        .filter(sp => sp.method === 'meal_voucher')
+        .reduce((sum, sp) => sum + sp.amount, 0);
+      finalAmount = Math.min(finalAmount, Math.max(0, mealVoucherEligibleTotal - alreadyVoucher));
+    }
     
     if (finalAmount > 0) {
       setSplits([...splits, { method: selectedMethod, amount: finalAmount }]);
@@ -127,6 +136,7 @@ export function PaymentDialog({
       card: { label: 'CB', icon: CreditCard, color: 'text-blue-500' },
       mobile: { label: 'Virement', icon: Smartphone, color: 'text-purple-500' },
       customer_credit: { label: 'Crédit', icon: Wallet, color: 'text-cyan-500' },
+      meal_voucher: { label: 'Chèques-repas', icon: Ticket, color: 'text-orange-500' },
     };
     return methods[methodType];
   };
@@ -144,6 +154,22 @@ export function PaymentDialog({
 
         {!method && !isMixedMode ? (
           <div className="space-y-4">
+            {mealVoucherEligibleTotal > 0 && (
+              <Card className="p-3 border-2 border-orange-500/40 bg-orange-500/5">
+                <div className="flex items-center gap-2 mb-1">
+                  <Ticket className="h-4 w-4 text-orange-500" />
+                  <span className="text-sm font-bold">Chèques-repas</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Payable en chèques-repas</span>
+                  <span className="font-bold text-orange-600">{mealVoucherEligibleTotal.toFixed(2)}€</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Autre moyen de paiement</span>
+                  <span className="font-bold">{Math.max(0, total - mealVoucherEligibleTotal).toFixed(2)}€</span>
+                </div>
+              </Card>
+            )}
             {/* Primary payment methods */}
             <div className="grid grid-cols-3 gap-3">
               <Card
@@ -178,7 +204,7 @@ export function PaymentDialog({
             </div>
 
             {/* Secondary payment methods */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <Card
                 onClick={() => {
                   if (customerId) {
@@ -196,6 +222,31 @@ export function PaymentDialog({
                   <Wallet className="h-8 w-8 text-cyan-500" />
                   <span className="font-bold text-sm text-center">Crédit Client</span>
                   {!customerId && <span className="text-xs text-muted-foreground">Client requis</span>}
+                </div>
+              </Card>
+
+              <Card
+                onClick={() => {
+                  if (mealVoucherEligibleTotal >= total && mealVoucherEligibleTotal > 0) {
+                    setMethod('meal_voucher');
+                  } else if (mealVoucherEligibleTotal > 0) {
+                    setIsMixedMode(true);
+                    setSelectedMethod('meal_voucher');
+                    setSplitAmount(mealVoucherEligibleTotal.toFixed(2));
+                  }
+                }}
+                className={`h-24 border-2 transition-transform ${
+                  mealVoucherEligibleTotal > 0
+                    ? 'cursor-pointer hover:scale-105 hover:border-primary'
+                    : 'cursor-not-allowed opacity-50'
+                }`}
+              >
+                <div className="h-full flex flex-col items-center justify-center gap-1">
+                  <Ticket className="h-8 w-8 text-orange-500" />
+                  <span className="font-bold text-sm text-center">Chèques-repas</span>
+                  <span className="text-xs text-muted-foreground">
+                    {mealVoucherEligibleTotal > 0 ? `max ${mealVoucherEligibleTotal.toFixed(2)}€` : 'Aucun produit éligible'}
+                  </span>
                 </div>
               </Card>
 
@@ -271,8 +322,8 @@ export function PaymentDialog({
               <Card className="p-4 space-y-3">
                 <p className="font-bold">Ajouter un paiement</p>
                 
-                <div className="grid grid-cols-4 gap-2">
-                  {(['cash', 'card', 'mobile', 'customer_credit'] as PaymentMethod[]).map((m) => {
+                <div className="grid grid-cols-5 gap-2">
+                  {(['cash', 'card', 'mobile', 'customer_credit', 'meal_voucher'] as PaymentMethod[]).map((m) => {
                     const methodInfo = getMethodInfo(m);
                     const Icon = methodInfo.icon;
                     return (
