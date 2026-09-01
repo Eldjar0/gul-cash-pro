@@ -143,22 +143,6 @@ export default function Auth() {
               >
                 Mot de passe ou identifiant oublié ?
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSetupAdmin}
-                className="w-full"
-                disabled={isSettingUp}
-              >
-                {isSettingUp ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Configuration en cours...
-                  </>
-                ) : (
-                  'Créer/Restaurer le compte admin'
-                )}
-              </Button>
             </form>
           )}
         </CardContent>
