@@ -6,6 +6,7 @@ import { Scale, Wifi, WifiOff, RefreshCw, Settings2, Zap, Weight, Euro, Save } f
 import { Product, useUpdateProduct } from '@/hooks/useProducts';
 import { useDibalScale } from '@/hooks/useDibalScale';
 import { DibalCalibrationDialog } from './DibalCalibrationDialog';
+import { VirtualNumericKeypad } from './VirtualNumericKeypad';
 import { toast } from 'sonner';
 
 interface WeightInputDialogProps {
