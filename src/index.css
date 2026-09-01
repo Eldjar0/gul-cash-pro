@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    /* Base colors - Ardoise & Ambre (light) */
+    /* Base colors - Ardoise (light) */
     --background: 210 40% 96%;
     --foreground: 222 47% 11%;
 
@@ -16,10 +16,23 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Primary - Ambre */
-    --primary: 38 92% 50%;
-    --primary-foreground: 222 47% 11%;
-    --primary-glow: 32 95% 55%;
+    /* Menu semantic scale - matches top navigation */
+    --menu-50: 220 20% 97%;
+    --menu-100: 220 20% 92%;
+    --menu-200: 220 20% 85%;
+    --menu-300: 220 20% 74%;
+    --menu-400: 222 30% 55%;
+    --menu-500: 222 47% 9%;
+    --menu-600: 222 47% 7%;
+    --menu-700: 222 47% 5%;
+    --menu-800: 222 47% 4%;
+    --menu-900: 222 47% 3%;
+    --menu-950: 222 47% 2%;
+
+    /* Primary - Menu color */
+    --primary: var(--menu-500);
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: var(--menu-400);
 
     /* Secondary - Ardoise clair */
     --secondary: 214 32% 91%;
@@ -38,26 +51,26 @@
 
     --border: 214 32% 87%;
     --input: 214 32% 90%;
-    --ring: 38 92% 50%;
+    --ring: var(--menu-500);
 
     --radius: 0.75rem;
     
-    /* POS specific - Ardoise profond & ambre */
+    /* POS specific - Ardoise profond */
     --pos-display: 222 47% 9%;
     --pos-display-foreground: 40 30% 96%;
     --pos-key: 0 0% 100%;
     --pos-key-foreground: 222 47% 15%;
-    --pos-key-hover: 38 92% 92%;
-    --pos-key-active: 38 92% 85%;
+    --pos-key-hover: var(--menu-100);
+    --pos-key-active: var(--menu-200);
     --pos-success: 145 65% 42%;
-    --pos-warning: 35 100% 50%;
+    --pos-warning: 30 60% 35%;
     --pos-error: 0 84% 55%;
     --pos-info: 217 91% 55%;
     
-    /* Category colors - vibrant palette */
+    /* Category colors - vibrant palette, orange replaced by menu */
     --category-blue: 217 91% 55%;
     --category-green: 145 65% 42%;
-    --category-orange: 25 100% 50%;
+    --category-orange: var(--menu-500);
     --category-purple: 270 70% 58%;
     --category-red: 0 84% 55%;
     --category-teal: 180 70% 42%;
@@ -67,15 +80,15 @@
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 38 92% 50%;
-    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-primary: var(--menu-500);
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 214 32% 91%;
     --sidebar-accent-foreground: 222 47% 15%;
     --sidebar-border: 214 32% 89%;
-    --sidebar-ring: 38 92% 50%;
+    --sidebar-ring: var(--menu-500);
     
     /* Modern gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(38 92% 50%), hsl(32 95% 55%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--menu-500)), hsl(var(--menu-400)));
     --gradient-success: linear-gradient(135deg, hsl(145 65% 42%), hsl(145 65% 52%));
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 40% 97%));
     --gradient-display: linear-gradient(180deg, hsl(222 47% 9%), hsl(217 33% 14%));
