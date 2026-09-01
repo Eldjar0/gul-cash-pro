@@ -260,7 +260,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
             {supported && connected && (
               <label className="flex items-center justify-between gap-2 text-sm cursor-pointer select-none px-1">
                 <span className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-amber-500" />
+                  <Zap className="h-4 w-4 text-menu-500" />
                   Validation automatique dès poids stable
                 </span>
                 <input
@@ -276,8 +276,8 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
             )}
 
             {countdown !== null && (
-              <div className="flex items-center justify-between gap-2 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2 text-sm">
-                <span className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+              <div className="flex items-center justify-between gap-2 bg-menu-500/10 border border-menu-500/30 rounded-lg p-2 text-sm">
+                <span className="flex items-center gap-2 text-menu-700 dark:text-menu-400">
                   <Zap className="h-4 w-4 animate-pulse" />
                   Ajout automatique dans {countdown}…
                 </span>
@@ -321,7 +321,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
                 <Euro className="h-4 w-4 text-primary" />
                 Prix / kg
                 {priceEdited && (
-                  <span className="text-xs text-amber-600 dark:text-amber-400 font-normal">
+                  <span className="text-xs text-menu-600 dark:text-menu-400 font-normal">
                     (modifié — original {product.price.toFixed(2)}€)
                   </span>
                 )}

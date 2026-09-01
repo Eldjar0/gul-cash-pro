@@ -89,15 +89,15 @@ export default function DownloadDesktopApp() {
       <div className="container mx-auto px-6 py-12">
         {/* Build Not Ready Alert */}
         {buildNotReady && (
-          <Alert className="max-w-2xl mx-auto mb-8 border-amber-500 bg-amber-50 dark:bg-amber-900/20">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-amber-800 dark:text-amber-200">
+          <Alert className="max-w-2xl mx-auto mb-8 border-menu-500 bg-menu-50 dark:bg-menu-900/20">
+            <AlertTriangle className="h-4 w-4 text-menu-600" />
+            <AlertDescription className="text-menu-800 dark:text-menu-200">
               <strong>Les fichiers ne sont pas encore disponibles.</strong>
               <p className="mt-1">Le build Electron doit être lancé manuellement depuis GitHub Actions.</p>
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="mt-2 border-amber-600 text-amber-700 hover:bg-amber-100"
+                className="mt-2 border-menu-600 text-menu-700 hover:bg-menu-100"
                 onClick={handleRunBuild}
               >
                 <Play className="mr-2 h-4 w-4" />

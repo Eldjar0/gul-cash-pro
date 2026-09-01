@@ -105,14 +105,14 @@ export function ScaleSettings() {
 
   if (!supported) {
     return (
-      <Card className="p-6 bg-amber-50/80 dark:bg-amber-900/20 border-amber-200 shadow-lg border">
+      <Card className="p-6 bg-menu-50/80 dark:bg-menu-900/20 border-menu-200 shadow-lg border">
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-amber-500 rounded-xl text-white">
+          <div className="p-3 bg-menu-500 rounded-xl text-white">
             <Info className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-amber-800 dark:text-amber-200">Web Serial non supporté</h3>
-            <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+            <h3 className="text-lg font-bold text-menu-800 dark:text-menu-200">Web Serial non supporté</h3>
+            <p className="text-sm text-menu-700 dark:text-menu-300 mt-1">
               La connexion à une balance via USB/Série nécessite <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong> sur ordinateur.
               Veuillez ouvrir cette application dans l'un de ces navigateurs.
             </p>
@@ -189,7 +189,7 @@ export function ScaleSettings() {
           <Button
             variant="outline"
             onClick={forgetPort}
-            className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50"
+            className="gap-2 text-menu-600 border-menu-300 hover:bg-menu-50"
             title="À utiliser si vous avez l'erreur 'Failed to open serial port'"
           >
             <RefreshCw className="h-4 w-4" />
@@ -366,7 +366,7 @@ export function ScaleSettings() {
                 onCheckedChange={(checked) => updateConfig({ weightInGrams: checked })}
               />
             </div>
-            <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-2 rounded">
+            <p className="text-xs text-menu-600 bg-menu-50 dark:bg-menu-900/20 p-2 rounded">
               <Info className="h-3 w-3 inline mr-1" />
               Désactivez cette option si votre modèle envoie déjà des kilogrammes avec décimales.
             </p>

@@ -52,7 +52,7 @@ export function CashierPerformanceCard() {
                     <Award className="h-6 w-6 text-gray-400" />
                   )}
                   {index === 2 && (
-                    <Award className="h-6 w-6 text-orange-600" />
+                    <Award className="h-6 w-6 text-menu-600" />
                   )}
                   {index > 2 && (
                     <Users className="h-6 w-6 text-muted-foreground" />

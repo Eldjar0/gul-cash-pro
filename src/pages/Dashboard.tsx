@@ -137,8 +137,8 @@ export default function Dashboard() {
             title="Alertes stock"
             value={lowStockProducts.length}
             icon={AlertTriangle}
-            iconBgColor="bg-orange-500/10"
-            iconColor="text-orange-500"
+            iconBgColor="bg-menu-500/10"
+            iconColor="text-menu-500"
           >
             <p className="text-xs text-muted-foreground mt-2">Produits en alerte</p>
           </StatsCard>
@@ -185,7 +185,7 @@ export default function Dashboard() {
           {/* Alertes stock */}
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <AlertTriangle className="h-5 w-5 text-menu-500" />
               <h2 className="text-lg font-semibold">Alertes Stock</h2>
             </div>
             {lowStockProducts.length === 0 ? (
@@ -195,7 +195,7 @@ export default function Dashboard() {
                 {lowStockProducts.slice(0, 10).map((product) => (
                   <div
                     key={product.id}
-                    className="flex items-center justify-between p-3 bg-orange-500/5 rounded-lg border border-orange-500/20"
+                    className="flex items-center justify-between p-3 bg-menu-500/5 rounded-lg border border-menu-500/20"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{product.name}</p>

@@ -361,7 +361,7 @@ const Promotions = () => {
                         </>
                       ) : (
                         <>
-                          <Clock className="w-4 h-4 text-orange-500" />
+                          <Clock className="w-4 h-4 text-menu-500" />
                           <span>
                             {promo.schedule_type === 'specific_dates' && 'Dates spécifiques'}
                             {promo.schedule_type === 'recurring_days' && 'Jours récurrents'}

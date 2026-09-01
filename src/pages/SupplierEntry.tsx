@@ -633,7 +633,7 @@ export default function SupplierEntry() {
                     </div>
                     <div className={`flex justify-between text-sm font-bold ${
                       hasDiscrepancy 
-                        ? discrepancy > 0 ? 'text-red-500' : 'text-orange-500'
+                        ? discrepancy > 0 ? 'text-red-500' : 'text-menu-500'
                         : 'text-green-500'
                     }`}>
                       <span>Écart:</span>
@@ -660,8 +660,8 @@ export default function SupplierEntry() {
                 )}
                 
                 {productsAtLoss.length > 0 && (
-                  <div className="mt-2 p-2 bg-orange-50 rounded border border-orange-200">
-                    <p className="text-xs text-orange-600 flex items-center gap-1">
+                  <div className="mt-2 p-2 bg-menu-50 rounded border border-menu-200">
+                    <p className="text-xs text-menu-600 flex items-center gap-1">
                       <TrendingDown className="h-3 w-3" />
                       {productsAtLoss.length} produit(s) vendus à perte
                     </p>
@@ -780,7 +780,7 @@ export default function SupplierEntry() {
                         </TableCell>
                         <TableCell className="text-right text-muted-foreground text-sm">
                           {item.expected_unit_cost?.toFixed(2) ?? (
-                            <span className="text-orange-500 italic text-xs">?</span>
+                            <span className="text-menu-500 italic text-xs">?</span>
                           )} €
                         </TableCell>
                         <TableCell>
@@ -826,7 +826,7 @@ export default function SupplierEntry() {
                           item.isLoss 
                             ? 'text-red-600 font-bold' 
                             : item.marginPercent < 10 
-                              ? 'text-orange-500' 
+                              ? 'text-menu-500' 
                               : 'text-green-600'
                         }`}>
                           {item.actual_unit_cost > 0 ? (
@@ -1079,7 +1079,7 @@ export default function SupplierEntry() {
                   </div>
                   <div className="text-right">
                     <div className="font-medium">{product.price.toFixed(2)} €</div>
-                    <div className={`text-sm ${product.cost_price ? 'text-muted-foreground' : 'text-orange-500'}`}>
+                    <div className={`text-sm ${product.cost_price ? 'text-muted-foreground' : 'text-menu-500'}`}>
                       P.A.: {product.cost_price?.toFixed(2) || '⚠️ inconnu'} €
                     </div>
                   </div>

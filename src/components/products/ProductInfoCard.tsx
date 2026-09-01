@@ -17,7 +17,7 @@ export function ProductInfoCard({ product, variant = 'full', showImage = true }:
     : null;
   
   const marginColor = margin !== null
-    ? margin > 20 ? 'text-green-500' : margin > 10 ? 'text-orange-500' : 'text-red-500'
+    ? margin > 20 ? 'text-green-500' : margin > 10 ? 'text-menu-500' : 'text-red-500'
     : 'text-muted-foreground';
 
   // Calcul du stock
@@ -36,7 +36,7 @@ export function ProductInfoCard({ product, variant = 'full', showImage = true }:
   const stockColor = stockStatus === 'critical' 
     ? 'bg-red-500' 
     : stockStatus === 'warning' 
-      ? 'bg-orange-500' 
+      ? 'bg-menu-500' 
       : 'bg-green-500';
 
   if (variant === 'minimal') {
@@ -201,7 +201,7 @@ export function ProductInfoCard({ product, variant = 'full', showImage = true }:
                     </Badge>
                   )}
                   {stockStatus === 'warning' && (
-                    <Badge variant="outline" className="gap-1 text-orange-500">
+                    <Badge variant="outline" className="gap-1 text-menu-500">
                       <AlertTriangle className="h-3 w-3" />
                       Bas
                     </Badge>

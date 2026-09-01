@@ -17,12 +17,12 @@ export function UBLWarningAlert({ validation }: UBLWarningAlertProps) {
   return (
     <Alert 
       variant={hasErrors ? "destructive" : "default"} 
-      className={hasErrors ? "" : "border-amber-500 bg-amber-50 text-amber-900 dark:border-amber-500/50 dark:bg-amber-950/20 dark:text-amber-200"}
+      className={hasErrors ? "" : "border-menu-500 bg-menu-50 text-menu-900 dark:border-menu-500/50 dark:bg-menu-950/20 dark:text-menu-200"}
     >
       {hasErrors ? (
         <AlertCircle className="h-4 w-4" />
       ) : (
-        <AlertTriangle className="h-4 w-4 text-amber-600" />
+        <AlertTriangle className="h-4 w-4 text-menu-600" />
       )}
       <AlertTitle className="font-semibold">
         {hasErrors 

@@ -211,7 +211,7 @@ export function QuickProductEditDialog({ open, onOpenChange, product }: QuickPro
               onCheckedChange={(c) => setForm({ ...form, meal_voucher_eligible: c === true })}
             />
             <Label htmlFor="quick-meal-voucher" className="cursor-pointer flex items-center gap-2">
-              <Ticket className="h-4 w-4 text-orange-500" />
+              <Ticket className="h-4 w-4 text-menu-500" />
               Accepté en chèques-repas
             </Label>
           </div>

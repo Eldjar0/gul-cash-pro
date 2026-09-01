@@ -1272,7 +1272,7 @@ export default function Stats() {
                         "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold",
                         idx === 0 ? "bg-yellow-500 text-white" :
                         idx === 1 ? "bg-gray-400 text-white" :
-                        idx === 2 ? "bg-orange-600 text-white" :
+                        idx === 2 ? "bg-menu-600 text-white" :
                         "bg-muted text-muted-foreground"
                       )}>
                         {idx + 1}
@@ -1371,7 +1371,7 @@ export default function Stats() {
                 <CardTitle className="text-sm font-medium">Articles Gratuits</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-600">{freeItemsCount}</div>
+                <div className="text-2xl font-bold text-menu-600">{freeItemsCount}</div>
                 <p className="text-xs text-muted-foreground mt-1">Cadeaux offerts</p>
               </CardContent>
             </Card>

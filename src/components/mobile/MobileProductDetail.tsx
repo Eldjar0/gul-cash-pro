@@ -157,16 +157,16 @@ export const MobileProductDetail = () => {
             <Card className="p-4">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg ${
-                  isOutOfStock ? 'bg-destructive/10' : isLowStock ? 'bg-orange-500/10' : 'bg-primary/10'
+                  isOutOfStock ? 'bg-destructive/10' : isLowStock ? 'bg-menu-500/10' : 'bg-primary/10'
                 }`}>
                   <Package className={`h-5 w-5 ${
-                    isOutOfStock ? 'text-destructive' : isLowStock ? 'text-orange-500' : 'text-primary'
+                    isOutOfStock ? 'text-destructive' : isLowStock ? 'text-menu-500' : 'text-primary'
                   }`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-foreground">Stock</p>
                   <p className={`text-lg font-bold ${
-                    isOutOfStock ? 'text-destructive' : isLowStock ? 'text-orange-500' : ''
+                    isOutOfStock ? 'text-destructive' : isLowStock ? 'text-menu-500' : ''
                   }`}>
                     {product.stock || 0}
                   </p>
@@ -179,7 +179,7 @@ export const MobileProductDetail = () => {
                 </Badge>
               )}
               {isLowStock && (
-                <Badge variant="outline" className="w-full mt-2 justify-center border-orange-500 text-orange-500">
+                <Badge variant="outline" className="w-full mt-2 justify-center border-menu-500 text-menu-500">
                   <AlertTriangle className="h-3 w-3 mr-1" />
                   FAIBLE
                 </Badge>

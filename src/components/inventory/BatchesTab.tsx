@@ -53,9 +53,9 @@ export const BatchesTab = () => {
       </div>
 
       {expiringBatches && expiringBatches.length > 0 && (
-        <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20">
+        <Card className="border-menu-200 bg-menu-50 dark:bg-menu-950/20">
           <CardHeader>
-            <CardTitle className="text-orange-700 dark:text-orange-400 flex items-center gap-2">
+            <CardTitle className="text-menu-700 dark:text-menu-400 flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
               Alertes Péremption ({expiringBatches.length})
             </CardTitle>

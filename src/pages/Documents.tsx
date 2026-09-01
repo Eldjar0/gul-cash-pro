@@ -333,7 +333,7 @@ export default function Documents() {
       case 'brouillon':
         return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200"><Edit className="h-3 w-3 mr-1" />Brouillon</Badge>;
       case 'en_attente':
-        return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
+        return <Badge variant="outline" className="bg-menu-50 text-menu-700 border-menu-200"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
       case 'paye':
         return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200"><CheckCircle className="h-3 w-3 mr-1" />Payé</Badge>;
       default:
@@ -1178,10 +1178,10 @@ export default function Documents() {
             </div>
           </Card>
 
-          <Card className="p-3 sm:p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg">
+          <Card className="p-3 sm:p-6 bg-gradient-to-br from-menu-500 to-menu-600 text-white border-0 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-100 text-[10px] sm:text-sm font-medium">Remboursements</p>
+                <p className="text-menu-100 text-[10px] sm:text-sm font-medium">Remboursements</p>
                 <p className="text-lg sm:text-3xl font-bold mt-0.5 sm:mt-1">{todayRefunds.length}</p>
               </div>
               <div className="p-2 sm:p-3 bg-white/20 rounded-lg hidden sm:block">
@@ -1417,7 +1417,7 @@ export default function Documents() {
                           <Button variant="ghost" size="sm" onClick={() => handleEditClick(sale)} className="h-7 px-2 text-blue-600">
                             <Edit className="h-3 w-3" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleCancelClick(sale.id)} className="h-7 px-2 text-orange-600">
+                          <Button variant="ghost" size="sm" onClick={() => handleCancelClick(sale.id)} className="h-7 px-2 text-menu-600">
                             <XCircle className="h-3 w-3" />
                           </Button>
                         </>
@@ -1575,7 +1575,7 @@ export default function Documents() {
                                       variant="ghost" 
                                       size="sm" 
                                       onClick={() => handleCancelClick(sale.id)} 
-                                      className="h-8 text-orange-600 hover:text-orange-700"
+                                      className="h-8 text-menu-600 hover:text-menu-700"
                                       title="Annuler ce ticket"
                                     >
                                       <XCircle className="h-4 w-4" />
@@ -1662,9 +1662,9 @@ export default function Documents() {
                 <p className="text-xs font-medium text-purple-600 dark:text-purple-400">Total HT</p>
                 <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{totalHT.toFixed(2)}€</p>
               </Card>
-              <Card className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/20 border-amber-200 dark:border-amber-800">
-                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Clients</p>
-                <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{uniqueClients}</p>
+              <Card className="p-4 bg-gradient-to-br from-menu-50 to-menu-100 dark:from-menu-900/30 dark:to-menu-800/20 border-menu-200 dark:border-menu-800">
+                <p className="text-xs font-medium text-menu-600 dark:text-menu-400">Clients</p>
+                <p className="text-2xl font-bold text-menu-900 dark:text-menu-100">{uniqueClients}</p>
               </Card>
             </div>
 
@@ -1873,7 +1873,7 @@ export default function Documents() {
                             variant="ghost" 
                             size="sm" 
                             onClick={() => handleCancelClick(invoice.id)} 
-                            className="h-7 px-2 text-orange-600"
+                            className="h-7 px-2 text-menu-600"
                           >
                             <XCircle className="h-3 w-3" />
                           </Button>
@@ -2065,7 +2065,7 @@ export default function Documents() {
                                       variant="ghost" 
                                       size="sm" 
                                       onClick={() => handleCancelClick(invoice.id)} 
-                                      className="h-8 text-orange-600 hover:text-orange-700"
+                                      className="h-8 text-menu-600 hover:text-menu-700"
                                       title="Annuler cette facture"
                                     >
                                       <XCircle className="h-4 w-4" />

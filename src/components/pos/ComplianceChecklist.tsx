@@ -90,7 +90,7 @@ export function ComplianceChecklist() {
           {score === 100 ? (
             <CheckCircle2 className="h-5 w-5 text-green-600" />
           ) : criticalUnchecked > 0 ? (
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
+            <AlertTriangle className="h-5 w-5 text-menu-600" />
           ) : (
             <XCircle className="h-5 w-5 text-red-600" />
           )}
@@ -99,7 +99,7 @@ export function ComplianceChecklist() {
         <CardDescription>
           Score de conformité : <strong>{score}%</strong>
           {criticalUnchecked > 0 && (
-            <span className="text-orange-600 font-semibold ml-2">
+            <span className="text-menu-600 font-semibold ml-2">
               ({criticalUnchecked} élément{criticalUnchecked > 1 ? 's' : ''} critique{criticalUnchecked > 1 ? 's' : ''})
             </span>
           )}
@@ -133,7 +133,7 @@ export function ComplianceChecklist() {
                 >
                   {item.label}
                   {item.critical && (
-                    <span className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full font-semibold">
+                    <span className="text-xs bg-menu-100 text-menu-800 px-2 py-0.5 rounded-full font-semibold">
                       CRITIQUE
                     </span>
                   )}

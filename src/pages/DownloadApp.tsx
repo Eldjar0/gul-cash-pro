@@ -68,7 +68,7 @@ export default function DownloadApp() {
 
         {/* Instructions */}
         <Card className="border-4 border-white/30 shadow-2xl bg-white/95 backdrop-blur">
-          <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg">
+          <CardHeader className="bg-gradient-to-r from-menu-500 to-red-500 text-white rounded-t-lg">
             <CardTitle className="text-xl font-black">
               📱 Instructions d'installation
             </CardTitle>

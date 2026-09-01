@@ -353,7 +353,7 @@ export default function CreditNotes() {
                               variant="ghost" 
                               size="sm" 
                               onClick={() => handleCancel(cn.id)}
-                              className="text-orange-600"
+                              className="text-menu-600"
                               title="Annuler"
                             >
                               <XCircle className="h-4 w-4" />

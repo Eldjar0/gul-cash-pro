@@ -99,15 +99,15 @@ export default function ContactInfo() {
         </Card>
 
         {/* Décharge de responsabilité renforcée */}
-        <Card className="p-6 bg-amber-50 border-amber-200 border-2">
+        <Card className="p-6 bg-menu-50 border-menu-200 border-2">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <ShieldAlert className="h-7 w-7 text-amber-600" />
-              <h3 className="text-xl font-bold text-amber-900">Décharge Complète de Responsabilité</h3>
+              <ShieldAlert className="h-7 w-7 text-menu-600" />
+              <h3 className="text-xl font-bold text-menu-900">Décharge Complète de Responsabilité</h3>
             </div>
             
-            <div className="space-y-4 text-sm text-amber-900 leading-relaxed">
-              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+            <div className="space-y-4 text-sm text-menu-900 leading-relaxed">
+              <div className="bg-white/60 p-4 rounded-lg border border-menu-300">
                 <p className="font-bold text-base mb-2">📋 Développement sur mesure</p>
                 <p className="text-justify">
                   Ce logiciel a été développé <strong>sur mesure</strong> par <strong>JLprod 
@@ -117,7 +117,7 @@ export default function ContactInfo() {
                 </p>
               </div>
 
-              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+              <div className="bg-white/60 p-4 rounded-lg border border-menu-300">
                 <p className="font-bold text-base mb-2">⚠️ Limitation de responsabilité générale</p>
                 <p className="text-justify">
                   <strong>JLprod (TVA BE0784435238)</strong> retire <strong>TOUTE 
@@ -135,7 +135,7 @@ export default function ContactInfo() {
                 </ul>
               </div>
 
-              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+              <div className="bg-white/60 p-4 rounded-lg border border-menu-300">
                 <p className="font-bold text-base mb-2">📜 Évolution des lois et réglementations</p>
                 <p className="text-justify">
                   <strong>JLprod</strong> ne peut être tenu responsable des <strong>évolutions 
@@ -151,7 +151,7 @@ export default function ContactInfo() {
                 </p>
               </div>
 
-              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+              <div className="bg-white/60 p-4 rounded-lg border border-menu-300">
                 <p className="font-bold text-base mb-2">💼 Responsabilité de l&apos;utilisateur</p>
                 <p className="text-justify">
                   <strong>Gül Reyhan</strong>, en tant que propriétaire et utilisateur final 
@@ -168,7 +168,7 @@ export default function ContactInfo() {
                 </ul>
               </div>
 
-              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+              <div className="bg-white/60 p-4 rounded-lg border border-menu-300">
                 <p className="font-bold text-base mb-2">🚫 Exclusion de dommages</p>
                 <p className="text-justify">
                   <strong>JLprod (TVA BE0784435238)</strong> ne pourra en aucun cas être tenu 
@@ -187,7 +187,7 @@ export default function ContactInfo() {
                 </ul>
               </div>
 
-              <div className="bg-white/60 p-4 rounded-lg border border-amber-300">
+              <div className="bg-white/60 p-4 rounded-lg border border-menu-300">
                 <p className="font-bold text-base mb-2">⚖️ Obligation de l&apos;acquéreur</p>
                 <p className="text-justify">
                   En acceptant ce logiciel, <strong>Gül Reyhan</strong> reconnaît et accepte 

@@ -269,7 +269,7 @@ export function CustomerCreditManagementDialog({
                   {parseFloat(newLimit) > (creditAccount?.credit_limit || 0) ? (
                     <TrendingUp className="w-5 h-5 text-green-600" />
                   ) : (
-                    <TrendingDown className="w-5 h-5 text-orange-600" />
+                    <TrendingDown className="w-5 h-5 text-menu-600" />
                   )}
                   <span className="font-semibold">
                     {parseFloat(newLimit) > (creditAccount?.credit_limit || 0)

@@ -33,13 +33,13 @@ export function LowStockAlert() {
   }
 
   return (
-    <Alert variant="destructive" className="border-orange-500 bg-orange-50 dark:bg-orange-950/20">
-      <AlertTriangle className="h-4 w-4 text-orange-600" />
-      <AlertTitle className="text-orange-800 dark:text-orange-400">
+    <Alert variant="destructive" className="border-menu-500 bg-menu-50 dark:bg-menu-950/20">
+      <AlertTriangle className="h-4 w-4 text-menu-600" />
+      <AlertTitle className="text-menu-800 dark:text-menu-400">
         Stock faible détecté
       </AlertTitle>
       <AlertDescription className="space-y-3">
-        <p className="text-orange-700 dark:text-orange-300">
+        <p className="text-menu-700 dark:text-menu-300">
           {lowStockProducts.length} produit(s) ont un stock inférieur au seuil minimum
         </p>
         
@@ -63,7 +63,7 @@ export function LowStockAlert() {
                   <span className="text-xs text-muted-foreground">({product.barcode})</span>
                 )}
               </div>
-              <span className="font-bold text-orange-600 shrink-0">
+              <span className="font-bold text-menu-600 shrink-0">
                 {product.stock} / {product.min_stock} min
               </span>
             </div>
@@ -71,12 +71,12 @@ export function LowStockAlert() {
         </div>
 
         {lowStockProducts.length > 5 && (
-          <p className="text-xs text-orange-600">
+          <p className="text-xs text-menu-600">
             + {lowStockProducts.length - 5} autre(s) produit(s)
           </p>
         )}
 
-        <Button asChild size="sm" variant="outline" className="mt-2 border-orange-600 text-orange-700 hover:bg-orange-100">
+        <Button asChild size="sm" variant="outline" className="mt-2 border-menu-600 text-menu-700 hover:bg-menu-100">
           <Link to="/inventory-management">
             Voir tous les produits
             <ArrowRight className="h-4 w-4 ml-2" />
