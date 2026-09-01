@@ -184,6 +184,12 @@ export function ReportXDialog({ open, onOpenChange, reportData, todayReport }: R
                 <span>Paiement mobile:</span>
                 <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{reportData.totalMobile.toFixed(2)}€</span>
               </div>
+              {reportData.otherPayments?.map(p => (
+                <div key={p.method} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginTop: '2px' }}>
+                  <span>{p.label}:</span>
+                  <span style={{ fontWeight: '900', whiteSpace: 'nowrap' }}>{p.amount.toFixed(2)}€</span>
+                </div>
+              ))}
             </div>
 
             <div style={{ borderTop: '2px solid #000', margin: '8px 0' }}></div>
