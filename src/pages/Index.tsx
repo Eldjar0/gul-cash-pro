@@ -681,7 +681,7 @@ const Index = () => {
           custom_price: customPrice,
           ...totals
         };
-        return [...prevCart, newItem];
+        return [newItem, ...prevCart];
       }
     });
     setQuantityInput('1');
@@ -735,7 +735,7 @@ const Index = () => {
       total: isNegative ? -(absPrice * qty) : absPrice * qty,
     };
 
-    setCart(prev => [...prev, newItem]);
+    setCart(prev => [newItem, ...prev]);
     return true;
   }, [isDayOpenEffective]);
 
@@ -769,7 +769,7 @@ const Index = () => {
           custom_price: customPricePerKg,
           ...totals
         };
-        return [...prevCart, newItem];
+        return [newItem, ...prevCart];
       }
     });
     setQuantityInput('1');
@@ -821,7 +821,7 @@ const Index = () => {
           custom_price: price,
           ...totals
         };
-        return [...prevCart, newItem];
+        return [newItem, ...prevCart];
       }
     });
     setQuantityInput('1');

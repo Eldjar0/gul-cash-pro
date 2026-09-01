@@ -312,12 +312,12 @@ export default function MobilePOS() {
         return newCart;
       } else {
         const totals = calculateItemTotal(product, qty, undefined, specialPrice);
-        return [...prevCart, {
+        return [{
           product,
           quantity: qty,
           custom_price: specialPrice,
           ...totals
-        }];
+        }, ...prevCart];
       }
     });
     
@@ -443,7 +443,7 @@ export default function MobilePOS() {
         return newCart;
       } else {
         const totals = calculateItemTotal(weightProduct, weight, undefined, customPricePerKg);
-        return [...prevCart, { product: weightProduct, quantity: weight, custom_price: customPricePerKg, ...totals }];
+        return [{ product: weightProduct, quantity: weight, custom_price: customPricePerKg, ...totals }, ...prevCart];
       }
     });
     
@@ -484,12 +484,12 @@ export default function MobilePOS() {
         return newCart;
       } else {
         const totals = calculateItemTotal(updatedProduct, qty, undefined, price);
-        return [...prevCart, {
+        return [{
           product: updatedProduct,
           quantity: qty,
           custom_price: price,
           ...totals
-        }];
+        }, ...prevCart];
       }
     });
     
