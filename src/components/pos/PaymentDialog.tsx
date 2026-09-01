@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+
 import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split, X, Info, Ticket } from 'lucide-react';
 import { calculateBelgianRounding, formatRoundingDifference } from '@/utils/belgianRounding';
 
@@ -51,8 +51,20 @@ export function PaymentDialog({
   const handleNumberClick = (num: string) => {
     if (num === 'C') {
       setAmountPaid('');
+    } else if (num === '.') {
+      if (!amountPaid.includes('.')) setAmountPaid((prev) => prev + num);
     } else {
       setAmountPaid((prev) => prev + num);
+    }
+  };
+
+  const handleSplitNumberClick = (num: string) => {
+    if (num === 'C') {
+      setSplitAmount('');
+    } else if (num === '.') {
+      if (!splitAmount.includes('.')) setSplitAmount((prev) => prev + num);
+    } else {
+      setSplitAmount((prev) => prev + num);
     }
   };
 
@@ -344,18 +356,33 @@ export function PaymentDialog({
                   })}
                 </div>
 
-                <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Montant"
-                    value={splitAmount}
-                    onChange={(e) => setSplitAmount(e.target.value)}
-                    className="text-lg"
-                  />
-                  <Button onClick={addSplit} className="whitespace-nowrap">
+                <Card className="p-3 space-y-2 border-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold">Montant à ajouter</span>
+                    <span className="text-2xl font-black text-menu-600">
+                      {splitAmount ? parseFloat(splitAmount).toFixed(2) : '0.00'}€
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1">
+                    {['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', 'C'].map((key) => (
+                      <Button
+                        key={key}
+                        onClick={() => handleSplitNumberClick(key)}
+                        variant="outline"
+                        className="h-12 text-lg font-bold"
+                      >
+                        {key}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button
+                    onClick={addSplit}
+                    disabled={!splitAmount || parseFloat(splitAmount) <= 0}
+                    className="w-full h-12 font-bold text-base"
+                  >
                     Ajouter
                   </Button>
-                </div>
+                </Card>
               </Card>
             )}
 
