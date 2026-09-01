@@ -788,6 +788,7 @@ const Index = () => {
     if (weightProduct.stock !== undefined && weightProduct.stock <= 0) {
       toast.warning(`Stock épuisé pour ${weightProduct.name} — pensez à mettre à jour le stock.`);
     }
+    setLastAddedProductId(weightProduct.id);
   };
 
   // Handler pour confirmer un prix saisi (produit sans prix)
