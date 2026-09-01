@@ -1,0 +1,1 @@
+ALTER TABLE public.products ALTER COLUMN vat_rate SET DEFAULT 6.00;
