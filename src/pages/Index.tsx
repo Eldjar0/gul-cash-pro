@@ -1996,7 +1996,7 @@ const Index = () => {
                 </div>
                 <p className="text-muted-foreground font-medium text-[10px]">Panier vide</p>
               </div> : <div className="space-y-1">
-                {cart.map((item, index) => <div key={index} className={`p-1.5 rounded-lg transition-all ${item.product.id === lastAddedProductId ? 'bg-primary/5 border border-primary/20' : 'bg-white border border-border'}`}>
+                {cart.map((item, index) => <div key={index} className={`p-1.5 rounded-lg transition-all ${item.product.id === lastAddedProductId ? 'bg-primary/15 border border-primary/50 shadow-sm ring-1 ring-primary/20' : 'bg-white border border-border'}`}>
                     {/* Ligne 1: Nom + Prix */}
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <div className="flex items-center gap-1.5 flex-1 min-w-0">
