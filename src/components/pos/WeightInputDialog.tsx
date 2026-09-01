@@ -26,6 +26,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
   const [priceEdited, setPriceEdited] = useState(false);
   const [savePrice, setSavePrice] = useState(false);
   const [weight, setWeight] = useState('');
+  const [activeField, setActiveField] = useState<'weight' | 'price'>('weight');
   const [calibOpen, setCalibOpen] = useState(false);
   const [autoConfirm, setAutoConfirm] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
