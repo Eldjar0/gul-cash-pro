@@ -4,15 +4,34 @@ import { useCategories } from '@/hooks/useCategories';
 import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/hooks/useProducts';
 import { Package, ArrowLeft, ImageIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useRef } from 'react';
 
 interface CategoryGridProps {
   onProductSelect: (product: Product) => void;
+  onProductLongPress?: (product: Product) => void;
   onCategorySelect: (categoryId: string | null) => void;
   selectedCategory: string | null;
 }
 
-export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCategory }: CategoryGridProps) {
+export function CategoryGrid({ onProductSelect, onProductLongPress, onCategorySelect, selectedCategory }: CategoryGridProps) {
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressFired = useRef(false);
+
+  const startLongPress = (product: Product) => {
+    if (!onProductLongPress) return;
+    longPressFired.current = false;
+    longPressTimer.current = setTimeout(() => {
+      longPressFired.current = true;
+      onProductLongPress(product);
+    }, 550);
+  };
+
+  const cancelLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: products, isLoading: productsLoading } = useProducts();
 
@@ -82,7 +101,21 @@ export function CategoryGrid({ onProductSelect, onCategorySelect, selectedCatego
                   <Button
                     key={product.id}
                     variant="outline"
-                    onClick={() => onProductSelect(product)}
+                    onClick={() => {
+                      if (longPressFired.current) {
+                        longPressFired.current = false;
+                        return;
+                      }
+                      onProductSelect(product);
+                    }}
+                    onPointerDown={() => startLongPress(product)}
+                    onPointerUp={cancelLongPress}
+                    onPointerLeave={cancelLongPress}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      cancelLongPress();
+                      onProductLongPress?.(product);
+                    }}
                     className="min-h-[6rem] h-auto flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10 relative overflow-hidden"
                     disabled={product.stock <= 0}
                   >
