@@ -85,6 +85,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
       setWeighing(false);
       setPriceEdited(false);
       setSavePrice(false);
+      setActiveField('weight');
       setPriceInput(product ? product.price.toFixed(2) : '');
       if (connected) {
         readOnce().catch(() => {});
