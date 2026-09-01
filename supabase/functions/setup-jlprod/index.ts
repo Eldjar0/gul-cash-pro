@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
       .upsert({
         user_id: userData.user.id,
         role: 'cashier'
-      });
+      }, { onConflict: 'user_id, role', ignoreDuplicates: true });
 
     if (roleError) {
       console.error('Erreur lors de l\'assignation du rôle:', roleError);
