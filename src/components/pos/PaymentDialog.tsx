@@ -488,7 +488,7 @@ export function PaymentDialog({
                       key={key}
                       onClick={() => handleNumberClick(key)}
                       variant="outline"
-                      className="h-11 text-lg font-bold"
+                      className="h-10 sm:h-11 text-base sm:text-lg font-bold"
                     >
                       {key}
                     </Button>
@@ -499,7 +499,7 @@ export function PaymentDialog({
                   <Button 
                     onClick={handleBack} 
                     variant="outline"
-                    className="flex-1 h-10"
+                    className="flex-1 h-10 text-sm sm:text-base"
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Retour
@@ -507,7 +507,7 @@ export function PaymentDialog({
                   <Button
                     onClick={handleConfirm}
                     disabled={!amountPaid || parseFloat(amountPaid) < roundedTotal}
-                    className="flex-1 h-10 font-bold text-base"
+                    className="flex-1 h-10 font-bold text-sm sm:text-base"
                   >
                     Valider
                   </Button>
