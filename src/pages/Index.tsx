@@ -1337,7 +1337,7 @@ const Index = () => {
 
   // Gestionnaire pour paiement mixte
   const handleMixedPayment = async (payments: Array<{
-    method: 'cash' | 'card' | 'mobile';
+    method: string;
     amount: number;
   }>) => {
     // Validation du panier uniquement
