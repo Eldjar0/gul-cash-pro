@@ -2353,8 +2353,8 @@ const Index = () => {
                   className={`h-10 text-lg font-bold shadow-md transition-all active:scale-95 ${
                     key === 'C' 
                       ? 'bg-red-500 hover:bg-red-600 text-white border-2 border-red-700' 
-                      : key === '.' 
-                      ? 'bg-menu-400 hover:bg-menu-500 text-white border-2 border-menu-600'
+                       : key === '.' 
+                       ? 'bg-pos-display hover:bg-pos-display/90 text-pos-display-foreground border-2 border-slate-700'
                       : 'bg-white hover:bg-gray-100 text-slate-800 border-2 border-slate-300'
                   }`}
                 >
