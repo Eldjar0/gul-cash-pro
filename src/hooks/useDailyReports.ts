@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { getSalePaymentAmounts } from '@/lib/paymentUtils';
+import { getSalePaymentAmounts, getPaymentMethodLabel } from '@/lib/paymentUtils';
 
 export interface DailyReport {
   id: string;
@@ -23,6 +23,8 @@ export interface ReportData {
   totalCash: number;
   totalCard: number;
   totalMobile: number;
+  /** Toutes les autres méthodes de paiement (chèque, chèques-repas, carte cadeau, crédit client...) */
+  otherPayments: Array<{ method: string; label: string; amount: number }>;
   salesCount: number;
   vatByRate: Record<number, { totalHT: number; totalVAT: number }>;
 }
@@ -225,6 +227,20 @@ export async function getTodayReportData(): Promise<ReportData> {
   const totalCash = sales?.reduce((sum, sale) => sum + (getSalePaymentAmounts(sale as any)['cash'] || 0), 0) || 0;
   const totalCard = sales?.reduce((sum, sale) => sum + (getSalePaymentAmounts(sale as any)['card'] || 0), 0) || 0;
   const totalMobile = sales?.reduce((sum, sale) => sum + (getSalePaymentAmounts(sale as any)['mobile'] || 0), 0) || 0;
+  // Toutes les autres méthodes (chèque, chèques-repas, carte cadeau, crédit client, virement...)
+  const otherMap = new Map<string, number>();
+  sales?.forEach(sale => {
+    const amounts = getSalePaymentAmounts(sale as any);
+    Object.entries(amounts).forEach(([method, amt]) => {
+      if (method === 'cash' || method === 'card' || method === 'mobile' || amt <= 0) return;
+      otherMap.set(method, (otherMap.get(method) || 0) + amt);
+    });
+  });
+  const otherPayments = Array.from(otherMap.entries()).map(([method, amount]) => ({
+    method,
+    label: getPaymentMethodLabel(method),
+    amount,
+  }));
   const salesCount = sales?.length || 0;
 
   // Calculer TVA par taux - normaliser le taux pour éviter les doublons
@@ -250,6 +266,7 @@ export async function getTodayReportData(): Promise<ReportData> {
     totalCash,
     totalCard,
     totalMobile,
+    otherPayments,
     salesCount,
     vatByRate,
   };
