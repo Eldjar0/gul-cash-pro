@@ -63,9 +63,9 @@ export function CategoryGrid({ onProductSelect, onProductLongPress, onCategorySe
               <Button
                 key={category.id}
                 onClick={() => onCategorySelect(category.id)}
-                className="min-h-[5rem] h-auto flex flex-col items-center justify-center gap-2 p-3 text-white font-semibold transition-all hover:brightness-110"
+                className="min-h-[5rem] h-auto flex flex-col items-center justify-center gap-2 p-3 text-slate-700 font-semibold transition-all hover:brightness-95"
                 style={{ 
-                  backgroundColor: category.color,
+                  backgroundColor: toPastel(category.color),
                   borderColor: category.color,
                   borderWidth: '2px'
                 }}
@@ -92,8 +92,8 @@ export function CategoryGrid({ onProductSelect, onProductLongPress, onCategorySe
           
           {selectedCategoryData && (
             <div 
-              className="p-3 rounded-lg text-white font-semibold"
-              style={{ backgroundColor: selectedCategoryData.color }}
+              className="p-3 rounded-lg text-slate-700 font-semibold border-2"
+              style={{ backgroundColor: toPastel(selectedCategoryData.color), borderColor: selectedCategoryData.color }}
             >
               <div className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
