@@ -6,6 +6,7 @@ import { Scale, Wifi, WifiOff, RefreshCw, Settings2, Zap, Weight, Euro, Save } f
 import { Product, useUpdateProduct } from '@/hooks/useProducts';
 import { useDibalScale } from '@/hooks/useDibalScale';
 import { DibalCalibrationDialog } from './DibalCalibrationDialog';
+import { VirtualNumericKeypad } from './VirtualNumericKeypad';
 import { toast } from 'sonner';
 
 interface WeightInputDialogProps {
@@ -25,6 +26,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
   const [priceEdited, setPriceEdited] = useState(false);
   const [savePrice, setSavePrice] = useState(false);
   const [weight, setWeight] = useState('');
+  const [activeField, setActiveField] = useState<'weight' | 'price'>('weight');
   const [calibOpen, setCalibOpen] = useState(false);
   const [autoConfirm, setAutoConfirm] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
@@ -83,6 +85,7 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
       setWeighing(false);
       setPriceEdited(false);
       setSavePrice(false);
+      setActiveField('weight');
       setPriceInput(product ? product.price.toFixed(2) : '');
       if (connected) {
         readOnce().catch(() => {});
@@ -179,6 +182,30 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
     }
   };
 
+  const handleVirtualKey = (key: string) => {
+    const updateDecimal = (prev: string, maxDecimals: number) => {
+      if (key === 'C') return '';
+      if (key === '←') return prev.slice(0, -1);
+      if (key === ',' || key === '.') {
+        if (prev.includes('.')) return prev;
+        return prev === '' ? '0.' : prev + '.';
+      }
+      // Limite les décimales
+      const parts = prev.split('.');
+      if (parts.length === 2 && parts[1].length >= maxDecimals) return prev;
+      return prev + key;
+    };
+
+    if (activeField === 'weight') {
+      setWeight((prev) => updateDecimal(prev, 3));
+      userEditedRef.current = true;
+      cancelAuto();
+    } else {
+      setPriceInput((prev) => updateDecimal(prev, 2));
+      setPriceEdited(true);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -266,19 +293,16 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
               </label>
               <div className="flex gap-2">
                 <Input
-                  type="number"
-                  step="0.001"
-                  min="0.001"
+                  type="text"
+                  inputMode="none"
+                  readOnly
                   value={weight}
-                  onChange={(e) => {
-                    userEditedRef.current = true;
-                    cancelAuto();
-                    setWeight(e.target.value);
-                  }}
-                  onKeyPress={handleKeyPress}
+                  onFocus={() => setActiveField('weight')}
                   placeholder="0.000"
                   autoFocus
-                  className="text-lg font-bold text-center"
+                  className={`text-lg font-bold text-center cursor-pointer ${
+                    activeField === 'weight' ? 'ring-2 ring-primary' : ''
+                  }`}
                 />
                 <Button
                   variant="outline"
@@ -304,16 +328,15 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
               </label>
               <div className="flex gap-2">
                 <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
+                  type="text"
+                  inputMode="none"
+                  readOnly
                   value={priceInput}
-                  onChange={(e) => {
-                    setPriceInput(e.target.value);
-                    setPriceEdited(true);
-                  }}
+                  onFocus={() => setActiveField('price')}
                   placeholder="0.00"
-                  className="text-lg font-bold text-center"
+                  className={`text-lg font-bold text-center cursor-pointer ${
+                    activeField === 'price' ? 'ring-2 ring-primary' : ''
+                  }`}
                 />
                 {priceEdited && (
                   <Button
@@ -357,6 +380,13 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
                 </div>
               </div>
             )}
+
+            <div className="border rounded-lg p-3 space-y-2">
+              <div className="text-xs text-muted-foreground text-center">
+                Clavier numérique — {activeField === 'weight' ? 'poids' : 'prix / kg'}
+              </div>
+              <VirtualNumericKeypad onKey={handleVirtualKey} />
+            </div>
           </div>
         )}
 
