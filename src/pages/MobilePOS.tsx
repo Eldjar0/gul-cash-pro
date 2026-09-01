@@ -326,6 +326,10 @@ export default function MobilePOS() {
     } else {
       toast.success(`${product.name} ajouté`);
     }
+
+    if (product.stock !== undefined && product.stock <= 0) {
+      toast.warning(`Stock épuisé pour ${product.name} — pensez à mettre à jour le stock.`);
+    }
     
     // Basculer vers le panier après ajout
     if (viewMode === 'products') {
@@ -448,6 +452,11 @@ export default function MobilePOS() {
     });
     
     toast.success(`${weightProduct.name} ajouté (${weight} kg)`);
+
+    if (weightProduct.stock !== undefined && weightProduct.stock <= 0) {
+      toast.warning(`Stock épuisé pour ${weightProduct.name} — pensez à mettre à jour le stock.`);
+    }
+
     setWeightDialogOpen(false);
   };
 
@@ -494,6 +503,11 @@ export default function MobilePOS() {
     });
     
     toast.success(`${updatedProduct.name} ajouté (${price.toFixed(2)}€)`);
+
+    if (updatedProduct.stock !== undefined && updatedProduct.stock <= 0) {
+      toast.warning(`Stock épuisé pour ${updatedProduct.name} — pensez à mettre à jour le stock.`);
+    }
+
     setViewMode('cart');
   };
 

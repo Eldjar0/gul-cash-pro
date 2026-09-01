@@ -693,6 +693,10 @@ const Index = () => {
     } else {
       toast.success(`${product.name} ajouté au panier`);
     }
+
+    if (product.stock !== undefined && product.stock <= 0) {
+      toast.warning(`Stock épuisé pour ${product.name} — pensez à mettre à jour le stock.`);
+    }
   }, [quantityInput, isDayOpenEffective, openDay, selectedCustomer]);
 
   // Ajout rapide d'un produit libre au panier
@@ -777,6 +781,10 @@ const Index = () => {
     setSearchResults([]);
     setPrefixQuantity(null);
     toast.success(`${weightProduct.name} ajouté au panier (${weight} kg)`);
+
+    if (weightProduct.stock !== undefined && weightProduct.stock <= 0) {
+      toast.warning(`Stock épuisé pour ${weightProduct.name} — pensez à mettre à jour le stock.`);
+    }
   };
 
   // Handler pour confirmer un prix saisi (produit sans prix)
@@ -828,6 +836,10 @@ const Index = () => {
     setScanInput('');
     setSearchResults([]);
     toast.success(`${updatedProduct.name} ajouté au panier (${price.toFixed(2)}€)`);
+
+    if (updatedProduct.stock !== undefined && updatedProduct.stock <= 0) {
+      toast.warning(`Stock épuisé pour ${updatedProduct.name} — pensez à mettre à jour le stock.`);
+    }
   };
 
   const handlePhysicalScan = (raw: string) => {
