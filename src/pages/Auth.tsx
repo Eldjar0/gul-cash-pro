@@ -32,15 +32,23 @@ export default function Auth() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Convertir l'identifiant en email pour Supabase
     const identifier = email.toLowerCase().trim();
-    let loginEmail = email;
-    if (identifier === 'admin') {
-      loginEmail = 'admin@system.local';
-    } else if (identifier === 'jlprod') {
-      loginEmail = 'jlprod@system.local';
+
+    // Si l'identifiant n'est pas un email et que le code est court (PIN), utiliser la connexion par code PIN
+    const isEmail = identifier.includes('@');
+    const isPin = /^\d{4,6}$/.test(password.trim());
+    if (!isEmail && isPin) {
+      await signInWithPin(identifier, password.trim());
+    } else {
+      // Convertir l'identifiant en email pour Supabase
+      let loginEmail = email;
+      if (identifier === 'admin') {
+        loginEmail = 'admin@system.local';
+      } else if (identifier === 'jlprod') {
+        loginEmail = 'jlprod@system.local';
+      }
+      await signIn(loginEmail, password);
     }
-    await signIn(loginEmail, password);
     setIsLoading(false);
   };
 
