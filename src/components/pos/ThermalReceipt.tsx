@@ -430,7 +430,8 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', marginBottom: '2px', gap: '3px' }}>
             <span style={{ flex: '1', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {(() => {
-                const m = sale.paymentMethod || sale.payment_method;
+                const splitKeys = sale.payment_split ? Object.keys(sale.payment_split) : [];
+                const m = splitKeys.length === 1 ? splitKeys[0] : (sale.paymentMethod || sale.payment_method);
                 return m === 'cash' ? 'ESPECES' :
                  m === 'card' ? 'CARTE' :
                  m === 'customer_credit' ? 'CRÉDIT CLIENT' :
@@ -445,7 +446,7 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
             <span style={{ whiteSpace: 'nowrap' }}>{sale.total.toFixed(2)}€</span>
           </div>
         )}
-        {(sale.paymentMethod || sale.payment_method) === 'cash' && (sale.amountPaid || sale.amount_paid) && (
+        {((sale.paymentMethod || sale.payment_method) === 'cash' || (sale.payment_split && 'cash' in sale.payment_split)) && (sale.amountPaid || sale.amount_paid) && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.3px', gap: '3px' }}>
               <span>Reçu</span>
