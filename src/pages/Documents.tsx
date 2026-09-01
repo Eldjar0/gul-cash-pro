@@ -119,6 +119,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useQueryClient } from '@tanstack/react-query';
+import { getPaymentMethodLabel, getSalePaymentAmounts } from '@/lib/paymentUtils';
+
+// Libellé de paiement d'une vente : détail exact du paiement mixte ou libellé standard
+const salePaymentLabel = (sale: { payment_method?: string | null; payment_split?: unknown }) => {
+  const amounts = getSalePaymentAmounts(sale as never);
+  const methods = Object.entries(amounts).filter(([, amt]) => amt > 0);
+  if (methods.length > 1) {
+    return 'Mixte : ' + methods.map(([m]) => getPaymentMethodLabel(m)).join(' + ');
+  }
+  return getPaymentMethodLabel(methods[0]?.[0] ?? sale.payment_method ?? 'cash');
+};
 
 export default function Documents() {
   const navigate = useNavigate();
@@ -1388,7 +1399,7 @@ export default function Documents() {
                   <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                     <span>{sale.sale_items?.length || 0} articles</span>
                     <span className="capitalize">
-                      {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : sale.payment_method === 'transfer' ? 'Virement' : sale.payment_method === 'check' ? 'Chèque' : sale.payment_method === 'pending' ? '⏳ En attente' : 'Mobile'}
+                      {salePaymentLabel(sale)}
                     </span>
                   </div>
                   
@@ -1523,7 +1534,7 @@ export default function Documents() {
                           </TableCell>
                           <TableCell>
                             <span className="text-sm capitalize">
-                              {sale.payment_method === 'cash' ? 'Espèces' : sale.payment_method === 'card' ? 'Carte' : sale.payment_method === 'transfer' ? 'Virement' : sale.payment_method === 'check' ? 'Chèque' : sale.payment_method === 'pending' ? '⏳ En attente' : 'Mobile'}
+                              {salePaymentLabel(sale)}
                             </span>
                           </TableCell>
                           <TableCell className="text-right font-bold text-primary">
@@ -1816,6 +1827,10 @@ export default function Documents() {
                         <SelectItem value="mobile">📱 Mobile</SelectItem>
                         <SelectItem value="check">📝 Chèque</SelectItem>
                         <SelectItem value="voucher">🎫 Bon</SelectItem>
+                        <SelectItem value="meal_voucher">🍽️ Chèques-repas</SelectItem>
+                        <SelectItem value="gift_card">🎁 Carte cadeau</SelectItem>
+                        <SelectItem value="customer_credit">🤝 Crédit client</SelectItem>
+                        <SelectItem value="mixed">🔀 Paiement mixte</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1973,6 +1988,10 @@ export default function Documents() {
                                 <SelectItem value="mobile">📱 Mobile</SelectItem>
                                 <SelectItem value="check">📝 Chèque</SelectItem>
                                 <SelectItem value="voucher">🎫 Bon</SelectItem>
+                                <SelectItem value="meal_voucher">🍽️ Chèques-repas</SelectItem>
+                                <SelectItem value="gift_card">🎁 Carte cadeau</SelectItem>
+                                <SelectItem value="customer_credit">🤝 Crédit client</SelectItem>
+                                <SelectItem value="mixed">🔀 Paiement mixte</SelectItem>
                               </SelectContent>
                             </Select>
                           </TableCell>
