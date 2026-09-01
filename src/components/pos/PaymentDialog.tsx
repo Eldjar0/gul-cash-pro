@@ -390,7 +390,7 @@ export function PaymentDialog({
               <Button 
                 onClick={handleBack} 
                 variant="outline"
-                className="flex-1 h-12"
+                className="flex-1 h-10 sm:h-12 text-sm sm:text-base"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Retour
@@ -398,7 +398,7 @@ export function PaymentDialog({
               <Button
                 onClick={handleConfirmMixed}
                 disabled={getRemaining() > 0}
-                className="flex-1 h-12 font-bold text-lg"
+                className="flex-1 h-10 sm:h-12 font-bold text-base sm:text-lg"
               >
                 Valider
               </Button>
