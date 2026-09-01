@@ -6,153 +6,153 @@
 
 @layer base {
   :root {
-    /* Base colors - Ultra clean light mode only */
-    --background: 0 0% 98%;
-    --foreground: 220 15% 15%;
+    /* Base colors - Ardoise & Ambre (light) */
+    --background: 210 40% 96%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 15%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Primary - JL Prod Blue */
-    --primary: 210 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 210 100% 60%;
+    /* Primary - Ambre */
+    --primary: 38 92% 50%;
+    --primary-foreground: 222 47% 11%;
+    --primary-glow: 32 95% 55%;
 
-    /* Secondary - Clean Gray */
-    --secondary: 220 10% 96%;
-    --secondary-foreground: 220 15% 20%;
-    --secondary-glow: 220 10% 90%;
+    /* Secondary - Ardoise clair */
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 222 47% 15%;
+    --secondary-glow: 214 32% 86%;
 
-    /* Accent - Success Green */
-    --accent: 145 65% 50%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Ardoise hover */
+    --accent: 214 32% 90%;
+    --accent-foreground: 222 47% 15%;
 
-    --muted: 220 10% 95%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 210 40% 93%;
+    --muted-foreground: 215 16% 40%;
 
-    --destructive: 0 85% 55%;
+    --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 94%;
-    --ring: 210 100% 50%;
+    --border: 214 32% 87%;
+    --input: 214 32% 90%;
+    --ring: 38 92% 50%;
 
-    --radius: 0.875rem;
+    --radius: 0.75rem;
     
-    /* POS specific - Modern clean colors */
-    --pos-display: 220 25% 15%;
-    --pos-display-foreground: 0 0% 100%;
+    /* POS specific - Ardoise profond & ambre */
+    --pos-display: 222 47% 9%;
+    --pos-display-foreground: 40 30% 96%;
     --pos-key: 0 0% 100%;
-    --pos-key-foreground: 220 15% 20%;
-    --pos-key-hover: 210 100% 96%;
-    --pos-key-active: 210 100% 92%;
-    --pos-success: 145 65% 50%;
-    --pos-warning: 35 100% 55%;
-    --pos-error: 0 85% 55%;
-    --pos-info: 210 100% 50%;
+    --pos-key-foreground: 222 47% 15%;
+    --pos-key-hover: 38 92% 92%;
+    --pos-key-active: 38 92% 85%;
+    --pos-success: 145 65% 42%;
+    --pos-warning: 35 100% 50%;
+    --pos-error: 0 84% 55%;
+    --pos-info: 217 91% 55%;
     
-    /* Category colors - JL Prod inspired vibrant palette */
-    --category-blue: 210 100% 50%;
-    --category-green: 145 65% 50%;
-    --category-orange: 25 100% 55%;
-    --category-purple: 270 70% 60%;
-    --category-red: 0 85% 55%;
-    --category-teal: 180 70% 50%;
-    --category-pink: 330 75% 60%;
-    --category-yellow: 45 100% 60%;
+    /* Category colors - vibrant palette */
+    --category-blue: 217 91% 55%;
+    --category-green: 145 65% 42%;
+    --category-orange: 25 100% 50%;
+    --category-purple: 270 70% 58%;
+    --category-red: 0 84% 55%;
+    --category-teal: 180 70% 42%;
+    --category-pink: 330 75% 55%;
+    --category-yellow: 45 100% 55%;
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 15% 15%;
-    --sidebar-primary: 210 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 10% 96%;
-    --sidebar-accent-foreground: 220 15% 20%;
-    --sidebar-border: 220 13% 93%;
-    --sidebar-ring: 210 100% 50%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 214 32% 91%;
+    --sidebar-accent-foreground: 222 47% 15%;
+    --sidebar-border: 214 32% 89%;
+    --sidebar-ring: 38 92% 50%;
     
     /* Modern gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210 100% 50%), hsl(210 100% 60%));
-    --gradient-success: linear-gradient(135deg, hsl(145 65% 50%), hsl(145 65% 60%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 10% 98%));
-    --gradient-display: linear-gradient(180deg, hsl(220 25% 15%), hsl(220 25% 20%));
+    --gradient-primary: linear-gradient(135deg, hsl(38 92% 50%), hsl(32 95% 55%));
+    --gradient-success: linear-gradient(135deg, hsl(145 65% 42%), hsl(145 65% 52%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 40% 97%));
+    --gradient-display: linear-gradient(180deg, hsl(222 47% 9%), hsl(217 33% 14%));
   }
 
   .dark {
-    /* Base colors - Dark mode */
-    --background: 220 20% 12%;
-    --foreground: 0 0% 95%;
+    /* Base colors - Ardoise & Ambre (dark) */
+    --background: 222 47% 7%;
+    --foreground: 40 30% 96%;
 
-    --card: 220 18% 16%;
-    --card-foreground: 0 0% 95%;
+    --card: 217 33% 12%;
+    --card-foreground: 40 30% 96%;
 
-    --popover: 220 18% 16%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 217 33% 12%;
+    --popover-foreground: 40 30% 96%;
 
-    /* Primary - JL Prod Blue (brighter in dark mode) */
-    --primary: 210 100% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 210 100% 65%;
+    /* Primary - Ambre */
+    --primary: 38 92% 50%;
+    --primary-foreground: 222 47% 11%;
+    --primary-glow: 32 95% 58%;
 
-    /* Secondary - Dark Gray */
-    --secondary: 220 15% 20%;
-    --secondary-foreground: 0 0% 90%;
-    --secondary-glow: 220 15% 25%;
+    /* Secondary - Ardoise */
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 40 30% 92%;
+    --secondary-glow: 217 33% 22%;
 
-    /* Accent - Success Green */
-    --accent: 145 65% 55%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Ardoise hover */
+    --accent: 217 33% 18%;
+    --accent-foreground: 40 30% 94%;
 
-    --muted: 220 15% 18%;
-    --muted-foreground: 220 10% 60%;
+    --muted: 217 33% 15%;
+    --muted-foreground: 215 20% 60%;
 
-    --destructive: 0 85% 60%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 22%;
-    --input: 220 15% 20%;
-    --ring: 210 100% 55%;
+    --border: 217 33% 20%;
+    --input: 217 33% 18%;
+    --ring: 38 92% 50%;
     
     /* POS specific - Dark mode */
-    --pos-display: 220 20% 18%;
-    --pos-display-foreground: 0 0% 95%;
-    --pos-key: 220 15% 22%;
-    --pos-key-foreground: 0 0% 90%;
-    --pos-key-hover: 210 100% 25%;
-    --pos-key-active: 210 100% 30%;
-    --pos-success: 145 65% 55%;
-    --pos-warning: 35 100% 60%;
-    --pos-error: 0 85% 60%;
-    --pos-info: 210 100% 55%;
+    --pos-display: 222 47% 6%;
+    --pos-display-foreground: 40 30% 96%;
+    --pos-key: 217 33% 15%;
+    --pos-key-foreground: 40 30% 92%;
+    --pos-key-hover: 38 92% 25%;
+    --pos-key-active: 38 92% 32%;
+    --pos-success: 145 65% 50%;
+    --pos-warning: 35 100% 55%;
+    --pos-error: 0 84% 60%;
+    --pos-info: 217 91% 60%;
     
     /* Category colors - Adjusted for dark mode */
-    --category-blue: 210 100% 60%;
-    --category-green: 145 65% 55%;
-    --category-orange: 25 100% 60%;
+    --category-blue: 217 91% 62%;
+    --category-green: 145 65% 52%;
+    --category-orange: 25 100% 58%;
     --category-purple: 270 70% 65%;
-    --category-red: 0 85% 60%;
-    --category-teal: 180 70% 55%;
+    --category-red: 0 84% 62%;
+    --category-teal: 180 70% 50%;
     --category-pink: 330 75% 65%;
-    --category-yellow: 45 100% 65%;
+    --category-yellow: 45 100% 62%;
 
     /* Sidebar - Dark mode */
-    --sidebar-background: 220 18% 16%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 210 100% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 20%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 220 15% 22%;
-    --sidebar-ring: 210 100% 55%;
+    --sidebar-background: 217 33% 12%;
+    --sidebar-foreground: 40 30% 96%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 40 30% 92%;
+    --sidebar-border: 217 33% 20%;
+    --sidebar-ring: 38 92% 50%;
     
     /* Modern gradients - Dark mode */
-    --gradient-primary: linear-gradient(135deg, hsl(210 100% 55%), hsl(210 100% 65%));
-    --gradient-success: linear-gradient(135deg, hsl(145 65% 55%), hsl(145 65% 65%));
-    --gradient-card: linear-gradient(180deg, hsl(220 18% 16%), hsl(220 18% 18%));
-    --gradient-display: linear-gradient(180deg, hsl(220 20% 18%), hsl(220 20% 22%));
+    --gradient-primary: linear-gradient(135deg, hsl(38 92% 50%), hsl(32 95% 58%));
+    --gradient-success: linear-gradient(135deg, hsl(145 65% 50%), hsl(145 65% 60%));
+    --gradient-card: linear-gradient(180deg, hsl(217 33% 12%), hsl(217 33% 14%));
+    --gradient-display: linear-gradient(180deg, hsl(222 47% 6%), hsl(217 33% 11%));
   }
 }
 
@@ -163,8 +163,14 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
+    letter-spacing: -0.01em;
   }
   
   /* iOS Safe Area Support */

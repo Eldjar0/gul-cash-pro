@@ -296,9 +296,13 @@ export default {
         "dvd-bounce-3": "dvd-bounce-3 18s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite",
       },
       boxShadow: {
-        "glow-sm": "0 0 10px hsl(217 91% 60% / 0.3)",
-        "glow": "0 0 20px hsl(217 91% 60% / 0.4)",
-        "glow-lg": "0 0 40px hsl(217 91% 60% / 0.5)",
+        "glow-sm": "0 0 10px hsl(38 92% 50% / 0.3)",
+        "glow": "0 0 20px hsl(38 92% 50% / 0.4)",
+        "glow-lg": "0 0 40px hsl(38 92% 50% / 0.5)",
+      },
+      fontFamily: {
+        sans: ["'DM Sans'", "system-ui", "sans-serif"],
+        display: ["'Space Grotesk'", "'DM Sans'", "system-ui", "sans-serif"],
       },
     },
   },
