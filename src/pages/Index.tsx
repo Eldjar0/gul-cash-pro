@@ -742,6 +742,7 @@ const Index = () => {
     };
 
     setCart(prev => [newItem, ...prev]);
+    setLastAddedProductId(quickProduct.id);
     return true;
   }, [isDayOpenEffective]);
 
