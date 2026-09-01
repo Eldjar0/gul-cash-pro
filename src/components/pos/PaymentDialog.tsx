@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+
 import { CreditCard, Smartphone, Banknote, ArrowLeft, CheckCircle, HandCoins, Wallet, Split, X, Info, Ticket } from 'lucide-react';
 import { calculateBelgianRounding, formatRoundingDifference } from '@/utils/belgianRounding';
 
