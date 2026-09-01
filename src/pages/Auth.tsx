@@ -19,34 +19,6 @@ export default function Auth() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { user, signIn } = useAuth();
   const navigate = useNavigate();
-  const [isSettingUp, setIsSettingUp] = useState(false);
-
-  const handleSetupAdmin = async () => {
-    setIsSettingUp(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('setup-admin');
-      if (error) throw error;
-      
-      const responseData = data as { password: string };
-      toast.success('Compte admin créé', {
-        description: `⚠️ CHANGEZ CE MOT DE PASSE IMMÉDIATEMENT !`,
-        duration: 10000
-      });
-      
-      // Show password in a separate alert that user must acknowledge
-      alert(`COMPTE ADMIN CRÉÉ\n\nIdentifiant: admin@system.local\nMot de passe: ${responseData.password}\n\n⚠️ IMPORTANT: Notez ce mot de passe et changez-le immédiatement après connexion !`);
-      
-      setEmail('admin');
-      setPassword(responseData.password);
-    } catch (err) {
-      toast.error('Échec de la configuration', {
-        description: err instanceof Error ? err.message : 'Une erreur est survenue'
-      });
-    } finally {
-      setIsSettingUp(false);
-    }
-  };
-
   useEffect(() => {
     if (user) {
       if (Capacitor.isNativePlatform()) {
