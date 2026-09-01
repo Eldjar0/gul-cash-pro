@@ -119,6 +119,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useQueryClient } from '@tanstack/react-query';
+import { getPaymentMethodLabel, getSalePaymentAmounts } from '@/lib/paymentUtils';
+
+// Libellé de paiement d'une vente : détail exact du paiement mixte ou libellé standard
+const salePaymentLabel = (sale: { payment_method?: string | null; payment_split?: unknown }) => {
+  const amounts = getSalePaymentAmounts(sale as never);
+  const methods = Object.entries(amounts).filter(([, amt]) => amt > 0);
+  if (methods.length > 1) {
+    return 'Mixte : ' + methods.map(([m]) => getPaymentMethodLabel(m)).join(' + ');
+  }
+  return getPaymentMethodLabel(methods[0]?.[0] ?? sale.payment_method ?? 'cash');
+};
 
 export default function Documents() {
   const navigate = useNavigate();
