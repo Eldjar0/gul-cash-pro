@@ -1,109 +1,31 @@
+# Récapitulatif des ajouts du jour + captures d'écran
 
-# Plan : Bloquer la fermeture de la facture et demander confirmation
+## Objectif
+Produire un document récapitulatif (avec captures d'écran) de tout ce qui a été ajouté/modifié aujourd'hui, destiné au client, avec la mention explicite : **ne pas publier, partager uniquement en conversation**.
 
-## Probleme identifie
+## Étapes
 
-Le composant Dialog de Radix UI a plusieurs mecanismes de fermeture qui contournent la logique de confirmation :
-1. Le bouton X natif dans `DialogContent` (meme cache, il reste fonctionnel)
-2. L'overlay (`DialogOverlay`) qui ferme au clic
-3. Les evenements de fermeture qui passent directement par `onOpenChange`
+1. **Captures d'écran** (via Playwright sur le preview local, écran 1280px) :
+   - Caisse (POS) : panier avec dernier article surligné en bleu, badge "CR" chèques-repas, produits en rupture cliquables
+   - Fenêtre de pesée : clavier numérique intégré, bouton "Peser maintenant", prix modifiable avec case "enregistrer le nouveau prix"
+   - Paiement : répartition chèques-repas / autre paiement, ticket avec modes de paiement détaillés (mixte)
+   - Réglages > Balance : connexion Dibal, test en direct, calibration, reconnexion auto
+   - Produits : TVA par défaut 6 %, gestion multi-codes-barres, option chèques-repas, modification rapide par appui long
+   - Documents : factures "en attente" par défaut, 15 lignes par page, recherche client/produit à partir de 2 caractères
 
-## Solution technique
+2. **Document récapitulatif** : un fichier Markdown (exporté dans /mnt/documents) listant chaque ajout du jour, avec la capture associée et une description simple en français, plus l'avertissement en tête : "Version de démonstration — ne pas publier, à partager uniquement en conversation."
 
-### Etape 1 : Modifier le composant Dialog pour supporter le blocage
-
-Ajouter une prop `preventClose` au composant `DialogContent` qui :
-- Desactive le bouton X natif
-- Bloque la fermeture via l'overlay
-
-### Etape 2 : Gerer tous les vecteurs de fermeture dans InvoiceEditor
-
-1. **Dialog `onOpenChange`** : Toujours appeler `handleCloseAttempt` au lieu de fermer directement
-2. **onPointerDownOutside** : Appeler `handleCloseAttempt` au lieu de `preventDefault` seul
-3. **onEscapeKeyDown** : Appeler `handleCloseAttempt`
-4. **Bouton X personnalise** : Deja configure pour appeler `handleCloseAttempt`
-
-### Etape 3 : Simplifier la logique de confirmation
-
-Le `handleCloseAttempt` doit TOUJOURS afficher la confirmation :
-- Si l'utilisateur confirme la sortie, sauvegarder automatiquement en brouillon puis fermer
-- Si l'utilisateur veut rester, fermer simplement le dialog de confirmation
-
-```text
-+----------------------------------+
-|  Utilisateur tente de fermer     |
-|  (clic overlay / Escape / X)     |
-+----------------------------------+
-              |
-              v
-+----------------------------------+
-|  handleCloseAttempt()            |
-|  -> showExitConfirm = true       |
-+----------------------------------+
-              |
-              v
-+----------------------------------+
-|  AlertDialog : "Etes-vous sur    |
-|  de vouloir quitter ?"           |
-|                                  |
-|  [Rester]   [Quitter et          |
-|             sauvegarder]         |
-+----------------------------------+
-              |
-    +---------+---------+
-    |                   |
-    v                   v
- Rester           Sauvegarder brouillon
- (ferme dialog)   puis fermer
-```
-
-## Fichiers a modifier
-
-| Fichier | Modification |
-|---------|-------------|
-| `src/components/ui/dialog.tsx` | Ajouter prop `preventClose` pour desactiver le bouton X natif et bloquer l'overlay |
-| `src/components/invoices/InvoiceEditor.tsx` | Utiliser `preventClose`, simplifier `handleCloseAttempt` pour toujours afficher la confirmation |
-
-## Details techniques
-
-### Modification de dialog.tsx
-
-Ajouter une interface pour les props etendues :
-
-```tsx
-interface DialogContentProps extends DialogPrimitive.DialogContentProps {
-  preventClose?: boolean;
-}
-```
-
-Conditionner l'affichage du bouton X :
-
-```tsx
-{!preventClose && (
-  <DialogPrimitive.Close>...</DialogPrimitive.Close>
-)}
-```
-
-### Modification de InvoiceEditor.tsx
-
-1. Ajouter `preventClose` au DialogContent
-2. Modifier `handleCloseAttempt` pour toujours afficher la confirmation (sans condition `hasFormData`)
-3. S'assurer que le `Dialog` avec `open` controle ne puisse pas etre ferme directement
-
-```tsx
-<Dialog open={open} onOpenChange={() => {
-  // Ne jamais fermer directement, toujours passer par confirmation
-  handleCloseAttempt();
-}}>
-  <DialogContent preventClose>
-    ...
-  </DialogContent>
-</Dialog>
-```
-
-## Comportement final
-
-- Clic sur l'overlay (espace noir) -> Confirmation
-- Touche Escape -> Confirmation  
-- Bouton X -> Confirmation
-- Quitter -> Sauvegarde automatique en brouillon puis fermeture
+## Contenu du récapitulatif (aujourd'hui)
+- Factures nouvelles marquées "en attente" (mode de paiement inconnu)
+- Liste des documents : 15 par page, plus de coupure d'affichage
+- Recherche client/produit : résultats seulement après 2 caractères, liste vide à l'ouverture
+- Balance Dibal : connexion série (COM), modes continu/requête, calibration, test en direct avec données brutes, reconnexion automatique, bouton "Peser maintenant", remplissage auto du poids
+- Clavier numérique intégré dans la fenêtre de pesée (plus de clavier virtuel du PC)
+- Prix modifiable à la pesée : prix exceptionnel ou enregistrement définitif
+- Chèques-repas : détection auto des produits éligibles, option sur la fiche produit, plafond de paiement et répartition mixte, indicateur "CR" panier + ticket
+- Ticket : modes de paiement détaillés (mixte cash/carte/chèques-repas…)
+- Panier : nouveaux articles en haut, dernier ajouté surligné en bleu renforcé (visible sur petit écran)
+- Rupture de stock : ajout au panier possible (grille + scan) avec avertissement de mise à jour du stock
+- TVA par défaut 6 % à la création d'un produit
+- Multi-codes-barres par produit (fiche produit + modification rapide)
+- Modification rapide d'un produit par appui long dans la caisse
