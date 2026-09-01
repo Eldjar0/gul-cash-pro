@@ -1991,7 +1991,7 @@ const Index = () => {
                 </div>
                 <p className="text-muted-foreground font-medium text-[10px]">Panier vide</p>
               </div> : <div className="space-y-1">
-                {cart.map((item, index) => <div key={index} className="bg-white border border-border p-1.5 rounded-lg hover:border-primary/40 transition-all group hover:shadow-sm">
+                {cart.map((item, index) => <div key={index} className="bg-white border border-border p-1.5 rounded-lg transition-all">
                     {/* Ligne 1: Nom + Prix */}
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <div className="flex items-center gap-1.5 flex-1 min-w-0">
