@@ -326,6 +326,10 @@ export default function MobilePOS() {
     } else {
       toast.success(`${product.name} ajouté`);
     }
+
+    if (product.stock !== undefined && product.stock <= 0) {
+      toast.warning(`Stock épuisé pour ${product.name} — pensez à mettre à jour le stock.`);
+    }
     
     // Basculer vers le panier après ajout
     if (viewMode === 'products') {
