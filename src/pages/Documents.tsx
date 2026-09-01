@@ -1827,6 +1827,10 @@ export default function Documents() {
                         <SelectItem value="mobile">📱 Mobile</SelectItem>
                         <SelectItem value="check">📝 Chèque</SelectItem>
                         <SelectItem value="voucher">🎫 Bon</SelectItem>
+                        <SelectItem value="meal_voucher">🍽️ Chèques-repas</SelectItem>
+                        <SelectItem value="gift_card">🎁 Carte cadeau</SelectItem>
+                        <SelectItem value="customer_credit">🤝 Crédit client</SelectItem>
+                        <SelectItem value="mixed">🔀 Paiement mixte</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1984,6 +1988,10 @@ export default function Documents() {
                                 <SelectItem value="mobile">📱 Mobile</SelectItem>
                                 <SelectItem value="check">📝 Chèque</SelectItem>
                                 <SelectItem value="voucher">🎫 Bon</SelectItem>
+                                <SelectItem value="meal_voucher">🍽️ Chèques-repas</SelectItem>
+                                <SelectItem value="gift_card">🎁 Carte cadeau</SelectItem>
+                                <SelectItem value="customer_credit">🤝 Crédit client</SelectItem>
+                                <SelectItem value="mixed">🔀 Paiement mixte</SelectItem>
                               </SelectContent>
                             </Select>
                           </TableCell>
