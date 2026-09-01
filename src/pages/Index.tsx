@@ -2096,8 +2096,9 @@ const Index = () => {
                         <Button variant="outline" size="sm" onClick={() => {
                           setDiscountTarget({ type: 'item', index });
                           setDiscountDialogOpen(true);
-                        }} className="h-6 px-2 text-[10px] text-accent border-accent/50" disabled={item.is_gift} title="Remise">
+                        }} className="h-6 px-2 text-[10px] bg-menu-100 text-menu-700 border-menu-400 hover:bg-menu-200" disabled={item.is_gift} title="Remise">
                           <Percent className="h-3 w-3" />
+
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => handleRemoveItem(index)} className="h-6 px-2 text-[10px] text-destructive border-destructive/50" title="Supprimer">
                           <Trash2 className="h-3 w-3" />
