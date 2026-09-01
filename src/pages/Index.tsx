@@ -836,6 +836,10 @@ const Index = () => {
     setScanInput('');
     setSearchResults([]);
     toast.success(`${updatedProduct.name} ajouté au panier (${price.toFixed(2)}€)`);
+
+    if (updatedProduct.stock !== undefined && updatedProduct.stock <= 0) {
+      toast.warning(`Stock épuisé pour ${updatedProduct.name} — pensez à mettre à jour le stock.`);
+    }
   };
 
   const handlePhysicalScan = (raw: string) => {
