@@ -122,6 +122,7 @@ export default function MobilePOS() {
     totalCash: 0,
     totalCard: 0,
     totalMobile: 0,
+    otherPayments: [],
     salesCount: 0,
     vatByRate: {},
   });
