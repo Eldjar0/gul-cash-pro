@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause, QrCode, Monitor, Tablet, Zap } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause, QrCode, Monitor, Tablet } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import logoMarket from '@/assets/logo-market.png';
 import logoHeader from '@/assets/logo-gul-reyhan-header.png';
@@ -2563,13 +2563,11 @@ const Index = () => {
                 </div>
               </> : <div className="flex flex-col h-full">
                 <Button
-                  variant="outline"
                   size="lg"
-                  className="mb-3 border-primary/30 text-primary h-12 text-base font-semibold w-full"
+                  className="mb-3 bg-pos-display hover:bg-pos-display/90 text-pos-display-foreground h-12 text-base font-semibold w-full shadow-md"
                   onClick={() => setQuickAddDialogOpen(true)}
                 >
-                  <Zap className="h-5 w-5 mr-2" />
-                  ⚡ Ajout rapide
+                  Ajout rapide
                 </Button>
                 <h2 className="text-foreground font-bold text-sm mb-4 px-2 flex items-center gap-2">
                   <div className="h-1 w-1 rounded-full bg-primary"></div>
