@@ -1142,21 +1142,39 @@ const Index = () => {
       finalIsInvoiceMode = false;
     }
     
+    // Paiement séparé (splits) éventuellement fourni par le dialogue de paiement standard
+    const splits: { method: string; amount: number }[] = Array.isArray(metadata?.splits) ? metadata.splits : [];
+    const hasSplits = splits.length > 0;
+    const paymentSplit: Record<string, number> | null = hasSplits
+      ? splits.reduce((acc, s) => ({ ...acc, [s.method]: (acc[s.method] || 0) + s.amount }), {} as Record<string, number>)
+      : null;
+    const toDbMethod = (m: string): 'cash' | 'card' | 'mobile' | 'check' | 'voucher' =>
+      m === 'card' || m === 'mobile' || m === 'check' ? m : (m === 'cash' ? 'cash' : 'voucher');
+
     // Map payment methods to DB enum types
     let dbPaymentMethod: 'cash' | 'card' | 'mobile' | 'check' | 'voucher' = 'cash';
-    if (method === 'customer_credit' || method === 'gift_card' || method === 'meal_voucher') {
+    if (hasSplits && paymentSplit) {
+      const main = Object.entries(paymentSplit).sort((a, b) => b[1] - a[1])[0]?.[0] || 'cash';
+      dbPaymentMethod = toDbMethod(main);
+    } else if (method === 'customer_credit' || method === 'gift_card' || method === 'meal_voucher') {
       dbPaymentMethod = 'voucher';
     } else {
       dbPaymentMethod = method as 'cash' | 'card' | 'mobile' | 'check';
     }
+    const splitTotalPaid = hasSplits ? splits.reduce((s, p) => s + (p.amount || 0), 0) : 0;
+    const effectiveAmountPaid = hasSplits ? splitTotalPaid : (amountPaid || totals.total);
+    const effectiveChange = hasSplits
+      ? Math.max(0, splitTotalPaid - totals.total)
+      : (amountPaid ? Math.max(0, amountPaid - totals.total) : 0);
     const saleData = {
       subtotal: totals.subtotal,
       total_vat: totals.totalVat,
       total_discount: totals.totalDiscount,
       total: totals.total,
       payment_method: dbPaymentMethod,
-      amount_paid: amountPaid || totals.total,
-      change_amount: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
+      ...(hasSplits ? { payment_methods: splits, payment_split: paymentSplit } : {}),
+      amount_paid: effectiveAmountPaid,
+      change_amount: effectiveChange,
       is_invoice: method === 'customer_credit' ? false : finalIsInvoiceMode,
       is_cancelled: false,
       cashier_id: user?.id,
@@ -1204,9 +1222,10 @@ const Index = () => {
         totalVat: totals.totalVat,
         totalDiscount: totals.totalDiscount,
         total: totals.total,
-        paymentMethod: method,
-        amountPaid: amountPaid || totals.total,
-        change: amountPaid ? Math.max(0, amountPaid - totals.total) : 0,
+        paymentMethod: hasSplits && paymentSplit && Object.keys(paymentSplit).length > 1 ? 'mixed' : method,
+        ...(hasSplits && paymentSplit ? { payment_split: paymentSplit, payments: splits } : {}),
+        amountPaid: effectiveAmountPaid,
+        change: effectiveChange,
         is_invoice: method === 'customer_credit' ? false : finalIsInvoiceMode, // Crédit = toujours ticket
         customer: selectedCustomer,
         belgian_rounding: method === 'cash' ? (metadata?.belgianRounding || 0) : undefined
