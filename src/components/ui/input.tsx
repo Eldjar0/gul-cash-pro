@@ -75,6 +75,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
         if (!current.includes(".")) next = current === "" ? "0." : current + ".";
       } else next = current + key;
       setNativeValue(el, next);
+      el.focus();
     };
 
     return (
