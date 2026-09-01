@@ -1412,6 +1412,7 @@ export type Database = {
           id: string
           image: string | null
           is_active: boolean | null
+          meal_voucher_eligible: boolean
           min_stock: number | null
           name: string
           price: number
@@ -1431,6 +1432,7 @@ export type Database = {
           id?: string
           image?: string | null
           is_active?: boolean | null
+          meal_voucher_eligible?: boolean
           min_stock?: number | null
           name: string
           price: number
@@ -1450,6 +1452,7 @@ export type Database = {
           id?: string
           image?: string | null
           is_active?: boolean | null
+          meal_voucher_eligible?: boolean
           min_stock?: number | null
           name?: string
           price?: number
