@@ -328,16 +328,15 @@ export function WeightInputDialog({ open, onOpenChange, product, onConfirm }: We
               </label>
               <div className="flex gap-2">
                 <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
+                  type="text"
+                  inputMode="none"
+                  readOnly
                   value={priceInput}
-                  onChange={(e) => {
-                    setPriceInput(e.target.value);
-                    setPriceEdited(true);
-                  }}
+                  onFocus={() => setActiveField('price')}
                   placeholder="0.00"
-                  className="text-lg font-bold text-center"
+                  className={`text-lg font-bold text-center cursor-pointer ${
+                    activeField === 'price' ? 'ring-2 ring-primary' : ''
+                  }`}
                 />
                 {priceEdited && (
                   <Button
