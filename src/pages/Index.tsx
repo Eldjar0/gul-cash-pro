@@ -844,6 +844,7 @@ const Index = () => {
     if (updatedProduct.stock !== undefined && updatedProduct.stock <= 0) {
       toast.warning(`Stock épuisé pour ${updatedProduct.name} — pensez à mettre à jour le stock.`);
     }
+    setLastAddedProductId(updatedProduct.id);
   };
 
   const handlePhysicalScan = (raw: string) => {
