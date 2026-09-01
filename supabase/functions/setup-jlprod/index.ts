@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
       }
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = err instanceof Error ? err.message : JSON.stringify(err);
     console.error('Erreur setup-jlprod:', err);
     return new Response(
       JSON.stringify({ success: false, error: message }),
