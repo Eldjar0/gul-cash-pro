@@ -418,10 +418,18 @@ export function ThermalReceipt({ sale }: ThermalReceiptProps) {
           // Paiement simple
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '900', marginBottom: '2px', gap: '3px' }}>
             <span style={{ flex: '1', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {(sale.paymentMethod || sale.payment_method) === 'cash' ? 'ESPECES' : 
-               (sale.paymentMethod || sale.payment_method) === 'card' ? 'CARTE' : 
-               (sale.paymentMethod || sale.payment_method) === 'customer_credit' ? 'CRÉDIT' :
-               'PAIEMENT'}
+              {(() => {
+                const m = sale.paymentMethod || sale.payment_method;
+                return m === 'cash' ? 'ESPECES' :
+                 m === 'card' ? 'CARTE' :
+                 m === 'customer_credit' ? 'CRÉDIT CLIENT' :
+                 m === 'mobile' ? 'PAIEMENT MOBILE' :
+                 m === 'check' ? 'CHÈQUE' :
+                 m === 'meal_voucher' ? 'CHÈQUES-REPAS' :
+                 m === 'voucher' ? 'CHÈQUES-REPAS' :
+                 m === 'gift_card' ? 'CARTE CADEAU' :
+                 'PAIEMENT';
+              })()}
             </span>
             <span style={{ whiteSpace: 'nowrap' }}>{sale.total.toFixed(2)}€</span>
           </div>
