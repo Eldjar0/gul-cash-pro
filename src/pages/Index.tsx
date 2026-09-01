@@ -781,6 +781,10 @@ const Index = () => {
     setSearchResults([]);
     setPrefixQuantity(null);
     toast.success(`${weightProduct.name} ajouté au panier (${weight} kg)`);
+
+    if (weightProduct.stock !== undefined && weightProduct.stock <= 0) {
+      toast.warning(`Stock épuisé pour ${weightProduct.name} — pensez à mettre à jour le stock.`);
+    }
   };
 
   // Handler pour confirmer un prix saisi (produit sans prix)
