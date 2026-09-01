@@ -51,8 +51,20 @@ export function PaymentDialog({
   const handleNumberClick = (num: string) => {
     if (num === 'C') {
       setAmountPaid('');
+    } else if (num === '.') {
+      if (!amountPaid.includes('.')) setAmountPaid((prev) => prev + num);
     } else {
       setAmountPaid((prev) => prev + num);
+    }
+  };
+
+  const handleSplitNumberClick = (num: string) => {
+    if (num === 'C') {
+      setSplitAmount('');
+    } else if (num === '.') {
+      if (!splitAmount.includes('.')) setSplitAmount((prev) => prev + num);
+    } else {
+      setSplitAmount((prev) => prev + num);
     }
   };
 
