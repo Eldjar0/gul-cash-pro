@@ -1392,12 +1392,20 @@ const Index = () => {
 
     // Calculer le montant espèces pour le tiroir-caisse
     const cashAmount = payments.filter(p => p.method === 'cash').reduce((sum, p) => sum + p.amount, 0);
+    // Méthode principale = celle du plus gros montant (mappée sur l'enum BDD)
+    const mainPaymentMethod: 'cash' | 'card' | 'mobile' | 'check' | 'voucher' = (() => {
+      const sorted = [...payments].sort((a, b) => (b.amount || 0) - (a.amount || 0));
+      const m = sorted[0]?.method;
+      if (m === 'card' || m === 'mobile' || m === 'check' || m === 'voucher') return m;
+      if (m === 'meal_voucher' || m === 'gift_card') return 'voucher';
+      return 'cash';
+    })();
     const saleData = {
       subtotal: totals.subtotal,
       total_vat: totals.totalVat,
       total_discount: totals.totalDiscount,
       total: totals.total,
-      payment_method: 'cash' as const,
+      payment_method: mainPaymentMethod,
       // Méthode principale pour compatibilité
       payment_methods: payments,
       // Détails des paiements

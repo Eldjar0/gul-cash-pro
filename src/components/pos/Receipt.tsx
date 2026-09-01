@@ -248,7 +248,8 @@ export function Receipt({ sale }: ReceiptProps) {
             <div className="flex justify-between">
               <span className="font-black">
                 {(() => {
-                  const m = sale.paymentMethod || sale.payment_method;
+                  const splitKeys = sale.payment_split ? Object.keys(sale.payment_split) : [];
+                  const m = splitKeys.length === 1 ? splitKeys[0] : (sale.paymentMethod || sale.payment_method);
                   return m === 'cash' ? 'ESPECES' :
                    m === 'card' ? 'CARTE BANCAIRE' :
                    m === 'customer_credit' ? 'CRÉDIT CLIENT' :
@@ -263,7 +264,7 @@ export function Receipt({ sale }: ReceiptProps) {
               <span className="font-black">{sale.total.toFixed(2)}€</span>
             </div>
           )}
-          {(sale.paymentMethod || sale.payment_method) === 'cash' && (sale.amountPaid || sale.amount_paid) && (
+          {((sale.paymentMethod || sale.payment_method) === 'cash' || (sale.payment_split && 'cash' in sale.payment_split)) && (sale.amountPaid || sale.amount_paid) && (
             <>
               <div className="flex justify-between">
                 <span className="font-bold">RECU</span>
