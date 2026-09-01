@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getSalePaymentAmounts } from '@/lib/paymentUtils';
 
 export interface DailyReport {
   id: string;
@@ -220,9 +221,10 @@ export async function getTodayReportData(): Promise<ReportData> {
   if (error) throw error;
 
   const totalSales = sales?.reduce((sum, sale) => sum + sale.total, 0) || 0;
-  const totalCash = sales?.filter(s => s.payment_method === 'cash').reduce((sum, sale) => sum + sale.total, 0) || 0;
-  const totalCard = sales?.filter(s => s.payment_method === 'card').reduce((sum, sale) => sum + sale.total, 0) || 0;
-  const totalMobile = sales?.filter(s => s.payment_method === 'mobile').reduce((sum, sale) => sum + sale.total, 0) || 0;
+  // Répartition exacte par méthode via payment_split (repli sur payment_method)
+  const totalCash = sales?.reduce((sum, sale) => sum + (getSalePaymentAmounts(sale as any)['cash'] || 0), 0) || 0;
+  const totalCard = sales?.reduce((sum, sale) => sum + (getSalePaymentAmounts(sale as any)['card'] || 0), 0) || 0;
+  const totalMobile = sales?.reduce((sum, sale) => sum + (getSalePaymentAmounts(sale as any)['mobile'] || 0), 0) || 0;
   const salesCount = sales?.length || 0;
 
   // Calculer TVA par taux - normaliser le taux pour éviter les doublons
