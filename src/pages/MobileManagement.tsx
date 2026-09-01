@@ -182,7 +182,7 @@ export default function MobileManagement() {
                         {item.badge > 99 ? '99+' : item.badge}
                       </Badge>
                     )}
-                    <div className={`bg-gradient-to-br ${item.color} p-4 sm:p-5 md:p-6 aspect-square flex flex-col items-center justify-center relative`}>
+                    <div className={`${item.color} p-4 sm:p-5 md:p-6 aspect-square flex flex-col items-center justify-center relative`}>
                       {/* Pattern de fond */}
                       <div className="absolute inset-0 opacity-10">
                         <div 
