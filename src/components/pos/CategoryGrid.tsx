@@ -6,6 +6,18 @@ import { Product } from '@/hooks/useProducts';
 import { Package, ArrowLeft, ImageIcon } from 'lucide-react';
 import { useRef } from 'react';
 
+// Convertit une couleur hex en version pastel (mélangée au blanc)
+function toPastel(hex: string, amount = 0.62): string {
+  const clean = hex.replace('#', '');
+  if (clean.length !== 6) return hex;
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * amount);
+  const toHex = (c: number) => c.toString(16).padStart(2, '0');
+  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
+}
+
 interface CategoryGridProps {
   onProductSelect: (product: Product) => void;
   onProductLongPress?: (product: Product) => void;
