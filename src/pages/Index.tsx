@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause, QrCode, Monitor, Tablet } from 'lucide-react';
+import { Scan, CreditCard, Banknote, Trash2, Euro, Clock, ShoppingBag, Percent, Edit, Ticket, Eye, Scale, Calendar, CalendarX, FileText, CloudSun, Calculator, Divide, Minus, X, TrendingUp, TrendingDown, Save, FolderOpen, Undo2, Split, UserCog, ReceiptText, ChevronRight, AlertCircle, Smartphone, User, CheckCircle, RefreshCw, Pause, QrCode, Monitor, Tablet, Search } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import logoMarket from '@/assets/logo-market.png';
 import logoHeader from '@/assets/logo-gul-reyhan-header.png';
@@ -257,6 +257,7 @@ const Index = () => {
   const [customerCreditDialogOpen, setCustomerCreditDialogOpen] = useState(false);
   const [cancelCartDialogOpen, setCancelCartDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categorySearch, setCategorySearch] = useState('');
   const [selectCustomerDialogOpen, setSelectCustomerDialogOpen] = useState(false);
   const [customerSearchTerm, setCustomerSearchTerm] = useState('');
   const [creditManagementDialogOpen, setCreditManagementDialogOpen] = useState(false);
@@ -2563,20 +2564,33 @@ const Index = () => {
                     </button>)}
                 </div>
               </> : <div className="flex flex-col h-full">
-                <Button
-                  size="lg"
-                  className="mb-3 bg-pos-display hover:bg-pos-display/90 text-pos-display-foreground h-12 text-base font-semibold w-full shadow-md"
-                  onClick={() => setQuickAddDialogOpen(true)}
-                >
-                  Ajout rapide
-                </Button>
+                {selectedCategory ? (
+                  <div className="relative mb-3">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      autoFocus
+                      value={categorySearch}
+                      onChange={(e) => setCategorySearch(e.target.value)}
+                      placeholder="Rechercher dans la catégorie..."
+                      className="h-12 pl-9 text-base"
+                    />
+                  </div>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="mb-3 bg-pos-display hover:bg-pos-display/90 text-pos-display-foreground h-12 text-base font-semibold w-full shadow-md"
+                    onClick={() => setQuickAddDialogOpen(true)}
+                  >
+                    Ajout rapide
+                  </Button>
+                )}
                 <h2 className="text-foreground font-bold text-sm mb-4 px-2 flex items-center gap-2">
                   <div className="h-1 w-1 rounded-full bg-primary"></div>
                   CATÉGORIES
                 </h2>
                 <div className="flex-1 overflow-hidden flex flex-col gap-2">
                   <div className="flex-1 overflow-hidden">
-                    <CategoryGrid onProductSelect={handleProductSelect} onProductLongPress={(p) => { setQuickEditProduct(p); setQuickEditOpen(true); }} onCategorySelect={setSelectedCategory} selectedCategory={selectedCategory} />
+                    <CategoryGrid onProductSelect={handleProductSelect} onProductLongPress={(p) => { setQuickEditProduct(p); setQuickEditOpen(true); }} onCategorySelect={(id) => { setSelectedCategory(id); setCategorySearch(''); }} selectedCategory={selectedCategory} searchQuery={categorySearch} />
                   </div>
                   
                   {/* Historique des scans */}
