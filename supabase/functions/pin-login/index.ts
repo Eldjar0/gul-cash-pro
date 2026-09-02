@@ -33,16 +33,32 @@ Deno.serve(async (req) => {
     );
 
     // Rechercher le profil par nom complet (identifiant) et code PIN
-    const { data: profile, error: profileError } = await supabaseAdmin
+    const uname = String(username).trim().toLowerCase();
+
+    // Rechercher tous les profils ayant ce code PIN
+    const { data: profiles, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('id, full_name, pin_code')
-      .ilike('full_name', username.trim())
-      .eq('pin_code', pin.trim())
-      .maybeSingle();
+      .eq('pin_code', String(pin).trim());
 
     if (profileError) {
       console.error('Erreur recherche profil:', profileError);
       throw profileError;
+    }
+
+    // Correspondance sur le nom complet OU sur la partie locale de l'email
+    let profile: { id: string; full_name: string | null } | null =
+      (profiles ?? []).find((p: any) => (p.full_name ?? '').trim().toLowerCase() === uname) ?? null;
+
+    if (!profile) {
+      for (const p of profiles ?? []) {
+        const { data: u } = await supabaseAdmin.auth.admin.getUserById(p.id);
+        const local = (u?.user?.email ?? '').split('@')[0].toLowerCase();
+        if (local === uname || (u?.user?.email ?? '').toLowerCase() === uname) {
+          profile = p;
+          break;
+        }
+      }
     }
 
     if (!profile) {
