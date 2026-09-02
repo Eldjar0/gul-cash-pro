@@ -257,6 +257,7 @@ const Index = () => {
   const [customerCreditDialogOpen, setCustomerCreditDialogOpen] = useState(false);
   const [cancelCartDialogOpen, setCancelCartDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categorySearch, setCategorySearch] = useState('');
   const [selectCustomerDialogOpen, setSelectCustomerDialogOpen] = useState(false);
   const [customerSearchTerm, setCustomerSearchTerm] = useState('');
   const [creditManagementDialogOpen, setCreditManagementDialogOpen] = useState(false);
