@@ -23,9 +23,10 @@ interface CategoryGridProps {
   onProductLongPress?: (product: Product) => void;
   onCategorySelect: (categoryId: string | null) => void;
   selectedCategory: string | null;
+  searchQuery?: string;
 }
 
-export function CategoryGrid({ onProductSelect, onProductLongPress, onCategorySelect, selectedCategory }: CategoryGridProps) {
+export function CategoryGrid({ onProductSelect, onProductLongPress, onCategorySelect, selectedCategory, searchQuery = '' }: CategoryGridProps) {
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressFired = useRef(false);
 
@@ -47,9 +48,11 @@ export function CategoryGrid({ onProductSelect, onProductLongPress, onCategorySe
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: products, isLoading: productsLoading } = useProducts();
 
-  const filteredProducts = selectedCategory
+  const q = searchQuery.trim().toLowerCase();
+  const filteredProducts = (selectedCategory
     ? products?.filter(p => p.category_id === selectedCategory)
-    : products;
+    : products
+  )?.filter(p => !q || p.name.toLowerCase().includes(q) || (p.barcode || '').toLowerCase().includes(q));
 
   const selectedCategoryData = categories?.find(c => c.id === selectedCategory);
 
