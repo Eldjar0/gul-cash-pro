@@ -73,7 +73,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   
   // Items
   const [items, setItems] = useState<InvoiceItem[]>([
-    { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }
+    { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 6, note: '' }
   ]);
   
   const [notes, setNotes] = useState('');
@@ -210,7 +210,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       setClientCity('');
       setClientPostalCode('');
       setClientVatNumber('');
-      setItems([{ description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }]);
+      setItems([{ description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 6, note: '' }]);
       setNotes('');
     } else if (open && invoiceId) {
       loadInvoice(invoiceId);
@@ -356,7 +356,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
   const addItemButtonRef = useRef<HTMLButtonElement>(null);
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }]);
+    setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 6, note: '' }]);
     setTimeout(() => {
       addItemButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
@@ -772,31 +772,33 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
                       </PopoverTrigger>
                       <PopoverContent className="w-[350px] p-0">
                         <Command shouldFilter={false}>
-                          <CommandInput placeholder="Tapez min. 2 caractères..." value={customerSearchTerm} onValueChange={setCustomerSearchTerm} />
+                          <CommandInput placeholder="Rechercher un client..." value={customerSearchTerm} onValueChange={setCustomerSearchTerm} />
                           <CommandList>
-                            {customerSearchTerm.length < 2 ? (
-                              <CommandEmpty>Tapez pour rechercher...</CommandEmpty>
-                            ) : (
-                              <CommandGroup>
-                                {customers?.filter(c => {
-                                  const search = customerSearchTerm.toLowerCase();
-                                  return c.name.toLowerCase().includes(search) || (c.vat_number || '').toLowerCase().includes(search);
-                                }).map((customer) => (
-                                  <CommandItem
-                                    key={customer.id}
-                                    value={customer.name + ' ' + (customer.vat_number || '')}
-                                    onSelect={() => selectCustomer(customer)}
-                                  >
-                                    <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === customer.id ? "opacity-100" : "opacity-0")} />
-                                    <div className="flex flex-col">
-                                      <span>{customer.name}</span>
-                                      {customer.vat_number && <span className="text-[10px] text-muted-foreground">{customer.vat_number}</span>}
-                                    </div>
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            )}
+                            <CommandEmpty>Aucun client trouvé</CommandEmpty>
+                            <CommandGroup>
+                              {customers?.filter(c => {
+                                const search = customerSearchTerm.trim().toLowerCase();
+                                if (!search) return true;
+                                return c.name.toLowerCase().includes(search)
+                                  || (c.vat_number || '').toLowerCase().includes(search)
+                                  || (c.phone || '').toLowerCase().includes(search)
+                                  || (c.city || '').toLowerCase().includes(search);
+                              }).map((customer) => (
+                                <CommandItem
+                                  key={customer.id}
+                                  value={customer.name + ' ' + (customer.vat_number || '')}
+                                  onSelect={() => selectCustomer(customer)}
+                                >
+                                  <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === customer.id ? "opacity-100" : "opacity-0")} />
+                                  <div className="flex flex-col">
+                                    <span>{customer.name}</span>
+                                    {customer.vat_number && <span className="text-[10px] text-muted-foreground">{customer.vat_number}</span>}
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
                           </CommandList>
+
                         </Command>
                       </PopoverContent>
                     </Popover>
