@@ -60,7 +60,7 @@ export default function InvoiceCreate() {
       description: '',
       quantity: 1,
       price: 0,
-      vatRate: 21,
+      vatRate: 6,
     },
   ]);
   const [notes, setNotes] = useState('');
@@ -76,7 +76,7 @@ export default function InvoiceCreate() {
         description: '',
         quantity: 1,
         price: 0,
-        vatRate: 21,
+        vatRate: 6,
       },
     ]);
   };
