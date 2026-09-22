@@ -73,7 +73,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   
   // Items
   const [items, setItems] = useState<InvoiceItem[]>([
-    { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }
+    { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 6, note: '' }
   ]);
   
   const [notes, setNotes] = useState('');
@@ -210,7 +210,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       setClientCity('');
       setClientPostalCode('');
       setClientVatNumber('');
-      setItems([{ description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }]);
+      setItems([{ description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 6, note: '' }]);
       setNotes('');
     } else if (open && invoiceId) {
       loadInvoice(invoiceId);
@@ -356,7 +356,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
 
   const addItemButtonRef = useRef<HTMLButtonElement>(null);
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 21, note: '' }]);
+    setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 6, note: '' }]);
     setTimeout(() => {
       addItemButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
