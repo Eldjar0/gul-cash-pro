@@ -386,7 +386,8 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
     const priceHTVA = priceTVAC / (1 + vatRate / 100);
     newItems[index] = { 
       ...newItems[index], 
-      unitPrice: Math.round(priceHTVA * 100) / 100,
+      // Garder la précision pour que le TVAC saisi (ex. 100€) reste exact
+      unitPrice: Math.round(priceHTVA * 1000000) / 1000000,
       unitPriceTVAC: priceTVAC
     };
     setItems(newItems);
