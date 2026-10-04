@@ -355,6 +355,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   };
 
   const addItemButtonRef = useRef<HTMLButtonElement>(null);
+  const savingRef = useRef(false);
   const addItem = () => {
     setItems([...items, { description: '', quantity: 1, unitPrice: 0, unitPriceTVAC: 0, vatRate: 6, note: '' }]);
     setTimeout(() => {
@@ -489,6 +490,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
   };
 
   const handleSave = async () => {
+    if (savingRef.current) return;
     if (!clientName) {
       toast.error('Veuillez renseigner le nom du client');
       return;
@@ -513,6 +515,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       });
     }
 
+    savingRef.current = true;
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -636,6 +639,7 @@ export function InvoiceEditor({ open, onOpenChange, invoiceId }: InvoiceEditorPr
       console.error('Error saving invoice:', error);
       toast.error('Erreur lors de l\'enregistrement');
     } finally {
+      savingRef.current = false;
       setLoading(false);
     }
   };
