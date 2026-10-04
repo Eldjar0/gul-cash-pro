@@ -246,7 +246,7 @@ const CustomerDisplay = () => {
             </div>
             
             <div className="mt-6 relative">
-              <div className="absolute inset-0 bg-white/20 blur-2xl opacity-40 animate-pulse-soft"></div>
+              <div className="absolute inset-0 bg-white/10 blur-2xl opacity-25 animate-pulse-soft"></div>
               <h1 className="relative text-8xl font-black tracking-tight animate-scale-in drop-shadow-2xl text-white" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
                 Bienvenue
               </h1>
