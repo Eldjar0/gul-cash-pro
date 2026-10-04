@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBag, CheckCircle2, Thermometer, Calendar, Clock, CreditCard, Banknote } from 'lucide-react';
+import { CheckCircle2, Thermometer, Calendar, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import logoMarket from '@/assets/logo-market.png';
 import { PromotionBanner } from '@/components/customer-display/PromotionBanner';
@@ -218,22 +218,22 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'idle') {
     return (
-      <div className="h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="h-screen bg-pos-display text-pos-display-foreground flex items-center justify-center p-4 relative overflow-hidden">
         {/* Animation de bulles flottantes en arrière-plan */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Bulles flottantes */}
-          <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '6s', animationDelay: '0s' }}></div>
-          <div className="absolute top-40 right-20 w-40 h-40 bg-accent/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
+          <div className="absolute top-20 left-10 w-32 h-32 bg-category-blue/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '6s', animationDelay: '0s' }}></div>
+          <div className="absolute top-40 right-20 w-40 h-40 bg-category-teal/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
           <div className="absolute bottom-32 left-1/4 w-36 h-36 bg-category-purple/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7s', animationDelay: '2s' }}></div>
-          <div className="absolute top-1/3 right-1/3 w-28 h-28 bg-category-orange/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '9s', animationDelay: '3s' }}></div>
+          <div className="absolute top-1/3 right-1/3 w-28 h-28 bg-category-blue/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '9s', animationDelay: '3s' }}></div>
           <div className="absolute bottom-20 right-10 w-44 h-44 bg-category-teal/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '10s', animationDelay: '1.5s' }}></div>
           <div className="absolute top-1/2 left-16 w-24 h-24 bg-category-pink/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8.5s', animationDelay: '2.5s' }}></div>
-          <div className="absolute bottom-1/4 right-1/4 w-38 h-38 bg-primary-glow/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7.5s', animationDelay: '0.5s' }}></div>
-          <div className="absolute top-1/4 left-1/2 w-30 h-30 bg-accent/15 rounded-full blur-xl animate-float" style={{ animationDuration: '6.5s', animationDelay: '3.5s' }}></div>
+          <div className="absolute bottom-1/4 right-1/4 w-38 h-38 bg-category-blue/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7.5s', animationDelay: '0.5s' }}></div>
+          <div className="absolute top-1/4 left-1/2 w-30 h-30 bg-category-teal/15 rounded-full blur-xl animate-float" style={{ animationDuration: '6.5s', animationDelay: '3.5s' }}></div>
           
           {/* Grands cercles style DVD bouncing */}
-          <div className="absolute w-32 h-32 bg-primary/40 rounded-full blur-xl animate-dvd-bounce" style={{ animationDuration: '12s' }}></div>
-          <div className="absolute w-40 h-40 bg-accent/40 rounded-full blur-xl animate-dvd-bounce-2" style={{ animationDuration: '15s', animationDelay: '2s' }}></div>
+          <div className="absolute w-32 h-32 bg-category-blue/40 rounded-full blur-xl animate-dvd-bounce" style={{ animationDuration: '12s' }}></div>
+          <div className="absolute w-40 h-40 bg-category-teal/40 rounded-full blur-xl animate-dvd-bounce-2" style={{ animationDuration: '15s', animationDelay: '2s' }}></div>
           <div className="absolute w-36 h-36 bg-category-purple/40 rounded-full blur-xl animate-dvd-bounce-3" style={{ animationDuration: '18s', animationDelay: '4s' }}></div>
         </div>
         
@@ -241,13 +241,13 @@ const CustomerDisplay = () => {
           {/* Logo centré */}
           <div className="text-center animate-fade-in">
             <div className="relative inline-block">
-              <div className="absolute inset-0 bg-primary blur-3xl rounded-full animate-pulse-soft opacity-60"></div>
+              <div className="absolute inset-0 bg-white/20 blur-3xl rounded-full animate-pulse-soft opacity-60"></div>
               <img src={logoMarket} alt="Logo" className="relative w-56 h-56 mx-auto object-contain animate-scale-in drop-shadow-2xl brightness-110" />
             </div>
             
             <div className="mt-6 relative">
-              <div className="absolute inset-0 bg-primary blur-2xl opacity-40 animate-pulse-soft"></div>
-              <h1 className="relative text-8xl font-black tracking-tight animate-scale-in drop-shadow-2xl text-primary" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
+              <div className="absolute inset-0 bg-white/10 blur-2xl opacity-25 animate-pulse-soft"></div>
+              <h1 className="relative text-8xl font-black tracking-tight animate-scale-in drop-shadow-2xl text-white" style={{ animationDelay: '0.1s', lineHeight: '1' }}>
                 Bienvenue
               </h1>
             </div>
@@ -255,10 +255,10 @@ const CustomerDisplay = () => {
 
           {/* Textes centrés entre logo et infos */}
           <div className="text-center space-y-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <p className="text-3xl font-black text-primary drop-shadow-lg">
+            <p className="text-3xl font-black text-white drop-shadow-lg">
               Veuillez patienter
             </p>
-            <p className="text-2xl font-bold text-accent">
+            <p className="text-2xl font-bold text-white/80">
               Un collaborateur va prendre votre commande
             </p>
           </div>
@@ -273,14 +273,14 @@ const CustomerDisplay = () => {
             <div className="flex gap-4 animate-scroll-left">
               {/* Premier set de cartes */}
               {/* Date */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-primary/20 shadow-lg">
+              <div className="flex-shrink-0 w-80 bg-white/10 backdrop-blur-md rounded-2xl p-4 border-2 border-white/15 shadow-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Calendar className="h-5 w-5 text-primary" />
+                  <div className="p-2 bg-white/10 rounded-lg">
+                    <Calendar className="h-5 w-5 text-category-blue" />
                   </div>
-                  <p className="text-sm font-bold text-primary uppercase tracking-wide">Date</p>
+                  <p className="text-sm font-bold text-category-blue uppercase tracking-wide">Date</p>
                 </div>
-                <p className="text-base font-bold text-foreground leading-tight">
+                <p className="text-base font-bold text-white leading-tight">
                   {currentTime.toLocaleDateString('fr-BE', { 
                     weekday: 'long', 
                     day: '2-digit', 
@@ -291,14 +291,14 @@ const CustomerDisplay = () => {
               </div>
 
               {/* Heure */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-accent/20 shadow-lg">
+              <div className="flex-shrink-0 w-80 bg-white/10 backdrop-blur-md rounded-2xl p-4 border-2 border-white/15 shadow-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-accent/10 rounded-lg">
-                    <Clock className="h-5 w-5 text-accent" />
+                  <div className="p-2 bg-white/10 rounded-lg">
+                    <Clock className="h-5 w-5 text-category-teal" />
                   </div>
-                  <p className="text-sm font-bold text-accent uppercase tracking-wide">Heure</p>
+                  <p className="text-sm font-bold text-category-teal uppercase tracking-wide">Heure</p>
                 </div>
-                <p className="text-3xl font-black text-foreground font-mono tabular-nums">
+                <p className="text-3xl font-black text-white font-mono tabular-nums">
                   {currentTime.toLocaleTimeString('fr-BE', { 
                     hour: '2-digit', 
                     minute: '2-digit',
@@ -308,28 +308,28 @@ const CustomerDisplay = () => {
               </div>
 
               {/* Température */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-category-orange/20 shadow-lg">
+              <div className="flex-shrink-0 w-80 bg-white/10 backdrop-blur-md rounded-2xl p-4 border-2 border-white/15 shadow-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-category-orange/10 rounded-lg">
-                    <Thermometer className="h-5 w-5 text-category-orange" />
+                  <div className="p-2 bg-white/10 rounded-lg">
+                    <Thermometer className="h-5 w-5 text-category-yellow" />
                   </div>
-                  <p className="text-sm font-bold text-category-orange uppercase tracking-wide">Jumet</p>
+                  <p className="text-sm font-bold text-category-yellow uppercase tracking-wide">Jumet</p>
                 </div>
-                <p className="text-3xl font-black text-foreground tabular-nums">
+                <p className="text-3xl font-black text-white tabular-nums">
                   {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
                 </p>
               </div>
 
               {/* Deuxième set de cartes (copie pour effet infini) */}
               {/* Date */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-primary/20 shadow-lg">
+              <div className="flex-shrink-0 w-80 bg-white/10 backdrop-blur-md rounded-2xl p-4 border-2 border-white/15 shadow-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Calendar className="h-5 w-5 text-primary" />
+                  <div className="p-2 bg-white/10 rounded-lg">
+                    <Calendar className="h-5 w-5 text-category-blue" />
                   </div>
-                  <p className="text-sm font-bold text-primary uppercase tracking-wide">Date</p>
+                  <p className="text-sm font-bold text-category-blue uppercase tracking-wide">Date</p>
                 </div>
-                <p className="text-base font-bold text-foreground leading-tight">
+                <p className="text-base font-bold text-white leading-tight">
                   {currentTime.toLocaleDateString('fr-BE', { 
                     weekday: 'long', 
                     day: '2-digit', 
@@ -340,14 +340,14 @@ const CustomerDisplay = () => {
               </div>
 
               {/* Heure */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-accent/20 shadow-lg">
+              <div className="flex-shrink-0 w-80 bg-white/10 backdrop-blur-md rounded-2xl p-4 border-2 border-white/15 shadow-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-accent/10 rounded-lg">
-                    <Clock className="h-5 w-5 text-accent" />
+                  <div className="p-2 bg-white/10 rounded-lg">
+                    <Clock className="h-5 w-5 text-category-teal" />
                   </div>
-                  <p className="text-sm font-bold text-accent uppercase tracking-wide">Heure</p>
+                  <p className="text-sm font-bold text-category-teal uppercase tracking-wide">Heure</p>
                 </div>
-                <p className="text-3xl font-black text-foreground font-mono tabular-nums">
+                <p className="text-3xl font-black text-white font-mono tabular-nums">
                   {currentTime.toLocaleTimeString('fr-BE', { 
                     hour: '2-digit', 
                     minute: '2-digit',
@@ -357,14 +357,14 @@ const CustomerDisplay = () => {
               </div>
 
               {/* Température */}
-              <div className="flex-shrink-0 w-80 bg-card/70 backdrop-blur-md rounded-2xl p-4 border-2 border-category-orange/20 shadow-lg">
+              <div className="flex-shrink-0 w-80 bg-white/10 backdrop-blur-md rounded-2xl p-4 border-2 border-white/15 shadow-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-category-orange/10 rounded-lg">
-                    <Thermometer className="h-5 w-5 text-category-orange" />
+                  <div className="p-2 bg-white/10 rounded-lg">
+                    <Thermometer className="h-5 w-5 text-category-yellow" />
                   </div>
-                  <p className="text-sm font-bold text-category-orange uppercase tracking-wide">Jumet</p>
+                  <p className="text-sm font-bold text-category-yellow uppercase tracking-wide">Jumet</p>
                 </div>
-                <p className="text-3xl font-black text-foreground tabular-nums">
+                <p className="text-3xl font-black text-white tabular-nums">
                   {temperature !== null ? `${temperature.toFixed(1)}°C` : 'N/A'}
                 </p>
               </div>
@@ -373,9 +373,9 @@ const CustomerDisplay = () => {
 
           {/* Footer */}
           <div className="flex justify-center animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <div className="px-8 py-3 bg-card/80 backdrop-blur-sm rounded-full border border-border/50 shadow-lg">
-              <p className="text-base text-muted-foreground font-medium">
-                Système de caisse développé par <span className="text-primary font-bold">Jlprod.be</span>
+            <div className="px-8 py-3 bg-white/10 backdrop-blur-sm rounded-full border border-white/15 shadow-lg">
+              <p className="text-base text-white/75 font-medium">
+                Système de caisse développé par <span className="text-white font-bold">Jlprod.be</span>
               </p>
             </div>
           </div>
@@ -386,25 +386,25 @@ const CustomerDisplay = () => {
 
   if (displayState.status === 'completed') {
     return (
-      <div className="min-h-screen bg-accent/10 flex items-center justify-center p-8">
+      <div className="min-h-screen bg-pos-display text-pos-display-foreground flex items-center justify-center p-8">
         <div className="text-center space-y-12 animate-bounce-in">
           <div className="relative">
-            <div className="absolute inset-0 bg-accent/20 blur-3xl rounded-full animate-pulse-soft"></div>
+            <div className="absolute inset-0 bg-white/20 blur-3xl rounded-full animate-pulse-soft"></div>
             <img src={logoMarket} alt="Logo" className="relative w-80 h-80 mx-auto object-contain drop-shadow-2xl" />
           </div>
           <div className="relative">
-            <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full"></div>
-            <CheckCircle2 className="relative w-48 h-48 mx-auto text-accent animate-bounce-in drop-shadow-2xl" style={{ animationDelay: '0.2s' }} />
+            <div className="absolute inset-0 bg-category-green/20 blur-2xl rounded-full"></div>
+            <CheckCircle2 className="relative w-48 h-48 mx-auto text-category-green animate-bounce-in drop-shadow-2xl" style={{ animationDelay: '0.2s' }} />
           </div>
           <div className="space-y-8">
-            <h1 className="text-9xl font-black animate-fade-in gradient-text tracking-tight" style={{ animationDelay: '0.3s' }}>
+            <h1 className="text-9xl font-black animate-fade-in text-white tracking-tight" style={{ animationDelay: '0.3s' }}>
               Merci !
             </h1>
-            <p className="text-6xl animate-fade-in text-foreground font-bold" style={{ animationDelay: '0.5s' }}>
+            <p className="text-6xl animate-fade-in text-white/90 font-bold" style={{ animationDelay: '0.5s' }}>
               À bientôt !
             </p>
-            <div className="inline-block px-8 py-4 bg-card rounded-full border-2 border-accent shadow-glow-lg animate-fade-in" style={{ animationDelay: '0.7s' }}>
-              <p className="text-2xl text-accent font-bold">Passez une excellente journée !</p>
+            <div className="inline-block px-8 py-4 bg-white/10 rounded-full border-2 border-white/30 shadow-glow-lg animate-fade-in" style={{ animationDelay: '0.7s' }}>
+              <p className="text-2xl text-white font-bold">Passez une excellente journée !</p>
             </div>
           </div>
         </div>
@@ -413,15 +413,15 @@ const CustomerDisplay = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-pos-display text-pos-display-foreground flex flex-col overflow-hidden">
       {/* Header fixe avec logo */}
-      <div className="fixed top-0 left-0 right-0 bg-primary/95 backdrop-blur-md border-b-2 border-primary shadow-xl p-3 z-10">
+      <div className="fixed top-0 left-0 right-0 bg-pos-display border-b-2 border-white/10 shadow-xl p-3 z-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="relative">
             <img src={logoMarket} alt="Logo" className="h-14 object-contain drop-shadow-lg" />
           </div>
           <div className="text-center flex-1">
-            <div className="inline-block px-4 py-1.5 bg-white/20 rounded-full border border-white/40 backdrop-blur-sm">
+            <div className="inline-block px-4 py-1.5 bg-white/15 rounded-full border border-white/30 backdrop-blur-sm">
               <h1 className="text-2xl font-black text-white tracking-tight">
                 {displayState.isInvoice ? 'FACTURE' : 'TICKET'} {displayState.saleNumber || 'EN COURS'}
               </h1>
@@ -430,8 +430,8 @@ const CustomerDisplay = () => {
               <p className="text-lg text-white font-bold mt-1">{displayState.customer.name}</p>
             )}
           </div>
-          <div className="text-right bg-white/20 rounded-lg px-3 py-2 border border-white/40 backdrop-blur-sm">
-            <p className="text-xs text-white/90 uppercase tracking-wide font-bold">Caisse</p>
+          <div className="text-right bg-white/15 rounded-lg px-3 py-2 border border-white/30 backdrop-blur-sm">
+            <p className="text-xs text-white/85 uppercase tracking-wide font-bold">Caisse</p>
             <p className="text-lg font-black text-white">{displayState.cashierName || 'N/A'}</p>
           </div>
         </div>
@@ -441,25 +441,24 @@ const CustomerDisplay = () => {
       <div className="flex-1 overflow-y-auto pt-24 pb-32 px-6">
         <div className="max-w-7xl mx-auto space-y-4">
           {displayState.items.slice(-2).map((item, index) => {
-            const subtotal = calculateSubtotal(item);
             const vat = calculateVAT(item);
             const unitDisplay = item.unit === 'kg' ? 'kg' : item.unit === 'l' ? 'l' : 'pc';
             
             return (
               <div
                 key={`${item.name}-${index}`}
-                className="bg-card rounded-3xl shadow-2xl p-8 border-4 border-primary/30 hover:shadow-glow-lg hover:border-primary/60 transition-all duration-300 hover:scale-[1.01] animate-fade-in"
+                className="bg-card text-card-foreground rounded-3xl shadow-2xl p-8 border-4 border-primary/30 hover:shadow-glow-lg hover:border-primary/60 transition-all duration-300 hover:scale-[1.01] animate-fade-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <div className="flex justify-between items-start gap-8">
                   <div className="flex-1">
-                    <h3 className="text-4xl font-black text-foreground uppercase tracking-tight mb-4 flex items-center gap-4">
+                    <h3 className="text-4xl font-black text-card-foreground uppercase tracking-tight mb-4 flex items-center gap-4">
                       <div className="w-3 h-10 bg-primary rounded-full shadow-lg"></div>
                       {item.name}
                     </h3>
                     <div className="flex gap-4 items-center flex-wrap">
                       <div className="flex items-center gap-4 bg-primary/10 rounded-2xl px-6 py-3 border-2 border-primary/20">
-                        <span className="text-3xl font-black text-foreground">
+                        <span className="text-3xl font-black text-card-foreground">
                           {item.quantity.toFixed(item.unit === 'kg' ? 3 : 0)} {unitDisplay}
                         </span>
                         <span className="text-2xl text-muted-foreground font-bold">×</span>
@@ -468,7 +467,7 @@ const CustomerDisplay = () => {
                         </span>
                       </div>
                       {item.hasCustomPrice && (
-                        <span className="px-6 py-3 rounded-2xl text-lg font-black bg-accent/20 text-accent border-2 border-accent/50 shadow-lg">
+                        <span className="px-6 py-3 rounded-2xl text-lg font-black bg-category-teal/15 text-category-teal border-2 border-category-teal/40 shadow-lg">
                           Prix modifié
                         </span>
                       )}
@@ -485,7 +484,7 @@ const CustomerDisplay = () => {
                         {item.total.toFixed(2)} €
                       </div>
                       <div className="text-base text-muted-foreground font-bold">
-                        TVA {item.vatRate}%: <span className="text-foreground font-black text-lg">{vat.toFixed(2)}€</span>
+                        TVA {item.vatRate}%: <span className="text-card-foreground font-black text-lg">{vat.toFixed(2)}€</span>
                       </div>
                     </div>
                   </div>
@@ -497,11 +496,11 @@ const CustomerDisplay = () => {
       </div>
 
       {/* Footer fixe avec total en bas */}
-      <div className="fixed bottom-0 left-0 right-0 bg-primary shadow-xl z-10 border-t-2 border-white/20">
+      <div className="fixed bottom-0 left-0 right-0 bg-pos-display shadow-xl z-10 border-t-2 border-white/10">
         <div className="max-w-7xl mx-auto p-4">
           <div className="flex justify-center items-center">
             {/* Total TTC centré */}
-            <div className="bg-white/20 backdrop-blur-md rounded-2xl px-8 py-4 border-2 border-white/40 shadow-lg">
+            <div className="bg-white/15 backdrop-blur-md rounded-2xl px-8 py-4 border-2 border-white/30 shadow-lg">
               <div className="text-xl font-black text-white mb-2 uppercase tracking-wide">TOTAL À PAYER</div>
               <div className="text-5xl font-black text-white tracking-tight leading-none tabular-nums">
                 {getTotalTTC().toFixed(2)} €
