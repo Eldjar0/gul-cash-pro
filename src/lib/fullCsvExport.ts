@@ -36,7 +36,7 @@ function cell(v: any): string {
 
 export function toCsv(rows: any[]): string {
   if (!rows.length) return '';
-  const cols = Array.from(rows.reduce((set: Set<string>, r) => { Object.keys(r).forEach(k => set.add(k)); return set; }, new Set<string>()));
+  const cols: string[] = Array.from<string>(rows.reduce((set: Set<string>, r) => { Object.keys(r).forEach(k => set.add(k)); return set; }, new Set<string>()));
   const lines = [cols.join(';'), ...rows.map(r => cols.map(c => cell(r[c])).join(';'))];
   return '\uFEFF' + lines.join('\r\n');
 }
