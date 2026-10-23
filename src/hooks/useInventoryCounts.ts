@@ -1,3 +1,4 @@
+import { fetchAllRows } from '@/lib/fetchAllRows';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -84,10 +85,10 @@ export const useCreateInventoryCount = () => {
       if (countError) throw countError;
 
       // Récupérer tous les produits actifs et créer les items
-      const { data: products, error: prodError } = await supabase
+      const { data: products, error: prodError } = await fetchAllRows(() => supabase
         .from('products')
         .select('id, name, barcode, stock, cost_price')
-        .eq('is_active', true);
+        .eq('is_active', true).order('id'));
 
       if (prodError) throw prodError;
 

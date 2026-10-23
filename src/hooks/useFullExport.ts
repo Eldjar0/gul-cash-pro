@@ -1,3 +1,4 @@
+import { fetchAllRows } from '@/lib/fetchAllRows';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -21,17 +22,17 @@ export const useFullExport = () => {
         stockMovementsData,
         productBatchesData,
       ] = await Promise.all([
-        supabase.from('sales').select('*, sale_items(*), customers(*)').order('date', { ascending: false }),
-        supabase.from('products').select('*, categories(*)').order('name'),
-        supabase.from('customers').select('*').order('name'),
-        supabase.from('categories').select('*').order('name'),
-        supabase.from('daily_reports').select('*').order('report_date', { ascending: false }),
-        supabase.from('purchase_orders').select('*, purchase_order_items(*)').order('order_date', { ascending: false }),
-        supabase.from('quotes').select('*, quote_items(*), customers(*)').order('quote_date', { ascending: false }),
-        supabase.from('customer_orders').select('*, customer_order_items(*), customers(*)').order('order_date', { ascending: false }),
-        supabase.from('refunds').select('*, refund_items(*), customers(*)').order('created_at', { ascending: false }),
-        supabase.from('stock_movements').select('*').order('created_at', { ascending: false }),
-        supabase.from('product_batches').select('*, products(*)').order('received_date', { ascending: false }),
+        fetchAllRows(() => supabase.from('sales').select('*, sale_items(*), customers(*)').order('date', { ascending: false })),
+        fetchAllRows(() => supabase.from('products').select('*, categories(*)').order('name')),
+        fetchAllRows(() => supabase.from('customers').select('*').order('name')),
+        fetchAllRows(() => supabase.from('categories').select('*').order('name')),
+        fetchAllRows(() => supabase.from('daily_reports').select('*').order('report_date', { ascending: false })),
+        fetchAllRows(() => supabase.from('purchase_orders').select('*, purchase_order_items(*)').order('order_date', { ascending: false })),
+        fetchAllRows(() => supabase.from('quotes').select('*, quote_items(*), customers(*)').order('quote_date', { ascending: false })),
+        fetchAllRows(() => supabase.from('customer_orders').select('*, customer_order_items(*), customers(*)').order('order_date', { ascending: false })),
+        fetchAllRows(() => supabase.from('refunds').select('*, refund_items(*), customers(*)').order('created_at', { ascending: false })),
+        fetchAllRows(() => supabase.from('stock_movements').select('*').order('created_at', { ascending: false })),
+        fetchAllRows(() => supabase.from('product_batches').select('*, products(*)').order('received_date', { ascending: false })),
       ]);
 
       // Check for errors

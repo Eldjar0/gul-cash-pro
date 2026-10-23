@@ -1,3 +1,4 @@
+import { fetchAllRows } from '@/lib/fetchAllRows';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -62,9 +63,9 @@ export const useCreateBackup = () => {
     mutationFn: async () => {
       // Récupérer toutes les données importantes
       const [sales, products, customers, categories, settings] = await Promise.all([
-        supabase.from('sales').select('*, sale_items(*)'),
-        supabase.from('products').select('*'),
-        supabase.from('customers').select('*'),
+        fetchAllRows(() => supabase.from('sales').select('*, sale_items(*)')),
+        fetchAllRows(() => supabase.from('products').select('*')),
+        fetchAllRows(() => supabase.from('customers').select('*')),
         supabase.from('categories').select('*'),
         supabase.from('settings').select('*'),
       ]);
@@ -147,10 +148,10 @@ export const useExportCSV = () => {
           break;
 
         case 'products':
-          const { data: products } = await supabase
+          const { data: products } = await fetchAllRows(() => supabase
             .from('products')
             .select('*')
-            .order('name');
+            .order('name'));
           
           data = products || [];
           headers = ['Code-barres', 'Nom', 'Prix', 'Stock', 'TVA%', 'Actif'];
