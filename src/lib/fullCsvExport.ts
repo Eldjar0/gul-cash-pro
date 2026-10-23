@@ -19,7 +19,7 @@ async function fetchAll(table: string) {
   const rows: any[] = [];
   const size = 1000;
   for (let from = 0; ; from += size) {
-    const { data, error } = await (supabase as any).from(table).select('*').range(from, from + size - 1);
+    const { data, error } = await (supabase as any).from(table).select('*').order('id').range(from, from + size - 1);
     if (error) throw error;
     rows.push(...(data || []));
     if (!data || data.length < size) break;
