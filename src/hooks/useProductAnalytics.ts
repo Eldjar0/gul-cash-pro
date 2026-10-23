@@ -1,3 +1,4 @@
+import { fetchAllRows } from '@/lib/fetchAllRows';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, endOfDay, subDays } from 'date-fns';
@@ -93,10 +94,10 @@ export const useLowPerformingProducts = (days: number = 30, threshold: number = 
 
       if (saleError) throw saleError;
 
-      const { data: products, error: productsError } = await supabase
+      const { data: products, error: productsError } = await fetchAllRows(() => supabase
         .from('products')
         .select('id, name, stock')
-        .eq('is_active', true);
+        .eq('is_active', true).order('id'));
 
       if (productsError) throw productsError;
 
