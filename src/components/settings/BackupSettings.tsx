@@ -6,11 +6,13 @@ import { useFullExport } from '@/hooks/useFullExport';
 import { Download, Database, Upload, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { exportAllAsZip } from '@/lib/fullCsvExport';
 
 export function BackupSettings() {
   const { exportFullData } = useFullExport();
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [zipProgress, setZipProgress] = useState<string | null>(null);
 
   const handleCreateBackup = async () => {
     setIsExporting(true);
@@ -227,6 +229,28 @@ export function BackupSettings() {
 
   return (
     <div className="space-y-6">
+      <Card className="border-2 border-primary shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Download className="h-5 w-5" />Export complet (toutes les données)</CardTitle>
+          <CardDescription>
+            Télécharge un fichier ZIP avec un fichier Excel/CSV par catégorie (produits, clients, factures, lignes de factures, tickets, avoirs, stock, etc.) + un fichier complet. Pour importer dans un autre logiciel.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button size="lg" disabled={!!zipProgress} onClick={async () => {
+            setZipProgress('Démarrage...');
+            try {
+              await exportAllAsZip((t, i, n) => setZipProgress(`${i}/${n} – ${t}`));
+              toast.success('Export complet téléchargé');
+            } catch (e: any) {
+              toast.error('Erreur export : ' + (e?.message || e));
+            } finally { setZipProgress(null); }
+          }}>
+            <Download className="h-4 w-4 mr-2" />
+            {zipProgress ? `Export en cours ${zipProgress}` : 'Télécharger tout (ZIP)'}
+          </Button>
+        </CardContent>
+      </Card>
       {/* Sauvegarde complète */}
       <Card className="bg-purple-50 dark:bg-gray-800 border-0 shadow-lg">
         <CardHeader>
